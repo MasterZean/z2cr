@@ -1,0 +1,21 @@
+uses
+	Core;
+
+file
+	z2cr.h,
+	z2cr.cpp,
+	Assembly.h,
+	Assembly.cpp,
+	ZSource.h,
+	ZSource.cpp,
+	ZParser.h,
+	ZParser.cpp,
+	Scanner.h,
+	Scanner.cpp,
+	ZException.h,
+	ErrorReporter.h,
+	ErrorReporter.cpp;
+
+mainconfig
+	"" = "";
+
