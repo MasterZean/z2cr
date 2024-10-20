@@ -6,10 +6,22 @@ public:
 	String Path;
 	String Error;
 	
+	ZException(const String& error): Error(error) {
+	}
+	
 	ZException(const String& path, const String& error): Path(path), Error(error) {
 	}
 	
-	//void PrettyPrint(Context* con, Stream& stream);
+	String ToString() {
+		String msg;
+		
+		if (Path.GetCount())
+			msg << Path << ": ";
+		
+		msg << Error;
+		
+		return msg;
+	}
 };
 
 #endif

@@ -7,7 +7,26 @@ enum class AccessType {
 	Protected
 };
 
+class ZSource;
+
+class ZSourcePos {
+public:
+	ZSource* Source = nullptr;
+	Point P;
+	CParser::Pos Pos;
+	
+	ZSourcePos() {
+	}
+	
+	ZSourcePos(ZSource& aSrc, Point aPt): Source(&aSrc), P(aPt) {
+	}
+	
+	ZSourcePos(ZSource& aSrc, Point aPt, CParser::Pos aPos): Source(&aSrc), P(aPt), Pos(aPos) {
+	}
+};
+
 class ZNamespace;
+class ZPackage;
 
 class ZFunction {
 public:
@@ -15,9 +34,10 @@ public:
 	String BackName;
 	
 	bool IsFunction = false;
+	bool InClass = false;
 	
 	CParser::Pos TraitPos;
-	CParser::Pos DefPos;
+	ZSourcePos DefPos;
 	CParser::Pos ParamPos;
 	CParser::Pos BodyPos;
 	
@@ -28,29 +48,48 @@ public:
 		return nmsspace;
 	}
 	
+	void GenerateSignatures();
+	
+	const String& DupSig() const {
+		return dsig;
+	}
+	
 private:
 	ZNamespace& nmsspace;
+	String dsig;
+};
+
+class ZDefinition {
+public:
+	Array<ZFunction> Functions;
 };
 
 class ZNamespace {
 public:
-	ZFunction& PrepareFunction(const String& aName);
+	String Name;
 	
-private:
-	Array<ZFunction> preFunctions;
+	Array<ZFunction> PreFunctions;
+	ArrayMap<String, ZDefinition> Definitions;
+	
+	ZFunction& PrepareFunction(const String& aName);
 };
 
 class Assembly {
 public:
 	ArrayMap<String, ZNamespace> Namespaces;
 	
+	Assembly();
+	
 	ZNamespace& FindAddNamespace(const String& aName);
 	
 	ZNamespace& DefaultNamespace() {
-		return defaultNamespace;
+		return Namespaces[0];
 	}
+	
+	ZPackage& AddPackage(const String& aName, const String& aPath);
+	
 private:
-	ZNamespace defaultNamespace;
+	ArrayMap<String, ZPackage> packages;
 };
 
 #endif

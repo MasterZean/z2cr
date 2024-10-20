@@ -155,7 +155,7 @@ ZFunction& Scanner::ScanFunc(AccessType accessType, bool aFunc) {
 	
 	ZFunction& f = nmspace->PrepareFunction(name);
 	f.IsFunction = aFunc;
-	f.DefPos = dp;
+	f.DefPos = ZSourcePos(source, p, dp);
 	f.ParamPos = pp;
 	f.BackName = bname;
 	
@@ -224,8 +224,6 @@ void Scanner::ScanToken() {
 }
 
 void Scanner::InterpretTrait(const String& trait) {
-	Cout() << "\t\tFound trait: " << trait << "\n";
-	
 	if (trait == "bindc")
 		bindName = trait;
 	else if (trait == "intrinsic")
@@ -252,7 +250,6 @@ void Scanner::TraitLoop() {
 	isForce = false;
 	
 	if (parser.Char2('@', '[')) {
-		Cout() << "\tBegin trait loop\n";
 		
 		String trait = parser.ExpectId();
 		InterpretTrait(trait);
@@ -266,6 +263,4 @@ void Scanner::TraitLoop() {
 		
 		parser.Expect(']');
 	}
-	
-	Cout() << "\tEnd trait loop\n";
 }

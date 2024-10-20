@@ -3,11 +3,11 @@
 
 class ZSource {
 public:
-	ZSource(Assembly& aAss): ass(aAss) {
+	ZSource(ZPackage& aPak): pak(aPak) {
 	}
 	
 	bool LoadFile(const String& aPath);
-	bool LoadVirtual(const String& aContent, const String& aPath);
+	bool LoadVirtual(const String& aPath, const String& aContent);
 	
 	bool IsValid() const {
 		return !content.IsVoid();
@@ -21,19 +21,35 @@ public:
 		return path;
 	}
 	
-	Assembly& GetAssembly() {
-		return ass;
+	ZPackage& Package() {
+		return pak;
 	}
 	
-	const Assembly& GetAssembly() const {
+private:
+	ZPackage& pak;
+	
+	String content;
+	String path;
+};
+
+class ZPackage {
+public:
+	String Name;
+	String Path;
+	
+	ZPackage(Assembly& aAss, const String& aName, const String& aPath): ass(aAss), Name(aName), Path(aPath) {
+	}
+	
+	ZSource& AddSource(const String& aPath);
+	ZSource& AddSource(const String& aPath, const String& aContent);
+	
+	Assembly& GetAssembly() {
 		return ass;
 	}
 	
 private:
 	Assembly& ass;
-	
-	String content;
-	String path;
+	ArrayMap<String, ZSource> sources;
 };
 
 #endif

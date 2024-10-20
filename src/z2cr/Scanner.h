@@ -5,7 +5,7 @@
 
 class Scanner {
 public:
-	Scanner(ZSource& aSrc, bool windows): parser(aSrc), ass(aSrc.GetAssembly()), win(windows) {
+	Scanner(ZSource& aSrc, bool windows): parser(aSrc), source(aSrc), ass(aSrc.Package().GetAssembly()), win(windows) {
 		parser.Mode = ": scan";
 	}
 
@@ -19,6 +19,7 @@ public:
 	
 protected:
 	Assembly& ass;
+	ZSource& source;
 	ZParser parser;
 	String nameSpace;
 	String bindName;

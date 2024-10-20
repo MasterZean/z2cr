@@ -11,10 +11,33 @@ bool ZSource::LoadFile(const String& aPath) {
 	return true;
 }
 
-bool ZSource::LoadVirtual(const String& aContent, const String& aPath) {
+bool ZSource::LoadVirtual(const String& aPath, const String& aContent) {
 	content = aContent;
 	path = aPath;
 	
 	return true;
+}
+
+ZSource& ZPackage::AddSource(const String& aPath) {
+	int index = sources.Find(aPath);
+	
+	ASSERT(index == -1);
+	
+	ZSource& source = sources.Add(aPath, ZSource(*this));
+	if (source.LoadFile(aPath) == false)
+		ErrorReporter::CantOpenFile(aPath);
+	
+	return source;
+}
+
+ZSource& ZPackage::AddSource(const String& aPath, const String& aContent) {
+	int index = sources.Find(aPath);
+	
+	ASSERT(index == -1);
+	
+	ZSource& source = sources.Add(aPath, ZSource(*this));
+	source.LoadVirtual(aPath, aContent);
+	
+	return source;
 }
 
