@@ -1,6 +1,12 @@
 #ifndef _z2cr_Assembly_h_
 #define _z2cr_Assembly_h_
 
+enum class AccessType {
+	Public,
+	Private,
+	Protected
+};
+
 class ZNamespace;
 
 class ZFunction {

@@ -12,13 +12,15 @@ public:
 	void Scan();
 	
 	void ScanNamespace();
-	ZFunction& ScanFunc(bool aFunc);
+	ZFunction& ScanFunc(AccessType accessType, bool aFunc);
+	void ScanBlock();
+	void ScanToken();
+	bool ScanDeclaration(AccessType accessType);
 	
 protected:
 	Assembly& ass;
 	ZParser parser;
 	String nameSpace;
-	//Entity::AccessType insertAccess;
 	String bindName;
 	
 	ZNamespace* nmspace = nullptr;
@@ -34,6 +36,8 @@ protected:
 	
 	void InterpretTrait(const String& trait);
 	void TraitLoop();
+	
+	bool ScanDeclarationLine(AccessType accessType, CParser::Pos* tp = nullptr);
 };
 
 #endif

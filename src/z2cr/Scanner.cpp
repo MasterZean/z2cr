@@ -1,5 +1,9 @@
 #include "z2cr.h"
 
+extern char SingleOp[24];
+extern char DoubleOpCh1[9];
+extern char DoubleOpCh2[9];
+
 void Scanner::Scan() {
 	nmspace = &ass.DefaultNamespace();
 	
@@ -8,30 +12,98 @@ void Scanner::Scan() {
 		
 		if (parser.Id("namespace"))
 			ScanNamespace();
-		else if (parser.IsChar2('@', '[')) {
-			CParser::Pos tp = parser.GetPos();
-			TraitLoop();
-			Point p2 = parser.GetPoint();
-			if (parser.Id("def")) {
-				ZFunction& f = ScanFunc(false);
-				f.TraitPos = tp;
+		else if (parser.Id("private")) {
+			parser.Expect('{');
+			
+			while (!parser.IsChar('}')) {
+				if (ScanDeclaration(AccessType::Private)) {
+					// ALL GOOD
+				}
+				else {
+					Point p = parser.GetPoint();
+					parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+				}
 			}
-			else if (parser.Id("func")) {
-				ZFunction& f = ScanFunc(true);
-				f.TraitPos = tp;
-			}
-			else
-				parser.Error(p2, "syntax error: declaration expected: "  + parser.Identify() + " found");
+			
+			parser.Expect('}');
 		}
-		else if (parser.Id("def"))
-			ScanFunc(false);
-		else if (parser.Id("func"))
-			ScanFunc(true);
+		else if (parser.Id("protected")) {
+			parser.Expect('{');
+			
+			while (!parser.IsChar('}')) {
+				if (ScanDeclaration(AccessType::Protected)) {
+					// ALL GOOD
+				}
+				else {
+					Point p = parser.GetPoint();
+					parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+				}
+			}
+			
+			parser.Expect('}');
+		}
+		else if (ScanDeclaration(AccessType::Public)) {
+			// ALL GOOD
+		}
 		else {
 			Point p = parser.GetPoint();
-			parser.Error(p, "syntax error: " + parser.Identify() + " found");
+			parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
 		}
 	}
+}
+
+bool Scanner::ScanDeclaration(AccessType accessType) {
+	if (parser.IsChar2('@', '[')) {
+		CParser::Pos tp = parser.GetPos();
+		TraitLoop();
+		Point p2 = parser.GetPoint();
+		return ScanDeclarationLine(accessType, &tp);
+	}
+	
+	return ScanDeclarationLine(accessType);
+
+}
+
+bool Scanner::ScanDeclarationLine(AccessType accessType, CParser::Pos* tp) {
+	if (parser.Id("def")) {
+		Vector<ZFunction*> funcs;
+		do {
+			ZFunction& f = ScanFunc(accessType, false);
+			if (tp)
+				f.TraitPos = *tp;
+			
+			funcs.Add(&f);
+		} while (parser.Char(','));
+		
+		CParser::Pos bp = parser.GetPos();
+		ScanBlock();
+		
+		for (int i = 0; i < funcs.GetCount(); i++)
+			funcs[i]->BodyPos = bp;
+		
+		return true;
+	}
+	else if (parser.Id("func")) {
+		Vector<ZFunction*> funcs;
+		
+		do {
+			ZFunction& f = ScanFunc(accessType, true);
+			if (tp)
+				f.TraitPos = *tp;
+			
+			funcs.Add(&f);
+		} while (parser.Char(','));
+		
+		CParser::Pos bp = parser.GetPos();
+		ScanBlock();
+		
+		for (int i = 0; i < funcs.GetCount(); i++)
+			funcs[i]->BodyPos = bp;
+		
+		return true;
+	}
+	
+	return false;
 }
 
 void Scanner::ScanNamespace() {
@@ -56,7 +128,7 @@ void Scanner::ScanNamespace() {
 		Cout() << "Updated namespace: " << fullName << "\n";
 }
 
-ZFunction& Scanner::ScanFunc(bool aFunc) {
+ZFunction& Scanner::ScanFunc(AccessType accessType, bool aFunc) {
 	ASSERT(nmspace);
 	
 	Point p = parser.GetPoint();
@@ -80,7 +152,6 @@ ZFunction& Scanner::ScanFunc(bool aFunc) {
 	CParser::Pos pp = parser.GetPos();
 	parser.Expect('(');
 	parser.Expect(')');
-	parser.ExpectEndStat();
 	
 	ZFunction& f = nmspace->PrepareFunction(name);
 	f.IsFunction = aFunc;
@@ -88,12 +159,68 @@ ZFunction& Scanner::ScanFunc(bool aFunc) {
 	f.ParamPos = pp;
 	f.BackName = bname;
 	
+	Cout() << "\tFound: ";
+	
+	if (accessType == AccessType::Public)
+		Cout() << "public ";
+	else if (accessType == AccessType::Protected)
+		Cout() << "public ";
+	else if (accessType == AccessType::Private)
+		Cout() << "public ";
+	
 	if (aFunc)
-		Cout() << "\tFound func: " << name << "\n";
+		Cout() << "func ";
 	else
-		Cout() << "\tFound def: " << name << "\n";
+		Cout() << "def ";
+	
+	Cout() << name << "()\n";
 	
 	return f;
+}
+
+void Scanner::ScanBlock() {
+	parser.Expect('{');
+	parser.EatNewlines();
+	
+	while (!parser.IsChar('}')) {
+		if (parser.Char('{')) {
+			parser.EatNewlines();
+		    ScanBlock();
+		}
+		else
+			ScanToken();
+	}
+	
+	parser.Expect('}');
+	parser.EatNewlines();
+}
+
+void Scanner::ScanToken() {
+	if (parser.IsInt()) {
+		int64 oInt;
+		double oDub;
+		int base;
+		parser.ReadInt64(oInt, oDub, base);
+	}
+	else if (parser.IsString())
+		parser.ReadString();
+	else if (parser.IsId())
+		parser.ReadId();
+	else if (parser.IsCharConst())
+		parser.ReadChar();
+	else {
+		for (int i = 0; i < 9; i++)
+			if (parser.Char2(DoubleOpCh1[i], DoubleOpCh1[i]))
+			    return;
+		for (int i = 0; i < 24; i++)
+			if (parser.Char(SingleOp[i]))
+			    return;
+		if (parser.Char('{') || parser.Char('}'))
+			return;
+
+		Point p = parser.GetPoint();
+		parser.Error(p, "syntax error: " + parser.Identify() + " found");
+	}
 }
 
 void Scanner::InterpretTrait(const String& trait) {

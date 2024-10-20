@@ -33,6 +33,10 @@ public:
 	
 	bool IsZId();
 	
+	bool IsCharConst() {
+		return term[0] == '\'';
+	}
+	
 	String ExpectId();
 	String ExpectZId();
 	String ExpectId(const String& id);
@@ -41,12 +45,22 @@ public:
 	void Expect(char ch, char ch2);
 	int ExpectNum();
 	
+	void EatNewlines() {
+	}
+	
 	void ExpectEndStat();
 	
 	void Error(const Point& p, const String& text);
 	
+	uint32 ReadChar();
+	ZParser::NumberType ReadInt64(int64& oInt, double& oDub, int& base);
+	
 private:
 	ZSource& source;
+	
+	uint64 ReadNumber64Core(Point& p, int base);
+	ZParser::NumberType ReadI(Point& p, int sign, int64& oInt);
+	ZParser::NumberType ReadF(Point& p, int sign, double& oDub);
 };
 	
 #endif
