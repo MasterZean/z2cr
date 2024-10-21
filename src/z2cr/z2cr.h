@@ -11,5 +11,6 @@ using namespace Upp;
 #include <z2cr/ZSource.h>
 #include <z2cr/ZParser.h>
 #include <z2cr/Scanner.h>
+#include <z2cr/BuildMethod.h>
 
 #endif

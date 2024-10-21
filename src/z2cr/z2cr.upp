@@ -14,7 +14,10 @@ file
 	Scanner.cpp,
 	ZException.h,
 	ErrorReporter.h,
-	ErrorReporter.cpp;
+	ErrorReporter.cpp,
+	build readonly separator,
+	BuildMethod.h,
+	BuildMethod.cpp;
 
 mainconfig
 	"" = "";

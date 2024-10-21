@@ -7,6 +7,8 @@ public:
 	
 	void Compile();
 	
+	static String& GetName();
+	
 private:
 	Assembly& ass;
 	
@@ -38,9 +40,32 @@ void ZCompiler::Compile(ZNamespace& ns) {
 	}
 }
 
+String& ZCompiler::GetName() {
+	static String name = "Z2R 0.0.1";
+	return name;
+}
+
 CONSOLE_APP_MAIN {
 	String path = "c:\\temp\\test.z2";
 	
+	String curDir = GetCurrentDirectory() + "/";
+	String exeDir = GetFileDirectory(GetExeFilePath());
+
+	Vector<BuildMethod> methods;
+	
+	// load existing BMs
+	LoadFromXMLFile(methods, exeDir + "buildMethods.xml");
+	if (methods.GetCount() == 0) {
+		Cout() << "No cached build method found! Trying to auto-detect...\n";
+		BuildMethod::Get(methods);
+		if (methods.GetCount() == 0) {
+			Cout() << ZCompiler::GetName() << " couldn't find a backend compiler. skiping compilation step..." << '\n';
+			//K.SCU = false;
+		}
+		else
+			StoreAsXMLFile(methods, "methods", exeDir + "buildMethods.xml");
+	}
+		
 	Assembly ass;
 	
 	try {
