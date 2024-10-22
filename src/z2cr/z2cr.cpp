@@ -1,56 +1,17 @@
 #include "z2cr.h"
 
-class ZCompiler {
-public:
-	ZCompiler(Assembly& aAss): ass(aAss) {
-	}
-	
-	void Compile();
-	
-	static String& GetName();
-	
-private:
-	Assembly& ass;
-	
-	void Compile(ZNamespace& ns);
-};
-
-void ZCompiler::Compile() {
-	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
-		Compile(ass.Namespaces[i]);
-}
-
-void ZCompiler::Compile(ZNamespace& ns) {
-	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
-		ZFunction& f = ns.PreFunctions[i];
-		ZDefinition& d = ns.Definitions.GetAdd(f.Name);
-		
-		f.GenerateSignatures();
-		
-		for (int j = 0; j < d.Functions.GetCount(); j++) {
-			ZFunction& g = d.Functions[j];
-			if (g.DupSig() == f.DupSig()) {
-				Cout() << "Duplicate in ns: " << ns.Name <<	"\n\t" <<
-					g.DefPos.Source->Path() << "(" << g.DefPos.P.x << ", " << g.DefPos.P.y << "): " << g.DupSig() << "\n\t" <<
-					f.DefPos.Source->Path() << "(" << f.DefPos.P.x << ", " << f.DefPos.P.y << "): " << f.DupSig() << "\n";
-			}
-		}
-		
-		d.Functions.Add(f);
-	}
-}
-
-String& ZCompiler::GetName() {
-	static String name = "Z2R 0.0.1";
-	return name;
-}
-
 CONSOLE_APP_MAIN {
 	String path = "c:\\temp\\test.z2";
 	
 	String curDir = GetCurrentDirectory() + "/";
 	String exeDir = GetFileDirectory(GetExeFilePath());
 
+	::CommandLine K;
+	if (!K.Read()) {
+		SetExitCode(-1);
+		return;
+	}
+	
 	Vector<BuildMethod> methods;
 	
 	// load existing BMs
@@ -65,14 +26,65 @@ CONSOLE_APP_MAIN {
 		else
 			StoreAsXMLFile(methods, "methods", exeDir + "buildMethods.xml");
 	}
-		
+	
+	// check params
+	if (!K.SCU && !K.CPP && !K.INT && !K.VASM) {
+		Cout() << ZCompiler::GetName() << " requires the '-scu', '-c++', '-vasm' or '-i' parameters. Exiting!" << '\n';
+		SetExitCode(-1);
+		return;
+	}
+	
+	if (!K.BM) {
+		Cout() << ZCompiler::GetName() << " requires a build method specified (-bm). Exiting!" << '\n';
+		SetExitCode(-1);
+		return;
+	}
+	
+	int bmi = -1;
+	
+	// find input BM
+	for (int i = 0; i < methods.GetCount(); i++)
+		if (ToUpper(K.BMName) == ToUpper(methods[i].Name)) {
+			bmi = i;
+			break;
+		}
+	
+	if (bmi == -1) {
+		Cout() << "Build method '" << ToUpper(K.BMName) << "' can't be found. Exiting!" << '\n';
+		SetExitCode(-1);
+		return;
+	}
+	
+	bmi = -1;
+	// find input BM with given arch
+	for (int i = 0; i < methods.GetCount(); i++)
+		if (ToUpper(K.BMName) == ToUpper(methods[i].Name) && ToUpper(K.ARCH) == ToUpper(methods[i].Arch)) {
+			bmi = i;
+			break;
+		}
+	
+	if (bmi == -1) {
+		Cout() << "Build method '" << ToUpper(K.BMName) << "' doesn't support architecture 'x86'. Exiting!" << '\n';
+		SetExitCode(-1);
+		return;
+	}
+	
+	if (K.PP_NOPATH)
+		ErrorReporter::PrintPath = false;
+
+	
+	if (K.Path.GetCount() == 0) {
+		return;
+	}
+	
+	// compile
 	Assembly ass;
 	
 	try {
 		ZPackage& mainPak = ass.AddPackage("main", "");
-		ZSource& source = mainPak.AddSource(path);
+		ZSource& source = mainPak.AddSource(K.Path);
 		
-		Scanner scanner(source, true);
+		ZScanner scanner(source, true);
 		scanner.Scan();
 		
 		ZCompiler compiler(ass);

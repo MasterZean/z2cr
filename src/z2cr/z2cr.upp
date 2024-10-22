@@ -10,12 +10,16 @@ file
 	ZSource.cpp,
 	ZParser.h,
 	ZParser.cpp,
-	Scanner.h,
-	Scanner.cpp,
+	ZScanner.h,
+	ZScanner.cpp,
+	ZCompiler.h,
+	ZCompiler.cpp,
 	ZException.h,
 	ErrorReporter.h,
 	ErrorReporter.cpp,
 	build readonly separator,
+	CommandLine.h,
+	CommandLine.cpp,
 	BuildMethod.h,
 	BuildMethod.cpp;
 
