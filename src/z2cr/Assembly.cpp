@@ -1,5 +1,15 @@
 #include "z2cr.h"
 
+String ZSourcePos::ToString() const {
+	String str;
+	
+	if (Source)
+		str << Source->Path();
+	str << "(" << P.x << ", " << P.y << ")";
+	
+	return str;
+}
+	
 void ZFunction::GenerateSignatures() {
 	dsig = "";
 	
@@ -34,11 +44,24 @@ ZNamespace& Assembly::FindAddNamespace(const String& aName) {
 }
 
 ZPackage& Assembly::AddPackage(const String& aName, const String& aPath) {
-	int index = packages.Find(aName);
+	int index = Packages.Find(aName);
 	
 	ASSERT(index == -1);
 	
-	ZPackage& pak = packages.Add(aName, ZPackage(*this, aName, aPath));
+	ZPackage& pak = Packages.Add(aName, ZPackage(*this, aName, aPath));
 	return pak;
 }
+
+ZSource* Assembly::FindSource(const String& aName) {
+	for (int i = 0; i < Packages.GetCount(); i++) {
+		ZPackage& pak = Packages[i];
+		int index = pak.Sources.Find(aName);
+		
+		if (index != -1)
+			return &pak.Sources[index];
+	}
+	
+	return nullptr;
+}
+
 

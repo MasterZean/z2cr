@@ -9,7 +9,7 @@ enum class AccessType {
 
 class ZSource;
 
-class ZSourcePos {
+class ZSourcePos: Moveable<ZSourcePos> {
 public:
 	ZSource* Source = nullptr;
 	Point P;
@@ -23,6 +23,8 @@ public:
 	
 	ZSourcePos(ZSource& aSrc, Point aPt, CParser::Pos aPos): Source(&aSrc), P(aPt), Pos(aPos) {
 	}
+	
+	String ToString() const;
 };
 
 class ZNamespace;
@@ -77,6 +79,7 @@ public:
 class Assembly {
 public:
 	ArrayMap<String, ZNamespace> Namespaces;
+	ArrayMap<String, ZPackage> Packages;
 	
 	Assembly();
 	
@@ -88,8 +91,7 @@ public:
 	
 	ZPackage& AddPackage(const String& aName, const String& aPath);
 	
-private:
-	ArrayMap<String, ZPackage> packages;
+	ZSource* FindSource(const String& aName);
 };
 
 #endif

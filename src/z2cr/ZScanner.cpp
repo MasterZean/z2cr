@@ -122,10 +122,10 @@ void ZScanner::ScanNamespace() {
 	
 	nmspace = &ass.FindAddNamespace(fullName);
 	
-	if (index == -1)
+	/*if (index == -1)
 		Cout() << "Found namespace: " << fullName << "\n";
 	else
-		Cout() << "Updated namespace: " << fullName << "\n";
+		Cout() << "Updated namespace: " << fullName << "\n";*/
 }
 
 ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
@@ -159,21 +159,21 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	f.ParamPos = pp;
 	f.BackName = bname;
 	
-	Cout() << "\tFound: ";
+	/*Cout() << "\tFound: ";
 	
 	if (accessType == AccessType::Public)
 		Cout() << "public ";
 	else if (accessType == AccessType::Protected)
-		Cout() << "public ";
+		Cout() << "protected ";
 	else if (accessType == AccessType::Private)
-		Cout() << "public ";
+		Cout() << "private ";
 	
 	if (aFunc)
 		Cout() << "func ";
 	else
 		Cout() << "def ";
 	
-	Cout() << name << "()\n";
+	Cout() << name << "()\n";*/
 	
 	return f;
 }

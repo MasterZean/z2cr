@@ -19,11 +19,11 @@ bool ZSource::LoadVirtual(const String& aPath, const String& aContent) {
 }
 
 ZSource& ZPackage::AddSource(const String& aPath) {
-	int index = sources.Find(aPath);
+	int index = Sources.Find(aPath);
 	
 	ASSERT(index == -1);
 	
-	ZSource& source = sources.Add(aPath, ZSource(*this));
+	ZSource& source = Sources.Add(aPath, ZSource(*this));
 	if (source.LoadFile(aPath) == false)
 		ErrorReporter::CantOpenFile(aPath);
 	
@@ -31,11 +31,11 @@ ZSource& ZPackage::AddSource(const String& aPath) {
 }
 
 ZSource& ZPackage::AddSource(const String& aPath, const String& aContent) {
-	int index = sources.Find(aPath);
+	int index = Sources.Find(aPath);
 	
 	ASSERT(index == -1);
 	
-	ZSource& source = sources.Add(aPath, ZSource(*this));
+	ZSource& source = Sources.Add(aPath, ZSource(*this));
 	source.LoadVirtual(aPath, aContent);
 	
 	return source;

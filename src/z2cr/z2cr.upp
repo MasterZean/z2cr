@@ -14,6 +14,7 @@ file
 	ZScanner.cpp,
 	ZCompiler.h,
 	ZCompiler.cpp,
+	ZTranspiler.h,
 	ZException.h,
 	ErrorReporter.h,
 	ErrorReporter.cpp,

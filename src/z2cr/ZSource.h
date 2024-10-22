@@ -3,6 +3,8 @@
 
 class ZSource {
 public:
+	Vector<ZFunction*> Functions;
+	
 	ZSource(ZPackage& aPak): pak(aPak) {
 	}
 	
@@ -37,6 +39,8 @@ public:
 	String Name;
 	String Path;
 	
+	ArrayMap<String, ZSource> Sources;
+	
 	ZPackage(Assembly& aAss, const String& aName, const String& aPath): ass(aAss), Name(aName), Path(aPath) {
 	}
 	
@@ -49,7 +53,6 @@ public:
 	
 private:
 	Assembly& ass;
-	ArrayMap<String, ZSource> sources;
 };
 
 #endif

@@ -6,14 +6,22 @@ public:
 	ZCompiler(Assembly& aAss): ass(aAss) {
 	}
 	
-	void Compile();
+	bool Compile();
+		
+	void SetMainFile(const String& aPath) {
+		mainPath = aPath;
+	}
 	
 	static String& GetName();
 	
 private:
 	Assembly& ass;
+	String mainPath;
+	ArrayMap<String, Vector<ZSourcePos>> dupes;
 	
-	void Compile(ZNamespace& ns);
+	ZFunction* FindMain(ZSource& src);
+	
+	bool Traverse(ZNamespace& ns);
 };
 
 #endif

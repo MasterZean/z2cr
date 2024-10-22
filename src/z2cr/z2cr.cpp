@@ -81,14 +81,26 @@ CONSOLE_APP_MAIN {
 	Assembly ass;
 	
 	try {
+		String prjPath;
+		if (IsFullPath(K.Path))
+			prjPath = GetFileFolder(K.Path);
+		else
+			prjPath = GetFileFolder(curDir + K.Path);
+		
+		String prjPackage = GetFileName(prjPath);
+		String prjCP = GetFileDirectory(prjPath);
+		
 		ZPackage& mainPak = ass.AddPackage("main", "");
 		ZSource& source = mainPak.AddSource(K.Path);
 		
 		ZScanner scanner(source, true);
 		scanner.Scan();
-		
+			
 		ZCompiler compiler(ass);
+		compiler.SetMainFile(K.Path);
 		compiler.Compile();
+		
+		ZTranspiler cpp(ass, Cout());
 	}
 	catch (ZException e) {
 		Cout() << e.ToString() << "\n";
