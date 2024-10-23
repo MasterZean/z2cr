@@ -4,6 +4,7 @@ uses
 file
 	z2cr.h,
 	z2cr.cpp,
+	entities.h,
 	Assembly.h,
 	Assembly.cpp,
 	ZSource.h,

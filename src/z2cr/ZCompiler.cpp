@@ -17,7 +17,7 @@ bool ZCompiler::Compile() {
 			err << "Duplicate symbol: " << dupes.GetKey(i) << ", ";
 			err << "other occurrences at:\n";
 			for (int j = 1; j < list.GetCount(); j++)
-				err << "\t\t" <<list[j].ToString() << "\n";
+				err << "\t\t" << list[j].ToString() << "\n";
 			ErrorReporter::Duplicate(list[0], err);
 		}
 		return false;
@@ -75,6 +75,16 @@ bool ZCompiler::Traverse(ZNamespace& ns) {
 		if (valid)
 			d.Functions.Add(f);
 		f.DefPos.Source->Functions.Add(&f);
+	}
+	
+	for (int i = 0; i < ns.PreVariables.GetCount(); i++) {
+		ZVariable& f = ns.PreVariables[i];
+		
+		int index = dupes.Find(f.Name);
+		if (index != -1) {
+			Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
+			list.Add(f.DefPos);
+		}
 	}
 	
 	return true;

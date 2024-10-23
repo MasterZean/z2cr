@@ -55,6 +55,10 @@ public:
 	uint32 ReadChar();
 	ZParser::NumberType ReadInt64(int64& oInt, double& oDub, int& base);
 	
+	ZSourcePos GetFullPos() {
+		return ZSourcePos(source, GetPoint(), GetPos());
+	}
+	
 private:
 	ZSource& source;
 	

@@ -102,6 +102,23 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, CParser::Pos* tp) {
 		
 		return true;
 	}
+	else if (parser.Id("val")) {
+		ZSourcePos dp = parser.GetFullPos();
+		
+		String name = parser.ExpectId();
+		
+		ZVariable& f = nmspace->PrepareVariable(name);
+		f.DefPos = dp;
+		f.BackName = name;
+		
+		parser.Expect(':');
+				
+		parser.ExpectId();
+		
+		parser.ExpectEndStat();
+		
+		return true;
+	}
 	
 	return false;
 }
@@ -131,8 +148,7 @@ void ZScanner::ScanNamespace() {
 ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	ASSERT(nmspace);
 	
-	Point p = parser.GetPoint();
-	CParser::Pos dp = parser.GetPos();
+	ZSourcePos dp = parser.GetFullPos();
 	
 	String name;
 	String bname;
@@ -140,7 +156,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	if (parser.Char('@')) {
 		String s = parser.ExpectId();
 		if (s == "size")
-			parser.Error(p, "'@size' can't be overlaoded");
+			parser.Error(dp.P, "'@size' can't be overlaoded");
 		name = "@" + s;
 		bname = "_" + s;
 	}
@@ -155,7 +171,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	
 	ZFunction& f = nmspace->PrepareFunction(name);
 	f.IsFunction = aFunc;
-	f.DefPos = ZSourcePos(source, p, dp);
+	f.DefPos = dp;
 	f.ParamPos = pp;
 	f.BackName = bname;
 	
