@@ -3,6 +3,8 @@
 
 #include <z2cr/entities.h>
 
+class ZNamespace;
+
 class Assembly {
 public:
 	ArrayMap<String, ZNamespace> Namespaces;
@@ -43,6 +45,14 @@ public:
 		return Namespaces[0];
 	}
 	
+	ZNamespace& CoreNamespace() {
+		return Namespaces[1];
+	}
+	
+	ZNamespace& LangNamespace() {
+		return Namespaces[2];
+	}
+	
 	ZPackage& AddPackage(const String& aName, const String& aPath);
 	
 	ZSource* FindSource(const String& aName);
@@ -50,7 +60,7 @@ public:
 	void AddBuiltInClasses();
 	
 private:
-	ZClass* AddCoreType(const String& ns, const String& name, const String& backendName, bool num = false, bool integer = false, bool core = true);
+	ZClass* AddCoreType(ZNamespace& ns, const String& name, const String& backendName, bool num = false, bool integer = false, bool core = true);
 };
 
 #endif

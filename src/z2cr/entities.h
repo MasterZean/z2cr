@@ -16,6 +16,7 @@ enum class EntityType {
 	Unknown,
 	Variable,
 	Function,
+	Class,
 };
 
 class ZSourcePos: Moveable<ZSourcePos> {
@@ -38,8 +39,7 @@ public:
 
 class ZClassScanInfo {
 public:
-	String Name;
-	String Namespace;
+	//String Namespace;
 	WithDeepCopy<Vector<String>> TName;
 	
 	bool HasDefaultCons = false;
@@ -66,26 +66,6 @@ public:
 	ZFunction* MoreEq = nullptr;
 };
 
-class ZClass: Moveable<ZClass> {
-public:
-	ZClassScanInfo Scan;
-	ZClassMeth Meth;
-	String BackendName;
-	
-	ZClass* ParamType;
-	
-	bool CoreSimple = false;
-	bool IsDefined = true;
-
-	bool IsEvaluated = false;
-	
-	bool MIsNumeric = false;
-	bool MIsInteger = false;
-	bool MIsRawVec = false;
-	
-	int Index = -1;
-};
-
 class ZEntity {
 public:
 	String Name;
@@ -104,6 +84,29 @@ public:
 	
 private:
 	ZNamespace& nmsspace;
+};
+
+class ZClass: public ZEntity, Moveable<ZClass> {
+public:
+	ZClassScanInfo Scan;
+	ZClassMeth Meth;
+	
+	ZClass* ParamType;
+	
+	ZClass(ZNamespace& aNmspace): ZEntity(aNmspace) {
+		Type = EntityType::Class;
+	}
+	
+	bool CoreSimple = false;
+	bool IsDefined = true;
+
+	bool IsEvaluated = false;
+	
+	bool MIsNumeric = false;
+	bool MIsInteger = false;
+	bool MIsRawVec = false;
+	
+	int Index = -1;
 };
 
 class ZVariable: public ZEntity {
