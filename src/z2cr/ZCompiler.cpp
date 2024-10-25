@@ -28,21 +28,32 @@ bool ZCompiler::Compile() {
 		if (!src)
 			return false;
 		
-		ZFunction* f = FindMain(*src);
-		if (!f)
+		auto vf = FindMain(*src);
+		if (vf.GetCount() == 0)
 			return false;
+		else if (vf.GetCount() > 1) {
+			String err;
+			
+			err << "multiple '@main' function: other candidates found at: " << "\n";
+			for (int i = 1; i < vf.GetCount(); i++)
+				err << "\t\t" << vf[i]->DefPos.ToString() << "\n";
+			ErrorReporter::Duplicate(vf[0]->DefPos, err);
+			
+			return false;
+		}
 	}
 	else
 		return false;
 }
 
-ZFunction* ZCompiler::FindMain(ZSource& src) {
+Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
+	Vector<ZFunction*> mains;
 	for (int i = 0; i < src.Functions.GetCount(); i++) {
 		if (src.Functions[i]->Name == "@main")
-			return src.Functions[i];
+			mains.Add(src.Functions[i]);
 	}
 	
-	return nullptr;
+	return mains;
 }
 
 bool ZCompiler::Traverse(ZNamespace& ns) {

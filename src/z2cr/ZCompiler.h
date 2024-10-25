@@ -19,7 +19,7 @@ private:
 	String mainPath;
 	ArrayMap<String, Vector<ZSourcePos>> dupes;
 	
-	ZFunction* FindMain(ZSource& src);
+	Vector<ZFunction*> FindMain(ZSource& src);
 	
 	bool Traverse(ZNamespace& ns);
 };
