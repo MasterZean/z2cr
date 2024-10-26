@@ -13,6 +13,8 @@ file
 	ZParser.cpp,
 	ZScanner.h,
 	ZScanner.cpp,
+	ZExprParser.h,
+	ZExprParser.cpp,
 	ZCompiler.h,
 	ZCompiler.cpp,
 	ZTranspiler.h,

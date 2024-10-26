@@ -21,6 +21,9 @@ private:
 	
 	Vector<ZFunction*> FindMain(ZSource& src);
 	
+	bool Compile(ZNamespace& ns);
+	bool Compile(ZFunction& f);
+	
 	bool Traverse(ZNamespace& ns);
 };
 

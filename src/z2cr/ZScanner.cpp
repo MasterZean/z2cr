@@ -54,9 +54,8 @@ void ZScanner::Scan() {
 
 bool ZScanner::ScanDeclaration(AccessType accessType) {
 	if (parser.IsChar2('@', '[')) {
-		CParser::Pos tp = parser.GetPos();
+		ZSourcePos tp = parser.GetFullPos();
 		TraitLoop();
-		Point p2 = parser.GetPoint();
 		return ScanDeclarationLine(accessType, &tp);
 	}
 	
@@ -64,7 +63,7 @@ bool ZScanner::ScanDeclaration(AccessType accessType) {
 
 }
 
-bool ZScanner::ScanDeclarationLine(AccessType accessType, CParser::Pos* tp) {
+bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 	if (parser.Id("def")) {
 		Vector<ZFunction*> funcs;
 		do {
@@ -75,7 +74,7 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, CParser::Pos* tp) {
 			funcs.Add(&f);
 		} while (parser.Char(','));
 		
-		CParser::Pos bp = parser.GetPos();
+		ZSourcePos bp = parser.GetFullPos();
 		ScanBlock();
 		
 		for (int i = 0; i < funcs.GetCount(); i++)
@@ -94,7 +93,7 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, CParser::Pos* tp) {
 			funcs.Add(&f);
 		} while (parser.Char(','));
 		
-		CParser::Pos bp = parser.GetPos();
+		ZSourcePos bp = parser.GetFullPos();
 		ScanBlock();
 		
 		for (int i = 0; i < funcs.GetCount(); i++)
@@ -165,7 +164,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 		bname = name;
 	}
 	
-	CParser::Pos pp = parser.GetPos();
+	ZSourcePos pp = parser.GetFullPos();
 	parser.Expect('(');
 	parser.Expect(')');
 	

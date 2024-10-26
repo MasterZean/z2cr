@@ -20,6 +20,11 @@ public:
 		NestComments();
 		Set(aSource.Content());
 	}
+	
+	ZParser(ZSourcePos& aPos): source(*aPos.Source) {
+		NestComments();
+		SetPos(aPos.Pos);
+	}
 			
 	Point GetPoint() {
 		return Point(GetLine(), GetPos().GetColumn());

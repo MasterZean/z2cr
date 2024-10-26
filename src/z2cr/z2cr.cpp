@@ -95,6 +95,8 @@ CONSOLE_APP_MAIN {
 		
 		ZScanner scanner(source, true);
 		scanner.Scan();
+		
+		ZExprParser::Initialize();
 			
 		ZCompiler compiler(ass);
 		compiler.SetMainFile(K.Path);

@@ -38,7 +38,7 @@ protected:
 	void InterpretTrait(const String& trait);
 	void TraitLoop();
 	
-	bool ScanDeclarationLine(AccessType accessType, CParser::Pos* tp = nullptr);
+	bool ScanDeclarationLine(AccessType accessType, ZSourcePos* tp = nullptr);
 };
 
 #endif

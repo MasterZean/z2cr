@@ -44,6 +44,11 @@ bool ZCompiler::Compile() {
 	}
 	else
 		return false;
+	
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
+		Compile(ass.Namespaces[i]);
+	
+	return true;
 }
 
 Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
@@ -56,6 +61,37 @@ Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
 	return mains;
 }
 
+bool ZCompiler::Compile(ZNamespace& ns) {
+	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
+		ZDefinition& d = ns.Definitions[i];
+		
+		for (int j = 0; j < d.Functions.GetCount(); j++) {
+			ZFunction& f = *d.Functions[j];
+			
+			Compile(f);
+		}
+	}
+	
+	return true;
+}
+
+bool ZCompiler::Compile(ZFunction& f) {
+	ZParser parser(f.BodyPos);
+	
+	parser.Expect('{');
+	
+	while (!parser.IsChar('}')) {
+		ZExprParser ep(parser);
+		ep.Parse();
+		
+		parser.ExpectEndStat();
+	}
+	
+	parser.Expect('}');
+	
+	return true;
+}
+
 bool ZCompiler::Traverse(ZNamespace& ns) {
 	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
 		ZFunction& f = ns.PreFunctions[i];
@@ -66,7 +102,7 @@ bool ZCompiler::Traverse(ZNamespace& ns) {
 		bool valid = true;
 			
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
-			ZFunction& g = d.Functions[j];
+			ZFunction& g = *d.Functions[j];
 			if (g.DupSig() == f.DupSig()) {
 				int index = dupes.Find(f.Name);
 				if (index == -1) {
@@ -84,7 +120,7 @@ bool ZCompiler::Traverse(ZNamespace& ns) {
 		}
 		
 		if (valid)
-			d.Functions.Add(f);
+			d.Functions.Add(&f);
 		f.DefPos.Source->Functions.Add(&f);
 	}
 	

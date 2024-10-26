@@ -121,9 +121,9 @@ public:
 	bool IsFunction = false;
 	bool InClass = false;
 	
-	CParser::Pos TraitPos;
-	CParser::Pos ParamPos;
-	CParser::Pos BodyPos;
+	ZSourcePos TraitPos;
+	ZSourcePos ParamPos;
+	ZSourcePos BodyPos;
 	
 	ZFunction(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Function;
@@ -141,7 +141,7 @@ private:
 
 class ZDefinition {
 public:
-	Array<ZFunction> Functions;
+	Array<ZFunction*> Functions;
 };
 
 class ZNamespace {
