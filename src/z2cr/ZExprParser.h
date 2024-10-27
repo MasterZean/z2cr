@@ -3,19 +3,21 @@
 
 class ZExprParser {
 public:
-	ZExprParser(ZParser& aPos): parser(aPos) {
+	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.GetAssembly()) {
 	}
 	
 	static void Initialize();
 	
-	void Parse();
+	Node* Parse();
 	
-	void ParseAtom();
+	Node* ParseAtom();
 	
-	void ParseNumeric();
+	Node* ParseNumeric();
 	
 private:
+	Assembly& ass;
 	ZParser& parser;
+	IR& irg;
 	
 	static Point OPS[256];
 	static bool OPCONT[256];

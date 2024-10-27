@@ -1,28 +1,22 @@
 #include "z2cr.h"
 
-void ZExprParser::Parse() {
-	ParseAtom();
+Node* ZExprParser::Parse() {
+	return ParseAtom();
 }
 
-void ZExprParser::ParseAtom() {
+Node* ZExprParser::ParseAtom() {
 	Point opp = parser.GetPoint();
 
 	if (parser.IsInt())
-		/*exp = */ParseNumeric();
+		return ParseNumeric();
 	else {
 		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
-		return;
+		return nullptr;
 	}
 }
 
-void ZExprParser::ParseNumeric() {
-	int64 oInt;
-	double oDub;
-	
-	int base = 10;
-	int type = parser.ReadInt64(oInt, oDub, base);
-	
-	/*Node* exp = nullptr;
+Node* ZExprParser::ParseNumeric() {
+	Node* exp = nullptr;
 	
 	int64 oInt;
 	double oDub;
@@ -53,7 +47,7 @@ void ZExprParser::ParseNumeric() {
 	else
 		ASSERT_(0, "Error in parse int");
 
-	return exp;*/
+	return exp;
 }
 
 void ZExprParser::Initialize() {

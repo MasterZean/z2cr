@@ -81,7 +81,7 @@ bool ZCompiler::Compile(ZFunction& f) {
 	parser.Expect('{');
 	
 	while (!parser.IsChar('}')) {
-		ZExprParser ep(parser);
+		ZExprParser ep(parser, irg);
 		ep.Parse();
 		
 		parser.ExpectEndStat();

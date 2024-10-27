@@ -3,7 +3,7 @@
 
 class ZCompiler {
 public:
-	ZCompiler(Assembly& aAss): ass(aAss) {
+	ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 	}
 	
 	bool Compile();
@@ -17,6 +17,7 @@ public:
 private:
 	Assembly& ass;
 	String mainPath;
+	IR irg;
 	ArrayMap<String, Vector<ZSourcePos>> dupes;
 	
 	Vector<ZFunction*> FindMain(ZSource& src);

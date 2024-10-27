@@ -5,6 +5,7 @@ class ZNamespace;
 class ZPackage;
 class ZFunction;
 class ZSource;
+class ZClass;
 
 enum class AccessType {
 	Public,
@@ -17,6 +18,44 @@ enum class EntityType {
 	Variable,
 	Function,
 	Class,
+};
+
+class ObjectType {
+public:
+	ZClass* Class = nullptr;
+	ObjectType* Next = nullptr;
+	int Param = 0;
+	
+	ObjectType() {
+	}
+	
+	ObjectType(ZClass& cls): Class(&cls) {
+	}
+};
+
+class ObjectInfo: Moveable<ObjectInfo> {
+public:
+	ObjectType Tt;
+	ZClass* C1 = nullptr;
+	ZClass* C2 = nullptr;
+	
+	bool IsTemporary = false;
+	bool IsConst = false;
+	
+	ObjectInfo() = default;
+	
+	ObjectInfo(ZClass* cls) {
+		Tt.Class = cls;
+	}
+	
+	ObjectInfo(ZClass* cls, bool ref) {
+		Tt.Class = cls;
+		//IsRef = ref;
+	}
+	
+	ObjectInfo(ObjectType* tt) {
+		Tt = *tt;
+	}
 };
 
 class ZSourcePos: Moveable<ZSourcePos> {
@@ -91,6 +130,7 @@ public:
 	ZClassScanInfo Scan;
 	ZClassMeth Meth;
 	
+	ObjectType Tt;
 	ZClass* ParamType;
 	
 	ZClass(ZNamespace& aNmspace): ZEntity(aNmspace) {

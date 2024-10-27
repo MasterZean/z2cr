@@ -135,7 +135,7 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	typeCls.IsDefined = false;
 	typeCls.Index = type;
 	typeCls.ParamType = &typeCls;
-	//typeCls.Tt.Class = &typeCls;
+	typeCls.Tt.Class = &typeCls;
 
 	return &typeCls;
 }

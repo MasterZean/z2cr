@@ -12,6 +12,8 @@ using namespace Upp;
 #include <z2cr/ZParser.h>
 #include <z2cr/ZScanner.h>
 #include <z2cr/ZTranspiler.h>
+#include <z2cr/ZNode.h>
+#include <z2cr/ZIR.h>
 #include <z2cr/ZExprParser.h>
 #include <z2cr/ZCompiler.h>
 #include <z2cr/BuildMethod.h>
