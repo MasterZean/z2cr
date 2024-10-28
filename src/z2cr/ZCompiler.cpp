@@ -48,6 +48,12 @@ bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
 	
+	ZTranspiler cpp(ass, Cout());
+	
+	cpp.WriteIntro();
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
+		Transpile(cpp, ass.Namespaces[i]);
+	
 	return true;
 }
 
@@ -82,12 +88,36 @@ bool ZCompiler::Compile(ZFunction& f) {
 	
 	while (!parser.IsChar('}')) {
 		ZExprParser ep(parser, irg);
-		ep.Parse();
+		Node* node = ep.Parse();
+		
+		f.AddNode(node);
 		
 		parser.ExpectEndStat();
 	}
 	
 	parser.Expect('}');
+	
+	return true;
+}
+
+bool ZCompiler::Transpile(ZTranspiler& cpp, ZNamespace& ns){
+	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
+		ZDefinition& d = ns.Definitions[i];
+		
+		for (int j = 0; j < d.Functions.GetCount(); j++) {
+			ZFunction& f = *d.Functions[j];
+			
+			Transpile(cpp, f);
+		}
+	}
+	
+	return true;
+}
+
+bool ZCompiler::Transpile(ZTranspiler& cpp, ZFunction& f) {
+	cpp.WriteFunctionDecl(f);
+	
+	cpp.WriteFunctionBody(f.Nodes);
 	
 	return true;
 }

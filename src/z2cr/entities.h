@@ -58,6 +58,89 @@ public:
 	}
 };
 
+class NodeType {
+public:
+	enum Type {
+		Invalid,
+		Const,
+		BinaryOp,
+		UnaryOp,
+		Memory,
+		Cast,
+		Temporary,
+		Def,
+		List,
+		Construct,
+		Ptr,
+		Index,
+		SizeOf,
+		Destruct,
+		Property,
+		Deref,
+		Intrinsic,
+		Return,
+		Var,
+		Alloc,
+		Array,
+		Using,
+	};
+};
+
+class Node: public ObjectInfo {
+public:
+	Node* Next = nullptr;
+	Node* Prev = nullptr;
+	Node* First = nullptr;
+	Node* Last = nullptr;
+
+	NodeType::Type NT = NodeType::Invalid;
+	
+	bool IsCT = false;
+	bool IsLiteral = false;
+	bool IsSymbolic = false;
+	bool HasSe = false;
+	bool LValue = false;
+	
+	double DblVal = 0;
+	int64  IntVal = 0;
+
+	void SetType(ObjectType* type, ZClass* efType, ZClass* sType) {
+		Tt = *type;
+		C1 = efType;
+		C2 = sType;
+	}
+
+	void SetType(ObjectType* type) {
+		Tt = *type;
+		C1 = type->Class;
+		C2 = nullptr;
+	}
+
+	void SetType(ObjectType type) {
+		Tt = type;
+		C1 = type.Class;
+		C2 = nullptr;
+	}
+	
+		void SetValue(int i, double d) {
+		IntVal = i;
+		DblVal = d;
+	}
+
+	void Add(Node* node) {
+		if (First == NULL) {
+			First = node;
+			Last = node;
+		}
+		else {
+			node->Prev = Last;
+			Last->Next = node;
+
+			Last =  node;
+		}
+	}
+};
+
 class ZSourcePos: Moveable<ZSourcePos> {
 public:
 	ZSource* Source = nullptr;
@@ -165,6 +248,8 @@ public:
 	ZSourcePos ParamPos;
 	ZSourcePos BodyPos;
 	
+	Vector<Node*> Nodes;
+	
 	ZFunction(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Function;
 	}
@@ -173,6 +258,10 @@ public:
 	
 	const String& DupSig() const {
 		return dsig;
+	}
+	
+	void AddNode(Node* node) {
+		Nodes.Add(node);
 	}
 	
 private:
