@@ -64,6 +64,42 @@ public:
 	ConstNode* const_u(uint64 l, ZClass* cls = nullptr, int base = 10);
 	ConstNode* const_r32(double l);
 	ConstNode* const_r64(double l);
+	
+	Node* opArit(Node* left, Node* right, OpNode::Type op, const Point& p);
+	Node* opRel(Node* left, Node* right, OpNode::Type op, const Point& p);
+	Node* opLog(Node* left, Node* right, OpNode::Type op);
+	
+	Node* op_bitand(Node* left, Node* right);
+	Node* op_bitor(Node* left, Node* right);
+	Node* op_bitxor(Node* left, Node* right);
+			
+	Node* op_shl(Node* left, Node* right, const Point& p);
+	Node* op_shr(Node* left, Node* right, const Point& p);
+	
+	Node* deref(Node* node);
+	
+	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
+		if (op <= OpNode::opMod)
+			return opArit(left, right, op, p);
+		/*else if (op <= OpNode::opShl)
+			return op_shl(left, right, p);
+		else if (op <= OpNode::opShr)
+			return op_shr(left, right, p);
+		else if (op <= OpNode::opNeq)
+			return opRel(left, right, op, p);
+		else if (op <= OpNode::opBitAnd)
+			return op_bitand(left, right);
+		else if (op <= OpNode::opBitXor)
+			return op_bitxor(left, right);
+		else if (op <= OpNode::opBitOr)
+			return op_bitor(left, right);
+		else if (op <= OpNode::opLogOr)
+			return opLog(left, right, op);*/
+		else {
+			ASSERT(0);
+			return nullptr;
+		}
+	}
 };
 
 #endif

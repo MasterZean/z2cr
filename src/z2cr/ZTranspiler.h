@@ -55,6 +55,13 @@ public:
 	void WriteFunctionBody(Vector<Node*>& nodes);
 	
 	void Walk(ConstNode& node, Stream& stream);
+	void Walk(OpNode& node);
+	
+	void Walk(Node* node);
+	
+	virtual void WalkNode(Node* node) {
+		Walk(node);
+	}
 };
 
 #endif

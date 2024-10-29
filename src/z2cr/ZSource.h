@@ -27,6 +27,10 @@ public:
 		return pak;
 	}
 	
+	const ZPackage& Package() const {
+		return pak;
+	}
+	
 private:
 	ZPackage& pak;
 	

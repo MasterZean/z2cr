@@ -5,6 +5,7 @@ file
 	z2cr.h,
 	z2cr.cpp,
 	entities.h,
+	Node.cpp,
 	Assembly.h,
 	Assembly.cpp,
 	ZSource.h,

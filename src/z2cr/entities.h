@@ -1,6 +1,7 @@
 #ifndef _z2cr_entities_h_
 #define _z2cr_entities_h_
 
+class Assembly;
 class ZNamespace;
 class ZPackage;
 class ZFunction;
@@ -98,8 +99,13 @@ public:
 	bool IsCT = false;
 	bool IsLiteral = false;
 	bool IsSymbolic = false;
+	
 	bool HasSe = false;
 	bool LValue = false;
+	
+	bool IsRef = false;
+	bool IsAddressable = false;
+	bool IsIndirect = false;
 	
 	double DblVal = 0;
 	int64  IntVal = 0;
@@ -139,6 +145,9 @@ public:
 			Last =  node;
 		}
 	}
+	
+	bool IsZero(Assembly& ass);
+	void PromoteToFloatValue(Assembly& ass);
 };
 
 class ZSourcePos: Moveable<ZSourcePos> {

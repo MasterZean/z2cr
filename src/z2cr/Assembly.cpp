@@ -140,4 +140,35 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	return &typeCls;
 }
 
-
+String Assembly::ClassToString(ObjectInfo* type, bool qual) {
+	String s;
+	
+	/*if (type->Tt.Class->MIsRawVec) {
+		s << "CArray<" << type->Tt.Class->T->Scan.Name;
+		if (type->Tt.Param != -1)
+			s << ", " << type->Tt.Param;
+		s << ">";
+	}
+	else {
+		int count = 0;
+		if (type->Tt.Class->Scan.Name == "org.z2legacy.ut.container.vector.WithPrivateConstructor03")
+			type->Tt.Class->Scan.Name == "";
+		int ii = ClassCounts.Find(type->Tt.Class->Scan.Name);
+		if (ii != -1)
+			count = ClassCounts[ii];
+		
+		if (count > 1)
+			s << type->Tt.Class->Scan.Namespace;
+		s << type->Tt.Class->Scan.Name;
+		if (qual && type->Tt.Next) {
+			s << '<' << type->Tt.Next->Class->Scan.Name;
+			if (type->Tt.Param)
+				s << ", " << IntStr(type->Tt.Param);
+			s << '>';
+		}
+	}*/
+	
+	s << type->Tt.Class->Name;
+	
+	return s;
+}

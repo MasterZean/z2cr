@@ -1,5 +1,7 @@
 #include "z2cr.h"
 
+extern String opss[];
+
 void ZTranspiler::WriteIntro() {
 	NL();
 	cs << "#include \"z2stdcompat.h\"";
@@ -24,7 +26,7 @@ void ZTranspiler::WriteFunctionBody(Vector<Node*>& nodes) {
 	
 	for (int i = 0; i < nodes.GetCount(); i++) {
 		NL();
-		Walk((ConstNode&)*nodes[i], cs);
+		Walk(nodes[i]);
 		ES();
 	}
 	
@@ -36,6 +38,52 @@ void ZTranspiler::WriteFunctionBody(Vector<Node*>& nodes) {
 	
 	NL();
 	EL();
+}
+
+void ZTranspiler::Walk(Node* node) {
+	ASSERT_(node, "Null node");
+	if (node->NT == NodeType::Const)
+		Walk(*(ConstNode*)node, cs);
+	else if (node->NT == NodeType::BinaryOp)
+		Walk(*(OpNode*)node);
+	/*else if (node->NT == NodeType::UnaryOp)
+		Walk((UnaryOpNode*)node);
+	else if (node->NT == NodeType::Memory)
+		Walk((MemNode*)node);
+	else if (node->NT == NodeType::Cast)
+		Walk((CastNode*)node);
+	else if (node->NT == NodeType::Temporary)
+		Walk((TempNode*)node);
+	else if (node->NT == NodeType::Def)
+		Walk((DefNode*)node);
+	else if (node->NT == NodeType::List)
+		Walk((ListNode*)node);
+	else if (node->NT == NodeType::Construct)
+		Walk((ConstructNode*)node);
+	else if (node->NT == NodeType::Ptr)
+		Walk((PtrNode*)node);
+	else if (node->NT == NodeType::Index)
+		Walk((IndexNode*)node);
+	else if (node->NT == NodeType::SizeOf)
+		Walk((SizeOfNode*)node);
+	else if (node->NT == NodeType::Property)
+		Walk((PropertyNode*)node);
+	else if (node->NT == NodeType::Deref)
+		Walk((DerefNode*)node);
+	else if (node->NT == NodeType::Intrinsic)
+		Walk((IntNode*)node);
+	else if (node->NT == NodeType::Return)
+		Walk((ReturnNode*)node);
+	else if (node->NT == NodeType::Var)
+		Walk((VarNode*)node);
+	else if (node->NT == NodeType::Alloc)
+		Walk((AllocNode*)node);
+	else if (node->NT == NodeType::Array)
+		Walk((RawArrayNode*)node);
+	else if (node->NT == NodeType::Using)
+		Walk((UsingNode*)node);*/
+	else
+		ASSERT_(0, "Invalid node");
 }
 
 void ZTranspiler::Walk(ConstNode& node, Stream& stream)
@@ -157,3 +205,18 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 		stream << '\'';
 	}
 }
+
+void ZTranspiler::Walk(OpNode& node) {
+	Node *l = node.OpA;
+	Node *r = node.OpB;
+	ASSERT(l);
+	ASSERT(r);
+	
+	Walk(l);
+	cs << ' ' << opss[node.Op];
+	if (node.Assign)
+		cs << '=';
+	cs << ' ';
+	Walk(r);
+}
+

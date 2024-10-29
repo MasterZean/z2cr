@@ -59,6 +59,20 @@ public:
 	
 	void AddBuiltInClasses();
 	
+	bool IsNumeric(const ObjectType& type) const {
+		return type.Class->MIsNumeric;
+	}
+	
+	bool IsInteger(const ObjectType& type) const {
+		return type.Class->MIsInteger;
+	}
+
+	bool IsPtr(const ObjectType& ot) {
+		return ot.Class == CPtr;
+	}
+	
+	String ClassToString(ObjectInfo* type, bool qual = true);
+	
 private:
 	ZClass* AddCoreType(ZNamespace& ns, const String& name, const String& backendName, bool num = false, bool integer = false, bool core = true);
 };

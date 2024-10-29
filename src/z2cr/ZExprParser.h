@@ -10,14 +10,20 @@ public:
 	
 	Node* Parse();
 	
+	Node* ParseBin(int prec, Node* left, CParser::Pos& backupPoint);
 	Node* ParseAtom();
-	
 	Node* ParseNumeric();
 	
 private:
 	Assembly& ass;
 	ZParser& parser;
 	IR& irg;
+	
+	int GetPriority(int& op, bool& opc);
+	
+	void IncompatOp(const ZSource& src, Point& p, const String& op, Node* left, Node* right) {
+		ErrorReporter::ErrIncompatOp(src, p, op, ass.ClassToString(left), ass.ClassToString(right));
+	}
 	
 	static Point OPS[256];
 	static bool OPCONT[256];
