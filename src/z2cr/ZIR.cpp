@@ -608,3 +608,243 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 	
 	return node;
 }
+
+Node* IR::op_shl(Node* left, Node* right, const Point& p) {
+	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
+	
+	if (!n)  {
+		// TODO: fix
+		ASSERT(0);
+		//return GetOp(Over, strops[5], left, right, ass, this, *Comp, p);
+	}
+	
+	bool cst = false;
+
+	int t1 = left->Tt.Class->Index - 4;
+	int t2 = right->Tt.Class->Index - 4;
+	ASSERT(t1 >= 0 && t1 <= 13);
+	ASSERT(t2 >= 0 && t2 <= 13);
+	int t = tabSft[t1][t2] + 4;
+
+	cst = left->IsCT && right->IsCT;
+	ObjectType* e = &ass.Classes[t].Tt;
+	if (cst) {
+		if (e->Class == ass.CByte || e->Class == ass.CWord || e->Class == ass.CDWord) {
+			uint32 dInt = (uint32)left->IntVal << (uint32)right->IntVal;
+			if (FoldConstants)	{
+				Node* fold = const_i(dInt);
+				fold->Tt = ass.CDWord->Tt;
+				return fold;
+			}
+		}
+		else if (e->Class == ass.CSmall || e->Class == ass.CShort || e->Class == ass.CInt) {
+			int dInt = (int32)left->IntVal << (int32)right->IntVal;
+			if (FoldConstants)
+				return const_i(dInt);
+		}
+		else
+			ASSERT_(0, "shl");
+	}
+
+	OpNode* node = opNodes.Get();
+
+	node->OpA = left->IsIndirect ? deref(left) : left;
+	node->OpB = right->IsIndirect ? deref(right) : right;
+	node->Op = OpNode::opShl;
+
+	node->IsConst = cst;
+	node->IsCT = cst;
+	node->SetType(e);
+	node->DblVal = 0;
+	ASSERT(node->Tt.Class);
+	
+	return node;
+}
+
+Node* IR::op_shr(Node* left, Node* right, const Point& p) {
+	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
+	
+	if (!n)  {
+		// TODO: fix
+		ASSERT(0);
+		//return GetOp(Over, strops[6], left, right, ass, this, *Comp, p);
+	}
+
+	int t1 = left->Tt.Class->Index - 4;
+	int t2 = right->Tt.Class->Index - 4;
+	ASSERT(t1 >= 0 && t1 <= 13);
+	ASSERT(t2 >= 0 && t2 <= 13);
+	int t = tabSft[t1][t2] + 4;
+
+	bool cst = left->IsCT && right->IsCT;
+	ObjectType* e = &ass.Classes[t].Tt;
+	if (cst) {
+		if (e->Class == ass.CByte || e->Class == ass.CWord || e->Class == ass.CDWord) {
+			uint32 dInt = (uint32)left->IntVal >> (uint32)right->IntVal;
+			
+			if (FoldConstants)	{
+				Node* fold = const_i(dInt);
+				fold->Tt = ass.CDWord->Tt;
+				
+				return fold;
+			}
+		}
+		else if (e->Class == ass.CSmall || e->Class == ass.CShort || e->Class == ass.CInt) {
+			int dInt = (int32)left->IntVal >> (int32)right->IntVal;
+			
+			if (FoldConstants)
+				return const_i(dInt);
+		}
+		else
+			ASSERT_(0, "shr");
+	}
+
+	OpNode* node = opNodes.Get();
+
+	node->OpA = left;
+	node->OpB = right;
+	node->Op = OpNode::opShr;
+
+	node->IsConst = cst;
+	node->IsCT = cst;
+	node->SetType(e);
+	node->DblVal = 0;
+	ASSERT(node->Tt.Class);
+	
+	return node;
+}
+
+Node* IR::op_bitand(Node* left, Node* right) {
+	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
+	if (!n || left->Tt.Class == ass.CFloat || left->Tt.Class == ass.CDouble
+			|| right->Tt.Class == ass.CFloat || right->Tt.Class == ass.CDouble)
+		return NULL;
+
+	int t1 = left->Tt.Class->Index - 4;
+	int t2 = right->Tt.Class->Index - 4;
+	ASSERT(t1 >= 0 && t1 <= 13);
+	ASSERT(t2 >= 0 && t2 <= 13);
+	int t = tabAdd[t1][t2] + 4;
+
+	bool cst = left->IsCT && right->IsCT;
+	ObjectType* e = &ass.Classes[t].Tt;
+	if (cst) {
+		if (e->Class == ass.CByte || e->Class == ass.CWord || e->Class == ass.CDWord) {
+			uint32 dInt = (uint32)left->IntVal & (uint32)right->IntVal;
+			if (FoldConstants)	{
+				Node* fold = const_i(dInt);
+				fold->Tt = ass.CDWord->Tt;
+				return fold;
+			}
+		}
+		else if (e->Class == ass.CSmall || e->Class == ass.CShort || e->Class == ass.CInt) {
+			int dInt = (int32)left->IntVal & (int32)right->IntVal;
+			if (FoldConstants)
+				return const_i(dInt);
+		}
+		else
+			ASSERT_(0, "bitand");
+	}
+
+	OpNode* node = opNodes.Get();
+
+	node->OpA = left;
+	node->OpB = right;
+	node->Op = OpNode::opBitAnd;
+
+	node->IsCT = cst;
+	node->SetType(e);
+	node->DblVal = 0;
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
+Node* IR::op_bitor(Node* left, Node* right) {
+	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
+	if (!n || left->Tt.Class == ass.CFloat || left->Tt.Class == ass.CDouble
+			|| right->Tt.Class == ass.CFloat || right->Tt.Class == ass.CDouble)
+		return NULL;
+
+	int t1 = left->Tt.Class->Index - 4;
+	int t2 = right->Tt.Class->Index - 4;
+	ASSERT(t1 >= 0 && t1 <= 13);
+	ASSERT(t2 >= 0 && t2 <= 13);
+	int t = tabAdd[t1][t2] + 4;
+
+	bool cst = left->IsCT && right->IsCT;
+	ObjectType* e = &ass.Classes[t].Tt;
+	if (cst) {
+		if (e->Class == ass.CByte || e->Class == ass.CWord || e->Class == ass.CDWord) {
+			uint32 dInt = (uint32)left->IntVal | (uint32)right->IntVal;
+			if (FoldConstants)	{
+				Node* fold = const_i(dInt);
+				fold->Tt = ass.CDWord->Tt;
+				return fold;
+			}
+		}
+		else if (e->Class == ass.CSmall || e->Class == ass.CShort || e->Class == ass.CInt) {
+			int dInt = (int32)left->IntVal | (int32)right->IntVal;
+			if (FoldConstants)
+				return const_i(dInt);
+		}
+		else
+			ASSERT_(0, "bitor");
+	}
+
+	OpNode* node = opNodes.Get();
+
+	node->OpA = left;
+	node->OpB = right;
+	node->Op = OpNode::opBitOr;
+
+	node->IsCT = cst;
+	node->SetType(e);
+	node->DblVal = 0;
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
+Node* IR::op_bitxor(Node* left, Node* right) {
+	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
+	if (!n || left->Tt.Class == ass.CFloat || left->Tt.Class == ass.CDouble
+			|| right->Tt.Class == ass.CFloat || right->Tt.Class == ass.CDouble)
+		return NULL;
+
+	int t1 = left->Tt.Class->Index - 4;
+	int t2 = right->Tt.Class->Index - 4;
+	ASSERT(t1 >= 0 && t1 <= 13);
+	ASSERT(t2 >= 0 && t2 <= 13);
+	int t = tabAdd[t1][t2] + 4;
+
+	bool cst = left->IsCT && right->IsCT;
+	ObjectType* e = &ass.Classes[t].Tt;
+	if (cst) {
+		if (e->Class == ass.CByte || e->Class == ass.CWord || e->Class == ass.CDWord) {
+			uint32 dInt = (uint32)left->IntVal ^ (uint32)right->IntVal;
+			if (FoldConstants)	{
+				Node* fold = const_i(dInt);
+				fold->Tt = ass.CDWord->Tt;
+				return fold;
+			}
+		}
+		else if (e->Class == ass.CSmall || e->Class == ass.CShort || e->Class == ass.CInt) {
+			int dInt = (int32)left->IntVal ^ (int32)right->IntVal;
+			if (FoldConstants)
+				return const_i(dInt);
+		}
+		else
+			ASSERT_(0, "bitxor");
+	}
+
+	OpNode* node = opNodes.Get();
+
+	node->OpA = left;
+	node->OpB = right;
+	node->Op = OpNode::opBitXor;
+
+	node->IsCT = cst;
+	node->SetType(e);
+	node->DblVal = 0;
+	ASSERT(node->Tt.Class);
+	return node;
+}

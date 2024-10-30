@@ -81,19 +81,19 @@ public:
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)
 			return opArit(left, right, op, p);
-		/*else if (op <= OpNode::opShl)
+		else if (op <= OpNode::opShl)
 			return op_shl(left, right, p);
 		else if (op <= OpNode::opShr)
 			return op_shr(left, right, p);
-		else if (op <= OpNode::opNeq)
-			return opRel(left, right, op, p);
+		/*else if (op <= OpNode::opNeq)
+			return opRel(left, right, op, p);*/
 		else if (op <= OpNode::opBitAnd)
 			return op_bitand(left, right);
 		else if (op <= OpNode::opBitXor)
 			return op_bitxor(left, right);
 		else if (op <= OpNode::opBitOr)
 			return op_bitor(left, right);
-		else if (op <= OpNode::opLogOr)
+		/*else if (op <= OpNode::opLogOr)
 			return opLog(left, right, op);*/
 		else {
 			ASSERT(0);
