@@ -11,6 +11,16 @@ public:
 	}
 };
 
+class CastNode: public Node {
+public:
+	Node* Object = nullptr;
+	bool Ptr = false;
+	
+	CastNode() {
+		NT = NodeType::Cast;
+	}
+};
+
 class OpNode: public Node {
 public:
 	enum Type {

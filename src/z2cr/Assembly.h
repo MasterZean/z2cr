@@ -71,6 +71,13 @@ public:
 		return ot.Class == CPtr;
 	}
 	
+	bool IsSignedInt(ObjectType* type) const;
+	bool IsSignedInt(const ObjectType& type) const;
+	bool IsFloat(ObjectType* type) const;
+	bool IsFloat(const ObjectType& type) const;
+	bool IsUnsignedInt(ObjectType* type) const;
+	bool IsUnsignedInt(const ObjectType& type) const;
+	
 	String ClassToString(ObjectInfo* type, bool qual = true);
 	
 private:

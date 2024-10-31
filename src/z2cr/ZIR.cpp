@@ -187,6 +187,63 @@ ConstNode* IR::const_r64(double l) {
 	return node;
 }
 
+ConstNode* IR::const_char(int l, int base) {
+	ConstNode* node = constNodes.Get();
+	
+	if (l < 128)
+		node->SetType(&ass.CChar->Tt, ass.CByte, ass.CSmall);
+	else if (l < 256)
+		node->SetType(&ass.CChar->Tt, ass.CByte, nullptr);
+	else
+		node->SetType(&ass.CChar->Tt, ass.CChar, nullptr);
+	
+	node->IsConst = true;
+	node->IsLiteral = true;
+	node->IsCT = true;
+	node->IntVal = l;
+	node->Base = base;
+	node->IsTemporary = true;
+	
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
+ConstNode* IR::const_bool(bool l) {
+	ConstNode* node = constNodes.Get();
+	
+	node->SetType(ass.CBool->Tt);
+	node->IsConst = true;
+	node->IsLiteral = true;
+	node->IsCT = true;
+	node->IntVal = l;
+	node->IsTemporary = true;
+	ASSERT(node->Tt.Class);
+	
+	return node;
+}
+
+ConstNode* IR::const_void() {
+	ConstNode* node = constNodes.Get();
+	node->SetType(ass.CVoid->Tt);
+	node->IsConst = true;
+	node->IsLiteral = true;
+	node->IsCT = true;
+	
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
+ConstNode* IR::const_null() {
+	ConstNode* node = constNodes.Get();
+	node->SetType(ass.CNull->Tt);
+	node->IsConst = true;
+	node->IsLiteral = true;
+	node->IsCT = true;
+	
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
 Node* IR::deref(Node* node) {
 	// TODO fix
 	return node;
@@ -609,6 +666,223 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 	return node;
 }
 
+Node* IR::opRel(Node* left, Node* right, OpNode::Type op, const Point& p) {
+	Node* l = (left->IsIndirect) ? deref(left) : left;
+	Node* r = (right->IsIndirect) ? deref(right) : right;
+
+	if (l->Tt.Class->Scan.IsEnum && r->Tt.Class->Scan.IsEnum && l->Tt.Class == r->Tt.Class) {
+		l = cast(l, &ass.CInt->Tt);
+		r = cast(r, &ass.CInt->Tt);
+	}
+
+	bool valid = false;
+	
+	if ((op == OpNode::opEq || op == OpNode::opNeq) && left->Tt.Class == ass.CCls && right->Tt.Class == ass.CCls)
+		return const_bool(left->IntVal == right->IntVal);
+	/*else if (testOpRel(ass, l, r, op) == false) {
+		Node* over = GetOp(Over, strops[op], l, r, ass, this, *Comp, p);
+		if (over == nullptr) {
+			if (op == OpNode::opLess)
+				return GetOp(Over, strops[OpNode::opMore], r, l, ass, this, *Comp, p);
+			else if (op == OpNode::opLessEq)
+				return GetOp(Over, strops[OpNode::opMoreEq], r, l, ass, this, *Comp, p);
+			else if (op == OpNode::opMore)
+				return GetOp(Over, strops[OpNode::opLess], r, l, ass, this, *Comp, p);
+			else if (op == OpNode::opMoreEq)
+				return GetOp(Over, strops[OpNode::opLessEq], r, l, ass, this, *Comp, p);
+			else
+				return nullptr;
+		}
+		else
+			return over;
+	}*/
+	
+	valid = left->Tt.Class == ass.CPtr && right->Tt.Class == ass.CPtr;
+	valid = valid || (left->Tt.Class == ass.CPtr && right->Tt.Class == ass.CNull);
+	valid = valid || (left->Tt.Class == ass.CNull && right->Tt.Class == ass.CPtr);
+
+	left = l;
+	right = r;
+
+	bool cst = left->IsCT && right->IsCT;
+	bool b;
+
+	if (valid) {
+		OpNode* node = opNodes.Get();
+
+		node->OpA = left;
+		node->OpB = right;
+		node->Op = op;
+
+		node->IsConst = cst;
+		node->IsCT = cst;
+		node->SetType(ass.CBool->Tt);
+
+		return node;
+	}
+
+	int t1 = left->Tt.Class->Index - 4;
+	int t2 = right->Tt.Class->Index - 4;
+	ASSERT(t1 >= 0 && t1 <= 13);
+	ASSERT(t2 >= 0 && t2 <= 13);
+	int t = tabRel[t1][t2];
+
+	if (t == -1)
+		return NULL;
+
+	t += 4;
+
+	ObjectType* e = &ass.Classes[t].Tt;
+
+	if (e->Class == ass.CByte || e->Class == ass.CWord || e->Class == ass.CDWord) {
+		if (cst) {
+			if (op == OpNode::opLess)
+				b = (uint64)left->IntVal < (uint64)right->IntVal;
+			else if (op == OpNode::opLessEq)
+				b = (uint64)left->IntVal <= (uint64)right->IntVal;
+			else if (op == OpNode::opMore)
+				b = (uint64)left->IntVal > (uint64)right->IntVal;
+			else if (op == OpNode::opMoreEq)
+				b = (uint64)left->IntVal >= (uint64)right->IntVal;
+			else if (op == OpNode::opEq)
+				b = (uint64)left->IntVal == (uint64)right->IntVal;
+			else if (op == OpNode::opNeq)
+				b = (uint64)left->IntVal != (uint64)right->IntVal;
+			else
+				ASSERT(0);
+			
+			if (FoldConstants)
+				return const_bool(b);
+		}
+	}
+	else if (e->Class == ass.CSmall || e->Class == ass.CShort || e->Class == ass.CInt) {
+		if (cst) {
+			if (op == OpNode::opLess)
+				b = left->IntVal < right->IntVal;
+			else if (op == OpNode::opLessEq)
+				b = left->IntVal <= right->IntVal;
+			else if (op == OpNode::opMore)
+				b = left->IntVal > right->IntVal;
+			else if (op == OpNode::opMoreEq)
+				b = left->IntVal >= right->IntVal;
+			else if (op == OpNode::opEq)
+				b = left->IntVal == right->IntVal;
+			else if (op == OpNode::opNeq)
+				b = left->IntVal != right->IntVal;
+			else
+				ASSERT(0);
+			
+			if (FoldConstants)
+				return const_bool(b);
+		}
+	}
+	else if (e->Class == ass.CFloat) {
+		if (cst) {
+			left->PromoteToFloatValue(ass);
+			right->PromoteToFloatValue(ass);
+			if (op == OpNode::opLess)
+				b = left->DblVal < right->DblVal;
+			else if (op == OpNode::opLessEq)
+				b = left->DblVal <= right->DblVal;
+			else if (op == OpNode::opMore)
+				b = left->DblVal > right->DblVal;
+			else if (op == OpNode::opMoreEq)
+				b = left->DblVal >= right->DblVal;
+			else if (op == OpNode::opEq)
+				b = left->DblVal == right->DblVal;
+			else if (op == OpNode::opNeq)
+				b = left->DblVal != right->DblVal;
+			else
+				ASSERT(0);
+			
+			if (FoldConstants)
+				return const_bool(b);
+		}
+	}
+	else if (e->Class == ass.CDouble) {
+		if (cst) {
+			left->PromoteToFloatValue(ass);
+			right->PromoteToFloatValue(ass);
+			if (op == OpNode::opLess)
+				b = left->DblVal < right->DblVal;
+			else if (op == OpNode::opLessEq)
+				b = left->DblVal <= right->DblVal;
+			else if (op == OpNode::opMore)
+				b = left->DblVal > right->DblVal;
+			else if (op == OpNode::opMoreEq)
+				b = left->DblVal >= right->DblVal;
+			else if (op == OpNode::opEq)
+				b = left->DblVal == right->DblVal;
+			else if (op == OpNode::opNeq)
+				b = left->DblVal != right->DblVal;
+			else
+				ASSERT(0);
+			
+			if (FoldConstants)
+				return const_bool(b);
+		}
+	}
+	else if (cst)
+		ASSERT_(0, ops[op]);
+
+	OpNode* node = opNodes.Get();
+
+	node->OpA = left;
+	node->OpB = right;
+	node->Op = op;
+
+	node->IsConst = cst;
+	node->IsCT = cst;
+	node->SetType(ass.CBool->Tt);
+	node->SetValue(b, 0);
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
+Node* IR::opLog(Node* left, Node* right, OpNode::Type op) {
+	bool valid = left->Tt.Class == ass.CBool && right->Tt.Class == ass.CBool;
+	if (valid == false)
+		return NULL;
+
+	bool cst = left->IsCT && right->IsCT;
+	bool b;
+
+	if (cst) {
+		if (op == OpNode::opLogAnd)
+			b = (bool)left->IntVal && (bool)right->IntVal;
+		else if (op == OpNode::opLogOr)
+			b = (bool)left->IntVal || (bool)right->IntVal;
+		else
+			ASSERT(0);
+		if (FoldConstants)
+			return const_bool(b);
+	}
+	else {
+		if (op == OpNode::opLogAnd && ((left->IsCT && left->IntVal == 0) || (right->IsCT && right->IntVal == 0))) {
+			if (FoldConstants)
+				return const_bool(false);
+		}
+		else if (op == OpNode::opLogOr && ((left->IsCT && left->IntVal == 1) || (right->IsCT && right->IntVal == 1))) {
+			if (FoldConstants)
+				return const_bool(true);
+		}
+	}
+
+	OpNode* node = opNodes.Get();
+
+	node->OpA = left;
+	node->OpB = right;
+	node->Op = op;
+
+	node->IsConst = cst;
+	node->IsCT = cst;
+	node->SetType(ass.CBool->Tt);
+	node->SetValue(b, 0);
+	ASSERT(node->Tt.Class);
+	
+	return node;
+}
+
 Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
 	
@@ -845,6 +1119,56 @@ Node* IR::op_bitxor(Node* left, Node* right) {
 	node->IsCT = cst;
 	node->SetType(e);
 	node->DblVal = 0;
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
+Node* IR::cast(Node* left, ObjectType* tt, bool sc, bool ptr) {
+	if (left->NT == NodeType::Cast) {
+		CastNode* c = (CastNode*)left;
+		if (c->Tt.Class == tt->Class)
+			return left;
+	}
+	
+	//if (sc && left->IsCT && ass.IsFloat(left->Tt) && left->Tt == *tt)
+	//	return left;
+
+	if (left->IsCT) {
+		if (ass.IsNumeric(left->Tt) && ass.IsNumeric(*tt)) {
+			if (tt->Class == ass.CFloat) {
+				if (ass.IsSignedInt(left->Tt))
+					return const_r32((double)left->IntVal);
+				else if (ass.IsUnsignedInt(left->Tt))
+					return const_r32((double)(uint64)(left->IntVal));
+				else if (left->Tt.Class == ass.CDouble) {
+					left->SetType(ass.CFloat->Tt);
+					return left;
+				}
+			}
+			else if (tt->Class == ass.CDouble) {
+				if (ass.IsSignedInt(left->Tt))
+					return const_r64((double)left->IntVal);
+				else if (ass.IsUnsignedInt(left->Tt))
+					return const_r64((double)(uint64)(left->IntVal));
+				else if (left->Tt.Class == ass.CFloat) {
+					left->SetType(ass.CDouble->Tt);
+					return left;
+				}
+			}
+		}
+	}
+
+	CastNode* node = castNodes.Get();
+	node->Object = left;
+	node->Tt = *tt;
+	node->C1 = tt->Class;
+	node->IsConst = left->IsConst;
+	node->IsCT = left->IsCT;
+	node->DblVal = left->DblVal;
+	node->IntVal = left->IntVal;
+	node->IsLiteral = left->IsLiteral;
+	node->Ptr = ptr;
+
 	ASSERT(node->Tt.Class);
 	return node;
 }

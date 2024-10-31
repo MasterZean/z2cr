@@ -52,12 +52,26 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 Node* ZExprParser::ParseAtom() {
 	Point opp = parser.GetPoint();
 
+	Node* exp = nullptr;
+	
 	if (parser.IsInt())
-		return ParseNumeric();
+		exp = ParseNumeric();
+	else if (parser.Id("true"))
+		exp = irg.const_bool(true);
+	else if (parser.Id("false"))
+		exp = irg.const_bool(false);
+	else if (parser.Id("void"))
+		exp = irg.const_void();
+	else if (parser.Id("null"))
+		exp = irg.const_null();
 	else {
 		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
 		return nullptr;
 	}
+	
+	ASSERT(exp);
+	
+	return exp;
 }
 
 Node* ZExprParser::ParseNumeric() {

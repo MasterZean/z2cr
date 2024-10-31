@@ -172,3 +172,27 @@ String Assembly::ClassToString(ObjectInfo* type, bool qual) {
 	
 	return s;
 }
+
+bool Assembly::IsSignedInt(ObjectType* type) const {
+	return type->Class == CInt || type->Class == CSmall || type->Class == CShort || type->Class == CLong;
+}
+
+bool Assembly::IsSignedInt(const ObjectType& type) const {
+	return type.Class == CInt || type.Class == CSmall || type.Class == CShort || type.Class == CLong;
+}
+
+bool Assembly::IsUnsignedInt(ObjectType* type) const {
+	return type->Class == CDWord || type->Class == CByte || type->Class == CWord || type->Class == CQWord;
+}
+
+bool Assembly::IsUnsignedInt(const ObjectType& type) const {
+	return type.Class == CDWord || type.Class == CByte || type.Class == CWord || type.Class == CQWord;
+}
+
+bool Assembly::IsFloat(ObjectType* type) const {
+	return type->Class == CFloat || type->Class == CDouble;
+}
+
+bool Assembly::IsFloat(const ObjectType& type) const {
+	return type.Class == CFloat || type.Class == CDouble;
+}
