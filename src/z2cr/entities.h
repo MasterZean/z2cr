@@ -285,6 +285,7 @@ public:
 class ZNamespace {
 public:
 	String Name;
+	String BackName;
 	
 	Array<ZFunction> PreFunctions;
 	ArrayMap<String, ZDefinition> Definitions;

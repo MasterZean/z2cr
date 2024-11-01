@@ -4,7 +4,7 @@ String ZSourcePos::ToString() const {
 	String str;
 	
 	if (Source)
-		str << Source->Path();
+		str << Source->Path;
 	str << "(" << P.x << ", " << P.y << ")";
 	
 	return str;
@@ -63,6 +63,92 @@ ZPackage& Assembly::AddPackage(const String& aName, const String& aPath) {
 	
 	ZPackage& pak = Packages.Add(aName, ZPackage(*this, aName, aPath));
 	return pak;
+}
+
+bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
+	String pakName = GetFileName(NativePath(NormalizePath(aPath)));
+	if (pakName.GetCount() == 0)
+		pakName = GetFileName(GetFileFolder(aPath));
+	
+	
+	FindFile ff(aPath);
+	
+	if (!ff.IsFolder()) {
+		Cout() << "Could not find package '" << pakName << "' in folder '" << aPath << "'.\n";
+		Cout() << "Exiting!\n";
+		return false;
+	}
+		
+	int pakIndex = Packages.Find(pakName);
+	if (pakIndex != -1) {
+		ZPackage& existingPak = Packages[pakIndex];
+		
+		if (existingPak.Path != aPath) {
+			Cout() << "When attempting to load package: '" << aPath << "':\n";
+			Cout() << "\ta package with the same name is already referenced at '" << existingPak.Path << "'.\n";
+			Cout() << "Exiting!\n";
+			return false;
+		}
+	}
+	else
+		pakIndex = Packages.FindAdd(pakName, ZPackage(*this, pakName, aPath));
+	
+	ZPackage& package = Packages[pakIndex];
+	package.Name = pakName;
+	package.Path = AppendFileName(aPath, "");
+
+	/*if (fullBuild) {
+		package.CachePath = NativePath(BuildPath + "\\" + package.Name);
+		DirectoryCreate(package.CachePath);
+		
+		ZPackage temp;
+		LoadFromFile(temp, NativePath(package.CachePath + "\\cache.dat"));
+		
+		AddModule(0, package.Path, package, temp);
+	}
+	else*/
+		AddModule(0, package.Path, package);
+	
+	return true;
+}
+
+void Assembly::AddModule(int parent, const String& path, ZPackage& pak) {
+	FindFile ff;
+	ff.Search(path + "/*");
+
+	while (ff) {
+		if (ff.IsFile()) {
+			String name = ff.GetName();
+			if (GetFileExt(name) == ".z2") {
+				String fp = ff.GetPath();
+				ZSource& zs = AddModuleSource(pak, fp, true);
+			}
+		}
+		else if (ff.IsFolder())
+			AddModule(parent + 1, ff.GetPath(), pak);
+
+		ff.Next();
+	}
+}
+
+ZSource& Assembly::AddModuleSource(ZPackage& aPackage, const String& aFile, bool aLoadFile) {
+	String relPath = aFile.Mid(aPackage.Path.GetLength());
+
+	/*ZSource& source = aPackage.Sources[fileIndex];
+	source.Path = relPath;*/
+	ZSource& source = aPackage.AddSource(aFile, aLoadFile);
+	source.Modified = FileGetTime(aFile);
+	
+	return source;//LoadSource(source, populate);
+}
+
+ZPackage* Assembly::FindPackage(const String& aName) {
+	for (int i = 0; i < Packages.GetCount(); i++) {
+		if (Packages[i].Name == aName)
+			return &Packages[i];
+	}
+	
+	return nullptr;
 }
 
 ZSource* Assembly::FindSource(const String& aName) {

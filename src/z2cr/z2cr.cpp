@@ -77,6 +77,8 @@ CONSOLE_APP_MAIN {
 		return;
 	}
 	
+	BuildMethod& bm = methods[bmi];
+			
 	// compile
 	Assembly ass;
 	
@@ -90,19 +92,38 @@ CONSOLE_APP_MAIN {
 		String prjPackage = GetFileName(prjPath);
 		String prjCP = GetFileDirectory(prjPath);
 		
-		ZPackage& mainPak = ass.AddPackage("main", "");
-		ZSource& source = mainPak.AddSource(K.Path);
+		if (!ass.LoadPackage("c:\\temp\\test.pak")) {
+			SetExitCode(BuildMethod::ErrorCode(-1));
+			return;
+		}
 		
-		ZScanner scanner(source, true);
-		scanner.Scan();
+		//ass.LoadPackage("c:\\temp\\a\\test.pak");
+		
+		ZPackage& stdPakPak = *ass.FindPackage("test");
+		
+		ZPackage& mainPak = ass.AddPackage("main", "");
+		ZSource& source = mainPak.AddSource(K.Path, true);
 		
 		ZExprParser::Initialize();
 			
 		ZCompiler compiler(ass);
+		
+#ifdef PLATFORM_WIN32
+		String platform = "WIN32";
+		String platformLib = "microsoft.windows";
+#endif
+		
+#ifdef PLATFORM_POSIX
+		String platform = "POSIX";
+		String platformLib = "ieee.posix";
+#endif
+
+		compiler.BuildProfile = platform + ToUpper(K.ARCH) + "." + ToUpper(bm.Name) + K.O;
+		compiler.BuildPath = exeDir + NativePath("build\\") + platform + "." + ToUpper(K.ARCH) + "." + ToUpper(bm.Name);
+		RealizeDirectory(compiler.BuildPath);
+			
 		compiler.SetMainFile(K.Path);
 		compiler.Compile();
-		
-		ZTranspiler cpp(ass, Cout());
 	}
 	catch (ZException e) {
 		Cout() << e.ToString() << "\n";

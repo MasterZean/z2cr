@@ -9,6 +9,7 @@ class Assembly {
 public:
 	ArrayMap<String, ZNamespace> Namespaces;
 	ArrayMap<String, ZPackage> Packages;
+	ArrayMap<String, ZSource*> SourceLookup;
 	
 	ZClass* CCls = nullptr;
 	ZClass* CDef = nullptr;
@@ -54,6 +55,8 @@ public:
 	}
 	
 	ZPackage& AddPackage(const String& aName, const String& aPath);
+	bool LoadPackage(const String& aPath, bool fullBuild = false);
+	ZPackage* FindPackage(const String& aName);
 	
 	ZSource* FindSource(const String& aName);
 	
@@ -81,6 +84,9 @@ public:
 	String ClassToString(ObjectInfo* type, bool qual = true);
 	
 private:
+	void AddModule(int parent, const String& path, ZPackage& pak);
+	ZSource& AddModuleSource(ZPackage& aPackage, const String& aFile, bool aLoadFile);
+
 	ZClass* AddCoreType(ZNamespace& ns, const String& name, const String& backendName, bool num = false, bool integer = false, bool core = true);
 };
 

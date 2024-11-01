@@ -11,9 +11,30 @@ void ZTranspiler::WriteIntro() {
 	EL();
 }
 
+void ZTranspiler::WriteOutro() {
+	if (comp.MainFunction == nullptr)
+		return;
+	
+	NL();
+	cs << "void mian() {";
+	EL();
+	
+	indent++;
+	
+	NL();
+	cs << comp.MainFunction->GetNamespace().BackName << comp.MainFunction->BackName << "();";
+	EL();
+	
+	indent--;
+	
+	NL();
+	cs << "}";
+	EL();
+}
+
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	NL();
-	cs << "void " << f.BackName << "()";
+	cs << "void " << f.GetNamespace().BackName << f.BackName << "()";
 	//EL();
 }
 

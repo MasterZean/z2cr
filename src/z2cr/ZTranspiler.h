@@ -3,10 +3,11 @@
 
 class ZNodeWalker {
 public:
-	ZNodeWalker(Assembly& aAss, Stream& aStream): ass(aAss), cs(aStream) {
+	ZNodeWalker(ZCompiler& aComp, Stream& aStream): comp(aComp), ass(aComp.GetAssembly()), cs(aStream) {
 	}
 	
 protected:
+	ZCompiler& comp;
 	Assembly& ass;
 	Stream& cs;
 	
@@ -46,10 +47,11 @@ protected:
 
 class ZTranspiler: public ZNodeWalker {
 public:
-	ZTranspiler(Assembly& aAss, Stream& aStream): ZNodeWalker(aAss, aStream) {
+	ZTranspiler(ZCompiler& aComp, Stream& aStream): ZNodeWalker(aComp, aStream) {
 	}
 	
 	void WriteIntro();
+	void WriteOutro();
 	
 	void WriteFunctionDecl(ZFunction& f);
 	void WriteFunctionBody(Vector<Node*>& nodes);

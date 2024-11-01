@@ -5,6 +5,16 @@ class ZTranspiler;
 
 class ZCompiler {
 public:
+	enum Platform {
+		WINDOWS,
+		POSIX
+	};
+	
+	String BuildPath;
+	String BuildProfile;
+	
+	ZFunction* MainFunction = nullptr;
+	
 	ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 	}
 	
@@ -12,6 +22,10 @@ public:
 		
 	void SetMainFile(const String& aPath) {
 		mainPath = aPath;
+	}
+	
+	Assembly& GetAssembly() const {
+		return ass;
 	}
 	
 	static String& GetName();
@@ -30,7 +44,8 @@ private:
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
 	bool Transpile(ZTranspiler& cpp, ZFunction& f);
 	
-	bool Traverse(ZNamespace& ns);
+	bool CheckForDuplicates();
+	bool CheckForDuplicates(ZNamespace& ns);
 };
 
 #endif
