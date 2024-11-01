@@ -1,5 +1,12 @@
 #include "z2cr.h"
 
+#include <Core/Core.h>
+
+using namespace Upp;
+
+#include <z2cr/StopWatch.h>
+#include <z2cr/ZCompiler.h>
+
 CONSOLE_APP_MAIN {
 	String path = "c:\\temp\\test.z2";
 	
@@ -78,7 +85,8 @@ CONSOLE_APP_MAIN {
 	}
 	
 	BuildMethod& bm = methods[bmi];
-			
+	
+	StopWatch tm;
 	// compile
 	Assembly ass;
 	
@@ -121,11 +129,20 @@ CONSOLE_APP_MAIN {
 		compiler.BuildProfile = platform + ToUpper(K.ARCH) + "." + ToUpper(bm.Name) + K.O;
 		compiler.BuildPath = exeDir + NativePath("build\\") + platform + "." + ToUpper(K.ARCH) + "." + ToUpper(bm.Name);
 		RealizeDirectory(compiler.BuildPath);
+		
+		Cout() << "\nCompiling...\n\n";
 			
 		compiler.SetMainFile(K.Path);
 		compiler.Compile();
+		
+		Cout() << "\n";
+		
+		Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";
 	}
 	catch (ZException e) {
 		Cout() << e.ToString() << "\n";
+		SetExitCode(-1);
+		
+		Cout() << bm.Name << " code generation failed.\n";
 	}
 }

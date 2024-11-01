@@ -95,6 +95,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 	
 private:
 #ifdef PLATFORM_WIN32
+	static bool DetectGCC(Vector<BuildMethod>& methods);
 	bool DetectMSC7_1(Vector<BuildMethod>& methods);
 	bool DetectMSC8(Vector<BuildMethod>& methods);
 	bool DetectMSC9(Vector<BuildMethod>& methods);

@@ -100,16 +100,25 @@ String DirFinder::Get(const String& substring, const char *files) {
 void DeepSearch(Vector<BuildMethod>& methods) {
 	DirFinder df;
 	
-	enum { VS_2017, BT_2017, VS_2015 };
+	enum { VS_2022, VSP_2022, BT_2022, VS_2019, VSP_2019, BT_2019, VS_2017, BT_2017, VS_2015 };
 
-	for(int version = VS_2017; version <= BT_2017; version++) {
+	for(int version = VS_2022; version <= VS_2015; version++) {
 		for(int x64 = 0; x64 < 2; x64++) {
 			BuildMethod bm;
 			
-			String x86method = decode(version, VS_2015, "MSC14", VS_2017, "MSC15", "MSBT15");
+			String x86method = decode(version, VS_2015, "MSVS15",
+			                                   VS_2017, "MSVS17", BT_2017, "MSBT17",
+			                                   VS_2019, "MSVS19", VSP_2019, "MSVSP19", BT_2019, "MSBT19",
+			                                   VS_2022, "MSVS22", VSP_2022, "MSVSP22", BT_2022, "MSBT22",
+			                                   "MSBT");
 			String x64s = x64 ? "x64" : "";
-			String method = x86method;
-			String builder = (version == VS_2015 ? "MSC14" : "MSC15") + ToUpper(x64s);
+			String method = x86method + x64s;
+			String builder = decode(version, VS_2015, "MSC15",
+			                                 VS_2017, "MSC17", BT_2017, "MSC17",
+			                                 VS_2019, "MSC19", VSP_2019, "MSC19", BT_2019, "MSC19",
+			                                 VS_2022, "MSC22", VSP_2022, "MSC22", BT_2022, "MSC22",
+			                                 "MSC22"
+			                 ) + ToUpper(x64s);
 		
 			String vc, bin, inc, lib, kit81;
 		
@@ -120,8 +129,15 @@ void DeepSearch(Vector<BuildMethod>& methods) {
 			if(version == VS_2015)
 				vc = df.Get("/microsoft visual studio 14.0/vc", "bin/cl.exe;bin/lib.exe;bin/link.exe;bin/mspdb140.dll");
 			else
-				vc = df.Get(version == BT_2017 ? "/microsoft visual studio/2017/buildtools/vc/tools/msvc"
-				                               : "/microsoft visual studio/2017/community/vc/tools/msvc",
+				vc = df.Get(decode(version, BT_2017, "/microsoft visual studio/2017/buildtools/vc/tools/msvc",
+				                            VS_2017, "/microsoft visual studio/2017/community/vc/tools/msvc",
+				                            BT_2019, "/microsoft visual studio/2019/buildtools/vc/tools/msvc",
+				                            VS_2019, "/microsoft visual studio/2019/community/vc/tools/msvc",
+				                            VSP_2019, "/microsoft visual studio/2019/professional/vc/tools/msvc",
+				                            BT_2022, "/microsoft visual studio/2022/buildtools/vc/tools/msvc",
+				                            VS_2022, "/microsoft visual studio/2022/community/vc/tools/msvc",
+				                            VSP_2022, "/microsoft visual studio/2022/professional/vc/tools/msvc",
+				                            ""),
 				            x64 ? "bin/hostx64/x64/cl.exe;bin/hostx64/x64/mspdb140.dll"
 				                : "bin/hostx86/x86/cl.exe;bin/hostx86/x86/mspdb140.dll");
 
@@ -129,10 +145,20 @@ void DeepSearch(Vector<BuildMethod>& methods) {
 			inc = df.Get("/windows kits/10", "um/adhoc.h");
 			lib = df.Get("/windows kits/10", "um/x86/kernel32.lib");
 			
-			bool ver17 = version == VS_2017 || version == BT_2017;
+			DUMP(bin);
+			
+			bool ver17 = version >= VS_2017;
 	
 			if(inc.GetCount() == 0 || lib.GetCount() == 0) // workaround for situation when 8.1 is present, but 10 just partially
 				kit81 = df.Get("/windows kits/8.1", "include");
+			
+			LOG("=============");
+			DUMP(method);
+			DUMP(vc);
+			DUMP(bin);
+			DUMP(inc);
+			DUMP(kit81);
+			DUMP(lib);
 			
 			if(vc.GetCount() && bin.GetCount() && (inc.GetCount() && lib.GetCount() || kit81.GetCount())) {
 				bins.At(0) = vc + (ver17 ? (x64 ? "/bin/hostx64/x64" : "/bin/hostx86/x86") : (x64 ? "/bin/amd64" : "/bin"));
@@ -193,13 +219,13 @@ void DeepSearch(Vector<BuildMethod>& methods) {
 					bm.Sdk = NormalizePath(bm.Sdk);
 					
 					methods.Add(bm);
+					
+					Cout() << "Found BM: " << bm.Name << "\n";
 				}
 			}
 		}
 	}
 }
-
-
 
 bool ExistProgram(String& bin, const char *dir, const char *file) {
 	String win = NormalizePath(GetWindowsDirectory());
@@ -426,12 +452,7 @@ bool BuildMethod::DetectMSC14(Vector<BuildMethod>& methods) {
 	return true;
 }
 
-#endif
-
-void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
-	methods.Clear();
-	
-#ifdef PLATFORM_WIN32
+bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 	FindFile ff(GetCurrentDirectory() + "\\gcc\\*");
 	
 	while (ff) {
@@ -483,7 +504,6 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 						}
 					}
 					
-					
 					{
 						String c;
 						c << "SET PATH=%PATH%;";
@@ -512,12 +532,24 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 		
 		ff.Next();
 	}
+	
+	return true;
+}
 
+#endif
+
+void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
+	methods.Clear();
+	
+#ifdef PLATFORM_WIN32
+	DetectGCC(methods);
+	
+	// search for modern MSC
 	DeepSearch(methods);
 	
-	BuildMethod msc14;
-	msc14.DetectMSC14(methods);
 	// Z2CR targets only modern C++
+	//BuildMethod msc14;
+	//msc14.DetectMSC14(methods);
 	/*BuildMethod msc12;
 	msc12.DetectMSC12(methods);
 	BuildMethod msc11;
@@ -599,7 +631,6 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 		}
 	}
 }
-
 
 bool BuildMethod::TestLib(Vector<BuildMethod>& methods, const String& arch) {
 	if (Compiler.IsEmpty() || Sdk.IsEmpty())

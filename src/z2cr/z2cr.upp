@@ -30,7 +30,8 @@ file
 	CommandLine.h,
 	CommandLine.cpp,
 	BuildMethod.h,
-	BuildMethod.cpp;
+	BuildMethod.cpp,
+	StopWatch.h;
 
 mainconfig
 	"" = "";

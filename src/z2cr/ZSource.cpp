@@ -74,8 +74,10 @@ ZSource& ZPackage::AddSource(const String& aPath, bool aLoadFile) {
 	
 	ass.SourceLookup.FindAdd(aPath, &source);
 	
-	if (aLoadFile)
+	if (aLoadFile) {
+		Cout() << "Loaded source file: " << source.Path << "\n";
 		source.LoadFile();
+	}
 	
 	return source;
 }
