@@ -4,7 +4,10 @@ extern String opss[];
 
 void ZTranspiler::WriteIntro() {
 	NL();
-	cs << "#include \"z2stdcompat.h\"";
+	cs << "#include \"cppcode.h\"";
+	EL();
+	NL();
+	cs << "#include \"stdio.h\"";
 	EL();
 	
 	NL();
@@ -16,13 +19,17 @@ void ZTranspiler::WriteOutro() {
 		return;
 	
 	NL();
-	cs << "void mian() {";
+	cs << "int main() {";
 	EL();
 	
 	indent++;
 	
 	NL();
-	cs << comp.MainFunction->GetNamespace().BackName << comp.MainFunction->BackName << "();";
+	cs << comp.MainFunction->GetNamespace().BackName << "::" << comp.MainFunction->BackName << "();";
+	EL();
+	
+	NL();
+	cs << "return 0;";
 	EL();
 	
 	indent--;
@@ -32,10 +39,35 @@ void ZTranspiler::WriteOutro() {
 	EL();
 }
 
-void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
+void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 	NL();
-	cs << "void " << f.GetNamespace().BackName << f.BackName << "()";
-	//EL();
+	cs << "namespace " << ns.BackName << " {";
+	EL();
+	
+	indent++;
+	
+	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
+		for (int j = 0; j < ns.Definitions[i].Functions.GetCount(); j++) {
+			NL();
+			WriteFunctionDef(*ns.Definitions[i].Functions[j]);
+			ES();
+		}
+	}
+	
+	indent--;
+	
+	NL();
+	cs << "}";
+	EL();
+	EL();
+}
+
+void ZTranspiler::WriteFunctionDef(ZFunction& f) {
+	cs << "void " << f.BackName << "()";
+}
+
+void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
+	cs << "void " << f.GetNamespace().BackName << "::" << f.BackName << "()";
 }
 
 void ZTranspiler::WriteFunctionBody(Vector<Node*>& nodes) {
@@ -134,6 +166,7 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 			stream << Format64(node.IntVal) << "u";
 	}
 	else if (node.Tt.Class == ass.CInt || node.Tt.Class == ass.CSmall || node.Tt.Class == ass.CShort) {
+		stream << "printf(\"%d\\n\", ";
 		if (node.Base == 16) {
 			if (node.IntVal == -2147483648ll)
 				stream << "(int32)" << "0x" << ToUpper(Format64Hex(node.IntVal)) << "ll";
@@ -145,8 +178,10 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 			else
 				stream << IntStr64(node.IntVal);
 		}
+		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CFloat) {
+		stream << "printf(\"%g\\n\", ";
 		if (node.DblVal != node.DblVal)
 			stream << "((float)(1e+300 * 1e+300) * 0.0f)";
 		else if (node.DblVal == (float)(1e+300 * 1e+300))
@@ -164,8 +199,10 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 				stream << 'f';
 			}
 		}
+		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CDouble) {
+		stream << "printf(\"%g\\n\", ";
 		if (node.DblVal != node.DblVal)
 			stream << "((float)(1e+300 * 1e+300) * 0.0f)";
 		else if (node.DblVal == (float)(1e+300 * 1e+300))
@@ -182,12 +219,15 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 					stream << ".0";
 			}
 		}
+		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CBool) {
+		stream << "printf(\"%s\\n\", ";
 		if (node.IntVal == 0)
 			stream << "false";
 		else
 			stream << "true";
+		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CChar) {
 		if (node.IntVal >= 127) {

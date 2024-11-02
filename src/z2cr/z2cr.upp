@@ -31,6 +31,8 @@ file
 	CommandLine.cpp,
 	BuildMethod.h,
 	BuildMethod.cpp,
+	Builder.h,
+	Builder.cpp,
 	StopWatch.h;
 
 mainconfig

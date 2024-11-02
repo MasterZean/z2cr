@@ -161,6 +161,9 @@ int ZExprParser::GetPriority(int& op, bool& opc) {
 }
 	
 void ZExprParser::Initialize() {
+	if (initialized == true)
+		return;
+	
 	for (int i = 0; i < 255; i++)
 		OPS[i] = Point(-1, -1);
 	OPS['*'] = Point( 2, 210 -  0);
@@ -183,9 +186,13 @@ void ZExprParser::Initialize() {
 	OPCONT['-'] = true;
 	OPCONT['<'] = true;
 	OPCONT['['] = true;
+	
+	initialized = true;
 }
 
 Point ZExprParser::OPS[256];
 bool ZExprParser::OPCONT[256];
+bool ZExprParser::initialized = false;
+
 
 

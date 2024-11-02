@@ -288,8 +288,9 @@ public:
 	String BackName;
 	
 	Array<ZFunction> PreFunctions;
-	ArrayMap<String, ZDefinition> Definitions;
 	Array<ZVariable> PreVariables;
+	
+	ArrayMap<String, ZDefinition> Definitions;
 	
 	ZFunction& PrepareFunction(const String& aName);
 	ZVariable& PrepareVariable(const String& aName);

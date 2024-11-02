@@ -1,5 +1,7 @@
 #include "z2cr.h"
 
+#include <z2cr/CommandLine.h>
+
 bool CommandLine::Read() {
 	O = " -O2";
 	const Vector<String>& commands = Upp::CommandLine();

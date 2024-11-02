@@ -19,7 +19,4 @@ using namespace Upp;
 #include <z2cr/ZCompiler.h>
 #include <z2cr/ZTranspiler.h>
 
-#include <z2cr/BuildMethod.h>
-#include <z2cr/CommandLine.h>
-
 #endif

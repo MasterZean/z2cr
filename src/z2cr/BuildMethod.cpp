@@ -1,5 +1,7 @@
 #include "z2cr.h"
 
+#include <z2cr/BuildMethod.h>
+
 String NormalizePathNN(const String& path) {
 	return IsNull(path) ? path : NormalizePath(path);
 }
@@ -44,6 +46,7 @@ DirFinder::DirFinder() {
 					break;
 				
 				path.FindAdd(value);
+				DUMP(value);
 			}
 			RegCloseKey(key);
 		}

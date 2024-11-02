@@ -18,6 +18,7 @@ private:
 	Assembly& ass;
 	ZParser& parser;
 	IR& irg;
+	static bool initialized;
 	
 	int GetPriority(int& op, bool& opc);
 	

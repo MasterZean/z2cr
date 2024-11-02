@@ -123,6 +123,8 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 }
 
 void ZScanner::ScanNamespace() {
+	ZSourcePos np = parser.GetFullPos();
+	
 	String name = parser.ExpectId();
 	String fullName = name;
 	fullName << ".";
@@ -138,10 +140,11 @@ void ZScanner::ScanNamespace() {
 	
 	nmspace = &ass.FindAddNamespace(fullName);
 	
-	/*if (index == -1)
-		Cout() << "Found namespace: " << fullName << "\n";
-	else
-		Cout() << "Updated namespace: " << fullName << "\n";*/
+	if (namespaceCount == 0) {
+		namespacePos = np;
+	}
+	
+	namespaceCount++;
 }
 
 ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {

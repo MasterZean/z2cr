@@ -1,8 +1,24 @@
 #include "z2cr.h"
 
+ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
+#ifdef PLATFORM_WIN32
+	Platform = PlatformType::WINDOWS;
+	PlatformString = "WIN32";
+	PlatformSysLib = "microsoft.windows";
+#endif
+	
+#ifdef PLATFORM_POSIX
+	Platform = PlatformType::POSIX;
+	PlatformString = "POSIX";
+	PlatformSysLib = "ieee.posix";
+#endif
+			
+	ZExprParser::Initialize();
+}
+
 bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
-		ZScanner scanner(*ass.SourceLookup[i], true);
+		ZScanner scanner(*ass.SourceLookup[i], Platform);
 		scanner.Scan();
 	}
 	
@@ -20,7 +36,8 @@ bool ZCompiler::Compile() {
 		String backName;
 		for (int j = 0; j < names.GetCount(); j++) {
 			backName << names[j];
-			backName << "::";
+			if (j < names.GetCount() - 1)
+				backName << "::";
 		}
 		
 		ns.BackName = backName;
@@ -53,9 +70,13 @@ bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
 	
-	ZTranspiler cpp(*this, Cout());
+	OutPath = AppendFileName(BuildPath, "out.cpp");
+	FileOut out(OutPath);
+	ZTranspiler cpp(*this, out);
 	
 	cpp.WriteIntro();
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
+		cpp.TranspileDeclarations(ass.Namespaces[i]);
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Transpile(cpp, ass.Namespaces[i]);
 	cpp.WriteOutro();

@@ -53,6 +53,7 @@ public:
 	void WriteIntro();
 	void WriteOutro();
 	
+	void WriteFunctionDef(ZFunction& f);
 	void WriteFunctionDecl(ZFunction& f);
 	void WriteFunctionBody(Vector<Node*>& nodes);
 	
@@ -60,6 +61,8 @@ public:
 	void Walk(OpNode& node);
 	
 	void Walk(Node* node);
+	
+	void TranspileDeclarations(ZNamespace& ns);
 	
 	virtual void WalkNode(Node* node) {
 		Walk(node);

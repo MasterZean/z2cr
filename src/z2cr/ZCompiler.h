@@ -5,18 +5,17 @@ class ZTranspiler;
 
 class ZCompiler {
 public:
-	enum Platform {
-		WINDOWS,
-		POSIX
-	};
-	
 	String BuildPath;
 	String BuildProfile;
+	String OutPath;
+	
+	PlatformType Platform;
+	String PlatformString;
+	String PlatformSysLib;
 	
 	ZFunction* MainFunction = nullptr;
 	
-	ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
-	}
+	ZCompiler(Assembly& aAss);
 	
 	bool Compile();
 		

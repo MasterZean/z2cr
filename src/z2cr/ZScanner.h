@@ -3,9 +3,16 @@
 
 #include "z2cr.h"
 
+enum class PlatformType {
+	WINDOWS,
+	POSIX
+};
+	
 class ZScanner {
 public:
-	ZScanner(ZSource& aSrc, bool windows): parser(aSrc), source(aSrc), ass(aSrc.Package().GetAssembly()), win(windows) {
+	Array<ZException> Errors;
+	
+	ZScanner(ZSource& aSrc, PlatformType aType): parser(aSrc), source(aSrc), ass(aSrc.Package().GetAssembly()), pt(aType) {
 		parser.Mode = ": scan";
 	}
 
@@ -33,7 +40,9 @@ protected:
 	bool isForce = false;
 	bool isCDecl = false;
 	
-	bool win;
+	PlatformType pt;
+	int namespaceCount = 0;
+	ZSourcePos namespacePos;
 	
 	void InterpretTrait(const String& trait);
 	void TraitLoop();

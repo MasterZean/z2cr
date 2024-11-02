@@ -6,19 +6,11 @@ using namespace Upp;
 
 #include <z2cr/StopWatch.h>
 #include <z2cr/ZCompiler.h>
+#include <z2cr/CommandLine.h>
+#include <z2cr/BuildMethod.h>
+#include <z2cr/Builder.h>
 
-CONSOLE_APP_MAIN {
-	String path = "c:\\temp\\test.z2";
-	
-	String curDir = GetCurrentDirectory() + "/";
-	String exeDir = GetFileDirectory(GetExeFilePath());
-
-	::CommandLine K;
-	if (!K.Read()) {
-		SetExitCode(-1);
-		return;
-	}
-	
+void GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& bm) {
 	Vector<BuildMethod> methods;
 	
 	// load existing BMs
@@ -84,9 +76,33 @@ CONSOLE_APP_MAIN {
 		return;
 	}
 	
-	BuildMethod& bm = methods[bmi];
+	bm = methods[bmi];
+}
+
+CONSOLE_APP_MAIN {
+	String curDir = GetCurrentDirectory() + "/";
+	String exeDir = GetFileDirectory(GetExeFilePath());
+
+	::CommandLine K;
+	if (!K.Read()) {
+		SetExitCode(-1);
+		return;
+	}
+	
+	if (K.PP_NOPATH)
+		ErrorReporter::PrintPath = false;
+	
+	if (K.Path.GetCount() == 0) {
+		Cout() << ZCompiler::GetName() << " requires an execution entry point. Exiting!" << '\n';
+		SetExitCode(-1);
+		return;
+	}
+	
+	BuildMethod bm;
+	GetBuildMethod(exeDir, K, bm);
 	
 	StopWatch tm;
+	
 	// compile
 	Assembly ass;
 	
@@ -100,44 +116,48 @@ CONSOLE_APP_MAIN {
 		String prjPackage = GetFileName(prjPath);
 		String prjCP = GetFileDirectory(prjPath);
 		
-		if (!ass.LoadPackage("c:\\temp\\test.pak")) {
-			SetExitCode(BuildMethod::ErrorCode(-1));
-			return;
+		for (int i = 0; i < K.Packages.GetCount(); i++) {
+			if (!ass.LoadPackage(K.Packages[i])) {
+				SetExitCode(BuildMethod::ErrorCode(-1));
+				return;
+			}
 		}
 		
-		//ass.LoadPackage("c:\\temp\\a\\test.pak");
-		
-		ZPackage& stdPakPak = *ass.FindPackage("test");
+		//ZPackage& stdPakPak = *ass.FindPackage("test");
 		
 		ZPackage& mainPak = ass.AddPackage("main", "");
 		ZSource& source = mainPak.AddSource(K.Path, true);
-		
-		ZExprParser::Initialize();
 			
 		ZCompiler compiler(ass);
 		
-#ifdef PLATFORM_WIN32
-		String platform = "WIN32";
-		String platformLib = "microsoft.windows";
-#endif
+		if (IsFullPath(K.OutPath))
+			compiler.OutPath = K.OutPath;
+		else
+			compiler.OutPath = curDir + K.OutPath;
 		
-#ifdef PLATFORM_POSIX
-		String platform = "POSIX";
-		String platformLib = "ieee.posix";
-#endif
-
-		compiler.BuildProfile = platform + ToUpper(K.ARCH) + "." + ToUpper(bm.Name) + K.O;
-		compiler.BuildPath = exeDir + NativePath("build\\") + platform + "." + ToUpper(K.ARCH) + "." + ToUpper(bm.Name);
+		compiler.BuildProfile = compiler.PlatformString + ToUpper(K.ARCH) + "." + ToUpper(bm.Name) + K.O;
+		compiler.BuildPath = exeDir + NativePath("build_r\\") + compiler.PlatformString + "." + ToUpper(K.ARCH) + "." + ToUpper(bm.Name);
 		RealizeDirectory(compiler.BuildPath);
 		
-		Cout() << "\nCompiling...\n\n";
+		Cout() << "\nCompiling...\n";
 			
 		compiler.SetMainFile(K.Path);
 		compiler.Compile();
+
+		Builder builder(bm);
+		builder.ZCompilerPath(exeDir);
+		builder.TargetRoot(compiler.BuildPath);
+		builder.Arch(K.ARCH);
+		builder.Optimize(K.O);
 		
-		Cout() << "\n";
-		
-		Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";
+		bool buildOk = builder.Build(compiler.OutPath, compiler.OutPath);
+		if (buildOk) {
+			Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";
+		}
+		else {
+			SetExitCode(-1);
+			Cout() << bm.Name << " code generation failed.\n";
+		}
 	}
 	catch (ZException e) {
 		Cout() << e.ToString() << "\n";
