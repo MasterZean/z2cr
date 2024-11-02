@@ -55,7 +55,7 @@ public:
 	
 	void WriteFunctionDef(ZFunction& f);
 	void WriteFunctionDecl(ZFunction& f);
-	void WriteFunctionBody(Vector<Node*>& nodes);
+	void WriteFunctionBody(Node& nodes);
 	
 	void Walk(ConstNode& node, Stream& stream);
 	void Walk(OpNode& node);

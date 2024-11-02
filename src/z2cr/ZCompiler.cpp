@@ -1,26 +1,27 @@
 #include "z2cr.h"
 
-ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
-#ifdef PLATFORM_WIN32
-	Platform = PlatformType::WINDOWS;
-	PlatformString = "WIN32";
-	PlatformSysLib = "microsoft.windows";
-#endif
-	
-#ifdef PLATFORM_POSIX
-	Platform = PlatformType::POSIX;
-	PlatformString = "POSIX";
-	PlatformSysLib = "ieee.posix";
-#endif
-			
-	ZExprParser::Initialize();
-}
-
 bool ZCompiler::Compile() {
+	Vector<ZScanner*> scanners;
+	// scan all source files, throws on critical syntax error
 	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
-		ZScanner scanner(*ass.SourceLookup[i], Platform);
-		scanner.Scan();
+		auto scanner = new ZScanner(*ass.SourceLookup[i], Platform);
+		scanner->Scan();
+		
+		scanners << scanner;
 	}
+	
+	bool found = false;
+	// print non critical errors
+	for (int i = 0; i < scanners.GetCount(); i++) {
+		for (int j = 0; j < scanners[i]->Errors.GetCount(); j++) {
+			Cout() << scanners[i]->Errors[j].ToString() << "\n";
+			found = true;
+		}
+		delete scanners[i];
+	}
+	
+	if (found)
+		return false;
 	
 	if (!CheckForDuplicates())
 		return false;
@@ -33,11 +34,17 @@ bool ZCompiler::Compile() {
 		
 		auto names = Split(ns.Name, '.', true);
 		
+		ZNamespaceItem* nsp = &ass.NsLookup;
 		String backName;
 		for (int j = 0; j < names.GetCount(); j++) {
 			backName << names[j];
+			nsp = nsp->Add(names[j]);
 			if (j < names.GetCount() - 1)
 				backName << "::";
+			else {
+				ASSERT(nsp->Namespace == nullptr);
+				nsp->Namespace = &ns;
+			}
 		}
 		
 		ns.BackName = backName;
@@ -57,7 +64,8 @@ bool ZCompiler::Compile() {
 			err << "multiple '@main' function: other candidates found at: " << "\n";
 			for (int i = 1; i < vf.GetCount(); i++)
 				err << "\t\t" << vf[i]->DefPos.ToString() << "\n";
-			ErrorReporter::Duplicate(vf[0]->DefPos, err);
+			auto exc = ErrorReporter::Duplicate(vf[0]->DefPos, err);
+			Cout() << exc.ToString() << "\n";
 			
 			return false;
 		}
@@ -219,6 +227,22 @@ bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 	}
 	
 	return true;
+}
+
+ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
+#ifdef PLATFORM_WIN32
+	Platform = PlatformType::WINDOWS;
+	PlatformString = "WIN32";
+	PlatformSysLib = "microsoft.windows";
+#endif
+	
+#ifdef PLATFORM_POSIX
+	Platform = PlatformType::POSIX;
+	PlatformString = "POSIX";
+	PlatformSysLib = "ieee.posix";
+#endif
+			
+	ZExprParser::Initialize();
 }
 
 String& ZCompiler::GetName() {

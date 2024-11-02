@@ -14,7 +14,7 @@ void ErrorReporter::CantOpenFile(const String& aPath) {
 	throw ZException(String().Cat() << "Can't open file: " << aPath);
 }
 
-void ErrorReporter::Duplicate(const ZSourcePos& p, const String& aText) {
-	throw ZException(p.ToString(), aText);
+ZException ErrorReporter::Duplicate(const ZSourcePos& p, const String& aText) {
+	return ZException(p.ToString(), aText);
 }
 

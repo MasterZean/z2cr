@@ -64,6 +64,12 @@ Node* ZExprParser::ParseAtom() {
 		exp = irg.const_void();
 	else if (parser.Id("null"))
 		exp = irg.const_null();
+	else if (parser.IsId()) {
+		exp = ParseNamespace();
+	}
+	else if (parser.Char2(':', ':')) {
+		exp = ParseNamespace();
+	}
 	else {
 		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
 		return nullptr;
@@ -72,6 +78,41 @@ Node* ZExprParser::ParseAtom() {
 	ASSERT(exp);
 	
 	return exp;
+}
+
+Node* ZExprParser::ParseNamespace() {
+	Point opp = parser.GetPoint();
+	ZNamespaceItem* ns = &ass.NsLookup;
+	auto s = parser.ReadId();
+	int index = ns->Names.Find(s);
+		
+	if (index == -1)
+		parser.Error(opp, "unknown identifier: " + s);
+	ns = &ns->Names[index];
+	
+	opp = parser.GetPoint();
+	
+	if (ns->Namespace)
+		return irg.const_void();
+	
+	if (!parser.IsChar('.'))
+		parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
+
+	while (parser.Char('.')) {
+		s = parser.ExpectId();
+		index = ns->Names.Find(s);
+		
+		if (index == -1)
+			parser.Error(opp, "unknown identifier: " + s);
+		
+		ns = &ns->Names[index];
+		opp = parser.GetPoint();
+		if (!ns->Namespace && !parser.Char('.'))
+			parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
+	}
+		
+	//TODO: fix
+	return irg.const_void();
 }
 
 Node* ZExprParser::ParseNumeric() {

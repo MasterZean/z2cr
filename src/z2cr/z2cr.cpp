@@ -125,8 +125,8 @@ CONSOLE_APP_MAIN {
 		
 		//ZPackage& stdPakPak = *ass.FindPackage("test");
 		
-		ZPackage& mainPak = ass.AddPackage("main", "");
-		ZSource& source = mainPak.AddSource(K.Path, true);
+		//ZPackage& mainPak = ass.AddPackage("main", "");
+		//ZSource& source = mainPak.AddSource(K.Path, true);
 			
 		ZCompiler compiler(ass);
 		
@@ -142,7 +142,12 @@ CONSOLE_APP_MAIN {
 		Cout() << "\nCompiling...\n";
 			
 		compiler.SetMainFile(K.Path);
-		compiler.Compile();
+		
+		if (!compiler.Compile()) {
+			Cout() << "Compilation failed. Exiting.\n";
+			SetExitCode(-1);
+			return;
+		}
 
 		Builder builder(bm);
 		builder.ZCompilerPath(exeDir);

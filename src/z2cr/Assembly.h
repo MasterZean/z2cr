@@ -10,6 +10,7 @@ public:
 	ArrayMap<String, ZNamespace> Namespaces;
 	ArrayMap<String, ZPackage> Packages;
 	ArrayMap<String, ZSource*> SourceLookup;
+	ZNamespaceItem NsLookup;
 	
 	ZClass* CCls = nullptr;
 	ZClass* CDef = nullptr;

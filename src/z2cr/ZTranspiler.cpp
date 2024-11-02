@@ -70,17 +70,21 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	cs << "void " << f.GetNamespace().BackName << "::" << f.BackName << "()";
 }
 
-void ZTranspiler::WriteFunctionBody(Vector<Node*>& nodes) {
+void ZTranspiler::WriteFunctionBody(Node& nodes) {
 	NL();
 	cs << " {";
 	EL();
 	
 	indent++;
 	
-	for (int i = 0; i < nodes.GetCount(); i++) {
+	Node* node = nodes.First;
+	
+	while (node) {
 		NL();
-		Walk(nodes[i]);
+		Walk(node);
 		ES();
+		
+		node = node->Next;
 	}
 	
 	indent--;

@@ -13,6 +13,7 @@ public:
 	Node* ParseBin(int prec, Node* left, CParser::Pos& backupPoint);
 	Node* ParseAtom();
 	Node* ParseNumeric();
+	Node* ParseNamespace();
 	
 private:
 	Assembly& ass;

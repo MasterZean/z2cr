@@ -143,6 +143,9 @@ void ZScanner::ScanNamespace() {
 	if (namespaceCount == 0) {
 		namespacePos = np;
 	}
+	else {
+		Errors.Add(ErrorReporter::Duplicate(np, String().Cat() << "can have only one namespace definition per file, previous was at:\n\t\t" << namespacePos.ToString()));
+	}
 	
 	namespaceCount++;
 }
@@ -176,22 +179,6 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	f.DefPos = dp;
 	f.ParamPos = pp;
 	f.BackName = bname;
-	
-	/*Cout() << "\tFound: ";
-	
-	if (accessType == AccessType::Public)
-		Cout() << "public ";
-	else if (accessType == AccessType::Protected)
-		Cout() << "protected ";
-	else if (accessType == AccessType::Private)
-		Cout() << "private ";
-	
-	if (aFunc)
-		Cout() << "func ";
-	else
-		Cout() << "def ";
-	
-	Cout() << name << "()\n";*/
 	
 	return f;
 }

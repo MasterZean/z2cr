@@ -1,6 +1,10 @@
 #ifndef _z2cr_entities_h_
 #define _z2cr_entities_h_
 
+#include <Core/Core.h>
+
+using namespace Upp;
+
 class Assembly;
 class ZNamespace;
 class ZPackage;
@@ -257,7 +261,7 @@ public:
 	ZSourcePos ParamPos;
 	ZSourcePos BodyPos;
 	
-	Vector<Node*> Nodes;
+	Node Nodes;
 	
 	ZFunction(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Function;
@@ -280,6 +284,14 @@ private:
 class ZDefinition {
 public:
 	Array<ZFunction*> Functions;
+};
+
+class ZNamespaceItem {
+public:
+	ArrayMap<String, ZNamespaceItem> Names;
+	ZNamespace* Namespace = nullptr;
+	
+	ZNamespaceItem* Add(const String& aName);
 };
 
 class ZNamespace {
