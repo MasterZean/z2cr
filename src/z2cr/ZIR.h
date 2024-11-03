@@ -49,6 +49,7 @@ protected:
 	
 	NodePool<MemNode> memNodes;
 	NodePool<DefNode> defNodes;
+	NodePool<BlockNode> blockNodes;
 	
 public:
 	public:
@@ -93,6 +94,8 @@ public:
 	
 	ParamsNode* mem_def(ZFunction& over, Node* object);
 	MemNode* mem_var(ZEntity* var);
+	
+	BlockNode* block();
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)

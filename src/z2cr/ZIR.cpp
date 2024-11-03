@@ -1227,3 +1227,8 @@ MemNode* IR::mem_var(ZEntity* mem) {
 	ASSERT(node->Tt.Class);
 	return node;
 }
+
+BlockNode* IR::block() {
+	return blockNodes.Get();
+}
+

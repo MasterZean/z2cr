@@ -61,6 +61,7 @@ public:
 	void Proc(OpNode& node);
 	void Proc(DefNode& node);
 	void Proc(MemNode& node);
+	void Proc(BlockNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
 	void TranspileDefinitions(ZNamespace& ns);
@@ -69,6 +70,7 @@ public:
 	
 private:
 	void Walk(Node* node);
+	void WalkChildren(Node* node);
 };
 
 #endif

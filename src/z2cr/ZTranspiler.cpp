@@ -125,16 +125,8 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f) {
 	cs << ")";
 	ES();
 	
-	Node* node = f.Nodes.First;
-	
-	while (node) {
-		NL();
-		WalkNode(node);
-		ES();
+	WalkChildren(&f.Nodes);
 		
-		node = node->Next;
-	}
-	
 	NL();
 	cs << "printf(\"exit: %s::%s\\n\", ";
 	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\"";
@@ -152,6 +144,11 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f) {
 }
 
 void ZTranspiler::WalkNode(Node* node) {
+	if (node->NT == NodeType::Block) {
+		Walk(node);
+		return;
+	}
+	
 	if (node->Tt.Class == ass.CQWord) {
 		cs << "printf(\"%ull\\n\", ";
 		Walk(node);
@@ -241,6 +238,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc((RawArrayNode*)node);
 	else if (node->NT == NodeType::Using)
 		Proc((UsingNode*)node);*/
+	else if (node->NT == NodeType::Block)
+		Proc(*(BlockNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -401,4 +400,32 @@ void ZTranspiler::Proc(MemNode& node) {
 	ASSERT(node.Mem);
 	
 	cs << node.Mem->BackName;
+}
+
+void ZTranspiler::Proc(BlockNode& node) {
+	NL();
+	cs << "{";
+	EL();
+	
+	indent++;
+	WalkChildren(&node.Nodes);
+	indent--;
+	
+	NL();
+	cs << '}';
+	EL();
+}
+
+void ZTranspiler::WalkChildren(Node* node) {
+	Node* child = node->First;
+	
+	while (child) {
+		if (child->NT != NodeType::Block)
+			NL();
+		WalkNode(child);
+		if (child->NT != NodeType::Block)
+			ES();
+		
+		child = child->Next;
+	}
 }

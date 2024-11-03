@@ -207,7 +207,7 @@ void ZScanner::ScanBlock() {
 	parser.EatNewlines();
 	
 	while (!parser.IsChar('}')) {
-		if (parser.Char('{')) {
+		if (parser.IsChar('{')) {
 			parser.EatNewlines();
 		    ScanBlock();
 		}

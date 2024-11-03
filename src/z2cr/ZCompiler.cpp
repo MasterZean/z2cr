@@ -114,6 +114,28 @@ bool ZCompiler::PreCompileVars(ZNamespace& ns) {
 	return true;
 }
 
+void printNode(Node* node, int level = 0) {
+	String s;
+	for (int i = 0; i < level; i++)
+		s << "\t";
+	s << "<" << (int)node->NT << ">\n";
+	DUMP(s);
+	
+	Node* child = node->First;
+	
+	while (child) {
+		printNode(child, level + 1);
+		
+		child = child->Next;
+	}
+	
+	s = "";
+	for (int i = 0; i < level; i++)
+		s << "\t";
+	s << "</" << (int)node->NT << ">\n";
+	DUMP(s);
+}
+
 bool ZCompiler::Compile(ZNamespace& ns) {
 	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
 		ZDefinition& d = ns.Definitions[i];
@@ -121,30 +143,67 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
 			
-			Compile(f);
+			Compile(f, f.Nodes);
+			
+			printNode(&f.Nodes);
 		}
 	}
 	
 	return true;
 }
 
-bool ZCompiler::Compile(ZFunction& f) {
+bool ZCompiler::Compile(ZFunction& f, Node& target) {
 	ZParser parser(f.BodyPos);
 	
 	parser.Expect('{');
 	
 	while (!parser.IsChar('}')) {
-		ZExprParser ep(parser, irg);
-		Node* node = ep.Parse();
-		
-		f.AddNode(node);
-		
-		parser.ExpectEndStat();
+		if (parser.Char('{')) {
+			Node* node = CompileBlock(f, parser);
+			target.AddChild(node);
+		}
+		else {
+			ZExprParser ep(parser, irg);
+			Node* node = ep.Parse();
+			
+			target.AddChild(node);
+			
+			parser.ExpectEndStat();
+		}
 	}
 	
 	parser.Expect('}');
 	
 	return true;
+}
+
+Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser) {
+	f.Blocks.Add();
+	f.Blocks.Top().Temps = 0;
+	
+	BlockNode* block = irg.block();
+	
+	while (!parser.IsChar('}')) {
+		if (parser.Char('{')) {
+			Node* node = CompileBlock(f, parser);
+			block->Nodes.AddChild(node);
+		}
+		else {
+			ZExprParser ep(parser, irg);
+			Node* node = ep.Parse();
+			
+			block->Nodes.AddChild(node);
+			
+			parser.ExpectEndStat();
+		}
+	}
+	
+	parser.Expect('}');
+	parser.EatNewlines();
+	
+	f.Blocks.Drop();
+	
+	return block;
 }
 
 bool ZCompiler::CompileVar(ZVariable& v) {

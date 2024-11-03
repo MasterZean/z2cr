@@ -97,6 +97,15 @@ public:
 	}
 };
 
+class BlockNode: public Node {
+public:
+	Node Nodes;
+	
+	BlockNode() {
+		NT = NodeType::Block;
+	}
+};
+
 class MemNode: public Node/*: public ObjectNode*/ {
 public:
 	//String Mem;

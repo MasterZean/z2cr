@@ -90,6 +90,7 @@ public:
 		Array,
 		Using,
 		Params,
+		Block,
 	};
 };
 
@@ -139,7 +140,7 @@ public:
 		DblVal = d;
 	}
 
-	void Add(Node* node) {
+	void AddChild(Node* node) {
 		if (First == NULL) {
 			First = node;
 			Last = node;
@@ -257,6 +258,12 @@ public:
 	}
 };
 
+class ZBlock: Moveable<ZBlock> {
+public:
+	WithDeepCopy<VectorMap<String, ZVariable*>> Vars;
+	int Temps = 0;
+};
+
 class ZFunction: public ZEntity {
 public:
 	bool IsFunction = false;
@@ -268,6 +275,8 @@ public:
 	
 	Node Nodes;
 	
+	WithDeepCopy<Vector<ZBlock>> Blocks;
+	
 	ZFunction(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Function;
 	}
@@ -276,10 +285,6 @@ public:
 	
 	const String& DupSig() const {
 		return dsig;
-	}
-	
-	void AddNode(Node* node) {
-		Nodes.Add(node);
 	}
 	
 private:
