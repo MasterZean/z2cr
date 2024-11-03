@@ -88,6 +88,7 @@ public:
 		Alloc,
 		Array,
 		Using,
+		Params,
 	};
 };
 

@@ -47,9 +47,11 @@ protected:
 	NodePool<ConstNode> constNodes;
 	NodePool<CastNode> castNodes;
 	
+	NodePool<DefNode> defNodes;
+	
 public:
 	public:
-	bool FoldConstants = true;
+	bool FoldConstants = false;
 	
 	IR(Assembly& ass): ass(ass) {
 	}
@@ -87,6 +89,8 @@ public:
 	Node* deref(Node* node);
 	
 	Node* cast(Node* left, ObjectType* tt, bool sc = true, bool ptr = false);
+	
+	ParamsNode* mem_def(ZFunction& over, Node* object);
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)

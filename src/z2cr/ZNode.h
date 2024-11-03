@@ -76,4 +76,25 @@ public:
 	}
 };
 
+class ParamsNode: public Node {
+public:
+	Vector<Node*> Params;
+	
+	ParamsNode() {
+		NT = NodeType::Params;
+	}
+};
+
+class DefNode: public ParamsNode {
+public:
+	::ZFunction* Overload = nullptr;
+	Node* Object = nullptr;
+	bool Property = false;
+	bool IsDestructor = false;
+
+	DefNode() {
+		NT = NodeType::Def;
+	}
+};
+
 #endif

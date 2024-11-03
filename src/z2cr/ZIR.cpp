@@ -1172,3 +1172,35 @@ Node* IR::cast(Node* left, ObjectType* tt, bool sc, bool ptr) {
 	ASSERT(node->Tt.Class);
 	return node;
 }
+
+ParamsNode* IR/*AST*/::mem_def(ZFunction& over, Node* object) {
+	/*if (over.IsIntrinsic && over.IsIntrinsicType != -1) {
+		IntNode* op = intNodes.Get();
+		op->I = (IntNode::Type)over.IsIntrinsicType;
+		op->HasSe = true;
+		op->SetType(over.Return.Tt);
+		
+		return op;
+	}*/
+	
+	DefNode* node = defNodes.Get();
+	node->Overload = &over;
+	node->Object = object;
+	
+	node->SetType(ass.CVoid->Tt);
+	//node->SetType(over.Return.Tt);
+	//node->IsRef = over.Return.IsRef;
+	//node->IsEfRef = over.Return.IsEfRef;
+	//node->IsIndirect = over.Return.IsRef;
+	
+	//node->IsAddressable = over.Return.IsIndirect;
+		
+	node->HasSe = true;
+	node->LValue = node->IsRef;
+	
+	//node->xxxIsAddressable = over.Return.IsIndirect;
+	//node->xxxIsFormalRef = over.RType == Variable::tyRef || over.RType == Variable::tyConstRef;
+	
+	ASSERT(node->Tt.Class);
+	return node;
+}

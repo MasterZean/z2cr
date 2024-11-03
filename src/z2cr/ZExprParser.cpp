@@ -84,6 +84,8 @@ Node* ZExprParser::ParseNamespace() {
 	Point opp = parser.GetPoint();
 	ZNamespaceItem* ns = &ass.NsLookup;
 	auto s = parser.ReadId();
+	auto total = s;
+	
 	int index = ns->Names.Find(s);
 		
 	if (index == -1)
@@ -92,27 +94,52 @@ Node* ZExprParser::ParseNamespace() {
 	
 	opp = parser.GetPoint();
 	
-	if (ns->Namespace)
-		return irg.const_void();
-	
 	if (!parser.IsChar('.'))
 		parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
 
 	while (parser.Char('.')) {
-		s = parser.ExpectId();
-		index = ns->Names.Find(s);
+		if (parser.Char('@')) {
+			// only namespace member
+			s = "@" + parser.ExpectId();
+			
+			ASSERT(ns->Namespace);
+			return ParseMember(*ns->Namespace, s, opp);
+		}
+		else {
+			s = parser.ExpectId();
+			
+			index = ns->Names.Find(s);
+			
+			if (index != -1) {
+				// still a namespace, ask for more '.'
+				ns = &ns->Names[index];
+				opp = parser.GetPoint();
+				if (/*!ns->Namespace &&*/ !parser.IsChar('.'))
+					parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
+			}
+			else {
+				// a namespace child
+				return ParseMember(*ns->Namespace, s, opp);
+			}
+		}
 		
-		if (index == -1)
-			parser.Error(opp, "unknown identifier: " + s);
-		
-		ns = &ns->Names[index];
-		opp = parser.GetPoint();
-		if (!ns->Namespace && !parser.Char('.'))
-			parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
+		total << "." << s;
 	}
 		
 	//TODO: fix
 	return irg.const_void();
+}
+
+Node *ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp) {
+	int index = ns.Definitions.Find(aName);
+				
+	if (index == -1)
+		parser.Error(opp, "namespace '" + ns.Name + "' does not have a member called: '" + aName + "'");
+	
+	parser.Expect('(');
+	parser.Expect(')');
+	
+	return irg.mem_def(*ns.Definitions[index].Functions[0], nullptr);
 }
 
 Node* ZExprParser::ParseNumeric() {

@@ -59,14 +59,14 @@ public:
 	
 	void Walk(ConstNode& node, Stream& stream);
 	void Walk(OpNode& node);
-	
-	void Walk(Node* node);
+	void Walk(DefNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
 	
-	virtual void WalkNode(Node* node) {
-		Walk(node);
-	}
+	virtual void WalkNode(Node* node);
+	
+private:
+	void Walk(Node* node);
 };
 
 #endif

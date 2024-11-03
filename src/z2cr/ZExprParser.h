@@ -14,6 +14,7 @@ public:
 	Node* ParseAtom();
 	Node* ParseNumeric();
 	Node* ParseNamespace();
+	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp);
 	
 private:
 	Assembly& ass;

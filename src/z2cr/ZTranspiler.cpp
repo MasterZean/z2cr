@@ -12,6 +12,8 @@ void ZTranspiler::WriteIntro() {
 	
 	NL();
 	EL();
+	
+	//new llvm::LLVMContext();
 }
 
 void ZTranspiler::WriteOutro() {
@@ -81,7 +83,7 @@ void ZTranspiler::WriteFunctionBody(Node& nodes) {
 	
 	while (node) {
 		NL();
-		Walk(node);
+		WalkNode(node);
 		ES();
 		
 		node = node->Next;
@@ -97,6 +99,54 @@ void ZTranspiler::WriteFunctionBody(Node& nodes) {
 	EL();
 }
 
+void ZTranspiler::WalkNode(Node* node) {
+	if (node->Tt.Class == ass.CQWord) {
+		cs << "printf(\"%ull\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CLong) {
+		cs << "printf(\"%ll\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CDWord || node->Tt.Class == ass.CWord || node->Tt.Class == ass.CByte) {
+		cs << "printf(\"%u\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CPtrSize) {
+		cs << "printf(\"%u\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CInt || node->Tt.Class == ass.CSmall || node->Tt.Class == ass.CShort) {
+		cs << "printf(\"%d\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CFloat) {
+		cs << "printf(\"%g\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CDouble) {
+		cs << "printf(\"%g\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CBool) {
+		cs << "printf(\"%s\\n\", ";
+		Walk(node);
+		cs << ")";
+	}
+	else if (node->Tt.Class == ass.CChar) {
+		Walk(node);
+	}
+	else
+		Walk(node);
+}
+
 void ZTranspiler::Walk(Node* node) {
 	ASSERT_(node, "Null node");
 	if (node->NT == NodeType::Const)
@@ -110,10 +160,10 @@ void ZTranspiler::Walk(Node* node) {
 	else if (node->NT == NodeType::Cast)
 		Walk((CastNode*)node);
 	else if (node->NT == NodeType::Temporary)
-		Walk((TempNode*)node);
+		Walk((TempNode*)node);*/
 	else if (node->NT == NodeType::Def)
-		Walk((DefNode*)node);
-	else if (node->NT == NodeType::List)
+		Walk(*(DefNode*)node);
+	/*else if (node->NT == NodeType::List)
 		Walk((ListNode*)node);
 	else if (node->NT == NodeType::Construct)
 		Walk((ConstructNode*)node);
@@ -170,7 +220,6 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 			stream << Format64(node.IntVal) << "u";
 	}
 	else if (node.Tt.Class == ass.CInt || node.Tt.Class == ass.CSmall || node.Tt.Class == ass.CShort) {
-		stream << "printf(\"%d\\n\", ";
 		if (node.Base == 16) {
 			if (node.IntVal == -2147483648ll)
 				stream << "(int32)" << "0x" << ToUpper(Format64Hex(node.IntVal)) << "ll";
@@ -182,10 +231,8 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 			else
 				stream << IntStr64(node.IntVal);
 		}
-		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CFloat) {
-		stream << "printf(\"%g\\n\", ";
 		if (node.DblVal != node.DblVal)
 			stream << "((float)(1e+300 * 1e+300) * 0.0f)";
 		else if (node.DblVal == (float)(1e+300 * 1e+300))
@@ -203,10 +250,8 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 				stream << 'f';
 			}
 		}
-		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CDouble) {
-		stream << "printf(\"%g\\n\", ";
 		if (node.DblVal != node.DblVal)
 			stream << "((float)(1e+300 * 1e+300) * 0.0f)";
 		else if (node.DblVal == (float)(1e+300 * 1e+300))
@@ -223,15 +268,12 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 					stream << ".0";
 			}
 		}
-		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CBool) {
-		stream << "printf(\"%s\\n\", ";
 		if (node.IntVal == 0)
 			stream << "false";
 		else
 			stream << "true";
-		stream << ")";
 	}
 	else if (node.Tt.Class == ass.CChar) {
 		if (node.IntVal >= 127) {
@@ -277,11 +319,28 @@ void ZTranspiler::Walk(OpNode& node) {
 	ASSERT(l);
 	ASSERT(r);
 	
+	cs << "(";
 	Walk(l);
 	cs << ' ' << opss[node.Op];
 	if (node.Assign)
 		cs << '=';
 	cs << ' ';
 	Walk(r);
+	cs << ")";
 }
 
+void ZTranspiler::Walk(DefNode& node) {
+	cs << node.Overload->GetNamespace().BackName << "::" << node.Overload->BackName;
+	cs << '(';
+	
+	int count = node.Params.GetCount();
+	for (int i = 0; i < count; i++) {
+		Node* p = node.Params[i];
+
+		Walk(p);
+		
+		if (i < count -1)
+			cs << ", ";
+	}
+	cs << ')';
+}
