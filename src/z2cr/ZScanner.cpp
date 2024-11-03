@@ -110,9 +110,28 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 		f.DefPos = dp;
 		f.BackName = name;
 		
-		parser.Expect(':');
-				
-		parser.ExpectId();
+		if (parser.Char(':')) {
+			parser.ExpectId();
+			
+			if (parser.Char('='))
+				while (!(parser.IsChar(';')/* || (parser.GetSkipNewLines() == false && (parser.PeekChar() == '\n' || parser.PeekChar() == '\r'))*/)) {
+					if (parser.IsChar('{'))
+						ScanBlock();
+					else
+						ScanToken();
+				}
+						
+		}
+		else {
+			parser.Expect('=');
+			
+			while (!(parser.IsChar(';'))) {
+				if (parser.IsChar('{'))
+						ScanBlock();
+					else
+						ScanToken();
+			}
+		}
 		
 		parser.ExpectEndStat();
 		

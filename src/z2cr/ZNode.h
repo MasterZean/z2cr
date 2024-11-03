@@ -97,4 +97,47 @@ public:
 	}
 };
 
+class MemNode: public Node/*: public ObjectNode*/ {
+public:
+	//String Mem;
+	ZEntity* Mem = nullptr;
+
+	bool IsThis = false;
+	bool IsThisNop = false;
+	bool IsParam = false;
+	bool IsLocal = false;
+	bool IsClass = false;
+
+	MemNode() {
+		NT = NodeType::Memory;
+	}
+	
+	/*ZVariable* GetFullMemberAssignment() {
+		if (Object != nullptr) {
+			if (Object->NT == NodeType::Memory && ((MemNode*)Object)->IsThis) {
+			}
+			else
+				return nullptr;
+		}
+		
+		if (Var && IsClass)
+			return Var;
+		
+		if (Object == nullptr)
+			return nullptr;
+		
+		if (Object->NT != NodeType::Memory)
+			return nullptr;
+		
+		MemNode& mem = *(MemNode*)(Object);
+		if (mem.IsThis == false)
+			return nullptr;
+		
+		if (Var == nullptr)
+			return nullptr;
+		
+		return Var;
+	}*/
+};
+
 #endif

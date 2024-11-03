@@ -21,6 +21,7 @@ enum class AccessType {
 enum class EntityType {
 	Unknown,
 	Variable,
+	FunctionSet,
 	Function,
 	Class,
 };
@@ -248,6 +249,9 @@ public:
 
 class ZVariable: public ZEntity {
 public:
+	Node* Value = nullptr;
+	ObjectType Tt;
+	
 	ZVariable(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Variable;
 	}
@@ -282,9 +286,13 @@ private:
 	String dsig;
 };
 
-class ZDefinition {
+class ZDefinition: public ZEntity {
 public:
 	Array<ZFunction*> Functions;
+	
+	ZDefinition(ZNamespace& aNmspace): ZEntity(aNmspace) {
+		Type = EntityType::FunctionSet;
+	}
 };
 
 class ZNamespaceItem {
@@ -304,6 +312,7 @@ public:
 	Array<ZVariable> PreVariables;
 	
 	ArrayMap<String, ZDefinition> Definitions;
+	ArrayMap<String, ZVariable*> Variables;
 	
 	ZFunction& PrepareFunction(const String& aName);
 	ZVariable& PrepareVariable(const String& aName);

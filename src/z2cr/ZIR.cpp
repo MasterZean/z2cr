@@ -1204,3 +1204,26 @@ ParamsNode* IR/*AST*/::mem_def(ZFunction& over, Node* object) {
 	ASSERT(node->Tt.Class);
 	return node;
 }
+
+MemNode* IR::mem_var(ZEntity* mem) {
+	bool isThis = false;
+
+	MemNode* node = memNodes.Get();
+	node->Mem = mem;
+	
+	if (mem->Type == EntityType::Variable) {
+		ZVariable& v = *((ZVariable*)mem);
+		node->SetType(v.Tt);
+	}
+	else if (mem->Type == EntityType::FunctionSet) {
+		node->SetType(ass.CDef->Tt);
+	}
+	
+	/*node->LValue = n ? n->LValue : true;
+	node->IsConst = var.I.IsConst;
+	if (node->LValue && node->IsConst)
+		node->LValue = false;*/
+	
+	ASSERT(node->Tt.Class);
+	return node;
+}

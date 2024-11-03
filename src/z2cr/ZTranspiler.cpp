@@ -48,6 +48,19 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 	
 	indent++;
 	
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		auto v = *ns.Variables[i];
+		ASSERT(v.Tt.Class);
+		ASSERT(v.Value);
+		
+		NL();
+		cs << "extern "<< v.Tt.Class->BackName << " " << v.Name;
+		ES();
+	}
+	
+	if (ns.Variables.GetCount())
+		EL();
+		
 	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
 		for (int j = 0; j < ns.Definitions[i].Functions.GetCount(); j++) {
 			NL();
@@ -64,6 +77,33 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 	EL();
 }
 
+void ZTranspiler::TranspileDefinitions(ZNamespace& ns) {
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		auto v = *ns.Variables[i];
+		ASSERT(v.Tt.Class);
+		ASSERT(v.Value);
+		
+		NL();
+		cs << v.Tt.Class->BackName << " " << v.GetNamespace().BackName << "::" << v.Name << " = ";
+		Walk(v.Value);
+		ES();
+	}
+	
+	if (ns.Variables.GetCount())
+		EL();
+	
+	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
+		ZDefinition& d = ns.Definitions[i];
+		
+		for (int j = 0; j < d.Functions.GetCount(); j++) {
+			ZFunction& f = *d.Functions[j];
+			
+			WriteFunctionDecl(f);
+			WriteFunctionBody(f);
+		}
+	}
+}
+
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	cs << "void " << f.BackName << "()";
 }
@@ -72,14 +112,20 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	cs << "void " << f.GetNamespace().BackName << "::" << f.BackName << "()";
 }
 
-void ZTranspiler::WriteFunctionBody(Node& nodes) {
+void ZTranspiler::WriteFunctionBody(ZFunction& f) {
 	NL();
 	cs << " {";
 	EL();
 	
 	indent++;
 	
-	Node* node = nodes.First;
+	NL();
+	cs << "printf(\"enter: %s::%s\\n\", ";
+	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\"";
+	cs << ")";
+	ES();
+	
+	Node* node = f.Nodes.First;
 	
 	while (node) {
 		NL();
@@ -88,6 +134,12 @@ void ZTranspiler::WriteFunctionBody(Node& nodes) {
 		
 		node = node->Next;
 	}
+	
+	NL();
+	cs << "printf(\"exit: %s::%s\\n\", ";
+	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\"";
+	cs << ")";
+	ES();
 	
 	indent--;
 	
@@ -138,7 +190,7 @@ void ZTranspiler::WalkNode(Node* node) {
 	else if (node->Tt.Class == ass.CBool) {
 		cs << "printf(\"%s\\n\", ";
 		Walk(node);
-		cs << ")";
+		cs << " ? \"true\" : \"false\")";
 	}
 	else if (node->Tt.Class == ass.CChar) {
 		Walk(node);
@@ -150,50 +202,50 @@ void ZTranspiler::WalkNode(Node* node) {
 void ZTranspiler::Walk(Node* node) {
 	ASSERT_(node, "Null node");
 	if (node->NT == NodeType::Const)
-		Walk(*(ConstNode*)node, cs);
+		Proc(*(ConstNode*)node, cs);
 	else if (node->NT == NodeType::BinaryOp)
-		Walk(*(OpNode*)node);
+		Proc(*(OpNode*)node);
 	/*else if (node->NT == NodeType::UnaryOp)
-		Walk((UnaryOpNode*)node);
+		Walk((UnaryOpNode*)node);*/
 	else if (node->NT == NodeType::Memory)
-		Walk((MemNode*)node);
-	else if (node->NT == NodeType::Cast)
-		Walk((CastNode*)node);
+		Proc(*(MemNode*)node);
+	/*else if (node->NT == NodeType::Cast)
+		Proc((CastNode*)node);
 	else if (node->NT == NodeType::Temporary)
-		Walk((TempNode*)node);*/
+		Proc((TempNode*)node);*/
 	else if (node->NT == NodeType::Def)
-		Walk(*(DefNode*)node);
+		Proc(*(DefNode*)node);
 	/*else if (node->NT == NodeType::List)
-		Walk((ListNode*)node);
+		Proc((ListNode*)node);
 	else if (node->NT == NodeType::Construct)
-		Walk((ConstructNode*)node);
+		Proc((ConstructNode*)node);
 	else if (node->NT == NodeType::Ptr)
-		Walk((PtrNode*)node);
+		Proc((PtrNode*)node);
 	else if (node->NT == NodeType::Index)
-		Walk((IndexNode*)node);
+		Proc((IndexNode*)node);
 	else if (node->NT == NodeType::SizeOf)
-		Walk((SizeOfNode*)node);
+		Proc((SizeOfNode*)node);
 	else if (node->NT == NodeType::Property)
-		Walk((PropertyNode*)node);
+		Proc((PropertyNode*)node);
 	else if (node->NT == NodeType::Deref)
-		Walk((DerefNode*)node);
+		Proc((DerefNode*)node);
 	else if (node->NT == NodeType::Intrinsic)
-		Walk((IntNode*)node);
+		Proc((IntNode*)node);
 	else if (node->NT == NodeType::Return)
-		Walk((ReturnNode*)node);
+		Proc((ReturnNode*)node);
 	else if (node->NT == NodeType::Var)
-		Walk((VarNode*)node);
+		Proc((VarNode*)node);
 	else if (node->NT == NodeType::Alloc)
-		Walk((AllocNode*)node);
+		Proc((AllocNode*)node);
 	else if (node->NT == NodeType::Array)
-		Walk((RawArrayNode*)node);
+		Proc((RawArrayNode*)node);
 	else if (node->NT == NodeType::Using)
-		Walk((UsingNode*)node);*/
+		Proc((UsingNode*)node);*/
 	else
 		ASSERT_(0, "Invalid node");
 }
 
-void ZTranspiler::Walk(ConstNode& node, Stream& stream)
+void ZTranspiler::Proc(ConstNode& node, Stream& stream)
 {
 	if (node.Tt.Class == ass.CQWord) {
 		if (IsNull(node.IntVal))
@@ -313,7 +365,7 @@ void ZTranspiler::Walk(ConstNode& node, Stream& stream)
 	}
 }
 
-void ZTranspiler::Walk(OpNode& node) {
+void ZTranspiler::Proc(OpNode& node) {
 	Node *l = node.OpA;
 	Node *r = node.OpB;
 	ASSERT(l);
@@ -329,7 +381,7 @@ void ZTranspiler::Walk(OpNode& node) {
 	cs << ")";
 }
 
-void ZTranspiler::Walk(DefNode& node) {
+void ZTranspiler::Proc(DefNode& node) {
 	cs << node.Overload->GetNamespace().BackName << "::" << node.Overload->BackName;
 	cs << '(';
 	
@@ -343,4 +395,10 @@ void ZTranspiler::Walk(DefNode& node) {
 			cs << ", ";
 	}
 	cs << ')';
+}
+
+void ZTranspiler::Proc(MemNode& node) {
+	ASSERT(node.Mem);
+	
+	cs << node.Mem->BackName;
 }

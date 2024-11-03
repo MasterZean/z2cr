@@ -37,8 +37,11 @@ private:
 	
 	Vector<ZFunction*> FindMain(ZSource& src);
 	
+	bool PreCompileVars(ZNamespace& ns);
+	
 	bool Compile(ZNamespace& ns);
 	bool Compile(ZFunction& f);
+	bool CompileVar(ZVariable& v);
 	
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
 	bool Transpile(ZTranspiler& cpp, ZFunction& f);

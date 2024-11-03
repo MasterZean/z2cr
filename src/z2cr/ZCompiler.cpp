@@ -76,6 +76,9 @@ bool ZCompiler::Compile() {
 		return false;
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
+		PreCompileVars(ass.Namespaces[i]);
+	
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
 	
 	OutPath = AppendFileName(BuildPath, "out.cpp");
@@ -86,7 +89,7 @@ bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		cpp.TranspileDeclarations(ass.Namespaces[i]);
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
-		Transpile(cpp, ass.Namespaces[i]);
+		cpp.TranspileDefinitions(ass.Namespaces[i]);
 	cpp.WriteOutro();
 	
 	return true;
@@ -100,6 +103,15 @@ Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
 	}
 	
 	return mains;
+}
+
+bool ZCompiler::PreCompileVars(ZNamespace& ns) {
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		ZVariable* v = ns.Variables[i];
+		CompileVar(*v);
+	}
+	
+	return true;
 }
 
 bool ZCompiler::Compile(ZNamespace& ns) {
@@ -135,24 +147,31 @@ bool ZCompiler::Compile(ZFunction& f) {
 	return true;
 }
 
-bool ZCompiler::Transpile(ZTranspiler& cpp, ZNamespace& ns){
-	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
-		ZDefinition& d = ns.Definitions[i];
+bool ZCompiler::CompileVar(ZVariable& v) {
+	ZParser parser(v.DefPos);
+	
+	parser.ExpectId();
+	
+	if (parser.Char(':')) {
+		parser.ExpectId();
 		
-		for (int j = 0; j < d.Functions.GetCount(); j++) {
-			ZFunction& f = *d.Functions[j];
+		if (parser.Char('=')) {
+			ZExprParser ep(parser, irg);
+			Node* node = ep.Parse();
 			
-			Transpile(cpp, f);
+			v.Value = node;
+			v.Tt = node->Tt;
 		}
 	}
-	
-	return true;
-}
-
-bool ZCompiler::Transpile(ZTranspiler& cpp, ZFunction& f) {
-	cpp.WriteFunctionDecl(f);
-	
-	cpp.WriteFunctionBody(f.Nodes);
+	else {
+		parser.Expect('=');
+		
+		ZExprParser ep(parser, irg);
+		Node* node = ep.Parse();
+		
+		v.Value = node;
+		v.Tt = node->Tt;
+	}
 	
 	return true;
 }
@@ -187,7 +206,7 @@ bool ZCompiler::CheckForDuplicates() {
 bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
 		ZFunction& f = ns.PreFunctions[i];
-		ZDefinition& d = ns.Definitions.GetAdd(f.Name);
+		ZDefinition& d = ns.Definitions.GetAdd(f.Name, ZDefinition(ns));
 		
 		f.GenerateSignatures();
 		
@@ -219,10 +238,24 @@ bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 	for (int i = 0; i < ns.PreVariables.GetCount(); i++) {
 		ZVariable& f = ns.PreVariables[i];
 		
+		bool valid = true;
 		int index = dupes.Find(f.Name);
 		if (index != -1) {
 			Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
 			list.Add(f.DefPos);
+			valid = false;
+		}
+		
+		if (valid) {
+			index = ns.Variables.Find(f.Name);
+			if (index != -1) {
+				Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
+				list.Add(f.DefPos);
+				valid = false;
+			}
+			
+			if (valid)
+				ns.Variables.Add(f.Name, &f);
 		}
 	}
 	

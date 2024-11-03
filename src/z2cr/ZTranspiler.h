@@ -55,13 +55,15 @@ public:
 	
 	void WriteFunctionDef(ZFunction& f);
 	void WriteFunctionDecl(ZFunction& f);
-	void WriteFunctionBody(Node& nodes);
+	void WriteFunctionBody(ZFunction& f);
 	
-	void Walk(ConstNode& node, Stream& stream);
-	void Walk(OpNode& node);
-	void Walk(DefNode& node);
+	void Proc(ConstNode& node, Stream& stream);
+	void Proc(OpNode& node);
+	void Proc(DefNode& node);
+	void Proc(MemNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
+	void TranspileDefinitions(ZNamespace& ns);
 	
 	virtual void WalkNode(Node* node);
 	

@@ -47,6 +47,7 @@ protected:
 	NodePool<ConstNode> constNodes;
 	NodePool<CastNode> castNodes;
 	
+	NodePool<MemNode> memNodes;
 	NodePool<DefNode> defNodes;
 	
 public:
@@ -91,6 +92,7 @@ public:
 	Node* cast(Node* left, ObjectType* tt, bool sc = true, bool ptr = false);
 	
 	ParamsNode* mem_def(ZFunction& over, Node* object);
+	MemNode* mem_var(ZEntity* var);
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)

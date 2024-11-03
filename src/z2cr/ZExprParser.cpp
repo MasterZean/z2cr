@@ -132,14 +132,23 @@ Node* ZExprParser::ParseNamespace() {
 
 Node *ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp) {
 	int index = ns.Definitions.Find(aName);
-				
+	
+	if (index != -1) {
+		parser.Expect('(');
+		parser.Expect(')');
+	
+		return irg.mem_def(*ns.Definitions[index].Functions[0], nullptr);
+	}
+	
+	index = ns.Variables.Find(aName);
+	if (index != -1) {
+		return irg.mem_var(ns.Variables[index]);
+	}
+	
 	if (index == -1)
 		parser.Error(opp, "namespace '" + ns.Name + "' does not have a member called: '" + aName + "'");
 	
-	parser.Expect('(');
-	parser.Expect(')');
-	
-	return irg.mem_def(*ns.Definitions[index].Functions[0], nullptr);
+	return nullptr;
 }
 
 Node* ZExprParser::ParseNumeric() {
