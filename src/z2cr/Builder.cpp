@@ -81,7 +81,7 @@ void Builder::DoEnvMSC() {
 bool Builder::CompileMSC(const String& src, const String& out) {
 	StopWatch sw;
 	
-	Cout() << "\tbuilding " << GetFileTitle(src) << "... ";
+	Cout() << "building " << GetFileTitle(src) << "... ";
 	String cmd;
 	String t, tt;
 	
@@ -141,7 +141,7 @@ bool Builder::BuildMSC(const String& path, const String& origPath) {
 		result = false;
 	
 	sw.Reset();
-	Cout() << "\tlinking... ";
+	Cout() << "linking... ";
 	d = "";
 	t = "";
 	tt = "";
@@ -207,7 +207,7 @@ void Builder::DoEnvGCC() {
 bool Builder::CompileGCC(const String& src, const String& out) {
 	StopWatch sw;
 	
-	Cout() << "\tbuilding " << GetFileTitle(src) << "... ";
+	Cout() << "building " << GetFileTitle(src) << "... ";
 	String cmd;
 	String t, tt;
 	
@@ -308,7 +308,7 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 	StopWatch sw;
 	String d, t, tt;
 	
-	Cout() << "\tlinking... ";
+	Cout() << "linking... ";
 	if (arch == "x64")
 		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -lwinmm -luser32 --static -o \"" + outPath + outTitle + ".exe\" -m";
 	else
@@ -355,7 +355,7 @@ bool Builder::CompileMSC(const String& src, const String& out) {
 bool Builder::CompileGCC(const String& src, const String& out) {
 	StopWatch sw;
 	
-	Cout() << "\tbuilding " << GetFileTitle(src) << "... ";
+	Cout() << "building " << GetFileTitle(src) << "... ";
 	String cmd;
 	String t, tt;
 	
@@ -428,7 +428,7 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 	StopWatch sw;
 	String d, t, tt;
 	
-	Cout() << "\tlinking... ";
+	Cout() << "linking... ";
 	
 	d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -o \"" + outPath + outTitle + "\" -m";
 	if (arch == "x64")

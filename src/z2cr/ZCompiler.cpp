@@ -52,8 +52,10 @@ bool ZCompiler::Compile() {
 	
 	if (mainPath.GetCount()) {
 		ZSource* src = ass.FindSource(mainPath);
-		if (!src)
+		if (!src) {
+			ErrorReporter::CantOpenFile(mainPath);
 			return false;
+		}
 		
 		auto vf = FindMain(*src);
 		if (vf.GetCount() == 0)
@@ -80,6 +82,15 @@ bool ZCompiler::Compile() {
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
+	
+	String cppCode = AppendFileName(BuildPath, "cppcode.h");
+	if (!FileExists(cppCode))
+		if (!FileCopy(
+				AppendFileName(AppendFileName(GetCurrentDirectory(), "codegen"), "cppcode.h"),
+								cppCode)) {
+			Cout() << "File copy error! Exiting!\n";
+			return false;
+	}
 	
 	OutPath = AppendFileName(BuildPath, "out.cpp");
 	FileOut out(OutPath);
@@ -143,7 +154,7 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
 			
-			Compile(f, f.Nodes);
+			CompileFunc(f, f.Nodes);
 			
 			printNode(&f.Nodes);
 		}
@@ -152,29 +163,43 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 	return true;
 }
 
-bool ZCompiler::Compile(ZFunction& f, Node& target) {
+bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	ZParser parser(f.BodyPos);
 	
 	parser.Expect('{');
 	
 	while (!parser.IsChar('}')) {
-		if (parser.Char('{')) {
-			Node* node = CompileBlock(f, parser);
+		Node* node = CompileStatement(f, parser);
+		
+		if (node != nullptr)
 			target.AddChild(node);
-		}
-		else {
-			ZExprParser ep(parser, irg);
-			Node* node = ep.Parse();
-			
-			target.AddChild(node);
-			
-			parser.ExpectEndStat();
-		}
 	}
 	
 	parser.Expect('}');
 	
 	return true;
+}
+
+Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
+	if (parser.Char('{')) {
+		Node* node = CompileBlock(f, parser);
+		
+		return node;
+	}
+	else if (parser.Char(';'))
+		return nullptr;
+	else if (parser.Id("if"))
+		return CompileIf(f, parser);
+	else {
+		ZExprParser ep(parser, irg);
+		Node* node = ep.Parse();
+		
+		parser.ExpectEndStat();
+		
+		return node;
+	}
+	
+	return nullptr;
 }
 
 Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser) {
@@ -184,18 +209,10 @@ Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser) {
 	BlockNode* block = irg.block();
 	
 	while (!parser.IsChar('}')) {
-		if (parser.Char('{')) {
-			Node* node = CompileBlock(f, parser);
+		Node* node = CompileStatement(f, parser);
+		
+		if (node != nullptr)
 			block->Nodes.AddChild(node);
-		}
-		else {
-			ZExprParser ep(parser, irg);
-			Node* node = ep.Parse();
-			
-			block->Nodes.AddChild(node);
-			
-			parser.ExpectEndStat();
-		}
 	}
 	
 	parser.Expect('}');
@@ -204,6 +221,26 @@ Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser) {
 	f.Blocks.Drop();
 	
 	return block;
+}
+
+Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser) {
+	parser.Expect('(');
+	Point p = parser.GetPoint();
+	ZExprParser ep(parser, irg);
+	Node* node = ep.Parse();
+	parser.Expect(')');
+	parser.EatNewlines();
+	
+	if (node->Tt.Class != ass.CBool)
+		parser.Error(p, "if condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
+	
+	Node* tb = CompileStatement(f, parser);
+	Node* fb = nullptr;
+	
+	if (parser.Id("else"))
+		fb = CompileStatement(f, parser);
+	
+	return irg.ifcond(node, tb, fb);
 }
 
 bool ZCompiler::CompileVar(ZVariable& v) {

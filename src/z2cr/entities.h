@@ -91,6 +91,10 @@ public:
 		Using,
 		Params,
 		Block,
+		If,
+		While,
+		DoWhile,
+		Switch,
 	};
 };
 
@@ -135,7 +139,7 @@ public:
 		C2 = nullptr;
 	}
 	
-		void SetValue(int i, double d) {
+	void SetValue(int i, double d) {
 		IntVal = i;
 		DblVal = d;
 	}

@@ -149,4 +149,14 @@ public:
 	}*/
 };
 
+class IfNode: public Node {
+public:
+	Node* Cond = nullptr;
+	Node* TrueBranch = nullptr;
+	Node* FalseBranch = nullptr;
+	
+	IfNode() {
+		NT = NodeType::If;
+	}
+};
 #endif

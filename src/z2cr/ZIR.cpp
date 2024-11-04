@@ -1232,3 +1232,14 @@ BlockNode* IR::block() {
 	return blockNodes.Get();
 }
 
+IfNode* IR::ifcond(Node* cond, Node* truebranch, Node* falsebranch) {
+	IfNode* node = ifNodes.Get();
+	
+	node->Cond = cond;
+	node->TrueBranch = truebranch;
+	node->FalseBranch = falsebranch;
+	
+	return node;
+}
+
+

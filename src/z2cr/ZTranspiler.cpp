@@ -240,6 +240,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc((UsingNode*)node);*/
 	else if (node->NT == NodeType::Block)
 		Proc(*(BlockNode*)node);
+	else if (node->NT == NodeType::If)
+		Proc(*(IfNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -403,7 +405,7 @@ void ZTranspiler::Proc(MemNode& node) {
 }
 
 void ZTranspiler::Proc(BlockNode& node) {
-	NL();
+	//NL();
 	cs << "{";
 	EL();
 	
@@ -420,12 +422,71 @@ void ZTranspiler::WalkChildren(Node* node) {
 	Node* child = node->First;
 	
 	while (child) {
-		if (child->NT != NodeType::Block)
+		//if (child->NT != NodeType::Block/* && child->NT != NodeType::If*/)
 			NL();
 		WalkNode(child);
-		if (child->NT != NodeType::Block)
+		if (child->NT != NodeType::Block && child->NT != NodeType::If)
 			ES();
 		
 		child = child->Next;
 	}
 }
+
+void ZTranspiler::Proc(IfNode& node) {
+	ASSERT(node.Cond);
+	
+	//NL();
+	cs << "if (";
+	Walk(node.Cond);
+	cs << ")";
+	// dangling end statement
+	
+	if (node.TrueBranch) {
+		if (node.TrueBranch->NT != NodeType::Block) {
+			EL();
+			
+			indent++;
+			NL();
+			WalkNode(node.TrueBranch);
+			ES();
+			indent--;
+		}
+		else {
+			cs << " ";
+			WalkNode(node.TrueBranch);
+		}
+	}
+	else {
+		EL();
+		
+		indent++;
+		NL();
+		ES();
+		indent--;
+	}
+	
+	if (node.FalseBranch) {
+		NL();
+		cs << "else";
+		// dangling end statement
+
+		if (node.FalseBranch->NT != NodeType::Block) {
+			EL();
+			
+			indent++;
+			NL();
+			WalkNode(node.FalseBranch);
+			if (node.FalseBranch->NT == NodeType::If)
+				EL();
+			else
+				ES();
+			indent--;
+		}
+		else {
+			cs << " ";
+			WalkNode(node.FalseBranch);
+		}
+	}
+}
+
+

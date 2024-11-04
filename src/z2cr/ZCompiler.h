@@ -40,9 +40,12 @@ private:
 	bool PreCompileVars(ZNamespace& ns);
 	
 	bool Compile(ZNamespace& ns);
-	bool Compile(ZFunction& f, Node& target);
-	Node* CompileBlock(ZFunction& f, ZParser& parser);
+	bool CompileFunc(ZFunction& f, Node& target);
 	bool CompileVar(ZVariable& v);
+		
+	Node* CompileBlock(ZFunction& f, ZParser& parser);
+	Node* CompileStatement(ZFunction& f, ZParser& parser);
+	Node* CompileIf(ZFunction& f, ZParser& parser);
 	
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
 	bool Transpile(ZTranspiler& cpp, ZFunction& f);

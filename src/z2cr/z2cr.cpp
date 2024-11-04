@@ -139,7 +139,7 @@ CONSOLE_APP_MAIN {
 		compiler.BuildPath = exeDir + NativePath("build_r\\") + compiler.PlatformString + "." + ToUpper(K.ARCH) + "." + ToUpper(bm.Name);
 		RealizeDirectory(compiler.BuildPath);
 		
-		Cout() << "\nCompiling...\n";
+		Cout() << "\n";
 			
 		compiler.SetMainFile(K.Path);
 		
@@ -157,17 +157,17 @@ CONSOLE_APP_MAIN {
 		
 		bool buildOk = builder.Build(compiler.OutPath, compiler.OutPath);
 		if (buildOk) {
+			Cout() << "\n";
 			Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";
 		}
 		else {
 			SetExitCode(-1);
+			Cout() << "\n";
 			Cout() << bm.Name << " code generation failed.\n";
 		}
 	}
 	catch (ZException e) {
 		Cout() << e.ToString() << "\n";
 		SetExitCode(-1);
-		
-		Cout() << bm.Name << " code generation failed.\n";
 	}
 }

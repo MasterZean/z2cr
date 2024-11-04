@@ -50,6 +50,7 @@ protected:
 	NodePool<MemNode> memNodes;
 	NodePool<DefNode> defNodes;
 	NodePool<BlockNode> blockNodes;
+	NodePool<IfNode> ifNodes;
 	
 public:
 	public:
@@ -96,6 +97,7 @@ public:
 	MemNode* mem_var(ZEntity* var);
 	
 	BlockNode* block();
+	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)

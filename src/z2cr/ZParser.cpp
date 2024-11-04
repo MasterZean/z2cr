@@ -164,6 +164,10 @@ String ZParser::Identify() {
 		return "string constant";
 	else if (term[0] == '\n')
 		return "end of statement";
+	else if (term[0] == '{')
+		return "block starter '{'";
+	else if (term[0] == '}')
+		return "block finisher '}'";
 	else {
 		for (int i = 0; i < 9; i++)
 			if (IsChar2(DoubleOpCh1[i], DoubleOpCh2[i])) {

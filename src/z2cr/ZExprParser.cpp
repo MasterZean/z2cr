@@ -88,8 +88,19 @@ Node* ZExprParser::ParseNamespace() {
 	
 	int index = ns->Names.Find(s);
 		
-	if (index == -1)
-		parser.Error(opp, "unknown identifier: " + s);
+	if (index == -1) {
+		// TODO: refactor
+		Assembly dass;
+		ZPackage& dpak = dass.AddPackage("main", "");
+		ZSource& dsrc = dpak.AddSource("test", false);
+		dsrc.LoadVirtual(s);
+		ZParser dummy(dsrc);
+		
+		if (!dummy.IsZId())
+			parser.Error(opp, "unexpected keyword: " + s);
+		else
+			parser.Error(opp, "unknown identifier: " + s);
+	}
 	ns = &ns->Names[index];
 	
 	opp = parser.GetPoint();
