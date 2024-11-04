@@ -56,6 +56,12 @@ Node* ZExprParser::ParseAtom() {
 	
 	if (parser.IsInt())
 		exp = ParseNumeric();
+	else if (parser.IsCharConst()) {
+		uint32 ch = parser.ReadChar();
+		if (ch == -1)
+			parser.Error(opp, "illegal '\fChar\f' literal cosntant");
+		exp = irg.const_char(ch);
+	}
 	else if (parser.Id("true"))
 		exp = irg.const_bool(true);
 	else if (parser.Id("false"))

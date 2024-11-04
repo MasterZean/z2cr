@@ -242,6 +242,10 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(BlockNode*)node);
 	else if (node->NT == NodeType::If)
 		Proc(*(IfNode*)node);
+	else if (node->NT == NodeType::While)
+		Proc(*(WhileNode*)node);
+	else if (node->NT == NodeType::DoWhile)
+		Proc(*(DoWhileNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -425,7 +429,7 @@ void ZTranspiler::WalkChildren(Node* node) {
 		//if (child->NT != NodeType::Block/* && child->NT != NodeType::If*/)
 			NL();
 		WalkNode(child);
-		if (child->NT != NodeType::Block && child->NT != NodeType::If)
+		if (child->NT != NodeType::Block && child->NT != NodeType::If && child->NT != NodeType::While)
 			ES();
 		
 		child = child->Next;
@@ -489,4 +493,47 @@ void ZTranspiler::Proc(IfNode& node) {
 	}
 }
 
+void ZTranspiler::Proc(WhileNode& node) {
+	ASSERT(node.Cond);
+	
+	cs << "while (";
+	Walk(node.Cond);
+	cs << ")";
+	// dangling end statement
+	
+	if (node.Body) {
+		if (node.Body->NT != NodeType::Block) {
+			EL();
+			
+			indent++;
+			NL();
+			WalkNode(node.Body);
+			ES();
+			indent--;
+		}
+		else {
+			cs << " ";
+			WalkNode(node.Body);
+		}
+	}
+	else {
+		EL();
+		
+		indent++;
+		NL();
+		ES();
+		indent--;
+	}
+}
 
+void ZTranspiler::Proc(DoWhileNode& node) {
+	ASSERT(node.Cond);
+
+	cs << "do ";
+	WalkNode(node.Body);
+	
+	NL();
+	cs << "while(";
+	Walk(node.Cond);
+	cs << ")";
+}

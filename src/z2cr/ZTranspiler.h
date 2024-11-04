@@ -63,6 +63,8 @@ public:
 	void Proc(MemNode& node);
 	void Proc(BlockNode& node);
 	void Proc(IfNode& node);
+	void Proc(WhileNode& node);
+	void Proc(DoWhileNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
 	void TranspileDefinitions(ZNamespace& ns);

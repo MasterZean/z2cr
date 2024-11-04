@@ -51,6 +51,8 @@ protected:
 	NodePool<DefNode> defNodes;
 	NodePool<BlockNode> blockNodes;
 	NodePool<IfNode> ifNodes;
+	NodePool<WhileNode> whileNodes;
+	NodePool<DoWhileNode> doWhileNodes;
 	
 public:
 	public:
@@ -98,6 +100,8 @@ public:
 	
 	BlockNode* block();
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);
+	WhileNode* whilecond(Node* cond, Node* body);
+	DoWhileNode* dowhilecond(Node* cond, Node* body);
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)

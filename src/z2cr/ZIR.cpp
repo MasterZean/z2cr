@@ -1242,4 +1242,21 @@ IfNode* IR::ifcond(Node* cond, Node* truebranch, Node* falsebranch) {
 	return node;
 }
 
+WhileNode* IR::whilecond(Node* cond, Node* body) {
+	WhileNode* node = whileNodes.Get();
+	
+	node->Cond = cond;
+	node->Body = body;
+	
+	return node;
+}
+
+DoWhileNode* IR::dowhilecond(Node* cond, Node* body) {
+	DoWhileNode* node = doWhileNodes.Get();
+	
+	node->Cond = cond;
+	node->Body = body;
+	
+	return node;
+}
 

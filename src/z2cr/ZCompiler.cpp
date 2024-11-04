@@ -190,6 +190,10 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
 		return nullptr;
 	else if (parser.Id("if"))
 		return CompileIf(f, parser);
+	else if (parser.Id("while"))
+		return CompileWhile(f, parser);
+	else if (parser.Id("do"))
+		return CompileDoWhile(f, parser);
 	else {
 		ZExprParser ep(parser, irg);
 		Node* node = ep.Parse();
@@ -243,6 +247,43 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser) {
 	return irg.ifcond(node, tb, fb);
 }
 
+Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser) {
+	parser.Expect('(');
+	Point p = parser.GetPoint();
+	ZExprParser ep(parser, irg);
+	Node* node = ep.Parse();
+	parser.Expect(')');
+	parser.EatNewlines();
+	
+	Node* bd = CompileStatement(f, parser);
+	if (node->Tt.Class != ass.CBool)
+		parser.Error(p, "while condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
+		
+	return irg.whilecond(node, bd);
+}
+
+Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser) {
+	if (!parser.IsChar('{'))
+		parser.Expect('{');
+	
+	Node* bd = CompileStatement(f, parser);
+	
+	parser.ExpectId("while");
+	
+	parser.Expect('(');
+	Point p = parser.GetPoint();
+	ZExprParser ep(parser, irg);
+	Node* node = ep.Parse();
+	parser.Expect(')');
+	parser.ExpectEndStat();
+	parser.EatNewlines();
+	
+	if (node->Tt.Class != ass.CBool)
+		parser.Error(p, "do... while condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
+		
+	return irg.dowhilecond(node, bd);
+}
+
 bool ZCompiler::CompileVar(ZVariable& v) {
 	ZParser parser(v.DefPos);
 	
@@ -292,7 +333,7 @@ bool ZCompiler::CheckForDuplicates() {
 		err << "other occurrences at:\n";
 		for (int j = 1; j < list.GetCount(); j++)
 			err << "\t\t" << list[j].ToString() << "\n";
-		ErrorReporter::Duplicate(list[0], err);
+		throw ErrorReporter::Duplicate(list[0], err);
 	}
 
 	return false;
@@ -347,6 +388,7 @@ bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 			if (index != -1) {
 				Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
 				list.Add(f.DefPos);
+				list.Add(ns.Variables[index]->DefPos);
 				valid = false;
 			}
 			

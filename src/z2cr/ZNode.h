@@ -159,4 +159,22 @@ public:
 		NT = NodeType::If;
 	}
 };
+
+class WhileNode: public Node {
+public:
+	Node* Cond = nullptr;
+	Node* Body = nullptr;
+	
+	WhileNode() {
+		NT = NodeType::While;
+	}
+};
+
+class DoWhileNode: public WhileNode {
+public:
+	DoWhileNode() {
+		NT = NodeType::DoWhile;
+	}
+};
+
 #endif
