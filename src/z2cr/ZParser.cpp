@@ -92,8 +92,13 @@ bool ZParser::IsZId() {
 }
 
 String ZParser::ExpectId() {
-	if (IsId())
+	if (IsId()) {
+		if (!IsZId()) {
+			Point p = GetPoint();
+			Error(p, "identifier expected, " + Identify() + " found");
+		}
 		return ReadId();
+	}
 	else {
 		Point p = GetPoint();
 		Error(p, "identifier expected, " + Identify() + " found");

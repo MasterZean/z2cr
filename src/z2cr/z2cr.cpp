@@ -170,4 +170,9 @@ CONSOLE_APP_MAIN {
 		Cout() << e.ToString() << "\n";
 		SetExitCode(-1);
 	}
+	catch (CParser::Error e) {
+		// should not reach, but...
+		Cout() << e << "\n";
+		SetExitCode(-1);
+	}
 }

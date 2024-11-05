@@ -223,6 +223,12 @@ class ZVariable;
 class ZMethodBundle;
 class Assemly;
 
+class ZNamespaceSection {
+public:
+	WithDeepCopy<Index<String>> UsingNames;
+	Vector<ZNamespace*> Using;
+};
+
 class ZNamespace {
 public:
 	String Name;
@@ -234,6 +240,7 @@ public:
 	Array<ZFunction> PreFunctions;
 	Array<ZVariable> PreVariables;
 	
+	Array<ZNamespaceSection> Sections;
 	ArrayMap<String, ZMethodBundle> Methods;
 	ArrayMap<String, ZVariable*> Variables;
 	
@@ -256,6 +263,8 @@ public:
 	
 	ZSourcePos DefPos;
 	
+	ZNamespaceSection* Section = nullptr;
+	
 	ZEntity(ZNamespace& aNmspace): nmsspace(aNmspace) {
 		Type = EntityType::Unknown;
 	}
@@ -267,9 +276,10 @@ public:
 	Assembly& Ass() {
 		return nmsspace.Ass();
 	}
-	
+
 private:
 	ZNamespace& nmsspace;
+	
 };
 
 class ZClass: public ZEntity, Moveable<ZClass> {

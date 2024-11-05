@@ -40,6 +40,7 @@ bool ZCompiler::Compile() {
 			continue;
 		
 		auto names = Split(ns.Name, '.', true);
+		DUMP(ns.Name);
 		
 		ZNamespaceItem* nsp = &ass.NsLookup;
 		String backName;
@@ -55,6 +56,18 @@ bool ZCompiler::Compile() {
 		}
 		
 		ns.BackName = backName;
+		
+		for (int j = 0; j < ns.Sections.GetCount(); j++) {
+			ZNamespaceSection& sec = ns.Sections[j];
+			
+			for (int k = 0; k < sec.UsingNames.GetCount(); k++) {
+				DUMP(sec.UsingNames[k]);
+				LOG(ass.Namespaces.Find(sec.UsingNames[k]));
+				ZNamespace* usn = ass.Namespaces.FindPtr(sec.UsingNames[k]);
+				if (usn)
+					sec.Using.Add(usn);
+			}
+		}
 	}
 	
 	if (mainPath.GetCount()) {
@@ -181,6 +194,8 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 }
 
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
+	if (f.Name == "ff")
+		f.Name == "ff" && f.Section != 0;
 	ZParser parser(f.BodyPos);
 	
 	parser.Expect('{');
@@ -213,6 +228,7 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
 		return CompileDoWhile(f, parser);
 	else {
 		ZExprParser ep(parser, irg);
+		ep.Section = f.Section;
 		Node* node = ep.Parse();
 		
 		parser.ExpectEndStat();
@@ -248,6 +264,7 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	ZExprParser ep(parser, irg);
+	ep.Section = f.Section;
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.EatNewlines();
@@ -268,6 +285,7 @@ Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	ZExprParser ep(parser, irg);
+	ep.Section = f.Section;
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.EatNewlines();
@@ -290,6 +308,7 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	ZExprParser ep(parser, irg);
+	ep.Section = f.Section;
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.ExpectEndStat();
@@ -311,6 +330,7 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 		
 		if (parser.Char('=')) {
 			ZExprParser ep(parser, irg);
+			ep.Section = v.Section;
 			Node* node = ep.Parse();
 			
 			v.Value = node;

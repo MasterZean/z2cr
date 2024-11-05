@@ -3,6 +3,8 @@
 
 class ZExprParser {
 public:
+	ZNamespaceSection* Section = nullptr;
+	
 	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
 	}
 	
@@ -13,7 +15,9 @@ public:
 	Node* ParseBin(int prec, Node* left, CParser::Pos& backupPoint);
 	Node* ParseAtom();
 	Node* ParseNumeric();
+	Node *ParseId();
 	Node* ParseNamespace();
+	Node* ParseNamespace(const String& s, Point opp);
 	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp);
 	
 private:

@@ -18,12 +18,14 @@ public:
 
 	void Scan();
 	
+	void ScanSingle();
 	void ScanNamespace();
 	ZFunction& ScanFunc(AccessType accessType, bool aFunc);
 	void ScanBlock();
 	void ScanToken();
 	bool ScanDeclaration(AccessType accessType);
 	void ScanType();
+	void ScanUsing();
 	
 protected:
 	Assembly& ass;
@@ -31,8 +33,10 @@ protected:
 	ZParser parser;
 	String nameSpace;
 	String bindName;
+	Index<String> usingNames;
 	
 	ZNamespace* nmspace = nullptr;
+	ZNamespaceSection* section = nullptr;
 	
 	bool isIntrinsic = false;
 	bool isDllImport = false;

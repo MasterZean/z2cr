@@ -167,12 +167,12 @@ void ZTranspiler::WalkNode(Node* node) {
 	}
 	
 	if (node->Tt.Class == ass.CQWord) {
-		cs << "printf(\"%ull\\n\", ";
+		cs << "printf(\"%llu\\n\", ";
 		Walk(node);
 		cs << ")";
 	}
 	else if (node->Tt.Class == ass.CLong) {
-		cs << "printf(\"%ll\\n\", ";
+		cs << "printf(\"%lld\\n\", ";
 		Walk(node);
 		cs << ")";
 	}

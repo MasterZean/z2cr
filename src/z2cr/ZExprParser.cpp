@@ -71,7 +71,7 @@ Node* ZExprParser::ParseAtom() {
 	else if (parser.Id("null"))
 		exp = irg.const_null();
 	else if (parser.IsId()) {
-		exp = ParseNamespace();
+		exp = ParseId();
 	}
 	else if (parser.Char2(':', ':')) {
 		exp = ParseNamespace();
@@ -86,10 +86,45 @@ Node* ZExprParser::ParseAtom() {
 	return exp;
 }
 
+Node* ZExprParser::ParseId() {
+	if (Section == nullptr || Section->Using.GetCount() == 0)
+		return ParseNamespace();
+	
+	Point opp = parser.GetPoint();
+	String s;
+	if (parser.Char('@'))
+		s = "@" + parser.ExpectId();
+	else
+		s = parser.ExpectId();
+	
+	Node* member = nullptr;
+	for (int i = 0; i < Section->Using.GetCount(); i++) {
+		ZNamespace& ns = *Section->Using[i];
+		
+		Node* res = ParseMember(ns, s, opp);
+		
+		if (member)
+			ErrorReporter::Error(parser.Source(), opp, s + ": ambigous symbol");
+		
+		member = res;
+	}
+	
+	if (member)
+		return member;
+	else
+		return ParseNamespace(s, opp);
+}
+
 Node* ZExprParser::ParseNamespace() {
 	Point opp = parser.GetPoint();
-	ZNamespaceItem* ns = &ass.NsLookup;
 	auto s = parser.ReadId();
+	
+	return ParseNamespace(s, opp);
+}
+
+Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
+	ZNamespaceItem* ns = &ass.NsLookup;
+	
 	auto total = s;
 	
 	int index = ns->Names.Find(s);
@@ -115,17 +150,19 @@ Node* ZExprParser::ParseNamespace() {
 		parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
 
 	while (parser.Char('.')) {
+		String name;
+		
 		if (parser.Char('@')) {
 			// only namespace member
-			s = "@" + parser.ExpectId();
+			name = "@" + parser.ExpectId();
 			
 			ASSERT(ns->Namespace);
-			return ParseMember(*ns->Namespace, s, opp);
+			return ParseMember(*ns->Namespace, name, opp);
 		}
 		else {
-			s = parser.ExpectId();
+			name = parser.ExpectId();
 			
-			index = ns->Names.Find(s);
+			index = ns->Names.Find(name);
 			
 			if (index != -1) {
 				// still a namespace, ask for more '.'
@@ -136,11 +173,11 @@ Node* ZExprParser::ParseNamespace() {
 			}
 			else {
 				// a namespace child
-				return ParseMember(*ns->Namespace, s, opp);
+				return ParseMember(*ns->Namespace, name, opp);
 			}
 		}
 		
-		total << "." << s;
+		total << "." << name;
 	}
 		
 	//TODO: fix

@@ -10,11 +10,28 @@ void ZScanner::Scan() {
 	while (!parser.IsEof()) {
 		Point p = parser.GetPoint();
 		
-		if (parser.Id("namespace"))
+		if (parser.Id("namespace")) {
 			ScanNamespace();
-		else if (parser.Id("private")) {
-			parser.Expect('{');
 			
+			if (parser.Char('{')) {
+				while (!parser.IsChar('}'))
+					ScanSingle();
+				
+				parser.Expect('}');
+			}
+			else
+				parser.ExpectEndStat();
+		}
+		else
+			ScanSingle();
+	}
+}
+
+void ZScanner::ScanSingle() {
+	if (parser.Id("using"))
+		ScanUsing();
+	else if (parser.Id("private")) {
+		if (parser.Char('{')) {
 			while (!parser.IsChar('}')) {
 				if (ScanDeclaration(AccessType::Private)) {
 					// ALL GOOD
@@ -24,12 +41,19 @@ void ZScanner::Scan() {
 					parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
 				}
 			}
-			
+		
 			parser.Expect('}');
 		}
-		else if (parser.Id("protected")) {
-			parser.Expect('{');
-			
+		else if (ScanDeclaration(AccessType::Public)) {
+			// ALL GOOD
+		}
+		else {
+			Point p = parser.GetPoint();
+			parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+		}
+	}
+	else if (parser.Id("protected")) {
+		if (parser.Char('{')) {
 			while (!parser.IsChar('}')) {
 				if (ScanDeclaration(AccessType::Protected)) {
 					// ALL GOOD
@@ -49,6 +73,13 @@ void ZScanner::Scan() {
 			Point p = parser.GetPoint();
 			parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
 		}
+	}
+	else if (ScanDeclaration(AccessType::Public)) {
+		// ALL GOOD
+	}
+	else {
+		Point p = parser.GetPoint();
+		parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
 	}
 }
 
@@ -147,6 +178,29 @@ void ZScanner::ScanType() {
 		parser.ExpectId();
 }
 
+void ZScanner::ScanUsing() {
+	parser.ExpectId("def");
+	
+	String name = parser.ExpectId();
+	String fullName = name;
+	fullName << ".";
+	
+	while (parser.Char('.')) {
+		name = parser.ExpectId();
+		fullName << name << ".";
+	}
+	
+	if (nmspace == nullptr) {
+		usingNames << fullName;
+	}
+	else {
+		ASSERT(section);
+		section->UsingNames.FindAdd(fullName);
+	}
+	
+	parser.ExpectEndStat();
+}
+
 void ZScanner::ScanNamespace() {
 	ZSourcePos np = parser.GetFullPos();
 	
@@ -159,18 +213,21 @@ void ZScanner::ScanNamespace() {
 		fullName << name << ".";
 	}
 	
-	parser.ExpectEndStat();
-	
+	if (fullName == "bar.")
+		fullName == "bar.";
 	int index = ass.Namespaces.Find(fullName);
 	
 	nmspace = &ass.FindAddNamespace(fullName);
 	
-	if (namespaceCount == 0) {
+	section = &nmspace->Sections.Add();
+	section->UsingNames = usingNames;
+	
+	/*if (namespaceCount == 0) {
 		namespacePos = np;
 	}
 	else {
 		Errors.Add(ErrorReporter::Duplicate(np, String().Cat() << "can have only one namespace definition per file, previous was at:\n\t\t" << namespacePos.ToString()));
-	}
+	}*/
 	
 	namespaceCount++;
 }
@@ -217,6 +274,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	f.DefPos = dp;
 	f.ParamPos = pp;
 	f.BackName = bname;
+	f.Section = section;
 	
 	return f;
 }
