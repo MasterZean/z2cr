@@ -7,8 +7,10 @@ public:
 	Time Modified;
 	
 	Vector<ZFunction*> Functions;
+	
 	Vector<String> References;
 	Vector<Point> ReferencePos;
+	ArrayMap<String, ZClass*> ShortNameLookup;
 	
 	bool IsScaned = false;
 	bool IsScanError = false;
@@ -41,7 +43,7 @@ public:
 	
 	void AddStdClassRefs();
 	
-	void AddReference(const String& ns);
+	void AddReference(const String& ns, Point pt);
 	
 private:
 	ZPackage& pak;
@@ -62,7 +64,7 @@ public:
 	
 	ZSource& AddSource(const String& aPath, bool aLoadFile);
 	
-	Assembly& GetAssembly() {
+	Assembly& Ass() {
 		return ass;
 	}
 	

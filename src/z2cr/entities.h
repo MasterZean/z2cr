@@ -21,7 +21,7 @@ enum class AccessType {
 enum class EntityType {
 	Unknown,
 	Variable,
-	FunctionSet,
+	MethodBundle,
 	Function,
 	Class,
 };
@@ -46,7 +46,9 @@ public:
 	ZClass* C2 = nullptr;
 	
 	bool IsTemporary = false;
+	bool IsIndirect = false;
 	bool IsConst = false;
+	bool IsRef = false;
 	
 	ObjectInfo() = default;
 	
@@ -208,6 +210,44 @@ public:
 	ZFunction* MoreEq = nullptr;
 };
 
+class ZNamespaceItem {
+public:
+	ArrayMap<String, ZNamespaceItem> Names;
+	ZNamespace* Namespace = nullptr;
+	
+	ZNamespaceItem* Add(const String& aName);
+};
+
+class ZFunction;
+class ZVariable;
+class ZMethodBundle;
+class Assemly;
+
+class ZNamespace {
+public:
+	String Name;
+	String BackName;
+	
+	ZNamespace(Assembly& aAss): ass(aAss) {
+	}
+	
+	Array<ZFunction> PreFunctions;
+	Array<ZVariable> PreVariables;
+	
+	ArrayMap<String, ZMethodBundle> Methods;
+	ArrayMap<String, ZVariable*> Variables;
+	
+	ZFunction& PrepareFunction(const String& aName);
+	ZVariable& PrepareVariable(const String& aName);
+	
+	Assembly& Ass() {
+		return ass;
+	}
+	
+private:
+	Assembly& ass;
+};
+
 class ZEntity {
 public:
 	String Name;
@@ -222,6 +262,10 @@ public:
 	
 	ZNamespace& GetNamespace() {
 		return nmsspace;
+	}
+	
+	Assembly& Ass() {
+		return nmsspace.Ass();
 	}
 	
 private:
@@ -252,11 +296,24 @@ public:
 	int Index = -1;
 };
 
-class ZVariable: public ZEntity {
+class ZVariable: Moveable<ZVariable>, public ZEntity {
 public:
-	Node* Value = nullptr;
-	ObjectType Tt;
+	enum ParamType {
+		tyAuto,
+		tyRef,
+		tyConstRef,
+		tyVal,
+		tyMove,
+	};
 	
+	bool FromTemplate = false;
+	
+	Node* Value = nullptr;
+	ObjectInfo I;
+	//ObjectType Tt;
+	
+	ParamType PType;
+		
 	ZVariable(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Variable;
 	}
@@ -268,7 +325,7 @@ public:
 	int Temps = 0;
 };
 
-class ZFunction: public ZEntity {
+class ZFunction: Moveable<ZFunction>, public ZEntity {
 public:
 	bool IsFunction = false;
 	bool InClass = false;
@@ -279,7 +336,11 @@ public:
 	
 	Node Nodes;
 	
+	Array<ZVariable> Params;
+	Vector<ZClass*> TParam;
 	WithDeepCopy<Vector<ZBlock>> Blocks;
+	
+	int Score = 0;
 	
 	ZFunction(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Function;
@@ -295,36 +356,25 @@ private:
 	String dsig;
 };
 
-class ZDefinition: public ZEntity {
+class ZMethodBundle: public ZEntity {
 public:
 	Array<ZFunction*> Functions;
 	
-	ZDefinition(ZNamespace& aNmspace): ZEntity(aNmspace) {
-		Type = EntityType::FunctionSet;
+	ZMethodBundle(ZNamespace& aNmspace): ZEntity(aNmspace) {
+		Type = EntityType::MethodBundle;
 	}
 };
 
-class ZNamespaceItem {
-public:
-	ArrayMap<String, ZNamespaceItem> Names;
-	ZNamespace* Namespace = nullptr;
-	
-	ZNamespaceItem* Add(const String& aName);
-};
+inline bool operator==(const ObjectType& Tt, ObjectType* tt) {
+	return Tt.Class == tt->Class;
+}
 
-class ZNamespace {
-public:
-	String Name;
-	String BackName;
-	
-	Array<ZFunction> PreFunctions;
-	Array<ZVariable> PreVariables;
-	
-	ArrayMap<String, ZDefinition> Definitions;
-	ArrayMap<String, ZVariable*> Variables;
-	
-	ZFunction& PrepareFunction(const String& aName);
-	ZVariable& PrepareVariable(const String& aName);
-};
+inline bool operator==(const ObjectInfo& t1, const ObjectInfo& t2) {
+	return t1.Tt.Class == t2.Tt.Class && t1.IsIndirect == t2.IsIndirect && /*t1.IsConst == t2.IsConst &&*/ t1.IsTemporary == t2.IsTemporary;
+}
+
+inline bool operator!=(const ObjectInfo& t1, const ObjectInfo& t2) {
+	return !(t1 == t2);
+}
 
 #endif

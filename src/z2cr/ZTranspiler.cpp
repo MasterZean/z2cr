@@ -50,21 +50,21 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 	
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
-		ASSERT(v.Tt.Class);
+		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
 		
 		NL();
-		cs << "extern "<< v.Tt.Class->BackName << " " << v.Name;
+		cs << "extern "<< v.I.Tt.Class->BackName << " " << v.Name;
 		ES();
 	}
 	
 	if (ns.Variables.GetCount())
 		EL();
 		
-	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
-		for (int j = 0; j < ns.Definitions[i].Functions.GetCount(); j++) {
+	for (int i = 0; i < ns.Methods.GetCount(); i++) {
+		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
 			NL();
-			WriteFunctionDef(*ns.Definitions[i].Functions[j]);
+			WriteFunctionDef(*ns.Methods[i].Functions[j]);
 			ES();
 		}
 	}
@@ -80,11 +80,11 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 void ZTranspiler::TranspileDefinitions(ZNamespace& ns) {
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
-		ASSERT(v.Tt.Class);
+		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
 		
 		NL();
-		cs << v.Tt.Class->BackName << " " << v.GetNamespace().BackName << "::" << v.Name << " = ";
+		cs << v.I.Tt.Class->BackName << " " << v.GetNamespace().BackName << "::" << v.Name << " = ";
 		Walk(v.Value);
 		ES();
 	}
@@ -92,8 +92,8 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns) {
 	if (ns.Variables.GetCount())
 		EL();
 	
-	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
-		ZDefinition& d = ns.Definitions[i];
+	for (int i = 0; i < ns.Methods.GetCount(); i++) {
+		ZMethodBundle& d = ns.Methods[i];
 		
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
@@ -105,11 +105,28 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	cs << "void " << f.BackName << "()";
+	cs << "void " << f.BackName;
+	WriteFunctionParams(f);
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
-	cs << "void " << f.GetNamespace().BackName << "::" << f.BackName << "()";
+	cs << "void " << f.GetNamespace().BackName << "::" << f.BackName;
+	WriteFunctionParams(f);
+}
+
+void ZTranspiler::WriteFunctionParams(ZFunction& f) {
+	cs << "(";
+	
+	for (int i = 0; i < f.Params.GetCount(); i++) {
+		ZVariable& var = f.Params[i];
+		
+		if (i > 0)
+			cs << ", ";
+		
+		cs << var.I.Tt.Class->ParamType->BackName << " " << var.Name;
+	}
+	
+	cs << ")";
 }
 
 void ZTranspiler::WriteFunctionBody(ZFunction& f) {

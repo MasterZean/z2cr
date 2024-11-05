@@ -3,7 +3,7 @@
 
 class ZNodeWalker {
 public:
-	ZNodeWalker(ZCompiler& aComp, Stream& aStream): comp(aComp), ass(aComp.GetAssembly()), cs(aStream) {
+	ZNodeWalker(ZCompiler& aComp, Stream& aStream): comp(aComp), ass(aComp.Ass()), cs(aStream) {
 	}
 	
 protected:
@@ -55,6 +55,7 @@ public:
 	
 	void WriteFunctionDef(ZFunction& f);
 	void WriteFunctionDecl(ZFunction& f);
+	void WriteFunctionParams(ZFunction& f);
 	void WriteFunctionBody(ZFunction& f);
 	
 	void Proc(ConstNode& node, Stream& stream);

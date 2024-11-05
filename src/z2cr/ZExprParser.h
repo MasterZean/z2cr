@@ -3,7 +3,7 @@
 
 class ZExprParser {
 public:
-	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.GetAssembly()) {
+	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
 	}
 	
 	static void Initialize();

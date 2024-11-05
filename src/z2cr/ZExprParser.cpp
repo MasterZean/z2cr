@@ -148,13 +148,13 @@ Node* ZExprParser::ParseNamespace() {
 }
 
 Node *ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp) {
-	int index = ns.Definitions.Find(aName);
+	int index = ns.Methods.Find(aName);
 	
 	if (index != -1) {
 		parser.Expect('(');
 		parser.Expect(')');
 	
-		return irg.mem_def(*ns.Definitions[index].Functions[0], nullptr);
+		return irg.mem_def(*ns.Methods[index].Functions[0], nullptr);
 	}
 	
 	index = ns.Variables.Find(aName);

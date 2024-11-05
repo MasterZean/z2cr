@@ -13,6 +13,7 @@ public:
 	static void CantOpenFile(const String& aPath);
 	
 	static ZException Duplicate(const ZSourcePos& p, const String& aText);
+	static ZException Duplicate(const String& name, const ZSourcePos& cur, const ZSourcePos& prev);
 	
 	static void ErrIncompatOp(const ZSource& src, const Point& p, const String& op, const String& text, const String& text2) {
 		Error(src, p, "Can't apply operator '" + op + "' on types: \n\t\t'\f" + text + "\f' and \n\t\t'\f" + text2 + "\f'");

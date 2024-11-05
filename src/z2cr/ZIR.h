@@ -61,7 +61,7 @@ public:
 	IR(Assembly& ass): ass(ass) {
 	}
 	
-	Assembly& GetAssembly() const {
+	Assembly& Ass() const {
 		return ass;
 	}
 	

@@ -12,7 +12,7 @@ class ZScanner {
 public:
 	Array<ZException> Errors;
 	
-	ZScanner(ZSource& aSrc, PlatformType aType): parser(aSrc), source(aSrc), ass(aSrc.Package().GetAssembly()), pt(aType) {
+	ZScanner(ZSource& aSrc, PlatformType aType): parser(aSrc), source(aSrc), ass(aSrc.Package().Ass()), pt(aType) {
 		parser.Mode = ": scan";
 	}
 
@@ -23,6 +23,7 @@ public:
 	void ScanBlock();
 	void ScanToken();
 	bool ScanDeclaration(AccessType accessType);
+	void ScanType();
 	
 protected:
 	Assembly& ass;

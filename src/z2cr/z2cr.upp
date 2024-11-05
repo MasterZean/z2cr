@@ -24,6 +24,8 @@ file
 	ZCompiler.cpp,
 	ZTranspiler.h,
 	ZTranspiler.cpp,
+	OverloadResolver.h,
+	OverloadResolver.cpp,
 	ZException.h,
 	ErrorReporter.h,
 	ErrorReporter.cpp,

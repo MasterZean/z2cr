@@ -35,14 +35,24 @@ String s[] = {
 
 void ZSource::AddStdClassRefs() {
 	for (int i = 0; i < __countof(s); i++)
-		AddReference(s[i]);
+		AddReference(s[i], Point(1, 1));
 }
 
-void ZSource::AddReference(const String& ns) {
+void ZSource::AddReference(const String& ns, Point pt) {
+	int dotPos = ns.ReverseFind('.');
+	ASSERT(dotPos != -1);
+	
 	int i = FindIndex(References, ns);
 	if (i == -1) {
-		References.Add(ns);
-		ReferencePos.Add(Point(1, 1));
+		i = pak.Ass().Classes.Find(ns);
+		if (i != -1) {
+			References.Add(ns);
+			ReferencePos.Add();
+			
+			auto shortName = ns.Mid(dotPos + 1);
+			
+			ShortNameLookup.FindAdd(shortName, &pak.Ass().Classes[i]);
+		}
 	}
 }
 

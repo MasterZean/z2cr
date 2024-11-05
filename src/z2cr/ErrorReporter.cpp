@@ -18,3 +18,14 @@ ZException ErrorReporter::Duplicate(const ZSourcePos& p, const String& aText) {
 	return ZException(p.ToString(), aText);
 }
 
+ZException ErrorReporter::Duplicate(const String& name, const ZSourcePos& cur, const ZSourcePos& prev) {
+	String err;
+		
+	err << "duplicate symbol: " << name << ", ";
+	err << "previous occurrence at:\n";
+	err << "\t\t" << prev.ToString() << "\n";
+		
+	return Duplicate(cur, err);
+}
+
+

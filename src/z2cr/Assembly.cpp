@@ -11,6 +11,50 @@ String ZSourcePos::ToString() const {
 }
 	
 void ZFunction::GenerateSignatures() {
+	ZParser parser(ParamPos);
+	
+	parser.Expect('(');
+	
+	while (!parser.IsChar(')')) {
+		auto pp = parser.GetFullPos();
+		String name = parser.ExpectId();
+		
+		if (name == Name)
+			throw ErrorReporter::Duplicate(name, pp, DefPos);
+		parser.Expect(':');
+		
+		auto tt = parser.GetFullPos();
+		String shtype = parser.ExpectId();
+		String type = shtype;
+		
+		while (parser.Char('.'))
+			type << "." << parser.ExpectId();
+		
+		ZClass* cls = nullptr;
+		if (type.GetCount() == shtype.GetCount()) {
+			// short name
+			auto search = DefPos.Source->ShortNameLookup.FindPtr(shtype);
+			if (search)
+				cls = *search;
+		}
+		else {
+			// full namespace
+			cls = Ass().Classes.FindPtr(type);
+		}
+		
+		if (cls == nullptr)
+			ErrorReporter::Error(*DefPos.Source, tt.P, "unknown identifier: " + type);
+		
+		if (parser.Char(',')) {
+			if (parser.IsChar(')'))
+				parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
+		}
+		
+		ZVariable& var = Params.Add(ZVariable(GetNamespace()));
+		var.Name = name;
+		var.I.Tt = cls->Tt;
+	}
+	
 	dsig = "";
 	
 	if (InClass == false) {
@@ -24,7 +68,20 @@ void ZFunction::GenerateSignatures() {
 			dsig << "def ";
 	}
 	
-	dsig << Name << "()";
+	dsig << Name << "(";
+	
+	for (int i = 0; i < Params.GetCount(); i++) {
+		ZVariable& var = Params[i];
+		
+		if (i > 0)
+			dsig << ", ";
+		
+		dsig << Ass().ClassToString(&var.I);
+	}
+	
+	dsig << ")";
+	
+	DUMP(dsig);
 }
 
 ZFunction& ZNamespace::PrepareFunction(const String& aName) {
@@ -49,7 +106,7 @@ Assembly::Assembly() {
 
 ZNamespace& Assembly::FindAddNamespace(const String& aName) {
 	
-	int index = Namespaces.FindAdd(aName);
+	int index = Namespaces.FindAdd(aName, ZNamespace(*this));
 	ASSERT(index != -1);
 	Namespaces[index].Name = aName;
 	

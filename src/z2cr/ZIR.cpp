@@ -1213,9 +1213,9 @@ MemNode* IR::mem_var(ZEntity* mem) {
 	
 	if (mem->Type == EntityType::Variable) {
 		ZVariable& v = *((ZVariable*)mem);
-		node->SetType(v.Tt);
+		node->SetType(v.I.Tt);
 	}
-	else if (mem->Type == EntityType::FunctionSet) {
+	else if (mem->Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);
 	}
 	

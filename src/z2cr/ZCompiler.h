@@ -23,7 +23,7 @@ public:
 		mainPath = aPath;
 	}
 	
-	Assembly& GetAssembly() const {
+	Assembly& Ass() const {
 		return ass;
 	}
 	
@@ -54,6 +54,8 @@ private:
 	
 	bool CheckForDuplicates();
 	bool CheckForDuplicates(ZNamespace& ns);
+	
+	void ScanSource(ZSource& src, Vector<ZScanner*>& scanners);
 };
 
 #endif

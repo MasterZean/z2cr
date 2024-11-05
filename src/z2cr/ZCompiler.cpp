@@ -2,16 +2,23 @@
 
 bool ZCompiler::Compile() {
 	Vector<ZScanner*> scanners;
-	// scan all source files, throws on critical syntax error
-	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
-		auto scanner = new ZScanner(*ass.SourceLookup[i], Platform);
-		scanner->Scan();
-		
-		scanners << scanner;
+	
+	// prioritize main hint
+	if (mainPath.GetCount()) {
+		ZSource* src = ass.FindSource(mainPath);
+		if (src)
+			ScanSource(*src, scanners);
 	}
 	
-	bool found = false;
+	// scan all source files, throws on critical syntax error
+	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
+		ZSource& src = *ass.SourceLookup[i];
+		if (src.IsScaned == false)
+			ScanSource(src, scanners);
+	}
+
 	// print non critical errors
+	bool found = false;
 	for (int i = 0; i < scanners.GetCount(); i++) {
 		for (int j = 0; j < scanners[i]->Errors.GetCount(); j++) {
 			Cout() << scanners[i]->Errors[j].ToString() << "\n";
@@ -106,6 +113,16 @@ bool ZCompiler::Compile() {
 	return true;
 }
 
+void ZCompiler::ScanSource(ZSource& src, Vector<ZScanner*>& scanners) {
+	src.AddStdClassRefs();
+			
+	auto scanner = new ZScanner(src, Platform);
+	scanner->Scan();
+	src.IsScaned = true;
+	
+	scanners << scanner;
+}
+
 Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
 	Vector<ZFunction*> mains;
 	for (int i = 0; i < src.Functions.GetCount(); i++) {
@@ -148,8 +165,8 @@ void printNode(Node* node, int level = 0) {
 }
 
 bool ZCompiler::Compile(ZNamespace& ns) {
-	for (int i = 0; i < ns.Definitions.GetCount(); i++) {
-		ZDefinition& d = ns.Definitions[i];
+	for (int i = 0; i < ns.Methods.GetCount(); i++) {
+		ZMethodBundle& d = ns.Methods[i];
 		
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
@@ -297,7 +314,7 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 			Node* node = ep.Parse();
 			
 			v.Value = node;
-			v.Tt = node->Tt;
+			v.I.Tt = node->Tt;
 		}
 	}
 	else {
@@ -307,7 +324,7 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 		Node* node = ep.Parse();
 		
 		v.Value = node;
-		v.Tt = node->Tt;
+		v.I.Tt = node->Tt;
 	}
 	
 	return true;
@@ -343,7 +360,7 @@ bool ZCompiler::CheckForDuplicates() {
 bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
 		ZFunction& f = ns.PreFunctions[i];
-		ZDefinition& d = ns.Definitions.GetAdd(f.Name, ZDefinition(ns));
+		ZMethodBundle& d = ns.Methods.GetAdd(f.Name, ZMethodBundle(ns));
 		
 		f.GenerateSignatures();
 		

@@ -111,7 +111,7 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 		f.BackName = name;
 		
 		if (parser.Char(':')) {
-			parser.ExpectId();
+			ScanType();
 			
 			if (parser.Char('='))
 				while (!(parser.IsChar(';')/* || (parser.GetSkipNewLines() == false && (parser.PeekChar() == '\n' || parser.PeekChar() == '\r'))*/)) {
@@ -139,6 +139,12 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 	}
 	
 	return false;
+}
+
+void ZScanner::ScanType() {
+	parser.ExpectId();
+	while (parser.Char('.'))
+		parser.ExpectId();
 }
 
 void ZScanner::ScanNamespace() {
@@ -191,6 +197,19 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	
 	ZSourcePos pp = parser.GetFullPos();
 	parser.Expect('(');
+	
+	while (!parser.IsChar(')')) {
+		parser.ExpectId();
+		parser.Expect(':');
+		
+		ScanType();
+		
+		if (parser.Char(',')) {
+			if (parser.IsChar(')'))
+				parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
+		}
+	}
+	
 	parser.Expect(')');
 	
 	ZFunction& f = nmspace->PrepareFunction(name);
