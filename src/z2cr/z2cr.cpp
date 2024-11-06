@@ -90,7 +90,7 @@ CONSOLE_APP_MAIN {
 	if (K.PP_NOPATH)
 		ErrorReporter::PrintPath = false;
 	
-	if (K.Path.GetCount() == 0) {
+	if (K.EntryFile.GetCount() == 0) {
 		Cout() << ZCompiler::GetName() << " requires an execution entry point. Exiting!" << '\n';
 		SetExitCode(-1);
 		return;
@@ -109,10 +109,10 @@ CONSOLE_APP_MAIN {
 	
 	try {
 		String prjPath;
-		if (IsFullPath(K.Path))
-			prjPath = GetFileFolder(K.Path);
+		if (IsFullPath(K.EntryFile))
+			prjPath = GetFileFolder(K.EntryFile);
 		else
-			prjPath = GetFileFolder(curDir + K.Path);
+			prjPath = GetFileFolder(curDir + K.EntryFile);
 		
 		String prjPackage = GetFileName(prjPath);
 		String prjCP = GetFileDirectory(prjPath);
@@ -126,8 +126,11 @@ CONSOLE_APP_MAIN {
 		
 		//ZPackage& stdPakPak = *ass.FindPackage("test");
 		
-		//ZPackage& mainPak = ass.AddPackage("main", "");
-		//ZSource& source = mainPak.AddSource(K.Path, true);
+		if (K.Files.GetCount()) {
+			ZPackage& mainPak = ass.AddPackage("main", "");
+			for (int i = 0; i < K.Files.GetCount(); i++)
+				ZSource& source = mainPak.AddSource(K.Files[i], true);
+		}
 			
 		ZCompiler compiler(ass);
 		
@@ -142,7 +145,7 @@ CONSOLE_APP_MAIN {
 		
 		Cout() << "\n";
 			
-		compiler.SetMainFile(K.Path);
+		compiler.SetMainFile(K.EntryFile);
 		
 		if (!compiler.Compile()) {
 			Cout() << "Compilation failed. Exiting.\n";

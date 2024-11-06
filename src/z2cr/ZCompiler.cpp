@@ -194,8 +194,6 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 }
 
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
-	if (f.Name == "ff")
-		f.Name == "ff" && f.Section != 0;
 	ZParser parser(f.BodyPos);
 	
 	parser.Expect('{');

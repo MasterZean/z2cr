@@ -251,6 +251,8 @@ public:
 		return ass;
 	}
 	
+	bool HasMember(const String& aName);
+	
 private:
 	Assembly& ass;
 };

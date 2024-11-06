@@ -20,6 +20,8 @@ public:
 	Node* ParseNamespace(const String& s, Point opp);
 	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp);
 	
+	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
+	
 private:
 	Assembly& ass;
 	ZParser& parser;
@@ -31,6 +33,8 @@ private:
 	void IncompatOp(const ZSource& src, Point& p, const String& op, Node* left, Node* right) {
 		ErrorReporter::ErrIncompatOp(src, p, op, ass.ClassToString(left), ass.ClassToString(right));
 	}
+	
+	void getParams(Vector<Node*>& params, char end = ')');
 	
 	static Point OPS[256];
 	static bool OPCONT[256];

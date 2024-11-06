@@ -40,30 +40,10 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-c++") {
 			CPP = true;
 			SCU = false;
-			/*i++;
-			if (i < commands.GetCount()) {
-				Path = commands[i];
-				OutPath = GetFileDirectory(Path) + GetFileTitle(Path) + ".cpp";
-			}
-			else {
-				Cout() << Compiler::GetName() << " requires that '-scu', '-c++', '-vasm', '-out' parameters be followed by a path" << '\n';
-				return false;
-			}*/
 		}
 		else if (commands[i] == "-i")
 			INT = true;
-		else if (commands[i] == "-vasm") {
-			VASM = true;
-			i++;
-			if (i < commands.GetCount()) {
-				Path = commands[i];
-				OutPath = GetFileDirectory(Path) + GetFileTitle(Path) + ".vasm";
-			}
-			else {
-				Cout() << name << " requires that '-scu', '-c++', '-vasm', '-out' parameters be followed by a path" << '\n';
-				return false;
-			}
-		}
+		
 		else if (commands[i] == "-out") {
 			i++;
 			if (i < commands.GetCount()) {
@@ -118,11 +98,21 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-file") {
 			i++;
 			if (i < commands.GetCount()) {
-				Path = commands[i];
-				OutPath = GetFileDirectory(Path) + GetFileTitle(Path) + ".cpp";
+				Files.Add(NormalizePath(commands[i]));
+				//OutPath = GetFileDirectory(Path) + GetFileTitle(Path) + ".cpp";
 			}
 			else {
 				Cout() << name << " requires that '-file' parameter be followed by a valid file path" << '\n';
+				return false;
+			}
+		}
+		else if (commands[i] == "-ef") {
+			i++;
+			if (i < commands.GetCount()) {
+				EntryFile = NormalizePath(commands[i]);
+			}
+			else {
+				Cout() << name << " requires that '-ef' parameter be followed by a valid package path" << '\n';
 				return false;
 			}
 		}

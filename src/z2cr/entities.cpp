@@ -5,3 +5,15 @@ ZNamespaceItem* ZNamespaceItem::Add(const String& aName) {
 	
 	return &newns;
 }
+
+bool ZNamespace::HasMember(const String& aName) {
+	int index = Methods.Find(aName);
+	if (index != -1)
+		return true;
+	index = Variables.Find(aName);
+	if (index != -1)
+		return true;
+	
+	return false;
+}
+

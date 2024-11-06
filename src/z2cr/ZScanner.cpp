@@ -213,8 +213,6 @@ void ZScanner::ScanNamespace() {
 		fullName << name << ".";
 	}
 	
-	if (fullName == "bar.")
-		fullName == "bar.";
 	int index = ass.Namespaces.Find(fullName);
 	
 	nmspace = &ass.FindAddNamespace(fullName);

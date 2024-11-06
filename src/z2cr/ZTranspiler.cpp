@@ -137,16 +137,22 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f) {
 	indent++;
 	
 	NL();
-	cs << "printf(\"enter: %s::%s\\n\", ";
-	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\"";
+	cs << "printf(\"enter: %s::%s(%s)\\n\", ";
+	String params;
+	for (int i = 0; i < f.Params.GetCount(); i++) {
+		if (i > 0)
+			params << ", ";
+		params << f.Ass().ClassToString(&f.Params[i].I);
+	}
+	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
 	cs << ")";
 	ES();
 	
 	WalkChildren(&f.Nodes);
 		
 	NL();
-	cs << "printf(\"exit: %s::%s\\n\", ";
-	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\"";
+	cs << "printf(\"exit: %s::%s(%s)\\n\", ";
+	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
 	cs << ")";
 	ES();
 	

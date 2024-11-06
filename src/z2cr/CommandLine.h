@@ -8,8 +8,9 @@ using namespace Upp;
 class CommandLine {
 public:
 	Index<String> Packages;
-	String Path;
+	Index<String> Files;
 	String OutPath;
+	String EntryFile;
 	
 	String O;
 	String BMName;

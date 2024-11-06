@@ -1,4 +1,5 @@
 #include "z2cr.h"
+#include "OverloadResolver.h"
 
 extern String opss[];
 
@@ -87,9 +88,6 @@ Node* ZExprParser::ParseAtom() {
 }
 
 Node* ZExprParser::ParseId() {
-	if (Section == nullptr || Section->Using.GetCount() == 0)
-		return ParseNamespace();
-	
 	Point opp = parser.GetPoint();
 	String s;
 	if (parser.Char('@'))
@@ -97,16 +95,32 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	Node* member = nullptr;
+	int count = 0;
 	for (int i = 0; i < Section->Using.GetCount(); i++) {
 		ZNamespace& ns = *Section->Using[i];
-		
-		Node* res = ParseMember(ns, s, opp);
-		
-		if (member)
-			ErrorReporter::Error(parser.Source(), opp, s + ": ambigous symbol");
-		
-		member = res;
+		if (ns.HasMember(s))
+			count++;
+	}
+	
+	if (count > 1) {
+		String err = s + ": ambigous symbol: can be found in multiple namespaces:\n";
+		for (int i = 0; i < Section->Using.GetCount(); i++) {
+			ZNamespace& ns = *Section->Using[i];
+			if (ns.HasMember(s))
+				err << "\t\t" << ns.Name.Mid(0, ns.Name.GetCount() - 1) << "\n";
+		}
+		parser.Error(opp, err);
+	}
+	
+	Node* member = nullptr;
+	
+	if (count > 0) {
+		for (int i = 0; i < Section->Using.GetCount(); i++) {
+			ZNamespace& ns = *Section->Using[i];
+			
+			if (member == nullptr)
+				member = ParseMember(ns, s, opp);
+		}
 	}
 	
 	if (member)
@@ -157,7 +171,10 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			name = "@" + parser.ExpectId();
 			
 			ASSERT(ns->Namespace);
-			return ParseMember(*ns->Namespace, name, opp);
+			Node* node = ParseMember(*ns->Namespace, name, opp);
+			if (!node)
+				parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
+			return node;
 		}
 		else {
 			name = parser.ExpectId();
@@ -173,34 +190,44 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			}
 			else {
 				// a namespace child
-				return ParseMember(*ns->Namespace, name, opp);
+				Node* node = ParseMember(*ns->Namespace, name, opp);
+				
+				if (!node)
+					parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
+				return node;
 			}
 		}
 		
 		total << "." << name;
 	}
 		
-	//TODO: fix
-	return irg.const_void();
+	return nullptr;
 }
 
-Node *ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp) {
+Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp) {
 	int index = ns.Methods.Find(aName);
 	
 	if (index != -1) {
 		parser.Expect('(');
-		parser.Expect(')');
-	
-		return irg.mem_def(*ns.Methods[index].Functions[0], nullptr);
+		
+		Vector<Node*> params;
+		getParams(params);
+		
+		bool ambig = false;
+		ZFunction* f = GetBase(&ns.Methods[index], nullptr, params, 1, false, ambig);
+		
+		if (ambig)
+			parser.Error(opp, aName + ": ambigous symbol");
+	 
+		ParamsNode* node = irg.mem_def(*f, nullptr);
+		node->Params = std::move(params);
+		return node;
 	}
 	
 	index = ns.Variables.Find(aName);
 	if (index != -1) {
 		return irg.mem_var(ns.Variables[index]);
 	}
-	
-	if (index == -1)
-		parser.Error(opp, "namespace '" + ns.Name + "' does not have a member called: '" + aName + "'");
 	
 	return nullptr;
 }
@@ -238,6 +265,28 @@ Node* ZExprParser::ParseNumeric() {
 		ASSERT_(0, "Error in parse int");
 
 	return exp;
+}
+
+ZFunction* ZExprParser::GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig) {
+	ZFunctionResolver res(ass);
+	ZFunction* one = res.Resolve(*def, params, limit, spec, conv);
+	ambig = res.IsAmbig();
+	//score = res.Score();
+	
+	return one;
+}
+
+void ZExprParser::getParams(Vector<Node*>& params, char end) {
+	while (!parser.IsChar(end)) {
+		params.Add(Parse());
+		
+		if (parser.IsChar(end))
+		    break;
+		if (parser.IsChar(','))
+			parser.Char(',');
+	}
+	
+	parser.Expect(end);
 }
 
 int ZExprParser::GetPriority(int& op, bool& opc) {
