@@ -100,13 +100,13 @@ String DirFinder::Get(const String& substring, const char *files) {
 	return path;
 }
 
-void DeepSearch(Vector<BuildMethod>& methods) {
+void DeepVSSearch(Vector<BuildMethod>& methods) {
 	DirFinder df;
 	
 	enum { VS_2022, VSP_2022, BT_2022, VS_2019, VSP_2019, BT_2019, VS_2017, BT_2017, VS_2015 };
 
 	for(int version = VS_2022; version <= VS_2015; version++) {
-		for(int x64 = 0; x64 < 2; x64++) {
+		for(int x64 = 1; x64 >= 0; x64--) {
 			BuildMethod bm;
 			
 			String x86method = decode(version, VS_2015, "MSVS15",
@@ -148,9 +148,7 @@ void DeepSearch(Vector<BuildMethod>& methods) {
 			inc = df.Get("/windows kits/10", "um/adhoc.h");
 			lib = df.Get("/windows kits/10", "um/x86/kernel32.lib");
 			
-			DUMP(bin);
-			
-			bool ver17 = version >= VS_2017;
+			bool ver17 = version != VS_2015;
 	
 			if(inc.GetCount() == 0 || lib.GetCount() == 0) // workaround for situation when 8.1 is present, but 10 just partially
 				kit81 = df.Get("/windows kits/8.1", "include");
@@ -198,6 +196,9 @@ void DeepSearch(Vector<BuildMethod>& methods) {
 					bm.Arch = "x86";
 				else if (x64 == 1)
 					bm.Arch = "x64";
+				
+				for (int i = 0; i < incs.GetCount(); i++)
+					bm.Include << NormalizePath(incs[i]);
 				
 				for (int i = 0; i < libs.GetCount(); i++)
 					bm.Lib << NormalizePath(libs[i]);
@@ -504,6 +505,7 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 						if (res) {
 							gcc.Arch = "x86";
 							methods.Add(gcc);
+							Cout() << "Found BM: " << gcc.Name << "\n";
 						}
 					}
 					
@@ -527,6 +529,7 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 						if (res) {
 							gcc.Arch = "x64";
 							methods.Add(gcc);
+							Cout() << "Found BM: " << gcc.Name << "\n";
 						}
 					}
 				}
@@ -539,33 +542,39 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 	return true;
 }
 
+bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
+	String bin = GetExeDirFile("bin");
+
+	if(!DirectoryExists(bin + "/clang"))
+		return false;
+	
+	for(int x64 = 1; x64 >= 0; x64--) {
+		String method = x64 ? "CLANGx64" : "CLANG";
+		String clangFolder = bin + "/clang";
+
+		BuildMethod clang;
+		clang.Name = method;
+		clang.Compiler = clangFolder;
+		clang.Sdk = clangFolder;
+		clang.Type = btGCC;
+		clang.Arch = x64 == 1 ? "x64" : "x86";
+		
+		methods.Add(clang);
+		Cout() << "Found BM: " << clang.Name << "\n";
+	}
+	
+	return true;
+}
 #endif
 
 void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 	methods.Clear();
 	
 #ifdef PLATFORM_WIN32
-	DetectGCC(methods);
-	
 	// search for modern MSC
-	DeepSearch(methods);
-	
-	// Z2CR targets only modern C++
-	//BuildMethod msc14;
-	//msc14.DetectMSC14(methods);
-	/*BuildMethod msc12;
-	msc12.DetectMSC12(methods);
-	BuildMethod msc11;
-	msc11.DetectMSC11(methods);
-	BuildMethod msc10;
-	msc10.DetectMSC10(methods);
-	BuildMethod msc9;
-	msc9.DetectMSC9(methods);
-	BuildMethod msc8;
-	msc8.DetectMSC8(methods);
-	BuildMethod msc7_1;
-	msc7_1.DetectMSC7_1(methods);*/
-	
+	DetectClang(methods);
+	DeepVSSearch(methods);
+	DetectGCC(methods);
 #endif
 
 #ifdef PLATFORM_POSIX
@@ -595,22 +604,6 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 		gcc.Compiler = cppExe;
 		
 		{
-			LocalProcess lp(cppExe + " " + pc + " -m32 -o " + po);
-			tt = "";
-			while (lp.Read(t)) {
-				if (t.GetCount())
-					tt << t;
-			}
-			res = lp.GetExitCode() == 0;
-			
-			if (res) {
-				gcc.Arch = "x86";
-				methods.Add(gcc);
-			}
-		}
-		
-		
-		{
 			LocalProcess lp(cppExe + " " + pc + " -m64 -o " + po);
 			tt = "";
 			while (lp.Read(t)) {
@@ -621,6 +614,21 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 			
 			if (res) {
 				gcc.Arch = "x64";
+				methods.Add(gcc);
+			}
+		}
+		
+		{
+			LocalProcess lp(cppExe + " " + pc + " -m32 -o " + po);
+			tt = "";
+			while (lp.Read(t)) {
+				if (t.GetCount())
+					tt << t;
+			}
+			res = lp.GetExitCode() == 0;
+			
+			if (res) {
+				gcc.Arch = "x86";
 				methods.Add(gcc);
 			}
 		}

@@ -10,7 +10,7 @@ using namespace Upp;
 #include <z2cr/BuildMethod.h>
 #include <z2cr/Builder.h>
 
-void GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& bm) {
+bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& bm) {
 	Vector<BuildMethod> methods;
 	
 	// load existing BMs
@@ -26,17 +26,15 @@ void GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 			StoreAsXMLFile(methods, "methods", exeDir + "buildMethods.xml");
 	}
 	
-	// check params
-	if (!K.SCU && !K.CPP && !K.INT && !K.VASM) {
-		Cout() << ZCompiler::GetName() << " requires the '-scu', '-c++', '-vasm' or '-i' parameters. Exiting!" << '\n';
-		SetExitCode(-1);
-		return;
-	}
+	if (!K.BM && K.ARCH.GetCount() == 0 && methods.GetCount() > 0) {
+		bm = methods[0];
 	
+		return true;
+	}
+		
 	if (!K.BM) {
 		Cout() << ZCompiler::GetName() << " requires a build method specified (-bm). Exiting!" << '\n';
-		SetExitCode(-1);
-		return;
+		return false;
 	}
 	
 	int bmi = -1;
@@ -50,8 +48,7 @@ void GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 	
 	if (bmi == -1) {
 		Cout() << "Build method '" << ToUpper(K.BMName) << "' can't be found. Exiting!" << '\n';
-		SetExitCode(-1);
-		return;
+		return false;
 	}
 	
 	bmi = -1;
@@ -65,18 +62,12 @@ void GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 	if (bmi == -1) {
 		Cout() << "Build method '" << ToUpper(K.BMName) << "' doesn't support architecture 'x86'. Exiting!" << '\n';
 		SetExitCode(-1);
-		return;
-	}
-	
-	if (K.PP_NOPATH)
-		ErrorReporter::PrintPath = false;
-
-	
-	if (K.Path.GetCount() == 0) {
-		return;
+		return false;
 	}
 	
 	bm = methods[bmi];
+	
+	return true;
 }
 
 CONSOLE_APP_MAIN {
@@ -85,6 +76,13 @@ CONSOLE_APP_MAIN {
 
 	::CommandLine K;
 	if (!K.Read()) {
+		SetExitCode(-1);
+		return;
+	}
+	
+	// check params
+	if (!K.SCU && !K.CPP && !K.INT && !K.VASM) {
+		Cout() << ZCompiler::GetName() << " requires the '-scu', '-c++', '-vasm' or '-i' parameters. Exiting!" << '\n';
 		SetExitCode(-1);
 		return;
 	}
@@ -99,7 +97,10 @@ CONSOLE_APP_MAIN {
 	}
 	
 	BuildMethod bm;
-	GetBuildMethod(exeDir, K, bm);
+	if (!GetBuildMethod(exeDir, K, bm)) {
+		SetExitCode(-1);
+		return;
+	}
 	
 	StopWatch tm;
 	

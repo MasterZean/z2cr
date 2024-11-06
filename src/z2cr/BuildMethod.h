@@ -5,6 +5,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 	enum Type {
 		btMSC,
 		btGCC,
+		btCLANG,
 		btUnknown,
 	};
 	
@@ -15,6 +16,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 	String Tools;
 	String Sdk;
 	WithDeepCopy<Vector<String>> Lib;
+	WithDeepCopy<Vector<String>> Include;
 	
 	void Xmlize(XmlIO& xml) {
 		xml("name", Name);
@@ -46,6 +48,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 		xml("compiler", Compiler);
 		xml("tools", Tools);
 		xml("sdk", Sdk);
+		xml.List("include", "path", Include);
 		xml.List("lib", "path", Lib);
 	}
 	
@@ -96,6 +99,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 private:
 #ifdef PLATFORM_WIN32
 	static bool DetectGCC(Vector<BuildMethod>& methods);
+	static bool DetectClang(Vector<BuildMethod>& methods);
 	bool DetectMSC7_1(Vector<BuildMethod>& methods);
 	bool DetectMSC8(Vector<BuildMethod>& methods);
 	bool DetectMSC9(Vector<BuildMethod>& methods);

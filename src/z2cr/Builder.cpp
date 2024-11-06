@@ -62,6 +62,14 @@ void Builder::DoEnvMSC() {
 	}
 	ss.Put(0);
 	
+	ss << "INCLUDE=";
+	ss << GetEnv("INCLUDE");
+	
+	for (int i = 0; i < bm.Lib.GetCount(); i++) {
+		ss << bm.Include[i] << ";";
+	}
+	ss.Put(0);
+	
 	String tempPath = GetEnv("TMP");
 	ss << "TMP=";
 	ss << tempPath;
@@ -89,7 +97,7 @@ bool Builder::CompileMSC(const String& src, const String& out) {
 	cmd << QT << src << QT << " ";
 	cmd << "/Fo" << QT << out << QT << " ";
 	cmd << optimize << " ";
-	cmd << "/c /nologo /MT /EHsc ";
+	cmd << "/c /nologo /MT /EHsc /std:c++17";
 	
 	DUMP(cmd);
 	

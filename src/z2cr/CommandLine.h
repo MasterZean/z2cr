@@ -13,7 +13,7 @@ public:
 	
 	String O;
 	String BMName;
-	String ARCH = "x86";
+	String ARCH = "x64";
 	
 	bool CC = false;
 	bool FF = false;
