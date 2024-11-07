@@ -73,7 +73,7 @@ bool ZCompiler::Compile() {
 	if (mainPath.GetCount()) {
 		ZSource* src = ass.FindSource(mainPath);
 		if (!src) {
-			ErrorReporter::CantOpenFile(mainPath);
+			ER::CantOpenFile(mainPath);
 			return false;
 		}
 		
@@ -86,7 +86,7 @@ bool ZCompiler::Compile() {
 			err << "multiple '@main' function: other candidates found at: " << "\n";
 			for (int i = 1; i < vf.GetCount(); i++)
 				err << "\t\t" << vf[i]->DefPos.ToString() << "\n";
-			auto exc = ErrorReporter::Duplicate(vf[0]->DefPos, err);
+			auto exc = ER::Duplicate(vf[0]->DefPos, err);
 			Cout() << exc.ToString() << "\n";
 			
 			return false;
@@ -198,6 +198,9 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	
 	parser.Expect('{');
 	
+	f.Blocks.Add();
+	f.Blocks.Top().Temps = 0;
+	
 	while (!parser.IsChar('}')) {
 		Node* node = CompileStatement(f, parser);
 		
@@ -206,6 +209,8 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	}
 	
 	parser.Expect('}');
+	
+	f.Blocks.Drop();
 	
 	return true;
 }
@@ -224,11 +229,11 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
 		return CompileWhile(f, parser);
 	else if (parser.Id("do"))
 		return CompileDoWhile(f, parser);
+	else if (parser.Id("val"))
+		return CompileLocalVar(f, parser);
 	else {
-		ZExprParser ep(parser, irg);
-		ep.Section = f.Section;
+		ZExprParser ep(f, parser, irg);
 		Node* node = ep.Parse();
-		
 		parser.ExpectEndStat();
 		
 		return node;
@@ -261,8 +266,8 @@ Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser) {
 Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
-	ZExprParser ep(parser, irg);
-	ep.Section = f.Section;
+	
+	ZExprParser ep(f, parser, irg);
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.EatNewlines();
@@ -282,8 +287,8 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser) {
 Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
-	ZExprParser ep(parser, irg);
-	ep.Section = f.Section;
+	
+	ZExprParser ep(f, parser, irg);
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.EatNewlines();
@@ -305,8 +310,8 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser) {
 	
 	parser.Expect('(');
 	Point p = parser.GetPoint();
-	ZExprParser ep(parser, irg);
-	ep.Section = f.Section;
+	
+	ZExprParser ep(f, parser, irg);
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.ExpectEndStat();
@@ -318,6 +323,75 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser) {
 	return irg.dowhilecond(node, bd);
 }
 
+Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
+	auto vp = parser.GetFullPos();
+	String name = parser.ExpectZId();
+	
+	TestVarDup(/*cls, */f, name, vp);
+	
+	ZClass* cls = nullptr;
+	
+	if (parser.Char(':'))
+		cls = ZExprParser::ParseType(f, parser);
+	
+	bool assign = false;
+	/*if (ref) {
+		parser.Expect('<', '-');
+		assign = true;
+	}
+	else {*/
+		if (parser.Char('='))
+			assign = true;
+	//}
+	
+	ZVariable& v = f.Locals.Add(ZVariable(f.Namespace()));
+	v.Name = name;
+	v.DefPos = vp;
+	if (cls)
+		v.I.Tt = cls->Tt;
+	
+	
+	if (assign) {
+		ZExprParser ep(v, parser, irg);
+		Node* node = ep.Parse();
+		parser.ExpectEndStat();
+		
+		if (!cls)
+			v.I.Tt = node->Tt;
+		
+		if (v.I.Tt.Class == ass.CCls)
+			parser.Error(vp.P, "can't create a variable of type '\fClass\f'");
+		if (v.I.Tt.Class == ass.CVoid)
+			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
+	
+		if (v.I.CanAssign(ass, node)) {
+			;
+		}
+		else {
+			parser.Error(vp.P, "can't assign '\f" + ass.ClassToString(node) +
+					"\f' instance to '\f" + ass.ClassToString(&v.I) + "\f' instance without a cast");
+		}
+		
+		v.Value = node;
+	}
+	else {
+		parser.ExpectEndStat();
+		
+		if (v.I.Tt.Class == NULL)
+			parser.Error(vp.P, "variable must have either an explicit type or be initialized");
+		
+		if (v.I.Tt.Class == ass.CCls)
+			parser.Error(vp.P, "can't create a variable of type '\fClass\f'");
+		if (v.I.Tt.Class == ass.CVoid)
+			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
+	}
+		
+	ZBlock& b = f.Blocks[f.Blocks.GetCount() - 1];
+	b.Locals.Add(name, &v);
+	
+	return irg.local(v);
+}
+
 bool ZCompiler::CompileVar(ZVariable& v) {
 	ZParser parser(v.DefPos);
 	
@@ -327,8 +401,7 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 		parser.ExpectId();
 		
 		if (parser.Char('=')) {
-			ZExprParser ep(parser, irg);
-			ep.Section = v.Section;
+			ZExprParser ep(v, parser, irg);
 			Node* node = ep.Parse();
 			
 			v.Value = node;
@@ -338,7 +411,7 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 	else {
 		parser.Expect('=');
 		
-		ZExprParser ep(parser, irg);
+		ZExprParser ep(v, parser, irg);
 		Node* node = ep.Parse();
 		
 		v.Value = node;
@@ -346,6 +419,28 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 	}
 	
 	return true;
+}
+
+void ZCompiler::TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur) {
+	if (over.Name == name)
+		throw ER::Duplicate(name, over.DefPos, cur);
+
+	/*if (cls.Scan.Name == name)
+		parser.Dup(p, cls.Position, name);*/
+
+	for (int i = 0; i < over.Params.GetCount(); i++)
+		if (over.Params[i].Name == name)
+			throw ER::Duplicate(name, over.Params[i].DefPos, cur);
+
+	for (int j = 0; j < over.Blocks.GetCount(); j++)
+		for (int k = 0; k < over.Blocks[j].Locals.GetCount(); k++) {
+			if (over.Blocks[j].Locals[k]->Name == name)
+				throw ER::Duplicate(name, over.Blocks[j].Locals[k]->DefPos, cur);
+		}
+		
+	/*for (int i = 0; i < cls.Vars.GetCount(); i++)
+		if (cls.Vars[i].Name == name)
+			parser.Warning(p, "local '" + name + "' hides a class member");*/
 }
 
 bool ZCompiler::CheckForDuplicates() {
@@ -368,7 +463,7 @@ bool ZCompiler::CheckForDuplicates() {
 		err << "other occurrences at:\n";
 		for (int j = 1; j < list.GetCount(); j++)
 			err << "\t\t" << list[j].ToString() << "\n";
-		throw ErrorReporter::Duplicate(list[0], err);
+		throw ER::Duplicate(list[0], err);
 	}
 
 	return false;

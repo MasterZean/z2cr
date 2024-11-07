@@ -88,7 +88,7 @@ CONSOLE_APP_MAIN {
 	}
 	
 	if (K.PP_NOPATH)
-		ErrorReporter::PrintPath = false;
+		ER::PrintPath = false;
 	
 	if (K.EntryFile.GetCount() == 0) {
 		Cout() << ZCompiler::GetName() << " requires an execution entry point. Exiting!" << '\n';

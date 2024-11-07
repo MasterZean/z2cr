@@ -4,7 +4,7 @@
 class ZSource;
 class ZSourcePos;
 
-class ErrorReporter {
+class ER {
 public:
 	static bool PrintPath;
 	

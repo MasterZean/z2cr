@@ -95,6 +95,13 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
+	if (Section != nullptr && Namespace != nullptr && Section->Using.GetCount() == 0) {
+		Node* node = ParseMember(*Namespace, s, opp);
+		if (node == nullptr)
+			parser.Error(opp, "unknown identifier: " + s);
+		return node;
+	}
+	
 	int count = 0;
 	for (int i = 0; i < Section->Using.GetCount(); i++) {
 		ZNamespace& ns = *Section->Using[i];
@@ -265,6 +272,32 @@ Node* ZExprParser::ParseNumeric() {
 		ASSERT_(0, "Error in parse int");
 
 	return exp;
+}
+
+ZClass* ZExprParser::ParseType(ZFunction& f, ZParser& parser) {
+	auto tt = parser.GetFullPos();
+	String shtype = parser.ExpectId();
+	String type = shtype;
+	
+	while (parser.Char('.'))
+		type << "." << parser.ExpectId();
+	
+	ZClass* cls = nullptr;
+	if (type.GetCount() == shtype.GetCount()) {
+		// short name
+		auto search = f.DefPos.Source->ShortNameLookup.FindPtr(shtype);
+		if (search)
+			cls = *search;
+	}
+	else {
+		// full namespace
+		cls = f.Ass().Classes.FindPtr(type);
+	}
+	
+	if (cls == nullptr)
+		ER::Error(*f.DefPos.Source, tt.P, "unknown identifier: " + type);
+	
+	return cls;
 }
 
 ZFunction* ZExprParser::GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig) {

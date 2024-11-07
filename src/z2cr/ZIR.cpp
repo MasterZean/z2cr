@@ -1260,3 +1260,16 @@ DoWhileNode* IR::dowhilecond(Node* cond, Node* body) {
 	return node;
 }
 
+LocalNode* IR::local(ZVariable& v) {
+	LocalNode* var = localNodes.Get();
+	var->Var = &v;
+	var->SetType(v.I.Tt);
+	var->HasSe = true;
+	//if (/*!v->IsVoid(ass) && */v->Body == nullptr && v->I.Tt.Class->CoreSimple)
+	//	GetVarDefault(v);
+	
+	var->IsAddressable = true;
+	
+	ASSERT(var->Tt.Class);
+	return var;
+}

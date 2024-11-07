@@ -4,8 +4,14 @@
 class ZExprParser {
 public:
 	ZNamespaceSection* Section = nullptr;
+	ZNamespace* Namespace = nullptr;
 	
 	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
+	}
+	
+	ZExprParser(ZEntity& entity, ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
+		Section = entity.Section;
+		Namespace = &entity.Namespace();
 	}
 	
 	static void Initialize();
@@ -22,6 +28,8 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
+	static ZClass* ParseType(ZFunction& f, ZParser& parser);
+	
 private:
 	Assembly& ass;
 	ZParser& parser;
@@ -31,7 +39,7 @@ private:
 	int GetPriority(int& op, bool& opc);
 	
 	void IncompatOp(const ZSource& src, Point& p, const String& op, Node* left, Node* right) {
-		ErrorReporter::ErrIncompatOp(src, p, op, ass.ClassToString(left), ass.ClassToString(right));
+		ER::ErrIncompatOp(src, p, op, ass.ClassToString(left), ass.ClassToString(right));
 	}
 	
 	void getParams(Vector<Node*>& params, char end = ')');

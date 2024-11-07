@@ -66,6 +66,7 @@ public:
 	void Proc(IfNode& node);
 	void Proc(WhileNode& node);
 	void Proc(DoWhileNode& node);
+	void Proc(LocalNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
 	void TranspileDefinitions(ZNamespace& ns);

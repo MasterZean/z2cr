@@ -1,8 +1,8 @@
 #include "z2cr.h"
 
-bool ErrorReporter::PrintPath;
+bool ER::PrintPath;
 
-void ErrorReporter::Error(const ZSource& src, const Point& p, const String& text) {
+void ER::Error(const ZSource& src, const Point& p, const String& text) {
 	//ASSERT(0);
 	if (PrintPath)
 		throw ZException(String().Cat() << src.Package().Path << src.Path << "(" << p.x << ", " << p.y << ")", text);
@@ -10,15 +10,15 @@ void ErrorReporter::Error(const ZSource& src, const Point& p, const String& text
 		throw ZException(String().Cat() << GetFileName(src.Path) << "(" << p.x << ", " << p.y << ")", text);
 }
 
-void ErrorReporter::CantOpenFile(const String& aPath) {
+void ER::CantOpenFile(const String& aPath) {
 	throw ZException(String().Cat() << "Can't open file: " << aPath);
 }
 
-ZException ErrorReporter::Duplicate(const ZSourcePos& p, const String& aText) {
+ZException ER::Duplicate(const ZSourcePos& p, const String& aText) {
 	return ZException(p.ToString(), aText);
 }
 
-ZException ErrorReporter::Duplicate(const String& name, const ZSourcePos& cur, const ZSourcePos& prev) {
+ZException ER::Duplicate(const String& name, const ZSourcePos& cur, const ZSourcePos& prev) {
 	String err;
 		
 	err << "duplicate symbol: " << name << ", ";

@@ -27,7 +27,7 @@ void ZTranspiler::WriteOutro() {
 	indent++;
 	
 	NL();
-	cs << comp.MainFunction->GetNamespace().BackName << "::" << comp.MainFunction->BackName << "();";
+	cs << comp.MainFunction->Namespace().BackName << "::" << comp.MainFunction->BackName << "();";
 	EL();
 	
 	NL();
@@ -42,6 +42,9 @@ void ZTranspiler::WriteOutro() {
 }
 
 void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
+	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
+		return;
+	
 	NL();
 	cs << "namespace " << ns.BackName << " {";
 	EL();
@@ -84,7 +87,7 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns) {
 		ASSERT(v.Value);
 		
 		NL();
-		cs << v.I.Tt.Class->BackName << " " << v.GetNamespace().BackName << "::" << v.Name << " = ";
+		cs << v.I.Tt.Class->BackName << " " << v.Namespace().BackName << "::" << v.Name << " = ";
 		Walk(v.Value);
 		ES();
 	}
@@ -110,7 +113,7 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
-	cs << "void " << f.GetNamespace().BackName << "::" << f.BackName;
+	cs << "void " << f.Namespace().BackName << "::" << f.BackName;
 	WriteFunctionParams(f);
 }
 
@@ -144,7 +147,7 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f) {
 			params << ", ";
 		params << f.Ass().ClassToString(&f.Params[i].I);
 	}
-	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
+	cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
 	cs << ")";
 	ES();
 	
@@ -152,7 +155,7 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f) {
 		
 	NL();
 	cs << "printf(\"exit: %s::%s(%s)\\n\", ";
-	cs << "\"" << f.GetNamespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
+	cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
 	cs << ")";
 	ES();
 	
@@ -167,7 +170,7 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f) {
 }
 
 void ZTranspiler::WalkNode(Node* node) {
-	if (node->NT == NodeType::Block) {
+	if (node->NT == NodeType::Block || node->NT == NodeType::Local) {
 		Walk(node);
 		return;
 	}
@@ -252,10 +255,10 @@ void ZTranspiler::Walk(Node* node) {
 	else if (node->NT == NodeType::Intrinsic)
 		Proc((IntNode*)node);
 	else if (node->NT == NodeType::Return)
-		Proc((ReturnNode*)node);
-	else if (node->NT == NodeType::Var)
-		Proc((VarNode*)node);
-	else if (node->NT == NodeType::Alloc)
+		Proc((ReturnNode*)node);*/
+	else if (node->NT == NodeType::Local)
+		Proc(*(LocalNode*)node);
+	/*else if (node->NT == NodeType::Alloc)
 		Proc((AllocNode*)node);
 	else if (node->NT == NodeType::Array)
 		Proc((RawArrayNode*)node);
@@ -271,6 +274,20 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(DoWhileNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
+}
+
+void ZTranspiler::WalkChildren(Node* node) {
+	Node* child = node->First;
+	
+	while (child) {
+		//if (child->NT != NodeType::Block/* && child->NT != NodeType::If*/)
+			NL();
+		WalkNode(child);
+		if (child->NT != NodeType::Block && child->NT != NodeType::If && child->NT != NodeType::While)
+			ES();
+		
+		child = child->Next;
+	}
 }
 
 void ZTranspiler::Proc(ConstNode& node, Stream& stream)
@@ -410,7 +427,7 @@ void ZTranspiler::Proc(OpNode& node) {
 }
 
 void ZTranspiler::Proc(DefNode& node) {
-	cs << node.Overload->GetNamespace().BackName << "::" << node.Overload->BackName;
+	cs << node.Overload->Namespace().BackName << "::" << node.Overload->BackName;
 	cs << '(';
 	
 	int count = node.Params.GetCount();
@@ -445,19 +462,7 @@ void ZTranspiler::Proc(BlockNode& node) {
 	EL();
 }
 
-void ZTranspiler::WalkChildren(Node* node) {
-	Node* child = node->First;
-	
-	while (child) {
-		//if (child->NT != NodeType::Block/* && child->NT != NodeType::If*/)
-			NL();
-		WalkNode(child);
-		if (child->NT != NodeType::Block && child->NT != NodeType::If && child->NT != NodeType::While)
-			ES();
-		
-		child = child->Next;
-	}
-}
+
 
 void ZTranspiler::Proc(IfNode& node) {
 	ASSERT(node.Cond);
@@ -560,3 +565,16 @@ void ZTranspiler::Proc(DoWhileNode& node) {
 	Walk(node.Cond);
 	cs << ")";
 }
+
+void ZTranspiler::Proc(LocalNode& node) {
+	ASSERT(node.Var);
+	
+	cs << node.Tt.Class->BackName << " ";
+	cs << node.Var->Name;
+	
+	if (node.Var->Value) {
+		cs << " = ";
+		Walk(node.Var->Value);
+	}
+}
+

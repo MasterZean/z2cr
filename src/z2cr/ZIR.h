@@ -53,6 +53,7 @@ protected:
 	NodePool<IfNode> ifNodes;
 	NodePool<WhileNode> whileNodes;
 	NodePool<DoWhileNode> doWhileNodes;
+	NodePool<LocalNode> localNodes;
 	
 public:
 	public:
@@ -102,6 +103,8 @@ public:
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);
 	WhileNode* whilecond(Node* cond, Node* body);
 	DoWhileNode* dowhilecond(Node* cond, Node* body);
+	
+	LocalNode* local(ZVariable& v);
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)

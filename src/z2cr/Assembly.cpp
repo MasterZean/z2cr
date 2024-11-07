@@ -20,39 +20,20 @@ void ZFunction::GenerateSignatures() {
 		String name = parser.ExpectId();
 		
 		if (name == Name)
-			throw ErrorReporter::Duplicate(name, pp, DefPos);
+			throw ER::Duplicate(name, pp, DefPos);
 		parser.Expect(':');
 		
-		auto tt = parser.GetFullPos();
-		String shtype = parser.ExpectId();
-		String type = shtype;
-		
-		while (parser.Char('.'))
-			type << "." << parser.ExpectId();
-		
-		ZClass* cls = nullptr;
-		if (type.GetCount() == shtype.GetCount()) {
-			// short name
-			auto search = DefPos.Source->ShortNameLookup.FindPtr(shtype);
-			if (search)
-				cls = *search;
-		}
-		else {
-			// full namespace
-			cls = Ass().Classes.FindPtr(type);
-		}
-		
-		if (cls == nullptr)
-			ErrorReporter::Error(*DefPos.Source, tt.P, "unknown identifier: " + type);
+		ZClass* cls = ZExprParser::ParseType(*this, parser);
 		
 		if (parser.Char(',')) {
 			if (parser.IsChar(')'))
 				parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
 		}
 		
-		ZVariable& var = Params.Add(ZVariable(GetNamespace()));
+		ZVariable& var = Params.Add(ZVariable(Namespace()));
 		var.Name = name;
 		var.I.Tt = cls->Tt;
+		var.DefPos = pp;
 	}
 	
 	dsig = "";

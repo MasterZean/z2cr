@@ -11,6 +11,7 @@ class ZPackage;
 class ZFunction;
 class ZSource;
 class ZClass;
+class Node;
 
 enum class AccessType {
 	Public,
@@ -64,6 +65,9 @@ public:
 	ObjectInfo(ObjectType* tt) {
 		Tt = *tt;
 	}
+	
+	bool CanAssign(Assembly& ass, Node* node);
+	bool CanAssign(Assembly& ass, ObjectInfo& sec, bool isCt);
 };
 
 class NodeType {
@@ -87,7 +91,7 @@ public:
 		Deref,
 		Intrinsic,
 		Return,
-		Var,
+		Local,
 		Alloc,
 		Array,
 		Using,
@@ -271,7 +275,7 @@ public:
 		Type = EntityType::Unknown;
 	}
 	
-	ZNamespace& GetNamespace() {
+	ZNamespace& Namespace() {
 		return nmsspace;
 	}
 	
@@ -322,7 +326,6 @@ public:
 	
 	Node* Value = nullptr;
 	ObjectInfo I;
-	//ObjectType Tt;
 	
 	ParamType PType;
 		
@@ -333,7 +336,7 @@ public:
 
 class ZBlock: Moveable<ZBlock> {
 public:
-	WithDeepCopy<VectorMap<String, ZVariable*>> Vars;
+	WithDeepCopy<VectorMap<String, ZVariable*>> Locals;
 	int Temps = 0;
 };
 
@@ -351,6 +354,7 @@ public:
 	Array<ZVariable> Params;
 	Vector<ZClass*> TParam;
 	WithDeepCopy<Vector<ZBlock>> Blocks;
+	Array<ZVariable> Locals;
 	
 	int Score = 0;
 	

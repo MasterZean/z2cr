@@ -177,4 +177,13 @@ public:
 	}
 };
 
+class LocalNode: public Node {
+public:
+	ZVariable* Var = nullptr;
+
+	LocalNode() {
+		NT = NodeType::Local;
+	}
+};
+
 #endif

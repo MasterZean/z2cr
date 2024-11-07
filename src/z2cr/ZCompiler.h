@@ -48,6 +48,7 @@ private:
 	Node* CompileIf(ZFunction& f, ZParser& parser);
 	Node* CompileWhile(ZFunction& f, ZParser& parser);
 	Node* CompileDoWhile(ZFunction& f, ZParser& parser);
+	Node* CompileLocalVar(ZFunction& f, ZParser& parser);
 	
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
 	bool Transpile(ZTranspiler& cpp, ZFunction& f);
@@ -56,6 +57,7 @@ private:
 	bool CheckForDuplicates(ZNamespace& ns);
 	
 	void ScanSource(ZSource& src, Vector<ZScanner*>& scanners);
+	void TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur);
 };
 
 #endif
