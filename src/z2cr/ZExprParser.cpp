@@ -288,14 +288,19 @@ ZClass* ZExprParser::ParseType(ZFunction& f, ZParser& parser) {
 		auto search = f.DefPos.Source->ShortNameLookup.FindPtr(shtype);
 		if (search)
 			cls = *search;
+		
+		if (cls == nullptr)
+			ER::Error(*f.DefPos.Source, tt.P, "unknown identifier: " + type);
 	}
 	else {
 		// full namespace
+		for (int i = 0; i < f.Ass().Classes.GetCount(); i++)
+			DUMP(f.Ass().Classes.GetKey(i));
 		cls = f.Ass().Classes.FindPtr(type);
+		
+		if (cls == nullptr)
+			ER::Error(*f.DefPos.Source, tt.P, "unknown namespace reference: " + type);
 	}
-	
-	if (cls == nullptr)
-		ER::Error(*f.DefPos.Source, tt.P, "unknown identifier: " + type);
 	
 	return cls;
 }
