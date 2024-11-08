@@ -233,7 +233,26 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
 		return CompileLocalVar(f, parser);
 	else {
 		ZExprParser ep(f, parser, irg);
+		ep.Function = &f;
+		auto pp = parser.GetFullPos();
 		Node* node = ep.Parse();
+		
+		if (parser.Char('=')) {
+			Node* rs = ep.Parse();
+			
+			if (node->LValue == false)
+				parser.Error(pp.P, "left side of assignment is not a L-value");
+			if (node->IsConst)
+				parser.Error(pp.P, "can't assign to readonly '\f" + ass.ClassToString(rs) + "\f'");
+			
+			if (!node->CanAssign(ass, rs)) {
+				parser.Error(pp.P, "can't assign '\f" + ass.ClassToString(rs) +
+					"\f' instance to '\f" + ass.ClassToString(node) + "\f' instance without a cast");
+			}
+			
+			return irg.attr(node, rs);
+		}
+
 		parser.ExpectEndStat();
 		
 		return node;
@@ -323,15 +342,36 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser) {
 	return irg.dowhilecond(node, bd);
 }
 
+bool ZCompiler::CompileVar(ZVariable& v) {
+	ZParser parser(v.DefPos);
+	parser.ExpectZId();
+	
+	return compileVarDec(v, parser, v.DefPos, nullptr);
+}
+
 Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
 	auto vp = parser.GetFullPos();
-	String name = parser.ExpectZId();
 	
+	String name = parser.ExpectZId();
 	TestVarDup(/*cls, */f, name, vp);
 	
+	ZVariable& v = f.Locals.Add(ZVariable(f.Namespace()));
+	v.Name = name;
+	v.BackName = name;
+	v.DefPos = vp;
+	v.Section = f.Section;
+	
+	return compileVarDec(v, parser, vp, &f);
+}
+
+Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
-	if (parser.Char(':'))
-		cls = ZExprParser::ParseType(f, parser);
+	if (parser.Char(':')) {
+		cls = ZExprParser::ParseType(f->Ass(), parser);
+		if (cls == ass.CVoid)
+			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
+		v.I.Tt = cls->Tt;
+	}
 	
 	bool assign = false;
 	/*if (ref) {
@@ -343,19 +383,11 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
 			assign = true;
 	//}
 	
-	ZVariable& v = f.Locals.Add(ZVariable(f.Namespace()));
-	v.Name = name;
-	v.DefPos = vp;
-	if (cls)
-		v.I.Tt = cls->Tt;
-	
 	if (assign) {
-		ZExprParser ep(f, parser, irg);
+		ZExprParser ep(v, parser, irg);
+		ep.Function = f;
 		Node* node = ep.Parse();
 		parser.ExpectEndStat();
-		
-		if (cls == ass.CVoid)
-			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
 		
 		if (!cls) {
 			if (node->Tt.Class == ass.CVoid)
@@ -367,9 +399,9 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
 			parser.Error(vp.P, "can't create a variable of type '\fClass\f'");
 			
 		if (v.I.CanAssign(ass, node)) {
-			v.Value = node;;
+			v.Value = node;
 		}
-		else if (node->Tt.Class == ass.CVoid && node->IsLiteral) {
+		else if (node->IsLiteral && node->Tt.Class == ass.CVoid) {
 			// literal null initialization, leave variable uninitialized
 			v.Value = nullptr;
 		}
@@ -390,39 +422,12 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
 			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
 	}
 		
-	ZBlock& b = f.Blocks[f.Blocks.GetCount() - 1];
-	b.Locals.Add(name, &v);
+	if (f) {
+		ZBlock& b = f->Blocks[f->Blocks.GetCount() - 1];
+		b.Locals.Add(v.Name, &v);
+	}
 	
 	return irg.local(v);
-}
-
-bool ZCompiler::CompileVar(ZVariable& v) {
-	ZParser parser(v.DefPos);
-	
-	parser.ExpectId();
-	
-	if (parser.Char(':')) {
-		parser.ExpectId();
-		
-		if (parser.Char('=')) {
-			ZExprParser ep(v, parser, irg);
-			Node* node = ep.Parse();
-			
-			v.Value = node;
-			v.I.Tt = node->Tt;
-		}
-	}
-	else {
-		parser.Expect('=');
-		
-		ZExprParser ep(v, parser, irg);
-		Node* node = ep.Parse();
-		
-		v.Value = node;
-		v.I.Tt = node->Tt;
-	}
-	
-	return true;
 }
 
 void ZCompiler::TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur) {

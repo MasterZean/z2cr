@@ -106,6 +106,8 @@ public:
 	
 	LocalNode* local(ZVariable& v);
 	
+	Node* attr(Node* left, Node* right);
+	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)
 			return opArit(left, right, op, p);

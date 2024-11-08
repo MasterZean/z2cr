@@ -58,6 +58,8 @@ private:
 	
 	void ScanSource(ZSource& src, Vector<ZScanner*>& scanners);
 	void TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur);
+	
+	Node* compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f);
 };
 
 #endif

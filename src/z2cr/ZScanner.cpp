@@ -140,6 +140,7 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 		ZVariable& f = nmspace->PrepareVariable(name);
 		f.DefPos = dp;
 		f.BackName = name;
+		f.Section = section;
 		
 		if (parser.Char(':')) {
 			ScanType();

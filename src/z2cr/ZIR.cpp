@@ -1214,6 +1214,7 @@ MemNode* IR::mem_var(ZEntity* mem) {
 	if (mem->Type == EntityType::Variable) {
 		ZVariable& v = *((ZVariable*)mem);
 		node->SetType(v.I.Tt);
+		node->LValue = true;
 	}
 	else if (mem->Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);
@@ -1272,4 +1273,23 @@ LocalNode* IR::local(ZVariable& v) {
 	
 	ASSERT(var->Tt.Class);
 	return var;
+}
+
+Node* IR::attr(Node* left, Node* right) {
+	OpNode* node = opNodes.Get();
+	
+	if (left->IsRef)
+		left = deref(left);
+	if (right->IsRef)
+		right = deref(right);
+	
+	node->OpA = left;
+	node->OpB = right;
+	node->Op = OpNode::opAssign;
+	node->SetType(left->Tt);
+	node->HasSe = true;
+	node->IsConst = left->IsConst;
+	ASSERT(node->Tt.Class);
+	
+	return node;
 }

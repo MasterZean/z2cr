@@ -23,7 +23,7 @@ void ZFunction::GenerateSignatures() {
 			throw ER::Duplicate(name, pp, DefPos);
 		parser.Expect(':');
 		
-		ZClass* cls = ZExprParser::ParseType(*this, parser);
+		ZClass* cls = ZExprParser::ParseType(Ass(), parser);
 		
 		if (parser.Char(',')) {
 			if (parser.IsChar(')'))

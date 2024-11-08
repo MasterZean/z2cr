@@ -5,11 +5,13 @@ class ZExprParser {
 public:
 	ZNamespaceSection* Section = nullptr;
 	ZNamespace* Namespace = nullptr;
+	ZFunction* Function = nullptr;
 	
 	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
 	}
 	
 	ZExprParser(ZEntity& entity, ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
+		ASSERT(entity.Section);
 		Section = entity.Section;
 		Namespace = &entity.Namespace();
 	}
@@ -28,12 +30,13 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
-	static ZClass* ParseType(ZFunction& f, ZParser& parser);
+	static ZClass* ParseType(Assembly& ass, ZParser& parser);
 	
 private:
 	Assembly& ass;
 	ZParser& parser;
 	IR& irg;
+	
 	static bool initialized;
 	
 	int GetPriority(int& op, bool& opc);

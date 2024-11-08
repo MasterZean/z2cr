@@ -95,6 +95,15 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
+	if (Function) {
+		for (int j = 0; j < Function->Blocks.GetCount(); j++) {
+			ZBlock& b = Function->Blocks[j];
+			for (int k = 0; k < b.Locals.GetCount(); k++)
+				if (b.Locals[k]->Name == s)
+					return irg.mem_var(b.Locals[k]);
+		}
+	}
+	
 	if (Section != nullptr && Namespace != nullptr && Section->Using.GetCount() == 0) {
 		Node* node = ParseMember(*Namespace, s, opp);
 		if (node == nullptr)
@@ -274,7 +283,7 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ZClass* ZExprParser::ParseType(ZFunction& f, ZParser& parser) {
+ZClass* ZExprParser::ParseType(Assembly& ass, ZParser& parser) {
 	auto tt = parser.GetFullPos();
 	String shtype = parser.ExpectId();
 	String type = shtype;
@@ -285,21 +294,21 @@ ZClass* ZExprParser::ParseType(ZFunction& f, ZParser& parser) {
 	ZClass* cls = nullptr;
 	if (type.GetCount() == shtype.GetCount()) {
 		// short name
-		auto search = f.DefPos.Source->ShortNameLookup.FindPtr(shtype);
+		auto search = parser.Source().ShortNameLookup.FindPtr(shtype);
 		if (search)
 			cls = *search;
 		
 		if (cls == nullptr)
-			ER::Error(*f.DefPos.Source, tt.P, "unknown identifier: " + type);
+			ER::Error(parser.Source(), tt.P, "unknown identifier: " + type);
 	}
 	else {
 		// full namespace
-		for (int i = 0; i < f.Ass().Classes.GetCount(); i++)
-			DUMP(f.Ass().Classes.GetKey(i));
-		cls = f.Ass().Classes.FindPtr(type);
+		for (int i = 0; i < ass.Classes.GetCount(); i++)
+			DUMP(ass.Classes.GetKey(i));
+		cls = ass.Classes.FindPtr(type);
 		
 		if (cls == nullptr)
-			ER::Error(*f.DefPos.Source, tt.P, "unknown namespace reference: " + type);
+			ER::Error(parser.Source(), tt.P, "unknown namespace reference: " + type);
 	}
 	
 	return cls;
