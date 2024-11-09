@@ -1,11 +1,9 @@
-#include "z2cr.h"
-
 #include <Core/Core.h>
 
 using namespace Upp;
 
-#include <z2cr/StopWatch.h>
-#include <z2cr/ZCompiler.h>
+#include <z2crlib/StopWatch.h>
+#include <z2crlib/ZCompiler.h>
 #include <z2cr/CommandLine.h>
 #include <z2cr/BuildMethod.h>
 #include <z2cr/Builder.h>
@@ -86,9 +84,9 @@ CONSOLE_APP_MAIN {
 		SetExitCode(-1);
 		return;
 	}
+		ER::PrintPath = false;
 	
 	if (K.PP_NOPATH)
-		ER::PrintPath = false;
 	
 	if (K.EntryFile.GetCount() == 0) {
 		Cout() << ZCompiler::GetName() << " requires an execution entry point. Exiting!" << '\n';

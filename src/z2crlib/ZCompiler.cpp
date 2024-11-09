@@ -1,4 +1,5 @@
-#include "z2cr.h"
+#include <z2crlib/ZCompiler.h>
+#include <z2crlib/ZTranspiler.h>
 
 bool ZCompiler::Compile() {
 	Vector<ZScanner*> scanners;

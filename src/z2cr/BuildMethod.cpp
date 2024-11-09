@@ -1,5 +1,3 @@
-#include "z2cr.h"
-
 #include <z2cr/BuildMethod.h>
 
 String NormalizePathNN(const String& path) {

@@ -5,18 +5,16 @@
 
 using namespace Upp;
 
-#include <z2cr/ZException.h>
-#include <z2cr/ErrorReporter.h>
+#include <z2crlib/ZException.h>
+#include <z2crlib/ErrorReporter.h>
 
-#include <z2cr/Assembly.h>
-#include <z2cr/ZSource.h>
-#include <z2cr/ZParser.h>
-#include <z2cr/ZScanner.h>
+#include <z2crlib/Assembly.h>
+#include <z2crlib/ZSource.h>
+#include <z2crlib/ZParser.h>
+#include <z2crlib/ZScanner.h>
 
-#include <z2cr/ZNode.h>
-#include <z2cr/ZIR.h>
-#include <z2cr/ZExprParser.h>
-#include <z2cr/ZCompiler.h>
-#include <z2cr/ZTranspiler.h>
+#include <z2crlib/ZNode.h>
+#include <z2crlib/ZIR.h>
+#include <z2crlib/ZExprParser.h>
 
 #endif

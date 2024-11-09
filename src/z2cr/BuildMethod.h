@@ -1,6 +1,10 @@
 #ifndef __BUILD_METHOD_HPP__
 #define __BUILD_METHOD_HPP__
- 
+
+#include <Core/Core.h>
+
+using namespace Upp;
+
 struct BuildMethod: public Moveable<BuildMethod> {
 	enum Type {
 		btMSC,

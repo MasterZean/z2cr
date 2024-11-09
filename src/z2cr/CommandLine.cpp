@@ -1,6 +1,5 @@
-#include "z2cr.h"
-
 #include <z2cr/CommandLine.h>
+#include <z2crlib/ZCompiler.h>
 
 bool CommandLine::Read() {
 	O = " -O2";

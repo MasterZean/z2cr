@@ -1,4 +1,4 @@
-#include "z2cr.h"
+#include <z2crlib/ZTranspiler.h>
 
 extern String opss[];
 

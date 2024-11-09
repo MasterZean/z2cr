@@ -1,0 +1,16 @@
+uses
+	Core,
+	z2crlib;
+
+file
+	z2cr.cpp,
+	CommandLine.h,
+	CommandLine.cpp,
+	BuildMethod.h,
+	BuildMethod.cpp,
+	Builder.h,
+	Builder.cpp;
+
+mainconfig
+	"" = "";
+

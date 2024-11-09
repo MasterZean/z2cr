@@ -3,7 +3,6 @@ uses
 
 file
 	z2cr.h,
-	z2cr.cpp,
 	entities.h,
 	entities.cpp,
 	Assembly.h,
@@ -29,15 +28,5 @@ file
 	ZException.h,
 	ErrorReporter.h,
 	ErrorReporter.cpp,
-	build readonly separator,
-	CommandLine.h,
-	CommandLine.cpp,
-	BuildMethod.h,
-	BuildMethod.cpp,
-	Builder.h,
-	Builder.cpp,
-	StopWatch.h;
-
-mainconfig
-	"" = "";
+	build readonly separator;
 

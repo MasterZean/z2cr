@@ -1,5 +1,5 @@
-#include <z2cr/entities.h>
-#include <z2cr/Assembly.h>
+#include <z2crlib/entities.h>
+#include <z2crlib/Assembly.h>
 
 extern int tabAss[][14];
 

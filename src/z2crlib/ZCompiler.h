@@ -1,6 +1,9 @@
 #ifndef _z2cr_ZCompiler_h_
 #define _z2cr_ZCompiler_h_
 
+#include <z2crlib/entities.h>
+#include <z2crlib/ZScanner.h>
+
 class ZTranspiler;
 
 class ZCompiler {

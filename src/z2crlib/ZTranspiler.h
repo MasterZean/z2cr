@@ -1,6 +1,8 @@
 #ifndef _z2cr_Transpiler_h_
 #define _z2cr_Transpiler_h_
 
+#include <z2crlib/ZCompiler.h>
+
 class ZNodeWalker {
 public:
 	ZNodeWalker(ZCompiler& aComp, Stream& aStream): comp(aComp), ass(aComp.Ass()), cs(aStream) {
