@@ -2,33 +2,7 @@
 #include <z2crlib/ZTranspiler.h>
 
 bool ZCompiler::Compile() {
-	Vector<ZScanner*> scanners;
-	
-	// prioritize main hint
-	if (mainPath.GetCount()) {
-		ZSource* src = ass.FindSource(mainPath);
-		if (src)
-			ScanSource(*src, scanners);
-	}
-	
-	// scan all source files, throws on critical syntax error
-	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
-		ZSource& src = *ass.SourceLookup[i];
-		if (src.IsScaned == false)
-			ScanSource(src, scanners);
-	}
-
-	// print non critical errors
-	bool found = false;
-	for (int i = 0; i < scanners.GetCount(); i++) {
-		for (int j = 0; j < scanners[i]->Errors.GetCount(); j++) {
-			Cout() << scanners[i]->Errors[j].ToString() << "\n";
-			found = true;
-		}
-		delete scanners[i];
-	}
-	
-	if (found)
+	if (!ScanSources())
 		return false;
 	
 	if (!CheckForDuplicates())
@@ -127,14 +101,44 @@ bool ZCompiler::Compile() {
 	return true;
 }
 
-void ZCompiler::ScanSource(ZSource& src, Vector<ZScanner*>& scanners) {
+bool ZCompiler::ScanSources() {
+	Array<ZScanner> scanners;
+	
+	// prioritize main hint
+	if (mainPath.GetCount()) {
+		ZSource* src = ass.FindSource(mainPath);
+		if (src)
+			ScanSource(*src, scanners);
+	}
+	
+	// scan all source files, throws on critical syntax error
+	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
+		ZSource& src = *ass.SourceLookup[i];
+		if (src.IsScaned == false)
+			ScanSource(src, scanners);
+	}
+
+	// print non critical errors
+	bool found = false;
+	for (int i = 0; i < scanners.GetCount(); i++) {
+		for (int j = 0; j < scanners[i].Errors.GetCount(); j++) {
+			Cout() << scanners[i].Errors[j].ToString() << "\n";
+			found = true;
+		}
+	}
+	
+	if (found)
+		return false;
+	
+	return true;
+}
+
+void ZCompiler::ScanSource(ZSource& src, Array<ZScanner>& scanners) {
 	src.AddStdClassRefs();
 			
-	auto scanner = new ZScanner(src, Platform);
-	scanner->Scan();
+	auto& scanner = scanners.Add(ZScanner(src, Platform));
+	scanner.Scan();
 	src.IsScaned = true;
-	
-	scanners << scanner;
 }
 
 Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {

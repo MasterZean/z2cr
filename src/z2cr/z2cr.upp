@@ -4,6 +4,8 @@ uses
 
 file
 	z2cr.cpp,
+	InlineTester.h,
+	InlineTester.cpp,
 	CommandLine.h,
 	CommandLine.cpp,
 	BuildMethod.h,

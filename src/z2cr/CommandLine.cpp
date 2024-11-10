@@ -130,6 +130,9 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-pp:no-path") {
 			PP_NOPATH = true;
 		}
+		else if (commands[i] == "-ut") {
+			UT = true;
+		}
 		else {
 			Cout() << "Unknown parameter '" << commands[i] << "'. Exiting!\n";
 			return false;

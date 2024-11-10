@@ -7,6 +7,7 @@ using namespace Upp;
 #include <z2cr/CommandLine.h>
 #include <z2cr/BuildMethod.h>
 #include <z2cr/Builder.h>
+#include <z2cr/InlineTester.h>
 
 bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& bm) {
 	Vector<BuildMethod> methods;
@@ -68,9 +69,34 @@ bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 	return true;
 }
 
+void RunInlineTests(const String& path) {
+	Cout() << "Searching for tests...\n";
+	
+	InlineTester tester;
+	tester.AddModule(path);
+	
+	if (tester.TestCount == 0) {
+		Cout() << "Could not find any tests. Aborting testing!\n\n";
+		return;
+	}
+	
+	Cout() << "Running " << tester.TestCount;
+	if (tester.TestCount == 1)
+		Cout() << " test..." << "\n\n";
+	else
+		Cout() << " tests..." << "\n\n";
+}
+
 CONSOLE_APP_MAIN {
-	String curDir = GetCurrentDirectory() + "/";
+	String curDir = NativePath(GetCurrentDirectory() + "/");
 	String exeDir = GetFileDirectory(GetExeFilePath());
+	
+	/*MemoryBreakpoint(2381);
+	MemoryBreakpoint(2205);
+	MemoryBreakpoint(2027);
+	MemoryBreakpoint(1848);
+	MemoryBreakpoint(1671);
+	MemoryBreakpoint(1494);*/
 
 	::CommandLine K;
 	if (!K.Read()) {
@@ -104,6 +130,9 @@ CONSOLE_APP_MAIN {
 	
 	// compile
 	Assembly ass;
+	
+	if (K.UT)
+		RunInlineTests(AppendFileName(curDir, "tests"));
 	
 	try {
 		String prjPath;
@@ -168,11 +197,11 @@ CONSOLE_APP_MAIN {
 			Cout() << bm.Name << " code generation failed.\n";
 		}
 	}
-	catch (ZException e) {
+	catch (ZException& e) {
 		Cout() << e.ToString() << "\n";
 		SetExitCode(-1);
 	}
-	catch (CParser::Error e) {
+	catch (CParser::Error& e) {
 		// should not reach, but...
 		Cout() << e << "\n";
 		SetExitCode(-1);

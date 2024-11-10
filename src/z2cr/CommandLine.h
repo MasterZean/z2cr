@@ -25,6 +25,7 @@ public:
 	bool VASM = false;
 	bool INT = false;
 	bool LAZY = false;
+	bool UT = false;
 	
 	bool PP_NOPATH = false;
 	

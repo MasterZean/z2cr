@@ -20,7 +20,6 @@ public:
 	}
 	
 	bool LoadFile(const String& aPath);
-	bool LoadVirtual(const String& aPath, const String& aContent);
 	
 	bool IsValid() const {
 		return !content.IsVoid();

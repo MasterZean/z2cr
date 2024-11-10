@@ -21,6 +21,8 @@ public:
 	ZCompiler(Assembly& aAss);
 	
 	bool Compile();
+	
+	bool ScanSources();
 		
 	void SetMainFile(const String& aPath) {
 		mainPath = aPath;
@@ -59,7 +61,7 @@ private:
 	bool CheckForDuplicates();
 	bool CheckForDuplicates(ZNamespace& ns);
 	
-	void ScanSource(ZSource& src, Vector<ZScanner*>& scanners);
+	void ScanSource(ZSource& src, Array<ZScanner>& scanners);
 	void TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur);
 	
 	Node* compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f);
