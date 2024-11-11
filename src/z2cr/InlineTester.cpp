@@ -4,7 +4,41 @@ String anTest = "// @test";
 String anFile = "// @file";
 String anError = "// @error";
 
-void ZTest::Run() {
+bool ZTest::Run() {
+	bool result = false;
+	
+	if (Source) {
+		Source->LoadVirtual(Con);
+		Source = nullptr;
+	}
+	
+	try {
+		ZCompiler compiler(Ass);
+		compiler.ScanSources();
+		
+		if (Error.GetCount() == 0)
+			result = true;
+		else {
+			DUMP("No error");
+			DUMP(Error);
+		}
+	}
+	catch (ZException& e) {
+		if (Error != e.ToString()) {
+			DUMP(e.ToString());
+			DUMP(Error);
+			Cout() << " test failled\n";
+		}
+		else
+			result = true;
+		//Cout() << e.ToString() << "\n";
+	}
+	catch (CParser::Error& e) {
+		// should not reach, but...
+		Cout() << e << "\n";
+	}
+	
+	return result;
 }
 
 InlineTester::InlineTester() {
@@ -38,10 +72,6 @@ void InlineTester::AddTest(const String& path) {
 	String con;
 	
 	ZTest* test = nullptr;
-	Assembly* ass = nullptr;
-	ZPackage* mainPak = nullptr;
-	ZSource* source = nullptr;
-	
 	String error;
 	
 	while (!file.IsEof()) {
@@ -50,27 +80,9 @@ void InlineTester::AddTest(const String& path) {
 		
 		if (line.StartsWith(anTest)) {
 			if (test) {
-				if (source) {
-					source->LoadVirtual(con);
-					source = nullptr;
-				}
-				
-				try {
-					ZCompiler compiler(*ass);
-					compiler.ScanSources();
-				}
-				catch (ZException& e) {
-					if (error != e.ToString()) {
-						DUMP(e.ToString());
-						DUMP(error);
-						Cout() << " test failled\n";
-					}
-					//Cout() << e.ToString() << "\n";
-				}
-				catch (CParser::Error& e) {
-					// should not reach, but...
-					Cout() << e << "\n";
-				}
+				test->Con = con;
+				if (test->Run())
+					PassCount++;
 				
 				test = nullptr;
 				error = "";
@@ -79,13 +91,13 @@ void InlineTester::AddTest(const String& path) {
 			TestCount++;
 			con = "";
 			con << line << "\n";
+			lineNo = 1;
 			
 			String rest = line.Mid(anTest.GetCount());
 			rest = TrimBoth(rest);
 			
 			test = &Tests.Add();
-			ass = &test->Ass;
-			mainPak = &ass->AddPackage("main", "");
+			test->MainPak = &test->Ass.AddPackage("main", "");
 		}
 		else if (line.StartsWith(anFile)) {
 			con << line << "\n";
@@ -96,8 +108,8 @@ void InlineTester::AddTest(const String& path) {
 			if (rest == "" || rest.IsVoid())
 				rest = "test";
 			
-			if (mainPak)
-				source = &mainPak->AddSource(rest + ".z2", false);
+			if (test && test->MainPak)
+				test->Source = &test->MainPak->AddSource(rest + ".z2", false);
 		}
 		else if (line.StartsWith(anError)) {
 			con << line << "\n";
@@ -105,7 +117,8 @@ void InlineTester::AddTest(const String& path) {
 			String rest = line.Mid(anError.GetCount());
 			rest = TrimBoth(rest);
 			
-			error = rest;
+			if (test)
+				test->Error = rest;
 		}
 		else {
 			con << line << "\n";
@@ -113,28 +126,11 @@ void InlineTester::AddTest(const String& path) {
 	}
 	
 	if (test) {
-		if (source) {
-			source->LoadVirtual(con);
-			source = nullptr;
-		}
-		
-		try {
-			ZCompiler compiler(*ass);
-			compiler.ScanSources();
-		}
-		catch (ZException& e) {
-			if (error != e.ToString()) {
-				DUMP(e.ToString());
-				DUMP(error);
-				Cout() << " test failled\n";
-			}
-			//Cout() << e.ToString() << "\n";
-		}
-		catch (CParser::Error& e) {
-			// should not reach, but...
-			Cout() << e << "\n";
-		}
+		test->Con = con;
+		if (test->Run())
+			PassCount++;
 		
 		test = nullptr;
+		error = "";
 	}
 }

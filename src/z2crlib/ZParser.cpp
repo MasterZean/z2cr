@@ -97,6 +97,10 @@ String ZParser::ExpectId() {
 			Point p = GetPoint();
 			Error(p, "identifier expected, " + Identify() + " found");
 		}
+		else if (IsId("true") || IsId("false")) {
+			Point p = GetPoint();
+			Error(p, "identifier expected, " + Identify() + " found");
+		}
 		return ReadId();
 	}
 	else {
@@ -157,8 +161,18 @@ String ZParser::Identify() {
 		return "boolean constant 'true'";
 	else if (IsId("false"))
 		return "boolean constant 'false'";
-	else if (IsInt())
-		return "integer constant '" + IntStr(ReadInt()) + "'";
+	else if (IsInt()) {
+		int64 oInt;
+		double oDub;
+		
+		int base = 10;
+		int type = ReadInt64(oInt, oDub, base);
+		
+		if (type == ZParser::ntDouble || type == ZParser::ntFloat)
+			return "floating point constant '" + DblStr(oDub) + "'";
+		else
+			return "integer constant '" + IntStr64(oInt) + "'";
+	}
 	else if (IsEof())
 		return "end-of-file";
 	else if (IsZId())
@@ -179,13 +193,13 @@ String ZParser::Identify() {
 				char c[3] = "  ";
 				c[0] = DoubleOpCh1[i];
 				c[1] = DoubleOpCh2[i];
-			    return c;
+			    return "'" + String(c) + "'";
 			}
 		for (int i = 0; i < 24; i++)
 			if (IsChar(SingleOp[i])) {
 				char c[2] = " ";
 				c[0] = SingleOp[i];
-			    return c;
+			    return "'" + String(c) + "'";
 			}
 			
 		return "unexpected token";

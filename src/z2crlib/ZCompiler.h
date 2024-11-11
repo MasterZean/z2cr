@@ -17,6 +17,7 @@ public:
 	String PlatformSysLib;
 	
 	ZFunction* MainFunction = nullptr;
+	bool MainFound = false;
 	
 	ZCompiler(Assembly& aAss);
 	

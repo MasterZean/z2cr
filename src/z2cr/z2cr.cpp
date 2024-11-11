@@ -80,24 +80,13 @@ void RunInlineTests(const String& path) {
 		return;
 	}
 	
-	Cout() << "Running " << tester.TestCount;
-	if (tester.TestCount == 1)
-		Cout() << " test..." << "\n\n";
-	else
-		Cout() << " tests..." << "\n\n";
+	Cout() << "Testing status: " << tester.PassCount << "/" << tester.TestCount << " passed.\n\n";
 }
 
 CONSOLE_APP_MAIN {
 	String curDir = NativePath(GetCurrentDirectory() + "/");
 	String exeDir = GetFileDirectory(GetExeFilePath());
 	
-	/*MemoryBreakpoint(2381);
-	MemoryBreakpoint(2205);
-	MemoryBreakpoint(2027);
-	MemoryBreakpoint(1848);
-	MemoryBreakpoint(1671);
-	MemoryBreakpoint(1494);*/
-
 	::CommandLine K;
 	if (!K.Read()) {
 		SetExitCode(-1);
@@ -110,7 +99,7 @@ CONSOLE_APP_MAIN {
 		SetExitCode(-1);
 		return;
 	}
-		ER::PrintPath = false;
+	ER::PrintPath = false;
 	
 	if (K.PP_NOPATH)
 	
@@ -175,7 +164,14 @@ CONSOLE_APP_MAIN {
 		compiler.SetMainFile(K.EntryFile);
 		
 		if (!compiler.Compile()) {
-			Cout() << "Compilation failed. Exiting.\n";
+			if (compiler.MainFound == false) {
+				if (K.EntryFile.GetCount())
+					Cout() << "No main entry point found. Exiting.\n";
+				else
+					Cout() << "No main entry point found. Please provide one using the '-ef' parameter. Exiting.\n";
+			}
+			else
+				Cout() << "Compilation failed. Exiting.\n";
 			SetExitCode(-1);
 			return;
 		}

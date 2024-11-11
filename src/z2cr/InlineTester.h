@@ -6,18 +6,23 @@
 class ZTest: public Moveable<ZTest> {
 public:
 	String Name;
+	String Error;
+	String Con;
 	WithDeepCopy<Vector<String>> Files;
 	bool Passed = false;
 	
 	Assembly Ass;
+	ZPackage* MainPak = nullptr;
+	ZSource* Source = nullptr;
 	
-	void Run();
+	bool Run();
 };
 	
 class InlineTester {
 public:
 	Array<ZTest> Tests;
 	int TestCount = 0;
+	int PassCount = 0;
 	
 	InlineTester();
 	

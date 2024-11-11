@@ -69,9 +69,12 @@ bool ZCompiler::Compile() {
 		
 		MainFunction = vf[0];
 	}
-	else
+	else {
+		MainFound = false;
 		return false;
+	}
 	
+	MainFound = true;
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		PreCompileVars(ass.Namespaces[i]);
 	

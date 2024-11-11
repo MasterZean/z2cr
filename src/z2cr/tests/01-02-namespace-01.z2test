@@ -1,0 +1,129 @@
+// @test namespace
+// @file
+// @error test.z2(6, 1): scan: identifier expected, end-of-file found
+namespace
+
+// @test namespace
+// @file
+// @error test.z2(4, 10): scan: identifier expected, ';' found
+namespace;
+
+// @test namespace
+// @file
+// @error test.z2(4, 11): scan: identifier expected, integer constant '23' found
+namespace 23;
+
+// @test namespace
+// @file
+// @error test.z2(4, 11): scan: identifier expected, boolean constant 'true' found
+namespace true;
+
+// @test namespace
+// @file
+// @error test.z2(4, 11): scan: identifier expected, boolean constant 'false' found
+namespace false;
+
+// @test namespace
+// @file
+// @error test.z2(4, 11): scan: identifier expected, keyword 'if' found
+namespace if;
+
+// @test namespace
+// @file
+// @error test.z2(4, 11): scan: identifier expected, keyword 'return' found
+namespace return;
+
+// @test namespace
+// @file
+// @error test.z2(4, 11): scan: identifier expected, keyword 'namespace' found
+namespace namespace;
+
+// @test namespace
+// @file
+// @error test.z2(4, 11): scan: identifier expected, keyword 'while' found
+namespace while;
+
+// @test namespace
+// @file
+namespace a;
+
+// @test namespace
+// @file
+namespace a;
+namespace b;
+
+// @test namespace
+// @file
+namespace a;
+namespace b;
+namespace c;
+
+// @test namespace
+// @file
+// @error test.z2(4, 13): scan: identifier expected, boolean constant 'true' found
+namespace a.true;
+
+// @test namespace
+// @file
+// @error test.z2(4, 13): scan: identifier expected, keyword 'namespace' found
+namespace a.namespace;
+
+// @test namespace
+// @file
+// @error test.z2(4, 13): scan: identifier expected, keyword 'class' found
+namespace a.class;
+
+// @test namespace
+// @file
+// @error test.z2(4, 19): scan: identifier expected, keyword 'val' found
+namespace a.b.c.d.val;
+
+// @test namespace
+// @file
+// @error test.z2(6, 1): scan: syntax error: declaration expected: end-of-file found
+namespace a {
+
+// @test namespace
+// @file
+// @error test.z2(4, 14): scan: syntax error: declaration expected: ';' found
+namespace a {;
+
+// @test namespace
+// @file
+namespace a {}
+
+// @test namespace
+// @file
+namespace a {}
+namespace b {}
+
+// @test namespace
+// @file
+namespace a {
+}
+
+namespace b {
+}
+
+namespace c {
+}
+
+// @test namespace
+// @file
+// @error test.z2(4, 15): scan: syntax error: declaration expected: ';' found
+namespace a {};
+
+// @test namespace
+// @file
+// @error test.z2(5, 5): scan: syntax error: declaration expected: keyword 'namespace' found
+namespace a {
+	namespace b;
+};
+
+// @test namespace
+// @file
+// @error test.z2(5, 5): scan: syntax error: declaration expected: keyword 'namespace' found
+namespace a {
+	namespace b {
+	}
+};
