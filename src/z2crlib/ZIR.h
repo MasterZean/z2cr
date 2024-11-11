@@ -81,6 +81,8 @@ public:
 	ConstNode* const_void();
 	ConstNode* const_null();
 	
+	Node* const_class(ZClass& cls, Node* e = nullptr);
+	
 	Node* opArit(Node* left, Node* right, OpNode::Type op, const Point& p);
 	Node* opRel(Node* left, Node* right, OpNode::Type op, const Point& p);
 	Node* opLog(Node* left, Node* right, OpNode::Type op);

@@ -73,7 +73,7 @@ void RunInlineTests(const String& path) {
 	Cout() << "Searching for tests...\n";
 	
 	InlineTester tester;
-	tester.AddModule(path);
+	tester.AddTestFolder(path);
 	
 	if (tester.TestCount == 0) {
 		Cout() << "Could not find any tests. Aborting testing!\n\n";
@@ -176,6 +176,12 @@ CONSOLE_APP_MAIN {
 			return;
 		}
 
+		if (!compiler.Transpile()) {
+			Cout() << "CPP code generation failed. Exiting.\n";
+			SetExitCode(-1);
+			return;
+		}
+		
 		Builder builder(bm);
 		builder.ZCompilerPath(exeDir);
 		builder.TargetRoot(compiler.BuildPath);

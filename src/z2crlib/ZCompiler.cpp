@@ -90,9 +90,14 @@ bool ZCompiler::Compile() {
 			return false;
 	}
 	
+	return true;
+}
+
+bool ZCompiler::Transpile() {
 	OutPath = AppendFileName(BuildPath, "out.cpp");
 	FileOut out(OutPath);
 	ZTranspiler cpp(*this, out);
+	cpp.PrintDebug = true;
 	
 	cpp.WriteIntro();
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)

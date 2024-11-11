@@ -22,7 +22,7 @@ public:
 	ZCompiler(Assembly& aAss);
 	
 	bool Compile();
-	
+	bool Transpile();
 	bool ScanSources();
 		
 	void SetMainFile(const String& aPath) {

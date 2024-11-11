@@ -8,8 +8,10 @@ public:
 	String Name;
 	String Error;
 	String Con;
+	String Dump;
 	WithDeepCopy<Vector<String>> Files;
 	bool Passed = false;
+	int Line = 0;
 	
 	Assembly Ass;
 	ZPackage* MainPak = nullptr;
@@ -26,8 +28,8 @@ public:
 	
 	InlineTester();
 	
-	void AddModule(const String& path, int parent = 0);
-	void AddTest(const String& path);
+	void AddTestFolder(const String& path, int parent = 0);
+	void AddTestCollection(const String& path);
 };
 
 #endif

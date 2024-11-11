@@ -1,11 +1,14 @@
 #include <z2cr/InlineTester.h>
+#include <z2crlib/ZTranspiler.h>
 
 String anTest = "// @test";
 String anFile = "// @file";
 String anError = "// @error";
+String anDumpBody = "// @dumpBody";
+String anDumpEnd = "// @dumpEnd";
 
 bool ZTest::Run() {
-	bool result = false;
+	bool result = true;
 	
 	if (Source) {
 		Source->LoadVirtual(Con);
@@ -14,24 +17,38 @@ bool ZTest::Run() {
 	
 	try {
 		ZCompiler compiler(Ass);
-		compiler.ScanSources();
+		compiler.SetMainFile("test.z2");
+		compiler.Compile();
 		
-		if (Error.GetCount() == 0)
-			result = true;
-		else {
+		if (Error.GetCount() != 0) {
 			DUMP("No error");
 			DUMP(Error);
+			result = false;
+		}
+		
+		if (Dump.GetCount()) {
+			StringStream ss;
+			ZTranspiler cpp(compiler, ss);
+			
+			for (int i = 0; i < Ass.Namespaces.GetCount(); i++)
+				cpp.TranspileDefinitions(Ass.Namespaces[i], false, false, false);
+			
+			String dump = ss;
+			if (Dump != ss) {
+				DUMP(dump);
+				DUMP(Dump);
+				result = false;
+			}
 		}
 	}
 	catch (ZException& e) {
 		if (Error != e.ToString()) {
 			DUMP(e.ToString());
 			DUMP(Error);
-			Cout() << " test failled\n";
+			Cout() << Name << "(" << Line << ")" << " test failled\n";
 		}
 		else
 			result = true;
-		//Cout() << e.ToString() << "\n";
 	}
 	catch (CParser::Error& e) {
 		// should not reach, but...
@@ -44,7 +61,7 @@ bool ZTest::Run() {
 InlineTester::InlineTester() {
 }
 
-void InlineTester::AddModule(const String& path, int parent) {
+void InlineTester::AddTestFolder(const String& path, int parent) {
 	FindFile ff;
 	ff.Search(NativePath(path + "/*"));
 
@@ -52,23 +69,24 @@ void InlineTester::AddModule(const String& path, int parent) {
 		if (ff.IsFile()) {
 			String name = ff.GetName();
 			if (GetFileExt(name) == ".z2test") {
-				AddTest(ff.GetPath());
+				AddTestCollection(ff.GetPath());
 			}
 		}
 		else if (ff.IsFolder())
-			AddModule(ff.GetPath(), parent + 1);
+			AddTestFolder(ff.GetPath(), parent + 1);
 
 		ff.Next();
 	}
 }
 
-void InlineTester::AddTest(const String& path) {
+void InlineTester::AddTestCollection(const String& path) {
 	FileIn file(path);
 	
 	if (file.IsError())
 		return;
 	
 	int lineNo = 0;
+	int localLineNo = 0;
 	String con;
 	
 	ZTest* test = nullptr;
@@ -76,6 +94,7 @@ void InlineTester::AddTest(const String& path) {
 	
 	while (!file.IsEof()) {
 		lineNo++;
+		localLineNo++;
 		String line = file.GetLine();
 		
 		if (line.StartsWith(anTest)) {
@@ -91,12 +110,14 @@ void InlineTester::AddTest(const String& path) {
 			TestCount++;
 			con = "";
 			con << line << "\n";
-			lineNo = 1;
+			localLineNo = 1;
 			
 			String rest = line.Mid(anTest.GetCount());
 			rest = TrimBoth(rest);
 			
 			test = &Tests.Add();
+			test->Name = GetFileName(path);
+			test->Line = lineNo;
 			test->MainPak = &test->Ass.AddPackage("main", "");
 		}
 		else if (line.StartsWith(anFile)) {
@@ -119,6 +140,21 @@ void InlineTester::AddTest(const String& path) {
 			
 			if (test)
 				test->Error = rest;
+		}
+		else if (line.StartsWith(anDumpBody)) {
+			String dump;
+			
+			while (!file.IsEof()) {
+				String sub = file.GetLine();
+				
+				if (sub.StartsWith(anDumpEnd))
+					break;
+				else
+					dump << sub << "\n";
+			}
+			
+			if (test)
+				test->Dump = dump;
 		}
 		else {
 			con << line << "\n";

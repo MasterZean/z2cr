@@ -677,8 +677,10 @@ Node* IR::opRel(Node* left, Node* right, OpNode::Type op, const Point& p) {
 
 	bool valid = false;
 	
-	if ((op == OpNode::opEq || op == OpNode::opNeq) && left->Tt.Class == ass.CCls && right->Tt.Class == ass.CCls)
+	if ((op == OpNode::opEq) && left->Tt.Class == ass.CCls && right->Tt.Class == ass.CCls)
 		return const_bool(left->IntVal == right->IntVal);
+	else if ((op == OpNode::opNeq) && left->Tt.Class == ass.CCls && right->Tt.Class == ass.CCls)
+		return const_bool(left->IntVal != right->IntVal);
 	/*else if (testOpRel(ass, l, r, op) == false) {
 		Node* over = GetOp(Over, strops[op], l, r, ass, this, *Comp, p);
 		if (over == nullptr) {
@@ -1292,4 +1294,28 @@ Node* IR::attr(Node* left, Node* right) {
 	ASSERT(node->Tt.Class);
 	
 	return node;
+}
+
+Node* IR::const_class(ZClass& cls, Node* e) {
+	ConstNode* node = constNodes.Get();
+
+	node->SetType(ass.CCls->Tt);
+	node->IsConst = false;
+	node->IsLiteral = true;
+	node->IsCT = true;
+	node->IntVal = cls.Index;
+	ASSERT(node->Tt.Class);
+
+	/*if (e != NULL && e->HasSe) {
+		ListNode* l = listNodes.Get();
+		l->Params.Add(e);
+		l->Params.Add(node);
+		l->Tt = node->Tt;
+		l->C1 = node->C1;
+		l->C2 = node->C2;
+		ASSERT(l->Tt.Class);
+		return l;
+	}
+	else*/
+		return node;
 }

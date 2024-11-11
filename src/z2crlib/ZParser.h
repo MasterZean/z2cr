@@ -64,6 +64,10 @@ public:
 		return ZSourcePos(source, GetPoint(), GetPos());
 	}
 	
+	ZSource& Source() {
+		return source;
+	}
+	
 private:
 	ZSource& source;
 	

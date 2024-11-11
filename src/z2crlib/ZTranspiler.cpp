@@ -80,20 +80,21 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 	EL();
 }
 
-void ZTranspiler::TranspileDefinitions(ZNamespace& ns) {
-	for (int i = 0; i < ns.Variables.GetCount(); i++) {
-		auto v = *ns.Variables[i];
-		ASSERT(v.I.Tt.Class);
-		ASSERT(v.Value);
-		
-		NL();
-		cs << v.I.Tt.Class->BackName << " " << v.Namespace().BackName << "::" << v.Name << " = ";
-		Walk(v.Value);
-		ES();
+void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bool wrap) {
+	if (vars) {
+		for (int i = 0; i < ns.Variables.GetCount(); i++) {
+			auto v = *ns.Variables[i];
+			ASSERT(v.I.Tt.Class);
+			ASSERT(v.Value);
+			
+			cs << v.I.Tt.Class->BackName << " " << v.Namespace().BackName << "::" << v.Name << " = ";
+			Walk(v.Value);
+			ES();
+		}
+					
+		if (ns.Variables.GetCount())
+			EL();
 	}
-	
-	if (ns.Variables.GetCount())
-		EL();
 	
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		ZMethodBundle& d = ns.Methods[i];
@@ -101,8 +102,11 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns) {
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
 			
-			WriteFunctionDecl(f);
-			WriteFunctionBody(f);
+			NL();
+			
+			if (fDecl)
+				WriteFunctionDecl(f);
+			WriteFunctionBody(f, wrap);
 		}
 	}
 }
@@ -132,45 +136,58 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 	cs << ")";
 }
 
-void ZTranspiler::WriteFunctionBody(ZFunction& f) {
-	NL();
-	cs << " {";
-	EL();
+void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
+	if (wrap) {
+		cs << " {";
+		EL();
+	}
 	
 	indent++;
 	
-	NL();
-	cs << "printf(\"enter: %s::%s(%s)\\n\", ";
 	String params;
-	for (int i = 0; i < f.Params.GetCount(); i++) {
-		if (i > 0)
-			params << ", ";
-		params << f.Ass().ClassToString(&f.Params[i].I);
+	
+	if (PrintDebug) {
+		NL();
+		cs << "printf(\"enter: %s::%s(%s)\\n\", ";
+		for (int i = 0; i < f.Params.GetCount(); i++) {
+			if (i > 0)
+				params << ", ";
+			params << f.Ass().ClassToString(&f.Params[i].I);
+		}
+		cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
+		cs << ")";
+		ES();
 	}
-	cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
-	cs << ")";
-	ES();
 	
 	WalkChildren(&f.Nodes);
 		
-	NL();
-	cs << "printf(\"exit: %s::%s(%s)\\n\", ";
-	cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
-	cs << ")";
-	ES();
+	if (PrintDebug) {
+		NL();
+		cs << "printf(\"exit: %s::%s(%s)\\n\", ";
+		cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
+		cs << ")";
+		ES();
+	}
 	
 	indent--;
 	
-	NL();
-	cs << "}";
-	EL();
-	
-	NL();
-	EL();
+	if (wrap) {
+		NL();
+		cs << "}";
+		EL();
+		
+		NL();
+		EL();
+	}
 }
 
 void ZTranspiler::WalkNode(Node* node) {
 	if (node->NT == NodeType::Block || node->NT == NodeType::Local) {
+		Walk(node);
+		return;
+	}
+	
+	if (!PrintDebug) {
 		Walk(node);
 		return;
 	}
@@ -407,6 +424,11 @@ void ZTranspiler::Proc(ConstNode& node, Stream& stream)
 			stream << (char)node.IntVal;
 		
 		stream << '\'';
+	}
+	else if (node.Tt.Class == ass.CCls) {
+		ZClass& ccc = ass.Classes[(int)node.IntVal];
+		//stream << ass.CCls->NamespaceQual;
+		stream << "Class(" << ccc.RTTIIndex << ")";
 	}
 }
 

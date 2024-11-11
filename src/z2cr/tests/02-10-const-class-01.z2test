@@ -1,0 +1,10 @@
+// @test const_Class
+// @file
+namespace test;
+
+// @dumpBody
+	Class(9);
+// @dumpEnd
+def @main() {
+	Int;
+}

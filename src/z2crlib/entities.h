@@ -296,6 +296,8 @@ public:
 	ObjectType Tt;
 	ZClass* ParamType;
 	
+	int RTTIIndex = 0;
+	
 	ZClass(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Class;
 	}

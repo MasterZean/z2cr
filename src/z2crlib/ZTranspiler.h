@@ -49,6 +49,8 @@ protected:
 
 class ZTranspiler: public ZNodeWalker {
 public:
+	bool PrintDebug = false;
+	
 	ZTranspiler(ZCompiler& aComp, Stream& aStream): ZNodeWalker(aComp, aStream) {
 	}
 	
@@ -58,7 +60,7 @@ public:
 	void WriteFunctionDef(ZFunction& f);
 	void WriteFunctionDecl(ZFunction& f);
 	void WriteFunctionParams(ZFunction& f);
-	void WriteFunctionBody(ZFunction& f);
+	void WriteFunctionBody(ZFunction& f, bool wrap = true);
 	
 	void Proc(ConstNode& node, Stream& stream);
 	void Proc(OpNode& node);
@@ -71,7 +73,7 @@ public:
 	void Proc(LocalNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
-	void TranspileDefinitions(ZNamespace& ns);
+	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);
 	
 	virtual void WalkNode(Node* node);
 	

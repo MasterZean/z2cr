@@ -84,6 +84,26 @@ Node* ZExprParser::ParseAtom() {
 	
 	ASSERT(exp);
 	
+	while (OPCONT[parser.PeekChar()]) {
+		Point p = parser.GetPoint();
+		
+		if (parser.Char('(')) {
+			// TODO: fix
+			ASSERT(false);
+		}
+		else if (parser.Char('{')) {
+		}
+		else if (parser.Char('.')) {
+			// TODO: fix
+			ASSERT(false);
+		}
+		else
+			break;
+		
+		ASSERT(exp);
+		ASSERT(exp->Tt.Class);
+	}
+	
 	return exp;
 }
 
@@ -106,8 +126,16 @@ Node* ZExprParser::ParseId() {
 	
 	if (Section != nullptr && Namespace != nullptr && Section->Using.GetCount() == 0) {
 		Node* node = ParseMember(*Namespace, s, opp);
-		if (node == nullptr)
-			parser.Error(opp, "unknown identifier: " + s);
+		
+		if (node == nullptr) {
+			int index = parser.Source().ShortNameLookup.Find(s);
+			
+			if (index != -1)
+				node = irg.const_class(*parser.Source().ShortNameLookup[index]);
+		
+			if (node == nullptr)
+				parser.Error(opp, "unknown identifier: " + s);
+		}
 		return node;
 	}
 	

@@ -248,7 +248,7 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	
 	int type = Classes.GetCount();
 	ZClass& typeCls = Classes.Add(ns.Name + name, ZClass(ns));
-	
+		
 	//typeCls.Scan.Namespace = ns;
 	typeCls.MIsNumeric = num;
 	typeCls.MIsInteger = integer;
@@ -260,6 +260,8 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	typeCls.Index = type;
 	typeCls.ParamType = &typeCls;
 	typeCls.Tt.Class = &typeCls;
+	
+	typeCls.RTTIIndex = type;
 
 	return &typeCls;
 }
