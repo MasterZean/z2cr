@@ -238,6 +238,8 @@ public:
 	String Name;
 	String BackName;
 	
+	ZNamespaceItem* NamespaceItem = nullptr;
+	
 	ZNamespace(Assembly& aAss): ass(aAss) {
 	}
 	
@@ -246,10 +248,13 @@ public:
 	
 	Array<ZNamespaceSection> Sections;
 	ArrayMap<String, ZMethodBundle> Methods;
-	ArrayMap<String, ZVariable*> Variables;
-	
+	VectorMap<String, ZVariable*> Variables;
+	VectorMap<String, ZClass*> Classes;
+
 	ZFunction& PrepareFunction(const String& aName);
 	ZVariable& PrepareVariable(const String& aName);
+	
+	bool IsResolved = false;
 	
 	Assembly& Ass() {
 		return ass;

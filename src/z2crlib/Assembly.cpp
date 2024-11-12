@@ -262,6 +262,8 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	typeCls.Tt.Class = &typeCls;
 	
 	typeCls.RTTIIndex = type;
+	
+	ns.Classes.FindAdd(name, &typeCls);
 
 	return &typeCls;
 }

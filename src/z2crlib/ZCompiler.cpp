@@ -5,45 +5,10 @@ bool ZCompiler::Compile() {
 	if (!ScanSources())
 		return false;
 	
+	ResolveNamespaces();
+	
 	if (!CheckForDuplicates())
 		return false;
-	
-	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
-		ZNamespace& ns = ass.Namespaces[i];
-		
-		if (ns.Name == "::")
-			continue;
-		
-		auto names = Split(ns.Name, '.', true);
-		DUMP(ns.Name);
-		
-		ZNamespaceItem* nsp = &ass.NsLookup;
-		String backName;
-		for (int j = 0; j < names.GetCount(); j++) {
-			backName << names[j];
-			nsp = nsp->Add(names[j]);
-			if (j < names.GetCount() - 1)
-				backName << "::";
-			else {
-				ASSERT(nsp->Namespace == nullptr);
-				nsp->Namespace = &ns;
-			}
-		}
-		
-		ns.BackName = backName;
-		
-		for (int j = 0; j < ns.Sections.GetCount(); j++) {
-			ZNamespaceSection& sec = ns.Sections[j];
-			
-			for (int k = 0; k < sec.UsingNames.GetCount(); k++) {
-				DUMP(sec.UsingNames[k]);
-				LOG(ass.Namespaces.Find(sec.UsingNames[k]));
-				ZNamespace* usn = ass.Namespaces.FindPtr(sec.UsingNames[k]);
-				if (usn)
-					sec.Using.Add(usn);
-			}
-		}
-	}
 	
 	if (mainPath.GetCount()) {
 		ZSource* src = ass.FindSource(mainPath);
@@ -91,6 +56,53 @@ bool ZCompiler::Compile() {
 	}
 	
 	return true;
+}
+
+void ZCompiler::ResolveNamespaces() {
+	ResolveNamespace(ass.CoreNamespace());
+	ResolveNamespace(ass.LangNamespace());
+	
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
+		ZNamespace& ns = ass.Namespaces[i];
+		
+		if (ns.IsResolved || ns.Name == "::")
+			continue;
+		
+		ResolveNamespace(ns);
+	}
+}
+
+void ZCompiler::ResolveNamespace(ZNamespace& ns) {
+	auto names = Split(ns.Name, '.', true);
+	
+	ZNamespaceItem* nsp = &ass.NsLookup;
+	String backName;
+	for (int j = 0; j < names.GetCount(); j++) {
+		backName << names[j];
+		nsp = nsp->Add(names[j]);
+		if (j < names.GetCount() - 1)
+			backName << "::";
+		else {
+			ASSERT(nsp->Namespace == nullptr);
+			nsp->Namespace = &ns;
+			
+			ns.NamespaceItem = nsp;
+		}
+	}
+	
+	ns.BackName = backName;
+	
+	for (int j = 0; j < ns.Sections.GetCount(); j++) {
+		ZNamespaceSection& sec = ns.Sections[j];
+		
+		for (int k = 0; k < sec.UsingNames.GetCount(); k++) {
+			ZNamespace* usn = ass.Namespaces.FindPtr(sec.UsingNames[k]);
+			if (usn)
+				sec.Using.Add(usn);
+		}
+	}
+	
+	ns.IsResolved = true;
 }
 
 bool ZCompiler::Transpile() {

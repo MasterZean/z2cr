@@ -18,7 +18,13 @@ bool ZTest::Run() {
 	try {
 		ZCompiler compiler(Ass);
 		compiler.SetMainFile("test.z2");
-		compiler.Compile();
+		
+		bool compResult = compiler.Compile();
+		if (compResult == false && compiler.MainFound == false)
+			compResult = true;
+		
+		if (compResult == false && Error.GetCount() == 0)
+			result = false;
 		
 		if (Error.GetCount() != 0) {
 			DUMP("No error");
@@ -40,12 +46,17 @@ bool ZTest::Run() {
 				result = false;
 			}
 		}
+		
+		if (result == false) {
+			Cout() << Name << "(" << Line << ")" << " test failled\n";
+		}
 	}
 	catch (ZException& e) {
 		if (Error != e.ToString()) {
 			DUMP(e.ToString());
 			DUMP(Error);
 			Cout() << Name << "(" << Line << ")" << " test failled\n";
+			result = false;
 		}
 		else
 			result = true;

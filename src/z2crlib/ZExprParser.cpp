@@ -133,10 +133,12 @@ Node* ZExprParser::ParseId() {
 			if (index != -1)
 				node = irg.const_class(*parser.Source().ShortNameLookup[index]);
 		
-			if (node == nullptr)
-				parser.Error(opp, "unknown identifier: " + s);
+			//if (node == nullptr)
+			//	parser.Error(opp, "unknown identifier: " + s);
 		}
-		return node;
+		
+		if (node)
+			return node;
 	}
 	
 	int count = 0;
@@ -234,11 +236,19 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			}
 			else {
 				// a namespace child
-				Node* node = ParseMember(*ns->Namespace, name, opp);
+				ASSERT(ns->Namespace);
+				int clsIndex = ns->Namespace->Classes.Find(name);
 				
-				if (!node)
-					parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
-				return node;
+				if (clsIndex != -1) {
+					return irg.const_class(*ns->Namespace->Classes[clsIndex]);
+				}
+				else {
+					Node* node = ParseMember(*ns->Namespace, name, opp);
+					
+					if (!node)
+						parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
+					return node;
+				}
 			}
 		}
 		

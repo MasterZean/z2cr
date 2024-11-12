@@ -24,6 +24,9 @@ public:
 	bool Compile();
 	bool Transpile();
 	bool ScanSources();
+	
+	void ResolveNamespaces();
+	void ResolveNamespace(ZNamespace& ns);
 		
 	void SetMainFile(const String& aPath) {
 		mainPath = aPath;
