@@ -19,6 +19,8 @@ public:
 	ZFunction* MainFunction = nullptr;
 	bool MainFound = false;
 	
+	bool FoldConstants = false;
+	
 	ZCompiler(Assembly& aAss);
 	
 	bool Compile();
@@ -64,6 +66,7 @@ private:
 	
 	bool CheckForDuplicates();
 	bool CheckForDuplicates(ZNamespace& ns);
+	bool FindMain();
 	
 	void ScanSource(ZSource& src, Array<ZScanner>& scanners);
 	void TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur);

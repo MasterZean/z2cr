@@ -9,6 +9,7 @@ public:
 	String Error;
 	String Con;
 	String Dump;
+	String GlobalVarDef;
 	WithDeepCopy<Vector<String>> Files;
 	bool Passed = false;
 	int Line = 0;

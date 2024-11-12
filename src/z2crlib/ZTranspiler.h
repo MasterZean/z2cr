@@ -74,6 +74,7 @@ public:
 	
 	void TranspileDeclarations(ZNamespace& ns);
 	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);
+	void TranspileValDefintons(ZNamespace& ns, bool trail = true);
 	
 	virtual void WalkNode(Node* node);
 	

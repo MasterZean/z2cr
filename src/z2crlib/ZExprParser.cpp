@@ -92,6 +92,15 @@ Node* ZExprParser::ParseAtom() {
 			ASSERT(false);
 		}
 		else if (parser.Char('{')) {
+			if (exp->IsLiteral && exp->Tt.Class == ass.CCls) {
+				ZClass& cobj = ass.Classes[(int)exp->IntVal];
+				
+				Vector<Node*> params;
+				getParams(params, '}');
+				
+				Node* temp = Temporary(ass, irg, cobj, params);
+				exp = temp;
+			}
 		}
 		else if (parser.Char('.')) {
 			// TODO: fix
@@ -372,6 +381,26 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 	}
 	
 	parser.Expect(end);
+}
+
+Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<Node*>& params) {
+	if (&cls == ass.CFloat) {
+		if (params.GetCount() == 0)
+			return irg.const_r32(0);
+	}
+	else if (&cls == ass.CDouble) {
+		if (params.GetCount() == 0)
+			return irg.const_r64(0);
+	}
+	else if (ass.IsNumeric(cls)) {
+		if (params.GetCount() == 0) {
+			Node *exp = irg.const_i(0);
+			exp->Tt = cls.Tt;
+			return exp;
+		}
+	}
+	
+	return nullptr;
 }
 
 int ZExprParser::GetPriority(int& op, bool& opc) {

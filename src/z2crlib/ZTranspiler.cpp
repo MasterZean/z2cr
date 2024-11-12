@@ -82,18 +82,7 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 
 void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bool wrap) {
 	if (vars) {
-		for (int i = 0; i < ns.Variables.GetCount(); i++) {
-			auto v = *ns.Variables[i];
-			ASSERT(v.I.Tt.Class);
-			ASSERT(v.Value);
-			
-			cs << v.I.Tt.Class->BackName << " " << v.Namespace().BackName << "::" << v.Name << " = ";
-			Walk(v.Value);
-			ES();
-		}
-					
-		if (ns.Variables.GetCount())
-			EL();
+		TranspileValDefintons(ns);
 	}
 	
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
@@ -109,6 +98,21 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 			WriteFunctionBody(f, wrap);
 		}
 	}
+}
+
+void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		auto v = *ns.Variables[i];
+		ASSERT(v.I.Tt.Class);
+		ASSERT(v.Value);
+		
+		cs << v.I.Tt.Class->BackName << " " << v.Namespace().BackName << "::" << v.Name << " = ";
+		Walk(v.Value);
+		ES();
+	}
+				
+	if (trail && ns.Variables.GetCount())
+		EL();
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {

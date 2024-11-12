@@ -6,6 +6,7 @@ String anFile = "// @file";
 String anError = "// @error";
 String anDumpBody = "// @dumpBody";
 String anDumpEnd = "// @dumpEnd";
+String andumpGlobalVarDef = "// @dumpGlobalVarDef";
 
 bool ZTest::Run() {
 	bool result = true;
@@ -18,6 +19,7 @@ bool ZTest::Run() {
 	try {
 		ZCompiler compiler(Ass);
 		compiler.SetMainFile("test.z2");
+		compiler.FoldConstants = true;
 		
 		bool compResult = compiler.Compile();
 		if (compResult == false && compiler.MainFound == false)
@@ -47,6 +49,22 @@ bool ZTest::Run() {
 			}
 		}
 		
+		if (GlobalVarDef.GetCount()) {
+			StringStream ss;
+			ZTranspiler cpp(compiler, ss);
+			
+			int index = Ass.Namespaces.Find("test");
+			for (int i = 0; i < Ass.Namespaces.GetCount(); i++)
+				cpp.TranspileValDefintons(Ass.Namespaces[i], false);
+			
+			String dump = ss;
+			if (GlobalVarDef != ss) {
+				DUMP(dump);
+				DUMP(GlobalVarDef);
+				result = false;
+			}
+		}
+			
 		if (result == false) {
 			Cout() << Name << "(" << Line << ")" << " test failled\n";
 		}
@@ -166,6 +184,21 @@ void InlineTester::AddTestCollection(const String& path) {
 			
 			if (test)
 				test->Dump = dump;
+		}
+		else if (line.StartsWith(andumpGlobalVarDef)) {
+			String dump;
+			
+			while (!file.IsEof()) {
+				String sub = file.GetLine();
+				
+				if (sub.StartsWith(anDumpEnd))
+					break;
+				else
+					dump << sub << "\n";
+			}
+			
+			if (test)
+				test->GlobalVarDef = dump;
 		}
 		else {
 			con << line << "\n";

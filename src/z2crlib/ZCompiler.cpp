@@ -2,6 +2,8 @@
 #include <z2crlib/ZTranspiler.h>
 
 bool ZCompiler::Compile() {
+	irg.FoldConstants = FoldConstants;
+	
 	if (!ScanSources())
 		return false;
 	
@@ -10,36 +12,8 @@ bool ZCompiler::Compile() {
 	if (!CheckForDuplicates())
 		return false;
 	
-	if (mainPath.GetCount()) {
-		ZSource* src = ass.FindSource(mainPath);
-		if (!src) {
-			ER::CantOpenFile(mainPath);
-			return false;
-		}
-		
-		auto vf = FindMain(*src);
-		if (vf.GetCount() == 0)
-			return false;
-		else if (vf.GetCount() > 1) {
-			String err;
-			
-			err << "multiple '@main' function: other candidates found at: " << "\n";
-			for (int i = 1; i < vf.GetCount(); i++)
-				err << "\t\t" << vf[i]->DefPos.ToString() << "\n";
-			auto exc = ER::Duplicate(vf[0]->DefPos, err);
-			Cout() << exc.ToString() << "\n";
-			
-			return false;
-		}
-		
-		MainFunction = vf[0];
-	}
-	else {
-		MainFound = false;
-		return false;
-	}
+	MainFound = FindMain();
 	
-	MainFound = true;
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		PreCompileVars(ass.Namespaces[i]);
 	
@@ -54,6 +28,36 @@ bool ZCompiler::Compile() {
 			Cout() << "File copy error! Exiting!\n";
 			return false;
 	}
+	
+	return true;
+}
+
+bool ZCompiler::FindMain() {
+	if (mainPath.GetCount() == 0)
+		return false;
+		
+	ZSource* src = ass.FindSource(mainPath);
+	if (!src) {
+		ER::CantOpenFile(mainPath);
+		return false;
+	}
+	
+	auto vf = FindMain(*src);
+	if (vf.GetCount() == 0)
+		return false;
+	else if (vf.GetCount() > 1) {
+		String err;
+		
+		err << "multiple '@main' function: other candidates found at: " << "\n";
+		for (int i = 1; i < vf.GetCount(); i++)
+			err << "\t\t" << vf[i]->DefPos.ToString() << "\n";
+		auto exc = ER::Duplicate(vf[0]->DefPos, err);
+		Cout() << exc.ToString() << "\n";
+		
+		return false;
+	}
+	
+	MainFunction = vf[0];
 	
 	return true;
 }
@@ -211,7 +215,7 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 			
 			CompileFunc(f, f.Nodes);
 			
-			printNode(&f.Nodes);
+			//printNode(&f.Nodes);
 		}
 	}
 	
@@ -392,7 +396,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	if (parser.Char(':')) {
-		cls = ZExprParser::ParseType(f->Ass(), parser);
+		cls = ZExprParser::ParseType(ass, parser);
 		if (cls == ass.CVoid)
 			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
 		v.I.Tt = cls->Tt;
@@ -445,6 +449,11 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 			parser.Error(vp.P, "can't create a variable of type '\fClass\f'");
 		if (v.I.Tt.Class == ass.CVoid)
 			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
+		
+		if (v.Value == nullptr) {
+			Vector<Node*> params;
+			v.Value = ZExprParser::Temporary(ass, irg, *v.I.Tt.Class, params);
+		}
 	}
 		
 	if (f) {
