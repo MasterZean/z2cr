@@ -6,7 +6,7 @@ String anFile = "// @file";
 String anError = "// @error";
 String anDumpBody = "// @dumpBody";
 String anDumpEnd = "// @dumpEnd";
-String andumpGlobalVarDef = "// @dumpGlobalVarDef";
+String anDumpGlobalVarDef = "// @dumpGlobalVarDef";
 
 bool ZTest::Run() {
 	bool result = true;
@@ -28,13 +28,13 @@ bool ZTest::Run() {
 		if (compResult == false && Error.GetCount() == 0)
 			result = false;
 		
-		if (Error.GetCount() != 0) {
+		if (!Error.IsVoid()) {
 			DUMP("No error");
 			DUMP(Error);
 			result = false;
 		}
 		
-		if (Dump.GetCount()) {
+		if (!Dump.IsVoid()) {
 			StringStream ss;
 			ZTranspiler cpp(compiler, ss);
 			
@@ -49,7 +49,7 @@ bool ZTest::Run() {
 			}
 		}
 		
-		if (GlobalVarDef.GetCount()) {
+		if (!GlobalVarDef.IsVoid()) {
 			StringStream ss;
 			ZTranspiler cpp(compiler, ss);
 			
@@ -185,7 +185,7 @@ void InlineTester::AddTestCollection(const String& path) {
 			if (test)
 				test->Dump = dump;
 		}
-		else if (line.StartsWith(andumpGlobalVarDef)) {
+		else if (line.StartsWith(anDumpGlobalVarDef)) {
 			String dump;
 			
 			while (!file.IsEof()) {

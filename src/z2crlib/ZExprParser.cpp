@@ -89,7 +89,7 @@ Node* ZExprParser::ParseAtom() {
 		
 		if (parser.Char('(')) {
 			// TODO: fix
-			ASSERT(false);
+			parser.Error(p, "syntax error");
 		}
 		else if (parser.Char('{')) {
 			if (exp->IsLiteral && exp->Tt.Class == ass.CCls) {
@@ -104,7 +104,7 @@ Node* ZExprParser::ParseAtom() {
 		}
 		else if (parser.Char('.')) {
 			// TODO: fix
-			ASSERT(false);
+			parser.Error(p, "syntax error");
 		}
 		else
 			break;
@@ -384,19 +384,39 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 }
 
 Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<Node*>& params) {
+	Node* dr = nullptr;
+	
 	if (&cls == ass.CFloat) {
 		if (params.GetCount() == 0)
 			return irg.const_r32(0);
+		else {
+			dr = params[0];
+			if (dr->IsRef)
+				dr = irg.deref(dr);
+			return irg.cast(dr, &cls.Tt);
+		}
 	}
 	else if (&cls == ass.CDouble) {
 		if (params.GetCount() == 0)
 			return irg.const_r64(0);
+		else {
+			dr = params[0];
+			if (dr->IsRef)
+				dr = irg.deref(dr);
+			return irg.cast(dr, &cls.Tt);
+		}
 	}
 	else if (ass.IsNumeric(cls)) {
 		if (params.GetCount() == 0) {
 			Node *exp = irg.const_i(0);
 			exp->Tt = cls.Tt;
 			return exp;
+		}
+		else {
+			dr = params[0];
+			if (dr->IsRef)
+				dr = irg.deref(dr);
+			return irg.cast(dr, &cls.Tt);
 		}
 	}
 	

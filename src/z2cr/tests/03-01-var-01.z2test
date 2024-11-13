@@ -40,12 +40,13 @@ namespace test;
 
 // @dumpGlobalVarDef
 uint32 test::a1 = '\0';
+uint32 test::a2 = '\0';
 uint32 test::a3 = '\0';
 uint32 test::a4 = '\0';
 uint32 test::a5 = '\0';
 // @dumpEnd
 val a1 = '\0';
-//val a2 = '7' - '7';
+val a2 = '7' - '7';
 val a3: Char;
 val a4 = Char{};
 val a5: Char = Char{};
@@ -56,13 +57,14 @@ namespace test;
 
 // @dumpBody
 	uint32 a1 = '\0';
+	uint32 a2 = '\0';
 	uint32 a3 = '\0';
 	uint32 a4 = '\0';
 	uint32 a5 = '\0';
 // @dumpEnd
 def @main() {
 	val a1 = '\0';
-	//val a2 = '7' - '7';
+	val a2 = '7' - '7';
 	val a3: Char;
 	val a4 = Char{};
 	val a5: Char = Char{};

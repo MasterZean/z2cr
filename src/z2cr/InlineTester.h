@@ -6,10 +6,10 @@
 class ZTest: public Moveable<ZTest> {
 public:
 	String Name;
-	String Error;
+	String Error = String::GetVoid();
 	String Con;
-	String Dump;
-	String GlobalVarDef;
+	String Dump = String::GetVoid();
+	String GlobalVarDef = String::GetVoid();
 	WithDeepCopy<Vector<String>> Files;
 	bool Passed = false;
 	int Line = 0;

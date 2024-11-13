@@ -71,6 +71,7 @@ public:
 	void Proc(WhileNode& node);
 	void Proc(DoWhileNode& node);
 	void Proc(LocalNode& node);
+	void Proc(CastNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
 	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);

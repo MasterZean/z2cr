@@ -266,11 +266,11 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 	ZClass* cls = nullptr;
 	if (!valid && !valid2 && !valid3) {
 		// TODO: fix
-		ASSERT(0);
+		return nullptr;
 		//return GetOp(Over, strops[op], left, right, ass, this, *Comp, Point(1, 1));
 	}
 	
-		ObjectType* type = 0;
+	ObjectType* type = 0;
 	ObjectType* e = 0;
 	ZClass* secType = 0;
 	bool cst = false;
@@ -278,6 +278,7 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 	if (valid2 == false && valid3 == false) {
 		int t1 = left->Tt.Class->Index - 4;
 		int t2 = right->Tt.Class->Index - 4;
+
 		ASSERT(t1 >= 0 && t1 <= 13);
 		ASSERT(t2 >= 0 && t2 <= 13);
 		
@@ -384,6 +385,11 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 				if (FoldConstants)
 					return const_r64(dDouble);
 			}
+			else if (e->Class == ass.CChar) {
+				dInt = (uint32)((uint32)left->IntVal + (uint32)right->IntVal);
+				if (FoldConstants)
+					return const_char(dInt);
+			}
 			else
 				ASSERT(0);
 		}
@@ -447,6 +453,11 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 				dDouble = left->DblVal - right->DblVal;
 				if (FoldConstants)
 					return const_r64(dDouble);
+			}
+			else if (e->Class == ass.CChar) {
+				dInt = (uint32)((uint32)left->IntVal - (uint32)right->IntVal);
+				if (FoldConstants)
+					return const_char(dInt);
 			}
 			else
 				ASSERT(0);
@@ -512,6 +523,11 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 				if (FoldConstants)
 					return const_r64(dDouble);
 			}
+			else if (e->Class == ass.CChar) {
+				dInt = (uint32)((uint32)left->IntVal * (uint32)right->IntVal);
+				if (FoldConstants)
+					return const_char(dInt);
+			}
 			else
 				ASSERT(0);
 		}
@@ -576,6 +592,11 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 				if (FoldConstants)
 					return const_r64(dDouble);
 			}
+			else if (e->Class == ass.CChar) {
+				dInt = (uint32)((uint32)left->IntVal / (uint32)right->IntVal);
+				if (FoldConstants)
+					return const_char(dInt);
+			}
 			else
 				ASSERT(0);
 		}
@@ -639,6 +660,11 @@ Node* IR::opArit(Node* left, Node* right, OpNode::Type op, const Point& p) {
 				dDouble = fmod(left->DblVal, right->DblVal);
 				if (FoldConstants)
 					return const_r64(dDouble);
+			}
+			else if (e->Class == ass.CChar) {
+				dInt = (uint32)((uint32)left->IntVal % (uint32)right->IntVal);
+				if (FoldConstants)
+					return const_char(dInt);
 			}
 			else
 				ASSERT(0);
@@ -890,7 +916,7 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 	
 	if (!n)  {
 		// TODO: fix
-		ASSERT(0);
+		return nullptr;
 		//return GetOp(Over, strops[5], left, right, ass, this, *Comp, p);
 	}
 	
@@ -942,7 +968,7 @@ Node* IR::op_shr(Node* left, Node* right, const Point& p) {
 	
 	if (!n)  {
 		// TODO: fix
-		ASSERT(0);
+		return nullptr;
 		//return GetOp(Over, strops[6], left, right, ass, this, *Comp, p);
 	}
 
@@ -1156,6 +1182,18 @@ Node* IR::cast(Node* left, ObjectType* tt, bool sc, bool ptr) {
 					left->SetType(ass.CDouble->Tt);
 					return left;
 				}
+			}
+			else if (ass.IsSignedInt(tt)) {
+				if (ass.IsFloat(left->Tt))
+					return const_i(left->DblVal, tt->Class);
+				else
+					return const_i(left->IntVal, tt->Class);
+			}
+			else if (ass.IsUnsignedInt(tt)) {
+				if (ass.IsFloat(left->Tt))
+					return const_i(left->DblVal, tt->Class);
+				else
+					return const_u(left->IntVal, tt->Class);
 			}
 		}
 	}

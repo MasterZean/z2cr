@@ -1,0 +1,125 @@
+// @test var_dec
+// @file
+namespace test;
+
+// @dumpGlobalVarDef
+int32 test::b1 = 0;
+int32 test::b2 = 0;
+int32 test::b3 = 0;
+int32 test::b4 = 0;
+int32 test::b5 = 0;
+int32 test::b6 = 0;
+int32 test::b7 = 0;
+int32 test::b8 = 0;
+int32 test::b9 = 0;
+int32 test::b10 = 0;
+int32 test::b11 = 0;
+int32 test::b12 = 0;
+int32 test::b13 = 0;
+// @dumpEnd
+val b1 = Int{Bool{}};
+val b2 = Int{Small{}};
+val b3 = Int{Byte{}};
+val b4 = Int{Short{}};
+val b5 = Int{Word{}};
+val b6 = Int{Int{}};
+val b7 = Int{DWord{}};
+val b8 = Int{Long{}};
+val b9 = Int{QWord{}};
+val b10 = Int{Float{}};
+val b11 = Int{Double{}};
+val b12 = Int{Char{}};
+val b13 = Int{PtrSize{}};
+
+// @test var_dec
+// @file
+namespace test;
+
+// @dumpGlobalVarDef
+int32 test::b1 = 112;
+int32 test::b2 = 112;
+int32 test::b3 = 112;
+int32 test::b4 = 112;
+int32 test::b5 = 112;
+int32 test::b6 = 112;
+int32 test::b7 = 112;
+int32 test::b8 = 112;
+int32 test::b9 = 112;
+int32 test::b10 = 112;
+int32 test::b11 = 112;
+int32 test::b12 = 112;
+int32 test::b13 = 112;
+// @dumpEnd
+val b1 = Int{Bool{112}};
+val b2 = Int{Small{112}};
+val b3 = Int{Byte{112}};
+val b4 = Int{Short{112}};
+val b5 = Int{Word{112}};
+val b6 = Int{Int{112}};
+val b7 = Int{DWord{112}};
+val b8 = Int{Long{112}};
+val b9 = Int{QWord{112}};
+val b10 = Int{Float{112.1}};
+val b11 = Int{Double{112.1}};
+val b12 = Int{Char{'p'}};
+val b13 = Int{PtrSize{112}};
+
+// @test var_dec
+// @file
+namespace test;
+
+// @dumpGlobalVarDef
+bool test::a1 = false;
+int8 test::a2 = 0;
+uint8 test::a3 = 0u;
+int16 test::a4 = 0;
+uint16 test::a5 = 0u;
+int32 test::a6 = 0;
+uint32 test::a7 = 0u;
+int64 test::a8 = 0ll;
+uint64 test::a9 = 0ull;
+float test::a10 = 0.0f;
+double test::a11 = 0.0;
+uint32 test::a12 = '\0';
+size_t test::a13 = 0u;
+int32 test::b1 = (int32)(a1);
+int32 test::b2 = (int32)(a2);
+int32 test::b3 = (int32)(a3);
+int32 test::b4 = (int32)(a4);
+int32 test::b5 = (int32)(a5);
+int32 test::b6 = (int32)(a6);
+int32 test::b7 = (int32)(a7);
+int32 test::b8 = (int32)(a8);
+int32 test::b9 = (int32)(a9);
+int32 test::b10 = (int32)(a10);
+int32 test::b11 = (int32)(a11);
+int32 test::b12 = (int32)(a12);
+int32 test::b13 = (int32)(a13);
+// @dumpEnd
+val a1 = Bool{};
+val a2 = Small{};
+val a3 = Byte{};
+val a4 = Short{};
+val a5 = Word{};
+val a6 = Int{};
+val a7 = DWord{};
+val a8 = Long{};
+val a9 = QWord{};
+val a10 = Float{};
+val a11 = Double{};
+val a12 = Char{};
+val a13 = PtrSize{};
+
+val b1 = Int{a1};
+val b2 = Int{a2};
+val b3 = Int{a3};
+val b4 = Int{a4};
+val b5 = Int{a5};
+val b6 = Int{a6};
+val b7 = Int{a7};
+val b8 = Int{a8};
+val b9 = Int{a9};
+val b10 = Int{a10};
+val b11 = Int{a11};
+val b12 = Int{a12};
+val b13 = Int{a13};

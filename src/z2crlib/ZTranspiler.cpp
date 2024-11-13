@@ -253,9 +253,9 @@ void ZTranspiler::Walk(Node* node) {
 		Walk((UnaryOpNode*)node);*/
 	else if (node->NT == NodeType::Memory)
 		Proc(*(MemNode*)node);
-	/*else if (node->NT == NodeType::Cast)
-		Proc((CastNode*)node);
-	else if (node->NT == NodeType::Temporary)
+	else if (node->NT == NodeType::Cast)
+		Proc(*(CastNode*)node);
+	/*else if (node->NT == NodeType::Temporary)
 		Proc((TempNode*)node);*/
 	else if (node->NT == NodeType::Def)
 		Proc(*(DefNode*)node);
@@ -604,3 +604,32 @@ void ZTranspiler::Proc(LocalNode& node) {
 	}
 }
 
+void ZTranspiler::Proc(CastNode& node) {
+	ASSERT(node.Object);
+	
+	cs << '(';
+	
+	/*if (ass.IsPtr(node->Tt)) {
+		WriteClassName(*node->Tt.Next->Class);
+		cs << "*";
+	}
+	else {*/
+		/*if (!node->Tt.Class->CoreSimple)
+			cs << node->Tt.Class->NamespaceQual;
+		if (node->Tt.Class->CoreSimple && node->Tt.Class->Scan.IsEnum)
+			cs << node->Tt.Class->NamespaceQual;*/
+		
+		cs << node.Tt.Class->BackName;
+		/*if (node->Tt.Class->Scan.IsEnum)
+			*cs << "::Type";
+
+		if (node->Ptr)
+			*cs << "*";*/
+	//}
+	
+	cs << ')';
+	
+	cs << '(';
+	Walk(node.Object);
+	cs << ')';
+}
