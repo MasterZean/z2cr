@@ -110,8 +110,8 @@ void ZCompiler::ResolveNamespace(ZNamespace& ns) {
 }
 
 bool ZCompiler::Transpile() {
-	OutPath = AppendFileName(BuildPath, "out.cpp");
-	FileOut out(OutPath);
+	CppPath = AppendFileName(BuildPath, "out.cpp");
+	FileOut out(CppPath);
 	ZTranspiler cpp(*this, out);
 	cpp.PrintDebug = true;
 	

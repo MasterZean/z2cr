@@ -11,6 +11,7 @@ public:
 	String BuildPath;
 	String BuildProfile;
 	String OutPath;
+	String CppPath;
 	
 	PlatformType Platform;
 	String PlatformString;

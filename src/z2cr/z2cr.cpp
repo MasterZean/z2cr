@@ -18,49 +18,61 @@ bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 		Cout() << "No cached build method found! Trying to auto-detect...\n";
 		BuildMethod::Get(methods);
 		if (methods.GetCount() == 0) {
-			Cout() << ZCompiler::GetName() << " couldn't find a backend compiler. skiping compilation step..." << '\n';
+			Cout() << ZCompiler::GetName() << " couldn't find a backend compiler. Skipping compilation step..." << '\n';
 			//K.SCU = false;
 		}
 		else
 			StoreAsXMLFile(methods, "methods", exeDir + "buildMethods.xml");
 	}
 	
-	if (!K.BM && K.ARCH.GetCount() == 0 && methods.GetCount() > 0) {
+	/*if (!K.BM && K.ARCHNAME.GetCount() == 0 && methods.GetCount() > 0) {
 		bm = methods[0];
 	
 		return true;
-	}
+	}*/
 		
-	if (!K.BM) {
+	/*if (!K.BM) {
 		Cout() << ZCompiler::GetName() << " requires a build method specified (-bm). Exiting!" << '\n';
 		return false;
+	}*/
+	
+	if (K.BM == false && K.ARCH == false && methods.GetCount() > 0) {
+		bm = methods[0];
+	
+		return true;
 	}
 	
 	int bmi = -1;
 	
 	// find input BM
-	for (int i = 0; i < methods.GetCount(); i++)
-		if (ToUpper(K.BMName) == ToUpper(methods[i].Name)) {
+	for (int i = 0; i < methods.GetCount(); i++) {
+		bool found = true;
+	
+		if (K.BM && ToUpper(K.BMName) != ToUpper(methods[i].Name)) {
+			found = false;
+		}
+		
+		if (K.ARCH && ToUpper(K.ARCHName) != ToUpper(methods[i].Arch)) {
+			found = false;
+		}
+		
+		if (found) {
 			bmi = i;
 			break;
 		}
-	
-	if (bmi == -1) {
-		Cout() << "Build method '" << ToUpper(K.BMName) << "' can't be found. Exiting!" << '\n';
-		return false;
 	}
 	
-	bmi = -1;
-	// find input BM with given arch
-	for (int i = 0; i < methods.GetCount(); i++)
-		if (ToUpper(K.BMName) == ToUpper(methods[i].Name) && ToUpper(K.ARCH) == ToUpper(methods[i].Arch)) {
-			bmi = i;
-			break;
-		}
-	
 	if (bmi == -1) {
-		Cout() << "Build method '" << ToUpper(K.BMName) << "' doesn't support architecture 'x86'. Exiting!" << '\n';
-		SetExitCode(-1);
+		String bms = K.BMName;
+		if (bms.GetCount())
+			bms << " ";
+		bms << K.ARCHName;
+		
+		if (bms.GetCount())
+			Cout() << "Build method '" << ToUpper(bms) << "' can't be found. Exiting!" << '\n';
+		else
+			Cout() << "No build method can be found. Exiting!" << '\n';
+		
 		return false;
 	}
 	
@@ -99,15 +111,29 @@ CONSOLE_APP_MAIN {
 		SetExitCode(-1);
 		return;
 	}
-	ER::PrintPath = false;
 	
 	if (K.PP_NOPATH)
+		ER::PrintPath = false;
 	
-	if (K.EntryFile.GetCount() == 0) {
-		Cout() << ZCompiler::GetName() << " requires an execution entry point. Exiting!" << '\n';
+	if (K.UT) {
+		RunInlineTests(AppendFileName(curDir, "tests"));
+		
+		if (K.Files.GetCount() == 0) {
+			return;
+		}
+	}
+	
+	if (K.Files.GetCount() == 0 && K.UT == false) {
+		Cout() << ZCompiler::GetName() << " requires a list of input packages or files. Exiting!" << '\n';
 		SetExitCode(-1);
 		return;
 	}
+	
+	/*if (K.EntryFile.GetCount() == 0) {
+		Cout() << ZCompiler::GetName() << " requires an execution entry point. Exiting!" << '\n';
+		SetExitCode(-1);
+		return;
+	}*/
 	
 	BuildMethod bm;
 	if (!GetBuildMethod(exeDir, K, bm)) {
@@ -115,13 +141,12 @@ CONSOLE_APP_MAIN {
 		return;
 	}
 	
+	Cout() << "Using '" << ToUpper(bm.Name) << "." << ToUpper(bm.Arch) << "' back end compiler.\n";
+	
 	StopWatch tm;
 	
 	// compile
 	Assembly ass;
-	
-	if (K.UT)
-		RunInlineTests(AppendFileName(curDir, "tests"));
 	
 	try {
 		String prjPath;
@@ -155,8 +180,8 @@ CONSOLE_APP_MAIN {
 		else
 			compiler.OutPath = curDir + K.OutPath;
 		
-		compiler.BuildProfile = compiler.PlatformString + ToUpper(K.ARCH) + "." + ToUpper(bm.Name) + K.O;
-		compiler.BuildPath = exeDir + NativePath("build_r\\") + compiler.PlatformString + "." + ToUpper(K.ARCH) + "." + ToUpper(bm.Name);
+		compiler.BuildProfile = compiler.PlatformString + ToUpper(bm.Arch) + "." + ToUpper(bm.Name) + K.O;
+		compiler.BuildPath = exeDir + NativePath("build_r\\") + compiler.PlatformString + "." + ToUpper(bm.Arch) + "." + ToUpper(bm.Name);
 		RealizeDirectory(compiler.BuildPath);
 		
 		Cout() << "\n";
@@ -185,10 +210,10 @@ CONSOLE_APP_MAIN {
 		Builder builder(bm);
 		builder.ZCompilerPath(exeDir);
 		builder.TargetRoot(compiler.BuildPath);
-		builder.Arch(K.ARCH);
+		builder.Arch(bm.Arch);
 		builder.Optimize(K.O);
 		
-		bool buildOk = builder.Build(compiler.OutPath, compiler.OutPath);
+		bool buildOk = builder.Build(compiler.CppPath, compiler.OutPath);
 		if (buildOk) {
 			Cout() << "\n";
 			Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";

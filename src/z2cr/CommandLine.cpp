@@ -16,15 +16,6 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-scu") {
 			CPP = true;
 			SCU = true;
-			/*i++;
-			if (i < commands.GetCount()) {
-				Path = commands[i];
-				OutPath = GetFileDirectory(Path) + GetFileTitle(Path) + ".cpp";
-			}
-			else {
-				Cout() << Compiler::GetName() << " requires that '-scu', '-c++', '-vasm' parameters be followed by a path" << '\n';
-				return false;
-			}*/
 		}
 		else if (commands[i] == "-O1")
 			O = " -O1";
@@ -42,7 +33,6 @@ bool CommandLine::Read() {
 		}
 		else if (commands[i] == "-i")
 			INT = true;
-		
 		else if (commands[i] == "-out") {
 			i++;
 			if (i < commands.GetCount()) {
@@ -66,8 +56,9 @@ bool CommandLine::Read() {
 		}
 		else if (commands[i] == "-arch") {
 			i++;
+			ARCH = true;
 			if (i < commands.GetCount()) {
-				ARCH = commands[i];
+				ARCHName = commands[i];
 			}
 			else {
 				Cout() << name << " requires that '-arch' parameter be followed by a valid build architecture" << '\n';
@@ -134,8 +125,24 @@ bool CommandLine::Read() {
 			UT = true;
 		}
 		else {
-			Cout() << "Unknown parameter '" << commands[i] << "'. Exiting!\n";
-			return false;
+			String path = NormalizePath(commands[i]);
+			if (FileExists(path)) {
+				Files.Add(path);
+				if (OutPath.GetCount() == 0) {
+					String out = GetFileDirectory(path) + GetFileTitle(path);
+				#ifdef PLATFORM_WIN32
+					out << ".exe";
+				#endif
+					OutPath = out;
+				}
+				if (EntryFile.GetCount() == 0) {
+					EntryFile = path;
+				}
+			}
+			else {
+				Cout() << "Unknown parameter '" << commands[i] << "' or invalid file path. Exiting!\n";
+				return false;
+			}
 		}
 		i++;
 	}

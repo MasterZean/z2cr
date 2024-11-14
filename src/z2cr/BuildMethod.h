@@ -19,6 +19,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 	String Compiler;
 	String Tools;
 	String Sdk;
+	WithDeepCopy<Vector<String>> Path;
 	WithDeepCopy<Vector<String>> Lib;
 	WithDeepCopy<Vector<String>> Include;
 	

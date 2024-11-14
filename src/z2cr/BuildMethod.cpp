@@ -547,18 +547,21 @@ bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
 		return false;
 	
 	for(int x64 = 1; x64 >= 0; x64--) {
-		String method = x64 ? "CLANGx64" : "CLANG";
-		String clangFolder = bin + "/clang";
+		String method = x64 ? "CLANG" : "CLANG";
+		String clangFolder = bin + "/clang/";
 
 		BuildMethod clang;
+		
+		clang.Path << NativePath(clangFolder + "bin/");
+		clang.Path << NativePath(clangFolder + (x64 ? "/x86_64-w64-mingw32/bin/" : "/i686-w64-mingw32/bin/"));
 		clang.Name = method;
-		clang.Compiler = clangFolder;
+		clang.Compiler = NativePath(clang.Path[0] + (x64 ? "c++" : "i686-w64-mingw32-c++"));
 		clang.Sdk = clangFolder;
 		clang.Type = btGCC;
 		clang.Arch = x64 == 1 ? "x64" : "x86";
 		
 		methods.Add(clang);
-		Cout() << "Found BM: " << clang.Name << "\n";
+		Cout() << "Found BM: " << clang.Name << "." << clang.Arch << "\n";
 	}
 	
 	return true;
@@ -571,8 +574,8 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 #ifdef PLATFORM_WIN32
 	// search for modern MSC
 	DetectClang(methods);
-	DeepVSSearch(methods);
-	DetectGCC(methods);
+	//DeepVSSearch(methods);
+	//DetectGCC(methods);
 #endif
 
 #ifdef PLATFORM_POSIX

@@ -290,7 +290,7 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 	DUMP(c);
 	DUMP(env);*/
 	
-	cppPath = bm.Compiler + "\\bin\\c++.exe";
+	cppPath = bm.Compiler;
 	linkPath = cppPath;
 	
 	DoEnvGCC();
@@ -326,8 +326,12 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 		d << "64";
 	else
 		d << "32";
-	/*d << " -Wl,--subsystem,windows";
-	if (arch == "x64")
+	//d << "";
+	//d << " -lmingw32";
+	//d << " -Wl,--subsystem,windows";
+	//d << "-mthreads -mconsole";
+	//d << " /entry:mainCRTStartup";
+	/*if (arch == "x64")
 		d << " /MACHINE:x64 ";*/
 	DUMP(d);
 	{

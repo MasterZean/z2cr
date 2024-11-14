@@ -12,16 +12,17 @@ public:
 	String OutPath;
 	String EntryFile;
 	
-	String O;
+	String O = " -O2";
 	String BMName;
-	String ARCH = "x64";
+	String ARCHName;
 	
 	bool CC = false;
 	bool FF = false;
-	bool SCU = false;
+	bool SCU = true;
 	bool LIB = false;
-	bool CPP = false;
+	bool CPP = true;
 	bool BM = false;
+	bool ARCH = false;
 	bool VASM = false;
 	bool INT = false;
 	bool LAZY = false;
