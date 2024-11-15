@@ -55,6 +55,7 @@ protected:
 	NodePool<DoWhileNode> doWhileNodes;
 	NodePool<LocalNode> localNodes;
 	NodePool<ReturnNode> retNodes;
+	NodePool<IntrinsicNode> intNodes;
 	
 public:
 	public:
@@ -107,6 +108,8 @@ public:
 	WhileNode* whilecond(Node* cond, Node* body);
 	DoWhileNode* dowhilecond(Node* cond, Node* body);
 	ReturnNode* ret(Node* node);
+	
+	IntrinsicNode* intrinsic(Node* node);
 	
 	LocalNode* local(ZVariable& v);
 	

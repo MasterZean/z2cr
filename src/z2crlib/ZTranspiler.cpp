@@ -272,9 +272,9 @@ void ZTranspiler::Walk(Node* node) {
 	else if (node->NT == NodeType::Property)
 		Proc((PropertyNode*)node);
 	else if (node->NT == NodeType::Deref)
-		Proc((DerefNode*)node);
+		Proc((DerefNode*)node);*/
 	else if (node->NT == NodeType::Intrinsic)
-		Proc((IntNode*)node);*/
+		Proc(*(IntrinsicNode*)node);
 	else if (node->NT == NodeType::Return)
 		Proc(*(ReturnNode*)node);
 	else if (node->NT == NodeType::Local)
@@ -471,6 +471,8 @@ void ZTranspiler::Proc(DefNode& node) {
 void ZTranspiler::Proc(MemNode& node) {
 	ASSERT(node.Mem);
 	
+	if (node.IsLocal == false && node.IsParam == false)
+		cs << node.Mem->Namespace().BackName << "::";
 	cs << node.Mem->BackName;
 }
 
@@ -640,5 +642,21 @@ void ZTranspiler::Proc(ReturnNode& node) {
 	if (node.Value) {
 		cs << " ";
 		Walk(node.Value);
+	}
+}
+
+void ZTranspiler::Proc(IntrinsicNode& node) {
+	for (int i = 0; i < node.Value.GetCount(); i++) {
+		if (i > 0)
+			cs <<"; ";
+		
+		cs << "::printf";
+		if (node.Value[i]->Tt.Class == ass.CChar)
+			cs << "c";
+		cs << "(";
+		
+		Walk(node.Value[i]);
+		
+		cs << ")";
 	}
 }

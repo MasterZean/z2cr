@@ -195,4 +195,13 @@ public:
 	}
 };
 
+class IntrinsicNode: public Node {
+public:
+	Vector<Node*> Value;
+
+	IntrinsicNode() {
+		NT = NodeType::Intrinsic;
+	}
+};
+
 #endif

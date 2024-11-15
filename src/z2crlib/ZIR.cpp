@@ -912,6 +912,21 @@ Node* IR::opLog(Node* left, Node* right, OpNode::Type op) {
 }
 
 Node* IR::op_shl(Node* left, Node* right, const Point& p) {
+	ASSERT(left);
+	ASSERT(right);
+	
+	if (left->NT == NodeType::Memory) {
+		MemNode& mem = (MemNode&)*left;
+		
+		if (mem.Mem->Name == "Out" && mem.Mem->Namespace().Name == "System.")
+			return intrinsic(right);
+	}
+	else if (left->NT == NodeType::Intrinsic) {
+		IntrinsicNode& mem = (IntrinsicNode&)*left;
+		mem.Value << right;
+		return left;
+	}
+	
 	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
 	
 	if (!n)  {
@@ -1362,6 +1377,16 @@ ReturnNode* IR::ret(Node* node) {
 	ReturnNode* r = retNodes.Get();
 	r->Value = node;
 	r->HasSe = true;
+
+	return r;
+}
+
+IntrinsicNode* IR::intrinsic(Node* node) {
+	IntrinsicNode* r = intNodes.Get();
+	if (node)
+		r->Value << node;
+	r->HasSe = true;
+	r->SetType(ass.CIntrinsic->Tt);
 
 	return r;
 }
