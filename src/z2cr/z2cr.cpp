@@ -25,17 +25,6 @@ bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 			StoreAsXMLFile(methods, "methods", exeDir + "buildMethods.xml");
 	}
 	
-	/*if (!K.BM && K.ARCHNAME.GetCount() == 0 && methods.GetCount() > 0) {
-		bm = methods[0];
-	
-		return true;
-	}*/
-		
-	/*if (!K.BM) {
-		Cout() << ZCompiler::GetName() << " requires a build method specified (-bm). Exiting!" << '\n';
-		return false;
-	}*/
-	
 	if (K.BM == false && K.ARCH == false && methods.GetCount() > 0) {
 		bm = methods[0];
 	
@@ -106,8 +95,8 @@ CONSOLE_APP_MAIN {
 	}
 	
 	// check params
-	if (!K.SCU && !K.CPP && !K.INT && !K.VASM) {
-		Cout() << ZCompiler::GetName() << " requires the '-scu', '-c++', '-vasm' or '-i' parameters. Exiting!" << '\n';
+	if (!K.SCU && !K.CPP) {
+		Cout() << ZCompiler::GetName() << " requires the '-scu' or '-c++' parameters. Exiting!" << '\n';
 		SetExitCode(-1);
 		return;
 	}
@@ -129,19 +118,11 @@ CONSOLE_APP_MAIN {
 		return;
 	}
 	
-	/*if (K.EntryFile.GetCount() == 0) {
-		Cout() << ZCompiler::GetName() << " requires an execution entry point. Exiting!" << '\n';
-		SetExitCode(-1);
-		return;
-	}*/
-	
 	BuildMethod bm;
 	if (!GetBuildMethod(exeDir, K, bm)) {
 		SetExitCode(-1);
 		return;
 	}
-	
-	Cout() << "Using '" << ToUpper(bm.Name) << "." << ToUpper(bm.Arch) << "' back end compiler.\n";
 	
 	StopWatch tm;
 	
@@ -174,6 +155,7 @@ CONSOLE_APP_MAIN {
 		}
 			
 		ZCompiler compiler(ass);
+		compiler.BuildMode = true;
 		
 		if (IsFullPath(K.OutPath))
 			compiler.OutPath = K.OutPath;
@@ -181,19 +163,19 @@ CONSOLE_APP_MAIN {
 			compiler.OutPath = curDir + K.OutPath;
 		
 		compiler.BuildProfile = compiler.PlatformString + ToUpper(bm.Arch) + "." + ToUpper(bm.Name) + K.O;
-		compiler.BuildPath = exeDir + NativePath("build_r\\") + compiler.PlatformString + "." + ToUpper(bm.Arch) + "." + ToUpper(bm.Name);
+		compiler.BuildPath = exeDir + NativePath("builds/") + compiler.PlatformString + "." + ToUpper(bm.Arch) + "." + ToUpper(bm.Name);
 		RealizeDirectory(compiler.BuildPath);
 		
-		Cout() << "\n";
+		//Cout() << "\n";
 			
-		compiler.SetMainFile(K.EntryFile);
+		compiler.SetMain(K.EntryClass, K.EntryFile);
 		
 		if (!compiler.Compile()) {
 			if (compiler.MainFound == false) {
 				if (K.EntryFile.GetCount())
 					Cout() << "No main entry point found. Exiting.\n";
 				else
-					Cout() << "No main entry point found. Please provide one using the '-ef' parameter. Exiting.\n";
+					Cout() << "No main entry point found. Please provide one using the '-main' or '-mainfile' parameters. Exiting.\n";
 			}
 			else
 				Cout() << "Compilation failed. Exiting.\n";
@@ -212,6 +194,19 @@ CONSOLE_APP_MAIN {
 		builder.TargetRoot(compiler.BuildPath);
 		builder.Arch(bm.Arch);
 		builder.Optimize(K.O);
+		
+		if (compiler.MainFound == false) {
+			if (compiler.MainFound == false) {
+				if (K.EntryFile.GetCount())
+					Cout() << "No main entry point found. Exiting.\n";
+				else
+					Cout() << "No main entry point found. Please provide one using the '-main' or '-mainfile' parameters. Exiting.\n";
+			}
+			SetExitCode(-1);
+			return;
+		}
+		
+		Cout() << "Using '" << ToUpper(bm.Name) << "." << ToUpper(bm.Arch) << "' back end compiler.\n\n";
 		
 		bool buildOk = builder.Build(compiler.CppPath, compiler.OutPath);
 		if (buildOk) {

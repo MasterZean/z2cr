@@ -31,8 +31,6 @@ bool CommandLine::Read() {
 			CPP = true;
 			SCU = false;
 		}
-		else if (commands[i] == "-i")
-			INT = true;
 		else if (commands[i] == "-out") {
 			i++;
 			if (i < commands.GetCount()) {
@@ -65,16 +63,6 @@ bool CommandLine::Read() {
 				return false;
 			}
 		}
-		else if (commands[i] == "-class") {
-			i++;
-			if (i < commands.GetCount()) {
-				Class = commands[i];
-			}
-			else {
-				Cout() << name << " requires that '-class' parameter be followed by a valid class name" << '\n';
-				return false;
-			}
-		}
 		else if (commands[i] == "-pak") {
 			i++;
 			if (i < commands.GetCount()) {
@@ -85,24 +73,25 @@ bool CommandLine::Read() {
 				return false;
 			}
 		}
-		else if (commands[i] == "-file") {
+		else if (commands[i] == "-main") {
 			i++;
-			if (i < commands.GetCount()) {
-				Files.Add(NormalizePath(commands[i]));
-				//OutPath = GetFileDirectory(Path) + GetFileTitle(Path) + ".cpp";
-			}
+			if (i < commands.GetCount())
+				EntryClass = commands[i];
 			else {
-				Cout() << name << " requires that '-file' parameter be followed by a valid file path" << '\n';
+				Cout() << name << " requires that '-main' parameter be followed by a valid symbol identifier" << '\n';
 				return false;
 			}
+				
 		}
-		else if (commands[i] == "-ef") {
+		else if (commands[i] == "-mainfile") {
 			i++;
 			if (i < commands.GetCount()) {
 				EntryFile = NormalizePath(commands[i]);
+				if (FileExists(EntryFile))
+					AddInputFile(EntryFile);
 			}
 			else {
-				Cout() << name << " requires that '-ef' parameter be followed by a valid package path" << '\n';
+				Cout() << name << " requires that '-mainfile' parameter be followed by a valid package path" << '\n';
 				return false;
 			}
 		}
@@ -126,19 +115,8 @@ bool CommandLine::Read() {
 		}
 		else {
 			String path = NormalizePath(commands[i]);
-			if (FileExists(path)) {
-				Files.Add(path);
-				if (OutPath.GetCount() == 0) {
-					String out = GetFileDirectory(path) + GetFileTitle(path);
-				#ifdef PLATFORM_WIN32
-					out << ".exe";
-				#endif
-					OutPath = out;
-				}
-				if (EntryFile.GetCount() == 0) {
-					EntryFile = path;
-				}
-			}
+			if (FileExists(path))
+				AddInputFile(path);
 			else {
 				Cout() << "Unknown parameter '" << commands[i] << "' or invalid file path. Exiting!\n";
 				return false;
@@ -149,3 +127,15 @@ bool CommandLine::Read() {
 	
 	return true;
 }
+
+void CommandLine::AddInputFile(const String& path) {
+	Files.Add(path);
+	if (OutPath.GetCount() == 0) {
+		String out = GetFileDirectory(path) + GetFileTitle(path);
+	#ifdef PLATFORM_WIN32
+		out << ".exe";
+	#endif
+		OutPath = out;
+	}
+}
+

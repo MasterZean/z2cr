@@ -11,6 +11,7 @@ public:
 	Index<String> Files;
 	String OutPath;
 	String EntryFile;
+	String EntryClass;
 	
 	String O = " -O2";
 	String BMName;
@@ -23,8 +24,6 @@ public:
 	bool CPP = true;
 	bool BM = false;
 	bool ARCH = false;
-	bool VASM = false;
-	bool INT = false;
 	bool LAZY = false;
 	bool UT = false;
 	
@@ -32,9 +31,10 @@ public:
 	
 	Point ACP = Point(-1, -1);
 	
-	String Class;
-	
 	bool Read();
+	
+private:
+	void AddInputFile(const String& path);
 };
 
 #endif

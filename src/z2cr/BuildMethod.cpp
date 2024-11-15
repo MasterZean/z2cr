@@ -541,7 +541,7 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 }
 
 bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
-	String bin = GetExeDirFile("bin");
+	String bin = GetExeDirFile("externaltools");
 
 	if(!DirectoryExists(bin + "/clang"))
 		return false;

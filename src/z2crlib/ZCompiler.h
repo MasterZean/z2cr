@@ -10,6 +10,7 @@ class ZCompiler {
 public:
 	String BuildPath;
 	String BuildProfile;
+	bool   BuildMode = false;
 	String OutPath;
 	String CppPath;
 	
@@ -31,8 +32,9 @@ public:
 	void ResolveNamespaces();
 	void ResolveNamespace(ZNamespace& ns);
 		
-	void SetMainFile(const String& aPath) {
-		mainPath = aPath;
+	void SetMain(const String& aClass, const String& aFile) {
+		mainClass = aClass;
+		mainFile = aFile;
 	}
 	
 	Assembly& Ass() const {
@@ -43,7 +45,8 @@ public:
 	
 private:
 	Assembly& ass;
-	String mainPath;
+	String mainClass;
+	String mainFile;
 	IR irg;
 	ArrayMap<String, Vector<ZSourcePos>> dupes;
 	

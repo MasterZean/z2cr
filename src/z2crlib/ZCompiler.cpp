@@ -20,29 +20,32 @@ bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
 	
-	String cppCode = AppendFileName(BuildPath, "cppcode.h");
-	if (!FileExists(cppCode))
-		if (!FileCopy(
-				AppendFileName(AppendFileName(GetCurrentDirectory(), "codegen"), "cppcode.h"),
-								cppCode)) {
-			Cout() << "File copy error! Exiting!\n";
-			return false;
+	if (BuildMode) {
+		String cppCode = AppendFileName(BuildPath, "cppcode.h");
+		if (!FileExists(cppCode))
+			if (!FileCopy(
+					AppendFileName(AppendFileName(GetCurrentDirectory(), "codegen"), "cppcode.h"),
+									cppCode)) {
+				Cout() << "File copy error! Exiting!\n";
+				return false;
+		}
 	}
 	
 	return true;
 }
 
 bool ZCompiler::FindMain() {
-	if (mainPath.GetCount() == 0)
-		return false;
+	Index<ZFunction*> vf;
+	
+	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
+		if (mainFile.GetCount() && ass.SourceLookup[i]->Path != mainFile)
+			continue;
 		
-	ZSource* src = ass.FindSource(mainPath);
-	if (!src) {
-		ER::CantOpenFile(mainPath);
-		return false;
+		auto list = FindMain(*ass.SourceLookup[i]);
+		for (int j = 0; j < list.GetCount(); j++)
+			vf.FindAdd(list[j]);
 	}
 	
-	auto vf = FindMain(*src);
 	if (vf.GetCount() == 0)
 		return false;
 	else if (vf.GetCount() > 1) {
@@ -129,8 +132,8 @@ bool ZCompiler::ScanSources() {
 	Array<ZScanner> scanners;
 	
 	// prioritize main hint
-	if (mainPath.GetCount()) {
-		ZSource* src = ass.FindSource(mainPath);
+	if (mainFile.GetCount()) {
+		ZSource* src = ass.FindSource(mainFile);
 		if (src)
 			ScanSource(*src, scanners);
 	}
@@ -167,8 +170,11 @@ void ZCompiler::ScanSource(ZSource& src, Array<ZScanner>& scanners) {
 
 Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
 	Vector<ZFunction*> mains;
+	
 	for (int i = 0; i < src.Functions.GetCount(); i++) {
-		if (src.Functions[i]->Name == "@main")
+		if (mainClass.GetCount() && src.Functions[i]->Namespace().Name != mainClass + ".")
+			continue;
+		if (src.Functions[i]->Name == "@main" && src.Functions[i]->Params.GetCount() == 0)
 			mains.Add(src.Functions[i]);
 	}
 	
@@ -590,6 +596,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2R 0.0.2";
+	static String name = "Z2CR 0.0.7";
 	return name;
 }

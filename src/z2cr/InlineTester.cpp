@@ -18,7 +18,7 @@ bool ZTest::Run() {
 	
 	try {
 		ZCompiler compiler(Ass);
-		compiler.SetMainFile("test.z2");
+		compiler.SetMain("", "test.z2");
 		compiler.FoldConstants = true;
 		
 		bool compResult = compiler.Compile();
