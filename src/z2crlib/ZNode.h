@@ -186,4 +186,13 @@ public:
 	}
 };
 
+class ReturnNode: public Node {
+public:
+	Node* Value = nullptr;
+
+	ReturnNode() {
+		NT = NodeType::Return;
+	}
+};
+
 #endif

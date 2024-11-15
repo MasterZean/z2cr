@@ -1183,13 +1183,13 @@ Node* IR::cast(Node* left, ObjectType* tt, bool sc, bool ptr) {
 					return left;
 				}
 			}
-			else if (ass.IsSignedInt(tt)) {
+			else if (ass.IsSignedInt(*tt)) {
 				if (ass.IsFloat(left->Tt))
 					return const_i(left->DblVal, tt->Class);
 				else
 					return const_i(left->IntVal, tt->Class);
 			}
-			else if (ass.IsUnsignedInt(tt)) {
+			else if (ass.IsUnsignedInt(*tt)) {
 				if (ass.IsFloat(left->Tt))
 					return const_i(left->DblVal, tt->Class);
 				else
@@ -1356,4 +1356,12 @@ Node* IR::const_class(ZClass& cls, Node* e) {
 	}
 	else*/
 		return node;
+}
+
+ReturnNode* IR::ret(Node* node) {
+	ReturnNode* r = retNodes.Get();
+	r->Value = node;
+	r->HasSe = true;
+
+	return r;
 }

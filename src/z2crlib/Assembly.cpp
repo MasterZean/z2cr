@@ -36,6 +36,15 @@ void ZFunction::GenerateSignatures() {
 		var.DefPos = pp;
 	}
 	
+	parser.Expect(')');
+	
+	if (parser.Char(':')) {
+		ZClass* cls = ZExprParser::ParseType(Ass(), parser);
+		Return.Tt = cls->Tt;
+	}
+	else
+		Return.Tt = Ass().CVoid->Tt;
+	
 	dsig = "";
 	
 	if (InClass == false) {
@@ -62,7 +71,14 @@ void ZFunction::GenerateSignatures() {
 	
 	dsig << ")";
 	
-	DUMP(dsig);
+	fsig = dsig;
+	
+	if (Return.Tt.Class) {
+		fsig << ": ";
+		fsig << Ass().ClassToString(Return.Tt);
+	}
+	
+	DUMP(fsig);
 }
 
 ZFunction& ZNamespace::PrepareFunction(const String& aName) {
@@ -268,6 +284,11 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	return &typeCls;
 }
 
+String Assembly::ClassToString(const ObjectType& type) {
+	ASSERT(type.Class);
+	return type.Class->Name;
+}
+
 String Assembly::ClassToString(ObjectInfo* type, bool qual) {
 	String s;
 	
@@ -301,24 +322,12 @@ String Assembly::ClassToString(ObjectInfo* type, bool qual) {
 	return s;
 }
 
-bool Assembly::IsSignedInt(ObjectType* type) const {
-	return type->Class == CInt || type->Class == CSmall || type->Class == CShort || type->Class == CLong;
-}
-
 bool Assembly::IsSignedInt(const ObjectType& type) const {
 	return type.Class == CInt || type.Class == CSmall || type.Class == CShort || type.Class == CLong;
 }
 
-bool Assembly::IsUnsignedInt(ObjectType* type) const {
-	return type->Class == CDWord || type->Class == CByte || type->Class == CWord || type->Class == CQWord;
-}
-
 bool Assembly::IsUnsignedInt(const ObjectType& type) const {
 	return type.Class == CDWord || type.Class == CByte || type.Class == CWord || type.Class == CQWord;
-}
-
-bool Assembly::IsFloat(ObjectType* type) const {
-	return type->Class == CFloat || type->Class == CDouble;
 }
 
 bool Assembly::IsFloat(const ObjectType& type) const {

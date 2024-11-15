@@ -245,6 +245,16 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	
 	parser.Expect('}');
 	
+	// TODO: make smarter
+	if (BuildMode) {
+		Node* defRet = nullptr;
+		if (f.Return.Tt.Class) {
+			Vector<Node*> dummy;
+			defRet = ZExprParser::Temporary(ass, irg, *f.Return.Tt.Class, dummy);
+		}
+		target.AddChild(irg.ret(defRet));
+	}
+	
 	f.Blocks.Drop();
 	
 	return true;
@@ -266,6 +276,8 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
 		return CompileDoWhile(f, parser);
 	else if (parser.Id("val"))
 		return CompileLocalVar(f, parser);
+	else if (parser.Id("return"))
+		return CompileReturn(f, parser);
 	else {
 		ZExprParser ep(f, parser, irg);
 		ep.Function = &f;
@@ -468,6 +480,30 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 	}
 	
 	return irg.local(v);
+}
+
+Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser) {
+	auto p = parser.GetPoint();
+	
+	if (f.IsConstructor)
+		parser.Error(p, "constructors can't have a 'return' statement");
+	
+	Node* retVal = nullptr;
+	
+	if (f.Return.Tt.Class == ass.CVoid)
+		parser.ExpectEndStat();
+	else {
+		ZExprParser ep(f, parser, irg);
+		ep.Function = &f;
+		retVal = ep.Parse();
+		parser.ExpectEndStat();
+		
+		if (!f.Return.CanAssign(ass, retVal))
+			parser.Error(p, "can't assign '\f" + ass.ClassToString(retVal) +
+				"\f' instance to '\f" + ass.ClassToString(f.Return.Tt) + "\f' instance without a cast");
+	}
+	
+	return irg.ret(retVal);
 }
 
 void ZCompiler::TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur) {

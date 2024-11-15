@@ -268,6 +268,9 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	
 	parser.Expect(')');
 	
+	if (parser.Char(':'))
+		ScanType();
+	
 	ZFunction& f = nmspace->PrepareFunction(name);
 	f.IsFunction = aFunc;
 	f.DefPos = dp;

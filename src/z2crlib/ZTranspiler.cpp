@@ -116,12 +116,12 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	cs << "void " << f.BackName;
+	cs << f.Return.Tt.Class->BackName << " " << f.BackName;
 	WriteFunctionParams(f);
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
-	cs << "void " << f.Namespace().BackName << "::" << f.BackName;
+	cs << f.Return.Tt.Class->BackName << " " << f.Namespace().BackName << "::" << f.BackName;
 	WriteFunctionParams(f);
 }
 
@@ -274,9 +274,9 @@ void ZTranspiler::Walk(Node* node) {
 	else if (node->NT == NodeType::Deref)
 		Proc((DerefNode*)node);
 	else if (node->NT == NodeType::Intrinsic)
-		Proc((IntNode*)node);
+		Proc((IntNode*)node);*/
 	else if (node->NT == NodeType::Return)
-		Proc((ReturnNode*)node);*/
+		Proc(*(ReturnNode*)node);
 	else if (node->NT == NodeType::Local)
 		Proc(*(LocalNode*)node);
 	/*else if (node->NT == NodeType::Alloc)
@@ -632,4 +632,13 @@ void ZTranspiler::Proc(CastNode& node) {
 	cs << '(';
 	Walk(node.Object);
 	cs << ')';
+}
+
+void ZTranspiler::Proc(ReturnNode& node) {
+	cs << "return";
+	
+	if (node.Value) {
+		cs << " ";
+		Walk(node.Value);
+	}
 }

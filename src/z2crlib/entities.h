@@ -290,7 +290,6 @@ public:
 
 private:
 	ZNamespace& nmsspace;
-	
 };
 
 class ZClass: public ZEntity, Moveable<ZClass> {
@@ -351,6 +350,7 @@ class ZFunction: Moveable<ZFunction>, public ZEntity {
 public:
 	bool IsFunction = false;
 	bool InClass = false;
+	bool IsConstructor = false;
 	
 	ZSourcePos TraitPos;
 	ZSourcePos ParamPos;
@@ -359,6 +359,7 @@ public:
 	Node Nodes;
 	
 	Array<ZVariable> Params;
+	ObjectInfo Return;
 	Vector<ZClass*> TParam;
 	WithDeepCopy<Vector<ZBlock>> Blocks;
 	Array<ZVariable> Locals;
@@ -377,6 +378,7 @@ public:
 	
 private:
 	String dsig;
+	String fsig;
 };
 
 class ZMethodBundle: public ZEntity {

@@ -350,8 +350,6 @@ ZClass* ZExprParser::ParseType(Assembly& ass, ZParser& parser) {
 	}
 	else {
 		// full namespace
-		for (int i = 0; i < ass.Classes.GetCount(); i++)
-			DUMP(ass.Classes.GetKey(i));
 		cls = ass.Classes.FindPtr(type);
 		
 		if (cls == nullptr)
