@@ -236,8 +236,10 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.Blocks.Add();
 	f.Blocks.Top().Temps = 0;
 	
+	ZContext con;
+	
 	while (!parser.IsChar('}')) {
-		Node* node = CompileStatement(f, parser);
+		Node* node = CompileStatement(f, parser, con);
 		
 		if (node != nullptr)
 			target.AddChild(node);
@@ -246,12 +248,9 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	parser.Expect('}');
 	
 	// TODO: make smarter
-	if (BuildMode) {
-		Node* defRet = nullptr;
-		if (f.Return.Tt.Class) {
-			Vector<Node*> dummy;
-			defRet = ZExprParser::Temporary(ass, irg, *f.Return.Tt.Class, dummy);
-		}
+	if (!con.Return && f.Return.Tt.Class != ass.CVoid) {
+		Vector<Node*> dummy;
+		Node* defRet = ZExprParser::Temporary(ass, irg, *f.Return.Tt.Class, dummy);
 		target.AddChild(irg.ret(defRet));
 	}
 	
@@ -260,24 +259,24 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	return true;
 }
 
-Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
+Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) {
 	if (parser.Char('{')) {
-		Node* node = CompileBlock(f, parser);
+		Node* node = CompileBlock(f, parser, con);
 		
 		return node;
 	}
 	else if (parser.Char(';'))
 		return nullptr;
 	else if (parser.Id("if"))
-		return CompileIf(f, parser);
+		return CompileIf(f, parser, con);
 	else if (parser.Id("while"))
-		return CompileWhile(f, parser);
+		return CompileWhile(f, parser, con);
 	else if (parser.Id("do"))
-		return CompileDoWhile(f, parser);
+		return CompileDoWhile(f, parser, con);
 	else if (parser.Id("val"))
 		return CompileLocalVar(f, parser);
 	else if (parser.Id("return"))
-		return CompileReturn(f, parser);
+		return CompileReturn(f, parser, con);
 	else {
 		ZExprParser ep(f, parser, irg);
 		ep.Function = &f;
@@ -308,14 +307,16 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser) {
 	return nullptr;
 }
 
-Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser) {
+Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser, ZContext& con) {
 	f.Blocks.Add();
 	f.Blocks.Top().Temps = 0;
+	
+	ZContext blockCon;
 	
 	BlockNode* block = irg.block();
 	
 	while (!parser.IsChar('}')) {
-		Node* node = CompileStatement(f, parser);
+		Node* node = CompileStatement(f, parser, blockCon);
 		
 		if (node != nullptr)
 			block->Nodes.AddChild(node);
@@ -324,12 +325,15 @@ Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser) {
 	parser.Expect('}');
 	parser.EatNewlines();
 	
+	if (blockCon.Return)
+		con.Return = true;
+	
 	f.Blocks.Drop();
 	
 	return block;
 }
 
-Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser) {
+Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	
@@ -341,16 +345,25 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser) {
 	if (node->Tt.Class != ass.CBool)
 		parser.Error(p, "if condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
 	
-	Node* tb = CompileStatement(f, parser);
+	ZContext trueCon;
+	
+	Node* tb = CompileStatement(f, parser, trueCon);
 	Node* fb = nullptr;
 	
-	if (parser.Id("else"))
-		fb = CompileStatement(f, parser);
+	if (parser.Id("else")) {
+		ZContext falseCon;
+		fb = CompileStatement(f, parser, falseCon);
+		
+		if (trueCon.Return && falseCon.Return)
+			con.Return = true;
+	}
+	else
+		; // no else branch, can't be sure about return
 	
 	return irg.ifcond(node, tb, fb);
 }
 
-Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser) {
+Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	
@@ -359,18 +372,22 @@ Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser) {
 	parser.Expect(')');
 	parser.EatNewlines();
 	
-	Node* bd = CompileStatement(f, parser);
+	ZContext loopCon;
+	Node* bd = CompileStatement(f, parser, loopCon);
 	if (node->Tt.Class != ass.CBool)
 		parser.Error(p, "while condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
 		
 	return irg.whilecond(node, bd);
 }
 
-Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser) {
+Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	if (!parser.IsChar('{'))
 		parser.Expect('{');
 	
-	Node* bd = CompileStatement(f, parser);
+	ZContext loopCon;
+	Node* bd = CompileStatement(f, parser, loopCon);
+	if (loopCon.Return)
+		con.Return = true;
 	
 	parser.ExpectId("while");
 	
@@ -482,7 +499,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 	return irg.local(v);
 }
 
-Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser) {
+Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
 	auto p = parser.GetPoint();
 	
 	if (f.IsConstructor)
@@ -502,6 +519,8 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser) {
 			parser.Error(p, "can't assign '\f" + ass.ClassToString(retVal) +
 				"\f' instance to '\f" + ass.ClassToString(f.Return.Tt) + "\f' instance without a cast");
 	}
+	
+	con.Return = true;
 	
 	return irg.ret(retVal);
 }

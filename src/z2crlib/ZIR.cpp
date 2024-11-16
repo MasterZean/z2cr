@@ -1344,6 +1344,7 @@ Node* IR::attr(Node* left, Node* right) {
 	node->SetType(left->Tt);
 	node->HasSe = true;
 	node->IsConst = left->IsConst;
+	node->Assign = true;
 	ASSERT(node->Tt.Class);
 	
 	return node;

@@ -1,0 +1,41 @@
+// @test namespace
+// @file
+// @error test.z2(4, 5): declaration encountered outside of a namespace
+val a = 0;
+
+// @test namespace
+// @file
+// @error test.z2(6, 1): scan: identifier expected, end-of-file found
+val
+
+// @test namespace
+// @file
+// @error test.z2(4, 5): scan: identifier expected, boolean constant 'true' found
+val true;
+
+// @test namespace
+// @file
+// @error test.z2(4, 5): scan: identifier expected, character constant found
+val 'a';
+
+// @test namespace
+// @file
+// @error test.z2(4, 5): scan: identifier expected, keyword 'return' found
+val return;
+
+// @test namespace
+// @file
+// @error test.z2(4, 5): scan: identifier expected, '*' found
+val *;
+
+// @test namespace
+// @file
+// @error test.z2(4, 5): scan: identifier expected, floating point constant '0.7' found
+val 0.7;
+
+// @test namespace
+// @file
+// @error test.z2(6, 5): scan: variable must have either an explicit type or be initialized
+namespace test;
+
+val a;

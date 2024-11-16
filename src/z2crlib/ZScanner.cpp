@@ -14,10 +14,15 @@ void ZScanner::Scan() {
 			ScanNamespace();
 			
 			if (parser.Char('{')) {
+				bool back = inNamespaceBlock;
+				inNamespaceBlock = true;
+				
 				while (!parser.IsChar('}'))
 					ScanSingle();
 				
 				parser.Expect('}');
+				
+				inNamespaceBlock = back;
 			}
 			else
 				parser.ExpectEndStat();
@@ -74,6 +79,23 @@ void ZScanner::ScanSingle() {
 			parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
 		}
 	}
+	else if (parser.Id("namespace")) {
+		ScanNamespace();
+		
+		if (parser.Char('{')) {
+			bool back = inNamespaceBlock;
+			inNamespaceBlock = true;
+			
+			while (!parser.IsChar('}'))
+				ScanSingle();
+			
+			parser.Expect('}');
+			
+			inNamespaceBlock = back;
+		}
+		else
+			parser.ExpectEndStat();
+	}
 	else if (ScanDeclaration(AccessType::Public)) {
 		// ALL GOOD
 	}
@@ -87,14 +109,14 @@ bool ZScanner::ScanDeclaration(AccessType accessType) {
 	if (parser.IsChar2('@', '[')) {
 		ZSourcePos tp = parser.GetFullPos();
 		TraitLoop();
-		return ScanDeclarationLine(accessType, &tp);
+		return ScanDeclarationItem(accessType, &tp);
 	}
 	
-	return ScanDeclarationLine(accessType);
+	return ScanDeclarationItem(accessType);
 
 }
 
-bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
+bool ZScanner::ScanDeclarationItem(AccessType accessType, ZSourcePos* tp) {
 	if (parser.Id("def")) {
 		Vector<ZFunction*> funcs;
 		do {
@@ -137,6 +159,9 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 		
 		String name = parser.ExpectId();
 		
+		if (nmspace == &ass.DefaultNamespace())
+			throw ER::ErrDeclOutsideNamespace(dp);
+		
 		ZVariable& f = nmspace->PrepareVariable(name);
 		f.DefPos = dp;
 		f.BackName = name;
@@ -155,6 +180,9 @@ bool ZScanner::ScanDeclarationLine(AccessType accessType, ZSourcePos* tp) {
 						
 		}
 		else {
+			if (!parser.IsChar('='))
+				parser.Error(dp.P, "variable must have either an explicit type or be initialized");
+			
 			parser.Expect('=');
 			
 			while (!(parser.IsChar(';'))) {
@@ -214,19 +242,16 @@ void ZScanner::ScanNamespace() {
 		fullName << name << ".";
 	}
 	
+	// TODO: delay throw Errors <<
+	if (inNamespaceBlock)
+		throw ER::ErrNestedNamespace(np);
+	
 	int index = ass.Namespaces.Find(fullName);
 	
 	nmspace = &ass.FindAddNamespace(fullName);
 	
 	section = &nmspace->Sections.Add();
 	section->UsingNames = usingNames;
-	
-	/*if (namespaceCount == 0) {
-		namespacePos = np;
-	}
-	else {
-		Errors.Add(ErrorReporter::Duplicate(np, String().Cat() << "can have only one namespace definition per file, previous was at:\n\t\t" << namespacePos.ToString()));
-	}*/
 	
 	namespaceCount++;
 }

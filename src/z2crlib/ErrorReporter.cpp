@@ -28,4 +28,14 @@ ZException ER::Duplicate(const String& name, const ZSourcePos& cur, const ZSourc
 	return Duplicate(cur, err);
 }
 
+ZException ER::ErrNestedNamespace(const ZSourcePos& p) {
+	return ZException(p.ToString(), "nested namespaces are not supported");
+}
+
+ZException ER::ErrDeclOutsideNamespace(const ZSourcePos& p) {
+	return ZException(p.ToString(), "declaration encountered outside of a namespace");
+}
+
+
+
 

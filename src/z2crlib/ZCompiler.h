@@ -6,6 +6,11 @@
 
 class ZTranspiler;
 
+class ZContext {
+public:
+	bool Return = false;
+};
+
 class ZCompiler {
 public:
 	String BuildPath;
@@ -58,13 +63,13 @@ private:
 	bool CompileFunc(ZFunction& f, Node& target);
 	bool CompileVar(ZVariable& v);
 		
-	Node* CompileBlock(ZFunction& f, ZParser& parser);
-	Node* CompileStatement(ZFunction& f, ZParser& parser);
-	Node* CompileIf(ZFunction& f, ZParser& parser);
-	Node* CompileWhile(ZFunction& f, ZParser& parser);
-	Node* CompileDoWhile(ZFunction& f, ZParser& parser);
+	Node* CompileBlock(ZFunction& f, ZParser& parser, ZContext& con);
+	Node* CompileStatement(ZFunction& f, ZParser& parser, ZContext& con);
+	Node* CompileIf(ZFunction& f, ZParser& parser, ZContext& con);
+	Node* CompileWhile(ZFunction& f, ZParser& parser, ZContext& con);
+	Node* CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con);
 	Node* CompileLocalVar(ZFunction& f, ZParser& parser);
-	Node *CompileReturn(ZFunction& f, ZParser& parser);
+	Node *CompileReturn(ZFunction& f, ZParser& parser, ZContext& con);
 	
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
 	bool Transpile(ZTranspiler& cpp, ZFunction& f);

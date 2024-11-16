@@ -34,6 +34,7 @@ protected:
 	String nameSpace;
 	String bindName;
 	Index<String> usingNames;
+	bool inNamespaceBlock = false;
 	
 	ZNamespace* nmspace = nullptr;
 	ZNamespaceSection* section = nullptr;
@@ -52,7 +53,7 @@ protected:
 	void InterpretTrait(const String& trait);
 	void TraitLoop();
 	
-	bool ScanDeclarationLine(AccessType accessType, ZSourcePos* tp = nullptr);
+	bool ScanDeclarationItem(AccessType accessType, ZSourcePos* tp = nullptr);
 };
 
 #endif

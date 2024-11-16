@@ -442,14 +442,16 @@ void ZTranspiler::Proc(OpNode& node) {
 	ASSERT(l);
 	ASSERT(r);
 	
-	cs << "(";
+	if (!node.Assign)
+		cs << "(";
 	Walk(l);
 	cs << ' ' << opss[node.Op];
-	if (node.Assign)
-		cs << '=';
+	//if (node.Assign)
+	//	cs << '=';
 	cs << ' ';
 	Walk(r);
-	cs << ")";
+	if (!node.Assign)
+		cs << ")";
 }
 
 void ZTranspiler::Proc(DefNode& node) {

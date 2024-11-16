@@ -187,6 +187,8 @@ String ZParser::Identify() {
 		return "block starter '{'";
 	else if (term[0] == '}')
 		return "block finisher '}'";
+	else if (term[0] == '\'')
+		return "character constant";
 	else {
 		for (int i = 0; i < 9; i++)
 			if (IsChar2(DoubleOpCh1[i], DoubleOpCh2[i])) {
