@@ -293,6 +293,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(WhileNode*)node);
 	else if (node->NT == NodeType::DoWhile)
 		Proc(*(DoWhileNode*)node);
+	else if (node->NT == NodeType::LoopControl)
+		Proc(*(LoopControlNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -489,7 +491,9 @@ void ZTranspiler::Proc(BlockNode& node) {
 	
 	NL();
 	cs << '}';
-	EL();
+	
+	if (node.EndBlockStat)
+		EL();
 }
 
 
@@ -588,10 +592,11 @@ void ZTranspiler::Proc(DoWhileNode& node) {
 	ASSERT(node.Cond);
 
 	cs << "do ";
+	if (node.Body->NT == NodeType::Block)
+		((BlockNode*)node.Body)->EndBlockStat = false;
 	WalkNode(node.Body);
 	
-	NL();
-	cs << "while(";
+	cs << " while (";
 	Walk(node.Cond);
 	cs << ")";
 }
@@ -661,4 +666,11 @@ void ZTranspiler::Proc(IntrinsicNode& node) {
 		
 		cs << ")";
 	}
+}
+
+void ZTranspiler::Proc(LoopControlNode& node) {
+	if (node.Break)
+		cs << "break";
+	else
+		cs << "continue";
 }

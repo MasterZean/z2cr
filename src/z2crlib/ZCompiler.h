@@ -9,6 +9,7 @@ class ZTranspiler;
 class ZContext {
 public:
 	bool Return = false;
+	bool InLoop = false;
 };
 
 class ZCompiler {

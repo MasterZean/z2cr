@@ -56,6 +56,7 @@ protected:
 	NodePool<LocalNode> localNodes;
 	NodePool<ReturnNode> retNodes;
 	NodePool<IntrinsicNode> intNodes;
+	NodePool<LoopControlNode> loopControlNodes;
 	
 public:
 	public:
@@ -108,6 +109,7 @@ public:
 	WhileNode* whilecond(Node* cond, Node* body);
 	DoWhileNode* dowhilecond(Node* cond, Node* body);
 	ReturnNode* ret(Node* node);
+	LoopControlNode* loopControl(bool aBreak);
 	
 	IntrinsicNode* intrinsic(Node* node);
 	

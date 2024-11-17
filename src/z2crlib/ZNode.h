@@ -100,6 +100,7 @@ public:
 class BlockNode: public Node {
 public:
 	Node Nodes;
+	bool EndBlockStat = true;
 	
 	BlockNode() {
 		NT = NodeType::Block;
@@ -201,6 +202,15 @@ public:
 
 	IntrinsicNode() {
 		NT = NodeType::Intrinsic;
+	}
+};
+
+class LoopControlNode: public Node {
+public:
+	bool Break = false;
+
+	LoopControlNode() {
+		NT = NodeType::LoopControl;
 	}
 };
 

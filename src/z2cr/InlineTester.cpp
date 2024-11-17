@@ -175,6 +175,7 @@ void InlineTester::AddTestCollection(const String& path) {
 			
 			while (!file.IsEof()) {
 				String sub = file.GetLine();
+				lineNo++;
 				
 				if (sub.StartsWith(anDumpEnd))
 					break;
@@ -190,6 +191,7 @@ void InlineTester::AddTestCollection(const String& path) {
 			
 			while (!file.IsEof()) {
 				String sub = file.GetLine();
+				lineNo++;
 				
 				if (sub.StartsWith(anDumpEnd))
 					break;

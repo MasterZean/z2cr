@@ -1391,3 +1391,10 @@ IntrinsicNode* IR::intrinsic(Node* node) {
 
 	return r;
 }
+
+LoopControlNode *IR::loopControl(bool aBreak) {
+	LoopControlNode* l = loopControlNodes.Get();
+	l->Break = aBreak;
+	return l;
+}
+

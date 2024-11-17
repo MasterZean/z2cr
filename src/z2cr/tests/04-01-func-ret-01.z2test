@@ -123,8 +123,7 @@ val b: Float = 68;
 		test::a = (test::a + 1);
 		test::b = (test::b - 1);
 		return 23;
-	}
-	while(((test::a - test::b) >= 0.00001));
+	} while (((test::a - test::b) >= 0.00001));
 // @dumpEnd
 func f(): Int {	
 	do {

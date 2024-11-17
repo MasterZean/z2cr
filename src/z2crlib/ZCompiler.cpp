@@ -277,6 +277,20 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 		return CompileLocalVar(f, parser);
 	else if (parser.Id("return"))
 		return CompileReturn(f, parser, con);
+	else if (parser.IsId("break")) {
+		ZSourcePos sp = parser.GetFullPos();
+		parser.Id("break");
+		if (!con.InLoop)
+			parser.Error(sp.P, "'break' found outside of loop");
+		return irg.loopControl(true);
+	}
+	else if (parser.IsId("continue")) {
+		ZSourcePos sp = parser.GetFullPos();
+		parser.Id("continue");
+		if (!con.InLoop)
+			parser.Error(sp.P, "'continue' found outside of loop");
+		return irg.loopControl(false);
+	}
 	else {
 		ZExprParser ep(f, parser, irg);
 		ep.Function = &f;
@@ -312,6 +326,7 @@ Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser, ZContext& con) {
 	f.Blocks.Top().Temps = 0;
 	
 	ZContext blockCon;
+	blockCon.InLoop = con.InLoop;
 	
 	BlockNode* block = irg.block();
 	
@@ -346,12 +361,14 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZContext& con) {
 		parser.Error(p, "if condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
 	
 	ZContext trueCon;
+	trueCon.InLoop = con.InLoop;
 	
 	Node* tb = CompileStatement(f, parser, trueCon);
 	Node* fb = nullptr;
 	
 	if (parser.Id("else")) {
 		ZContext falseCon;
+		falseCon.InLoop = con.InLoop;
 		fb = CompileStatement(f, parser, falseCon);
 		
 		if (trueCon.Return && falseCon.Return)
@@ -373,6 +390,7 @@ Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.EatNewlines();
 	
 	ZContext loopCon;
+	loopCon.InLoop = true;
 	Node* bd = CompileStatement(f, parser, loopCon);
 	if (node->Tt.Class != ass.CBool)
 		parser.Error(p, "while condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
@@ -385,6 +403,7 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 		parser.Expect('{');
 	
 	ZContext loopCon;
+	loopCon.InLoop = true;
 	Node* bd = CompileStatement(f, parser, loopCon);
 	if (loopCon.Return)
 		con.Return = true;

@@ -101,6 +101,7 @@ public:
 		While,
 		DoWhile,
 		Switch,
+		LoopControl,
 	};
 };
 

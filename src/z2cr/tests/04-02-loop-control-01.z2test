@@ -1,0 +1,103 @@
+// @test const_Class
+// @file
+// @error test.z2(7, 5): 'break' found outside of loop
+namespace test;
+
+def @main() {
+	break;
+}
+
+// @test const_Class
+// @file
+// @error test.z2(7, 5): 'continue' found outside of loop
+namespace test;
+
+def @main() {
+	continue;
+}
+
+// @test const_Class
+// @file
+namespace test;
+
+// @dumpBody
+	while (true)
+		break;
+// @dumpEnd
+def @main() {
+	while (true)
+		break;
+}
+
+// @test const_Class
+// @file
+namespace test;
+
+// @dumpBody
+	while (true)
+		continue;
+// @dumpEnd
+def @main() {
+	while (true)
+		continue;
+}
+
+// @test const_Class
+// @file
+namespace test;
+
+// @dumpBody
+	while (true) {
+		break;
+	}
+// @dumpEnd
+def @main() {
+	while (true) {
+		break;
+	}
+}
+
+// @test const_Class
+// @file
+namespace test;
+
+// @dumpBody
+	while (true) {
+		continue;
+	}
+// @dumpEnd
+def @main() {
+	while (true) {
+		continue;
+	}
+}
+
+// @test const_Class
+// @file
+namespace test;
+
+// @dumpBody
+	do {
+		break;
+	} while (true);
+// @dumpEnd
+def @main() {
+	do {
+		break;
+	} while (true);
+}
+
+// @test const_Class
+// @file
+namespace test;
+
+// @dumpBody
+	do {
+		continue;
+	} while (true);
+// @dumpEnd
+def @main() {
+	do {
+		continue;
+	} while (true);
+}

@@ -74,6 +74,7 @@ public:
 	void Proc(CastNode& node);
 	void Proc(ReturnNode& node);
 	void Proc(IntrinsicNode& node);
+	void Proc(LoopControlNode& node);
 	
 	void TranspileDeclarations(ZNamespace& ns);
 	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);
