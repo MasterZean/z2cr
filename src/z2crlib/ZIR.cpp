@@ -1121,6 +1121,90 @@ Node* IR::op_bitor(Node* left, Node* right) {
 	return node;
 }
 
+Node* IR::minus(Node* node) {
+	if (ass.IsInteger(node->Tt) || ass.IsFloat(node->Tt)) {
+		if (node->NT == NodeType::UnaryOp && ((UnaryOpNode*)node)->Op == OpNode::opMinus)
+			return ((UnaryOpNode*)node)->OpA;
+		if (node->IsCT && node->NT != NodeType::List) {
+			if (ass.IsSignedInt(node->Tt))
+				node->IntVal = -node->IntVal;
+			else
+				node->DblVal = -node->DblVal;
+			return node;
+		}
+		
+		UnaryOpNode* minus = unaryOpNodes.Get();
+		minus->OpA = node;
+		minus->Op = OpNode::opMinus;
+
+		minus->IsConst = node->IsConst;
+		minus->IsCT = node->IsCT;
+		minus->SetType(node->Tt);
+		ASSERT(minus->Tt.Class);
+		
+		return minus;
+	}
+	else
+		ASSERT(0);//return GetOp(Over, strops[13], node, ass, this, *Comp, Point(1, 1));
+	return nullptr;
+}
+
+Node* IR::op_not(Node* node) {
+	if (node->Tt.Class == ass.CBool) {
+		if (node->NT == NodeType::UnaryOp && ((UnaryOpNode*)node)->Op == OpNode::opNot)
+			return ((UnaryOpNode*)node)->OpA;;
+		
+		if (node->IsCT) {
+			node->IntVal = !((bool)node->IntVal);
+			return node;
+		}
+		
+		UnaryOpNode* minus = unaryOpNodes.Get();
+		minus->OpA = node;
+		minus->Op = OpNode::opNot;
+
+		minus->IsConst = node->IsConst;
+		minus->IsCT = node->IsCT;
+		minus->SetType(node->Tt);
+		ASSERT(minus->Tt.Class);
+		
+		return minus;
+	}
+	else
+		ASSERT(0);//return GetOp(Over, strops[15], node, ass, this, *Comp, Point(1, 1));
+	return nullptr;
+}
+
+Node* IR::bitnot(Node* node) {
+	if (ass.IsNumeric(node->Tt)) {
+		if (node->NT == NodeType::UnaryOp && ((UnaryOpNode*)node)->Op == OpNode::opComp)
+			return ((UnaryOpNode*)node)->OpA;;
+		
+		UnaryOpNode* minus = unaryOpNodes.Get();
+		minus->OpA = node;
+		minus->Op = OpNode::opComp;
+
+		minus->IsConst = node->IsConst;
+		minus->IsCT = node->IsCT;
+		minus->SetType(node->Tt);
+		ASSERT(minus->Tt.Class);
+		
+		return minus;
+	}
+	else
+		ASSERT(0);//return GetOp(Over, strops[16], node, ass, this, *Comp, Point(1, 1));
+	return nullptr;
+}
+
+Node* IR::plus(Node* node) {
+	if (ass.IsNumeric(node->Tt))
+		return node;
+	else
+		ASSERT(0);//return GetOp(Over, strops[14], node, ass, this, *Comp, Point(1, 1));
+
+	return node;
+}
+
 Node* IR::inc(Node* node, bool prefix) {
 	UnaryOpNode* n = unaryOpNodes.Get();
 	

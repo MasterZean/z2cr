@@ -46,8 +46,8 @@ bool ZTest::Run() {
 					
 					for (int j = 0; j < d.Functions.GetCount(); j++) {
 						ZFunction& f = *d.Functions[j];
-						DUMP(f.DefPos.P.x);
-						DUMP(Dumps.GetKey(td));
+						//DUMP(f.DefPos.P.x);
+						//DUMP(Dumps.GetKey(td));
 						if (f.DefPos.P.x == Dumps.GetKey(td))
 							cpp.WriteFunctionBody(f, false);
 					}

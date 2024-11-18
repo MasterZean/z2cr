@@ -99,6 +99,30 @@ Node* ZExprParser::ParseAtom() {
 		ASSERT(exp->Tt.Class);
 		return exp;
 	}
+	else if (parser.Char('-')) {
+		Node* node = ParseAtom();
+		exp = irg.minus(node);
+		if (exp == nullptr)
+			parser.Error(opp, "can't apply unary '-' ('@minus') on type '\f" + ass.ClassToString(node) + "\f'");
+	}
+	else if (parser.Char('+')) {
+		Node* node = ParseAtom();
+		exp = irg.plus(node);
+		if (exp == nullptr)
+			parser.Error(opp, "can't apply unary '+' ('@plus') on type '\f" + ass.ClassToString(node) + "\f'");
+	}
+	else if (parser.Char('!')) {
+		Node* node = ParseAtom();
+		exp = irg.op_not(node);
+		if (exp == nullptr)
+			parser.Error(opp, "can't apply unary '!' ('@not') on type '\f" + ass.ClassToString(node) + "\f'");
+	}
+	else if (parser.Char('~')) {
+		Node* node = ParseAtom();
+		exp = irg.bitnot(node);
+		if (exp == nullptr)
+			parser.Error(opp, "can't apply unary '~' ('@bitnot') on type '\f" + ass.ClassToString(node) + "\f'");
+	}
 	else {
 		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
 		return nullptr;

@@ -1,0 +1,84 @@
+// @test func_ret
+// @file
+namespace test;
+
+// @dumpBody
+	1;
+	-1;
+	-1;
+	1;
+	1;
+	-1;
+	-1;
+	1;
+	1;
+// @dumpEnd
+func f() {	
+	1;
+	-1;
+	- 1;
+	- -1;
+	- - 1;
+	- - -1;
+	- - - 1;
+	- - - -1;
+	- - - - 1;
+}
+
+// @test func_ret
+// @file
+namespace test;
+
+val a = 0;
+
+// @dumpBody
+	test::a;
+	-(test::a);
+	-(test::a);
+	test::a;
+	test::a;
+	-(test::a);
+	-(test::a);
+	test::a;
+	test::a;
+// @dumpEnd
+func f() {	
+	a;
+	-a;
+	- a;
+	- -a;
+	- - a;
+	- - -a;
+	- - - a;
+	- - - -a;
+	- - - - a;
+}
+
+// @test func_ret
+// @file
+namespace test;
+
+val a = 0;
+
+// @dumpBody
+	a;
+	-(a);
+	-(a);
+	a;
+	a;
+	-(a);
+	-(a);
+	a;
+	a;
+// @dumpEnd
+func f(a: Double) {	
+	a;
+	-a;
+	- a;
+	- -a;
+	- - a;
+	- - -a;
+	- - - a;
+	- - - -a;
+	- - - - a;
+}

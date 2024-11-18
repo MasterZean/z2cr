@@ -97,6 +97,10 @@ public:
 	Node* op_shl(Node* left, Node* right, const Point& p);
 	Node* op_shr(Node* left, Node* right, const Point& p);
 	
+	Node* minus(Node* node);
+	Node* plus(Node* node);
+	Node* op_not(Node* node);
+	Node* bitnot(Node* node);
 	Node* inc(Node* node, bool prefix = false);
 	Node* dec(Node* node, bool prefix = false);
 	

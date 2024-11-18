@@ -79,7 +79,7 @@ void ZFunction::GenerateSignatures() {
 		fsig << Ass().ClassToString(Return.Tt);
 	}
 	
-	DUMP(fsig);
+	//DUMP(fsig);
 }
 
 ZFunction& ZNamespace::PrepareFunction(const String& aName) {
