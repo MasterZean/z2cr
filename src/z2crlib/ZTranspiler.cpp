@@ -249,8 +249,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(ConstNode*)node, cs);
 	else if (node->NT == NodeType::BinaryOp)
 		Proc(*(OpNode*)node);
-	/*else if (node->NT == NodeType::UnaryOp)
-		Walk((UnaryOpNode*)node);*/
+	else if (node->NT == NodeType::UnaryOp)
+		Proc(*(UnaryOpNode*)node);
 	else if (node->NT == NodeType::Memory)
 		Proc(*(MemNode*)node);
 	else if (node->NT == NodeType::Cast)
@@ -456,8 +456,51 @@ void ZTranspiler::Proc(OpNode& node) {
 		cs << ")";
 }
 
+void ZTranspiler::Proc(UnaryOpNode& node) {
+	Node *f = node.OpA;
+	ASSERT(f);
+	
+	if (node.Op == OpNode::opInc) {
+		if (node.Prefix) {
+			cs << "++";
+			Walk(f);
+		}
+		else {
+			Walk(f);
+			cs << "++";
+		}
+	}
+	else if (node.Op == OpNode::opDec) {
+		if (node.Prefix) {
+			cs << "--";
+			Walk(f);
+		}
+		else {
+			Walk(f);
+			cs << "--";
+		}
+	}
+	else {
+		if (node.Op == OpNode::opNot && ass.IsFloat(node.Tt)) {
+			cs << "::bitnot(";
+			Walk(f);
+			cs << ')';
+		}
+		else {
+			cs << opss[node.Op];
+			if (f->NT != NodeType::List) {
+				cs << '(';
+				Walk(f);
+				cs << ')';
+			}
+			else
+				Walk(f);
+		}
+	}
+}
+
 void ZTranspiler::Proc(DefNode& node) {
-	cs << node.Overload->Namespace().BackName << "::" << node.Overload->BackName;
+	cs << node.Function->Namespace().BackName << "::" << node.Function->BackName;
 	cs << '(';
 	
 	int count = node.Params.GetCount();

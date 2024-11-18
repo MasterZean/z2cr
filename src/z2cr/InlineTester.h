@@ -8,7 +8,7 @@ public:
 	String Name;
 	String Error = String::GetVoid();
 	String Con;
-	String Dump = String::GetVoid();
+	VectorMap<int, String> Dumps;
 	String GlobalVarDef = String::GetVoid();
 	WithDeepCopy<Vector<String>> Files;
 	bool Passed = false;

@@ -300,7 +300,7 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 		if (parser.Char('=')) {
 			Node* rs = ep.Parse();
 			
-			if (node->LValue == false)
+			if (node->IsAddressable == false)
 				parser.Error(pp.P, "left side of assignment is not a L-value");
 			if (node->IsConst)
 				parser.Error(pp.P, "can't assign to readonly '\f" + ass.ClassToString(rs) + "\f'");

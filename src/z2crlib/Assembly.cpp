@@ -32,6 +32,7 @@ void ZFunction::GenerateSignatures() {
 		
 		ZVariable& var = Params.Add(ZVariable(Namespace()));
 		var.Name = name;
+		var.BackName = name;
 		var.I.Tt = cls->Tt;
 		var.DefPos = pp;
 	}

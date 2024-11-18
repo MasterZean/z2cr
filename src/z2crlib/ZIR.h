@@ -97,11 +97,14 @@ public:
 	Node* op_shl(Node* left, Node* right, const Point& p);
 	Node* op_shr(Node* left, Node* right, const Point& p);
 	
+	Node* inc(Node* node, bool prefix = false);
+	Node* dec(Node* node, bool prefix = false);
+	
 	Node* deref(Node* node);
 	
 	Node* cast(Node* left, ObjectType* tt, bool sc = true, bool ptr = false);
 	
-	ParamsNode* mem_def(ZFunction& over, Node* object);
+	ParamsNode* callfunc(ZFunction& over, Node* object);
 	MemNode* mem_var(ZEntity* var);
 	
 	BlockNode* block();

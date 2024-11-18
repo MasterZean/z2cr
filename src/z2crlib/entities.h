@@ -48,6 +48,7 @@ public:
 	
 	bool IsTemporary = false;
 	bool IsIndirect = false;
+	bool IsAddressable = false;
 	bool IsConst = false;
 	bool IsRef = false;
 	
@@ -115,11 +116,12 @@ public:
 	NodeType::Type NT = NodeType::Invalid;
 	
 	bool IsCT = false;
+	bool IsConst = false;
 	bool IsLiteral = false;
 	bool IsSymbolic = false;
 	
 	bool HasSe = false;
-	bool LValue = false;
+	//bool IsLValue = false;
 	
 	bool IsRef = false;
 	bool IsAddressable = false;
@@ -166,6 +168,10 @@ public:
 	
 	bool IsZero(Assembly& ass);
 	void PromoteToFloatValue(Assembly& ass);
+	
+	bool IsLValue() const {
+		return IsAddressable && IsConst == false;
+	}
 };
 
 class ZSourcePos: Moveable<ZSourcePos> {

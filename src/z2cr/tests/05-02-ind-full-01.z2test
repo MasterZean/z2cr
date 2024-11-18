@@ -1,0 +1,100 @@
+// @test namespace
+// @file
+namespace test;
+
+val a = 12;
+
+// @dumpBody
+	test::a;
+	++test::a;
+	test::a;
+	--test::a;
+	test::a;
+	test::a--;
+	test::a;
+	test::a++;
+	test::a;
+// @dumpEnd
+def @main() {
+	a;
+	++a;
+	a;
+	--a;
+	a;
+	a--;
+	a;
+	a++;
+	a;
+}
+
+// @dumpBody
+	int32 a = 0;
+	a;
+	++a;
+	a;
+	--a;
+	a;
+	a--;
+	a;
+	a++;
+	a;
+// @dumpEnd
+def f() {
+	val a = 0;
+	a;
+	++a;
+	a;
+	--a;
+	a;
+	a--;
+	a;
+	a++;
+	a;
+}
+
+// @dumpBody
+	a;
+	++a;
+	a;
+	--a;
+	a;
+	a--;
+	a;
+	a++;
+	a;
+// @dumpEnd
+def g(a: Int) {
+	a;
+	++a;
+	a;
+	--a;
+	a;
+	a--;
+	a;
+	a++;
+	a;
+}
+
+// @dumpBody
+	b;
+	++b;
+	b;
+	--b;
+	b;
+	b--;
+	b;
+	b++;
+	b;
+// @dumpEnd
+def h(b: Int) {
+	b;
+	++b;
+	b;
+	--b;
+	b;
+	b--;
+	b;
+	b++;
+	b;
+}
+	

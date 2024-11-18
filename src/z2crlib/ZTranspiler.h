@@ -64,6 +64,7 @@ public:
 	
 	void Proc(ConstNode& node, Stream& stream);
 	void Proc(OpNode& node);
+	void Proc(UnaryOpNode& node);
 	void Proc(DefNode& node);
 	void Proc(MemNode& node);
 	void Proc(BlockNode& node);

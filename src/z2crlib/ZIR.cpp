@@ -1121,6 +1121,35 @@ Node* IR::op_bitor(Node* left, Node* right) {
 	return node;
 }
 
+Node* IR::inc(Node* node, bool prefix) {
+	UnaryOpNode* n = unaryOpNodes.Get();
+	
+	n->OpA = node;
+	n->Op = OpNode::opInc;
+	n->Prefix = prefix;
+
+	n->SetType(ass.CVoid->Tt);
+	//n->SetType(node->Tt);
+	n->HasSe = true;
+	ASSERT(n->Tt.Class);
+	
+	return n;
+}
+
+Node* IR::dec(Node* node, bool prefix) {
+	UnaryOpNode* n = unaryOpNodes.Get();
+	
+	n->OpA = node;
+	n->Op = OpNode::opDec;
+	n->Prefix = prefix;
+
+	n->SetType(ass.CVoid->Tt);
+	n->HasSe = true;
+	ASSERT(n->Tt.Class);
+	
+	return n;
+}
+
 Node* IR::op_bitxor(Node* left, Node* right) {
 	bool n = ass.IsNumeric(left->Tt) && ass.IsNumeric(right->Tt);
 	if (!n || left->Tt.Class == ass.CFloat || left->Tt.Class == ass.CDouble
@@ -1228,7 +1257,7 @@ Node* IR::cast(Node* left, ObjectType* tt, bool sc, bool ptr) {
 	return node;
 }
 
-ParamsNode* IR/*AST*/::mem_def(ZFunction& over, Node* object) {
+ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	/*if (over.IsIntrinsic && over.IsIntrinsicType != -1) {
 		IntNode* op = intNodes.Get();
 		op->I = (IntNode::Type)over.IsIntrinsicType;
@@ -1239,11 +1268,10 @@ ParamsNode* IR/*AST*/::mem_def(ZFunction& over, Node* object) {
 	}*/
 	
 	DefNode* node = defNodes.Get();
-	node->Overload = &over;
+	node->Function = &over;
 	node->Object = object;
 	
-	node->SetType(ass.CVoid->Tt);
-	//node->SetType(over.Return.Tt);
+	node->SetType(over.Return.Tt);
 	//node->IsRef = over.Return.IsRef;
 	//node->IsEfRef = over.Return.IsEfRef;
 	//node->IsIndirect = over.Return.IsRef;
@@ -1251,7 +1279,9 @@ ParamsNode* IR/*AST*/::mem_def(ZFunction& over, Node* object) {
 	//node->IsAddressable = over.Return.IsIndirect;
 		
 	node->HasSe = true;
-	node->LValue = node->IsRef;
+	// TODO: really?
+	node->IsAddressable = over.Return.IsAddressable;
+	node->IsConst = over.Return.IsConst;
 	
 	//node->xxxIsAddressable = over.Return.IsIndirect;
 	//node->xxxIsFormalRef = over.RType == Variable::tyRef || over.RType == Variable::tyConstRef;
@@ -1269,7 +1299,8 @@ MemNode* IR::mem_var(ZEntity* mem) {
 	if (mem->Type == EntityType::Variable) {
 		ZVariable& v = *((ZVariable*)mem);
 		node->SetType(v.I.Tt);
-		node->LValue = true;
+		node->IsAddressable = true;
+		node->IsConst = false;
 	}
 	else if (mem->Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);

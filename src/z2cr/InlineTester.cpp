@@ -12,6 +12,7 @@ bool ZTest::Run() {
 	bool result = true;
 	
 	if (Source) {
+		//DUMP(Con);
 		Source->LoadVirtual(Con);
 		Source = nullptr;
 	}
@@ -34,17 +35,29 @@ bool ZTest::Run() {
 			result = false;
 		}
 		
-		if (!Dump.IsVoid()) {
+		for (int td = 0; td < Dumps.GetCount(); td++) {
 			StringStream ss;
 			ZTranspiler cpp(compiler, ss);
 			
-			for (int i = 0; i < Ass.Namespaces.GetCount(); i++)
-				cpp.TranspileDefinitions(Ass.Namespaces[i], false, false, false);
+			for (int n = 0; n < Ass.Namespaces.GetCount(); n++) {
+				ZNamespace& ns = Ass.Namespaces[n];
+				for (int i = 0; i < ns.Methods.GetCount(); i++) {
+					ZMethodBundle& d = ns.Methods[i];
+					
+					for (int j = 0; j < d.Functions.GetCount(); j++) {
+						ZFunction& f = *d.Functions[j];
+						DUMP(f.DefPos.P.x);
+						DUMP(Dumps.GetKey(td));
+						if (f.DefPos.P.x == Dumps.GetKey(td))
+							cpp.WriteFunctionBody(f, false);
+					}
+				}
+			}
 			
 			String dump = ss;
-			if (Dump != ss) {
+			if (Dumps[td] != ss) {
 				DUMP(dump);
-				DUMP(Dump);
+				DUMP(Dumps[td]);
 				result = false;
 			}
 		}
@@ -183,8 +196,10 @@ void InlineTester::AddTestCollection(const String& path) {
 					dump << sub << "\n";
 			}
 			
-			if (test)
-				test->Dump = dump;
+			if (test) {
+				//DUMP(localLineNo);
+				test->Dumps.Add(localLineNo - test->Dumps.GetCount(), dump);
+			}
 		}
 		else if (line.StartsWith(anDumpGlobalVarDef)) {
 			String dump;

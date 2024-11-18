@@ -87,7 +87,7 @@ public:
 
 class DefNode: public ParamsNode {
 public:
-	::ZFunction* Overload = nullptr;
+	::ZFunction* Function = nullptr;
 	Node* Object = nullptr;
 	bool Property = false;
 	bool IsDestructor = false;

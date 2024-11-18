@@ -77,6 +77,28 @@ Node* ZExprParser::ParseAtom() {
 	else if (parser.Char2(':', ':')) {
 		exp = ParseNamespace();
 	}
+	else if (parser.Char2('+', '+')) {
+		Point p = parser.GetPoint();
+		exp = ParseAtom();
+		if (!exp->IsLValue())
+			parser.Error(p, "expression is not a l-value, can't apply operator '++'");
+		Node* op = irg.inc(exp, true);
+		exp = op;
+		
+		ASSERT(exp->Tt.Class);
+		return exp;
+	}
+	else if (parser.Char2('-', '-')) {
+		Point p = parser.GetPoint();
+		exp = ParseAtom();
+		if (!exp->IsLValue())
+			parser.Error(p, "expression is not a l-value, can't apply operator '--'");
+		Node* op = irg.dec(exp, true);
+		exp = op;
+		
+		ASSERT(exp->Tt.Class);
+		return exp;
+	}
 	else {
 		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
 		return nullptr;
@@ -106,6 +128,20 @@ Node* ZExprParser::ParseAtom() {
 			// TODO: fix
 			parser.Error(p, "syntax error");
 		}
+		else if (parser.Char2('+', '+')) {
+			if (!exp->IsLValue())
+				parser.Error(p, "expression is not a l-value, can't apply operator '++'");
+			Node* op = irg.inc(exp);
+			exp = op;
+			ASSERT(exp->Tt.Class);
+		}
+		else if (parser.Char2('-', '-')) {
+			if (!exp->IsLValue())
+				parser.Error(p, "expression is not a l-value, can't apply operator '--'");
+			Node* op = irg.dec(exp);
+			exp = op;
+			ASSERT(exp->Tt.Class);
+		}
 		else
 			break;
 		
@@ -125,11 +161,22 @@ Node* ZExprParser::ParseId() {
 		s = parser.ExpectId();
 	
 	if (Function) {
+		for (int j = 0; j < Function->Params.GetCount(); j++) {
+			if (Function->Params[j].Name == s) {
+				auto node = irg.mem_var(&Function->Params[j]);
+				node->IsLocal = true;
+				return node;
+			}
+		}
+		
 		for (int j = 0; j < Function->Blocks.GetCount(); j++) {
 			ZBlock& b = Function->Blocks[j];
 			for (int k = 0; k < b.Locals.GetCount(); k++)
-				if (b.Locals[k]->Name == s)
-					return irg.mem_var(b.Locals[k]);
+				if (b.Locals[k]->Name == s) {
+					auto node = irg.mem_var(b.Locals[k]);
+					node->IsLocal = true;
+					return node;
+				}
 		}
 	}
 	
@@ -282,7 +329,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		if (ambig)
 			parser.Error(opp, aName + ": ambigous symbol");
 	 
-		ParamsNode* node = irg.mem_def(*f, nullptr);
+		ParamsNode* node = irg.callfunc(*f, nullptr);
 		node->Params = std::move(params);
 		return node;
 	}

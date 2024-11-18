@@ -1,0 +1,179 @@
+// @test namespace
+// @file
+// @error test.z2(7, 6): expression is not a l-value, can't apply operator '++'
+namespace test;
+
+def @main() {
+	1++;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 9): expression is not a l-value, can't apply operator '++'
+namespace test;
+
+def @main() {
+	true++;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 11): expression is not a l-value, can't apply operator '++'
+namespace test;
+
+def @main() {
+	-0.007++;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): '(' expected, '++' found
+namespace test;
+
+def @main() {
+	if++;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 11): ';' expected, '++' found
+namespace test;
+
+def @main() {
+	return++;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 6): expression is not a l-value, can't apply operator '--'
+namespace test;
+
+def @main() {
+	1--;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 9): expression is not a l-value, can't apply operator '--'
+namespace test;
+
+def @main() {
+	true--;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 11): expression is not a l-value, can't apply operator '--'
+namespace test;
+
+def @main() {
+	-0.007--;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): '(' expected, '--' found
+namespace test;
+
+def @main() {
+	if--;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 11): ';' expected, '--' found
+namespace test;
+
+def @main() {
+	return--;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator '++'
+namespace test;
+
+def @main() {
+	++1;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator '++'
+namespace test;
+
+def @main() {
+	++true;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator '++'
+namespace test;
+
+def @main() {
+	++-0.007;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): identifier expected, keyword 'if' found
+namespace test;
+
+def @main() {
+	++if;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): identifier expected, keyword 'return' found
+namespace test;
+
+def @main() {
+	++return;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator '--'
+namespace test;
+
+def @main() {
+	--1;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator '--'
+namespace test;
+
+def @main() {
+	--true;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator '--'
+namespace test;
+
+def @main() {
+	---0.007;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): identifier expected, keyword 'if' found
+namespace test;
+
+def @main() {
+	--if;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 7): identifier expected, keyword 'return' found
+namespace test;
+
+def @main() {
+	--return;
+}
