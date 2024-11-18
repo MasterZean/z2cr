@@ -244,6 +244,19 @@ ConstNode* IR::const_null() {
 	return node;
 }
 
+ConstNode* IR::const_str(int index) {
+	ConstNode* node = constNodes.Get();
+	node->SetType(ass.CString->Tt);
+	node->IsConst = true;
+	node->IsLiteral = true;
+	node->IsCT = true;
+	node->IntVal = index;
+	node->IsAddressable = true;
+	
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
 Node* IR::deref(Node* node) {
 	// TODO fix
 	return node;

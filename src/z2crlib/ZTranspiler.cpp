@@ -313,8 +313,7 @@ void ZTranspiler::WalkChildren(Node* node) {
 	}
 }
 
-void ZTranspiler::Proc(ConstNode& node, Stream& stream)
-{
+void ZTranspiler::Proc(ConstNode& node, Stream& stream) {
 	if (node.Tt.Class == ass.CQWord) {
 		if (IsNull(node.IntVal))
 			stream << "9223372036854775808ull";
@@ -435,6 +434,12 @@ void ZTranspiler::Proc(ConstNode& node, Stream& stream)
 		ZClass& ccc = ass.Classes[(int)node.IntVal];
 		//stream << ass.CCls->NamespaceQual;
 		stream << "Class(" << ccc.RTTIIndex << ")";
+	}
+	else if (node.Tt.Class == ass.CNull)
+		stream << "nullptr";
+	else if (node.Tt.Class == ass.CString) {
+		//stream << "S_[" << (int)node.IntVal << ']';
+		stream << AsCString(ass.StringConsts[(int)node.IntVal]);
 	}
 }
 

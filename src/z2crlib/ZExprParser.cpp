@@ -74,6 +74,8 @@ Node* ZExprParser::ParseAtom() {
 	else if (parser.IsId()) {
 		exp = ParseId();
 	}
+	else if (parser.IsString())
+		exp = irg.const_str(ass.AddStringConst(parser.ReadString()));
 	else if (parser.Char2(':', ':')) {
 		exp = ParseNamespace();
 	}

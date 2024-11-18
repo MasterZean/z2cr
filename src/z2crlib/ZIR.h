@@ -84,6 +84,8 @@ public:
 	ConstNode* const_void();
 	ConstNode* const_null();
 	
+	ConstNode* const_str(int index);
+	
 	Node* const_class(ZClass& cls, Node* e = nullptr);
 	
 	Node* opArit(Node* left, Node* right, OpNode::Type op, const Point& p);

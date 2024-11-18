@@ -10,6 +10,7 @@ public:
 	ArrayMap<String, ZNamespace> Namespaces;
 	ArrayMap<String, ZPackage> Packages;
 	ArrayMap<String, ZSource*> SourceLookup;
+	Index<String> StringConsts;
 	ZNamespaceItem NsLookup;
 	
 	ZClass* CCls = nullptr;
@@ -81,6 +82,10 @@ public:
 	
 	String ClassToString(ObjectInfo* type, bool qual = true);
 	String ClassToString(const ObjectType& type);
+	
+	int AddStringConst(const String& str) {
+		return StringConsts.FindAdd(str);
+	}
 	
 private:
 	void AddModule(int parent, const String& path, ZPackage& pak);
