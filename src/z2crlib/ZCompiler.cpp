@@ -116,7 +116,7 @@ bool ZCompiler::Transpile() {
 	CppPath = AppendFileName(BuildPath, "out.cpp");
 	FileOut out(CppPath);
 	ZTranspiler cpp(*this, out);
-	cpp.PrintDebug = true;
+	//cpp.PrintDebug = true;
 	
 	cpp.WriteIntro();
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
@@ -670,6 +670,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.0.7";
+	static String name = "Z2CR 0.1.0 (pre-alpha)";
 	return name;
 }

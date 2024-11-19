@@ -146,7 +146,12 @@ CONSOLE_APP_MAIN {
 			}
 		}
 		
-		//ZPackage& stdPakPak = *ass.FindPackage("test");
+		String stdLibPath = exeDir + NativePath("source\\stdlib\\");
+		
+		if (!ass.LoadPackage(stdLibPath + "sys.core")) {
+			SetExitCode(BuildMethod::ErrorCode(-1));
+			return;
+		}
 		
 		if (K.Files.GetCount()) {
 			ZPackage& mainPak = ass.AddPackage("main", "");

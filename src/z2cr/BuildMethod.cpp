@@ -455,7 +455,13 @@ bool BuildMethod::DetectMSC14(Vector<BuildMethod>& methods) {
 }
 
 bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
-	FindFile ff(GetCurrentDirectory() + "\\gcc\\*");
+	String bin = GetExeDirFile("externaltools");
+	String gccFolder = NativePath(bin + "/gcc/");
+
+	if(!DirectoryExists(gccFolder))
+		return false;
+	
+	FindFile ff(gccFolder + "*");
 	
 	while (ff) {
 		if (ff.IsDirectory()) {
@@ -542,14 +548,13 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 
 bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
 	String bin = GetExeDirFile("externaltools");
+	String clangFolder = NativePath(bin + "/clang/");
 
-	if(!DirectoryExists(bin + "/clang"))
+	if(!DirectoryExists(clangFolder))
 		return false;
 	
 	for(int x64 = 1; x64 >= 0; x64--) {
 		String method = x64 ? "CLANG" : "CLANG";
-		String clangFolder = bin + "/clang/";
-
 		BuildMethod clang;
 		
 		clang.Path << NativePath(clangFolder + "bin/");
@@ -575,7 +580,7 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 	// search for modern MSC
 	DetectClang(methods);
 	//DeepVSSearch(methods);
-	//DetectGCC(methods);
+	DetectGCC(methods);
 #endif
 
 #ifdef PLATFORM_POSIX
