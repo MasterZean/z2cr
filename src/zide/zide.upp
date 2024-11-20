@@ -1,0 +1,12 @@
+uses
+	CtrlLib;
+
+file
+	ZideWindow.h,
+	ZideWindow.cpp,
+	zide.lay,
+	zide.iml;
+
+mainconfig
+	"" = "GUI";
+
