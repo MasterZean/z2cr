@@ -1,0 +1,124 @@
+// @test dup
+// @file
+/* @errors
+test.z2(9, 5): Duplicate symbol: f, other occurrences at:
+		test.z2(12, 6)
+*/
+namespace test;
+
+def f() {
+}
+
+func f() {
+}
+
+// @test dup
+// @file
+/* @errors
+test.z2(10, 5): Duplicate symbol: f, other occurrences at:
+		test.z2(13, 6)
+		test.z2(16, 6)
+*/
+namespace test;
+
+def f(): Int {
+}
+
+func f(): Double {
+}
+
+func f(): Char {
+}
+
+// @test dup
+// @file
+/* @errors
+test.z2(12, 5): Duplicate symbol: f, other occurrences at:
+		test.z2(15, 6)
+		test.z2(20, 6)
+		test.z2(18, 5)
+		test.z2(23, 5)
+*/
+namespace test;
+
+def f(): Int {
+}
+
+func f(): Double {
+}
+
+val f = 0;
+
+func f(): Char {
+}
+
+val f: Long  = 7000l;
+
+// @test dup
+// @file test1
+/* @errors
+test1.z2(11, 6): Duplicate symbol: f, other occurrences at:
+		test2.z2(4, 6)
+test2.z2(7, 6): Duplicate symbol: f, other occurrences at:
+		test2.z2(4, 6)
+*/
+namespace test;
+
+func f(a: Int) {
+}
+
+func f(a: Double) {
+}
+
+// @file test2
+namespace test;
+
+func f(a: Int) {
+}
+
+func f(a: Double) {
+}
+
+// @test dup
+// @file test1
+namespace test1;
+
+func f(a: Int) {
+}
+
+func f(a: Double) {
+}
+
+// @file test2
+namespace test2;
+
+func f(a: Int) {
+}
+
+func f(a: Double) {
+}
+
+// @test dup
+// @file test1
+/* @errors
+test1.z2(11, 14): Duplicate symbol: f, other occurrences at:
+		test2.z2(4, 14)
+test2.z2(7, 14): Duplicate symbol: f, other occurrences at:
+		test2.z2(4, 14)
+*/
+namespace test;
+
+private func f(a: Int) {
+}
+
+private func f(a: Double) {
+}
+
+// @file test2
+namespace test;
+
+private func f(a: Int) {
+}
+
+private func f(a: Double) {
+}

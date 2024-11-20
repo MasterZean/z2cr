@@ -54,7 +54,7 @@ private:
 	String mainClass;
 	String mainFile;
 	IR irg;
-	ArrayMap<String, Vector<ZSourcePos>> dupes;
+	ArrayMap<String, ArrayMap<String, Vector<ZSourcePos>>> dupes;
 	
 	Vector<ZFunction*> FindMain(ZSource& src);
 	
@@ -77,6 +77,7 @@ private:
 	
 	bool CheckForDuplicates();
 	bool CheckForDuplicates(ZNamespace& ns);
+	void DuplicateLoop(ZNamespace& ns, bool aPrivate);
 	bool FindMain();
 	
 	void ScanSource(ZSource& src, Array<ZScanner>& scanners);

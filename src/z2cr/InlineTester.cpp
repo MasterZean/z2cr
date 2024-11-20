@@ -4,6 +4,7 @@
 String anTest = "// @test";
 String anFile = "// @file";
 String anError = "// @error";
+String anErrors = "/* @errors";
 String anDumpBody = "// @dumpBody";
 String anDumpEnd = "// @dumpEnd";
 String anDumpGlobalVarDef = "// @dumpGlobalVarDef";
@@ -13,10 +14,20 @@ bool ZTest::Run() {
 	
 	if (Source) {
 		//DUMP(Con);
-		Source->LoadVirtual(Con);
+		//Source->LoadVirtual(Con);
 		Source = nullptr;
 	}
 	
+	/*
+	LOG("-----------------------------------------------------------------------------------------------------------------");
+	LOG("NEW TEST");
+	for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
+		LOG("=================================================================================================================");
+		LOG(Ass.SourceLookup[i]->Content());
+		LOG("=================================================================================================================");
+	}
+	*/
+			
 	try {
 		ZCompiler compiler(Ass);
 		compiler.SetMain("", "test.z2");
@@ -30,6 +41,14 @@ bool ZTest::Run() {
 			result = false;
 		
 		if (!Error.IsVoid()) {
+			LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+			
+			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
+				LOG("=================================================================================================================");
+				LOG(Ass.SourceLookup[i]->Content());
+				LOG("=================================================================================================================");
+			}
+			
 			DUMP("No error");
 			DUMP(Error);
 			result = false;
@@ -56,6 +75,14 @@ bool ZTest::Run() {
 			
 			String dump = ss;
 			if (Dumps[td] != ss) {
+				LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+				
+				for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
+					LOG("=================================================================================================================");
+					LOG(Ass.SourceLookup[i]->Content());
+					LOG("=================================================================================================================");
+				}
+			
 				DUMP(dump);
 				DUMP(Dumps[td]);
 				result = false;
@@ -72,6 +99,14 @@ bool ZTest::Run() {
 			
 			String dump = ss;
 			if (GlobalVarDef != ss) {
+				LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+				
+				for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
+					LOG("=================================================================================================================");
+					LOG(Ass.SourceLookup[i]->Content());
+					LOG("=================================================================================================================");
+				}
+			
 				DUMP(dump);
 				DUMP(GlobalVarDef);
 				result = false;
@@ -84,6 +119,14 @@ bool ZTest::Run() {
 	}
 	catch (ZException& e) {
 		if (Error != e.ToString()) {
+			LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+			
+			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
+				LOG("=================================================================================================================");
+				LOG(Ass.SourceLookup[i]->Content());
+				LOG("=================================================================================================================");
+			}
+			
 			DUMP(e.ToString());
 			DUMP(Error);
 			Cout() << Name << "(" << Line << ")" << " test failled\n";
@@ -122,6 +165,8 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
+	//if (!path.EndsWith("01-09-dup-01.z2test"))
+	//	return;
 	FileIn file(path);
 	
 	if (file.IsError())
@@ -141,7 +186,9 @@ void InlineTester::AddTestCollection(const String& path) {
 		
 		if (line.StartsWith(anTest)) {
 			if (test) {
-				test->Con = con;
+				if (test->Source)
+					test->Source->LoadVirtual(con);
+				
 				if (test->Run())
 					PassCount++;
 				
@@ -163,6 +210,14 @@ void InlineTester::AddTestCollection(const String& path) {
 			test->MainPak = &test->Ass.AddPackage("main", "");
 		}
 		else if (line.StartsWith(anFile)) {
+			if (test && test->MainPak) {
+				if (test->Source) {
+					test->Source->LoadVirtual(con);
+					con = "";
+					localLineNo = 1;
+				}
+			}
+			
 			con << line << "\n";
 			
 			String rest = line.Mid(anFile.GetCount());
@@ -171,8 +226,9 @@ void InlineTester::AddTestCollection(const String& path) {
 			if (rest == "" || rest.IsVoid())
 				rest = "test";
 			
-			if (test && test->MainPak)
+			if (test && test->MainPak) {
 				test->Source = &test->MainPak->AddSource(rest + ".z2", false);
+			}
 		}
 		else if (line.StartsWith(anError)) {
 			con << line << "\n";
@@ -217,13 +273,36 @@ void InlineTester::AddTestCollection(const String& path) {
 			if (test)
 				test->GlobalVarDef = dump;
 		}
+		else if (line.StartsWith(anErrors)) {
+			con << line << "\n";
+			
+			String err;
+			
+			while (!file.IsEof()) {
+				String sub = file.GetLine();
+				lineNo++;
+				localLineNo++;
+				con << sub << "\n";
+				
+				if (sub.StartsWith("*/"))
+					break;
+				else
+					err << sub << "\n";
+			}
+			
+			if (test)
+				test->Error = err;
+		}
 		else {
+			//localLineNo++;
 			con << line << "\n";
 		}
 	}
 	
 	if (test) {
-		test->Con = con;
+		if (test->Source)
+			test->Source->LoadVirtual(con);
+		
 		if (test->Run())
 			PassCount++;
 		

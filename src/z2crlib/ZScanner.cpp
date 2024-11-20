@@ -166,6 +166,7 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, ZSourcePos* tp) {
 		f.DefPos = dp;
 		f.BackName = name;
 		f.Section = section;
+		f.Access = accessType;
 		
 		if (parser.Char(':')) {
 			ScanType();
@@ -302,6 +303,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	f.ParamPos = pp;
 	f.BackName = bname;
 	f.Section = section;
+	f.Access = accessType;
 	
 	return f;
 }

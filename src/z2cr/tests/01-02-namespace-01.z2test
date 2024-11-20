@@ -49,6 +49,11 @@ namespace a;
 
 // @test namespace
 // @file
+// @error test.z2(4, 13): scan: identifier expected, integer constant '100' found
+namespace a.100;
+
+// @test namespace
+// @file
 namespace a;
 namespace b;
 

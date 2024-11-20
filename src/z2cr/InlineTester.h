@@ -7,7 +7,7 @@ class ZTest: public Moveable<ZTest> {
 public:
 	String Name;
 	String Error = String::GetVoid();
-	String Con;
+	//String Con;
 	VectorMap<int, String> Dumps;
 	String GlobalVarDef = String::GetVoid();
 	WithDeepCopy<Vector<String>> Files;

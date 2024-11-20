@@ -575,55 +575,34 @@ bool ZCompiler::CheckForDuplicates() {
 	if (dupes.GetCount() == 0)
 		return true;
 		
+	String allErrors;
 	for (int i = 0; i < dupes.GetCount(); i++) {
-		Vector<ZSourcePos>& list = dupes[i];
-		
-		ASSERT(list.GetCount() >= 2);
-		
 		String err;
-		
 		err << "Duplicate symbol: " << dupes.GetKey(i) << ", ";
 		err << "other occurrences at:\n";
-		for (int j = 1; j < list.GetCount(); j++)
-			err << "\t\t" << list[j].ToString() << "\n";
-		throw ER::Duplicate(list[0], err);
+		
+		ArrayMap<String, Vector<ZSourcePos>>& master = dupes[i];
+		//ASSERT(master.GetCount() >= 2);
+		
+		for (int j = 0; j < master.GetCount(); j++) {
+			Vector<ZSourcePos>& list = master[j];
+			
+			for (int j = 1; j < list.GetCount(); j++)
+				err << "\t\t" << list[j].ToString() << "\n";
+		
+			allErrors << ER::Duplicate(list[0], err).ToString();
+		}
 	}
+	
+	throw ZException("", allErrors);
 
 	return false;
 }
 
 
 bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
-	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
-		ZFunction& f = ns.PreFunctions[i];
-		ZMethodBundle& d = ns.Methods.GetAdd(f.Name, ZMethodBundle(ns));
-		
-		f.GenerateSignatures();
-		
-		bool valid = true;
-			
-		for (int j = 0; j < d.Functions.GetCount(); j++) {
-			ZFunction& g = *d.Functions[j];
-			if (g.DupSig() == f.DupSig()) {
-				int index = dupes.Find(f.Name);
-				if (index == -1) {
-					Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
-					list.Add(g.DefPos);
-					list.Add(f.DefPos);
-				}
-				else {
-					Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
-					list.Add(f.DefPos);
-				}
-					
-				valid = false;
-			}
-		}
-		
-		if (valid)
-			d.Functions.Add(&f);
-		f.DefPos.Source->Functions.Add(&f);
-	}
+	DuplicateLoop(ns, true);
+	//DuplicateLoop(ns, false);
 	
 	for (int i = 0; i < ns.PreVariables.GetCount(); i++) {
 		ZVariable& f = ns.PreVariables[i];
@@ -631,7 +610,8 @@ bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 		bool valid = true;
 		int index = dupes.Find(f.Name);
 		if (index != -1) {
-			Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
+			ArrayMap<String, Vector<ZSourcePos>>& master = dupes[index];
+			Vector<ZSourcePos>& list = master[0];//.GetAdd(f.Name);
 			list.Add(f.DefPos);
 			valid = false;
 		}
@@ -639,7 +619,8 @@ bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 		if (valid) {
 			index = ns.Variables.Find(f.Name);
 			if (index != -1) {
-				Vector<ZSourcePos>& list = dupes.GetAdd(f.Name);
+				ArrayMap<String, Vector<ZSourcePos>>& master = dupes[index];
+				Vector<ZSourcePos>& list = master[0];//.GetAdd(f.Name);
 				list.Add(f.DefPos);
 				list.Add(ns.Variables[index]->DefPos);
 				valid = false;
@@ -651,6 +632,53 @@ bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
 	}
 	
 	return true;
+}
+
+void ZCompiler::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
+	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
+		ZFunction& f = ns.PreFunctions[i];
+		ZMethodBundle& d = ns.Methods.GetAdd(f.Name, ZMethodBundle(ns));
+		
+		f.GenerateSignatures();
+		
+		bool valid = true;
+			
+		for (int j = 0; j < d.Functions.GetCount(); j++) {
+			ZFunction& g = *d.Functions[j];
+			
+			if (aPrivate == true && (f.Access == AccessType::Private && g.Access == AccessType::Private))
+				continue;
+			
+			if (aPrivate == false && (f.Access != AccessType::Private || g.Access != AccessType::Private))
+				continue;
+			
+			if (g.DupSig() == f.DupSig()) {
+				int index = dupes.Find(f.Name);
+				if (index == -1) {
+					ArrayMap<String, Vector<ZSourcePos>>& master = dupes.GetAdd(f.Name);
+					Vector<ZSourcePos>& list = master.GetAdd(f.DupSig());
+					list.Add(g.DefPos);
+					list.Add(f.DefPos);
+					LOG("Adding dupe pair: " + f.Name);
+					LOG(g.DupSig());
+					LOG(f.DupSig());
+				}
+				else {
+					ArrayMap<String, Vector<ZSourcePos>>& master = dupes.GetAdd(f.Name);
+					Vector<ZSourcePos>& list = master.GetAdd(f.DupSig());
+					list.Add(f.DefPos);
+					LOG("Updating dupe: " + f.Name);
+					LOG(f.DupSig());
+				}
+					
+				valid = false;
+			}
+		}
+		
+		if (valid)
+			d.Functions.Add(&f);
+		f.DefPos.Source->Functions.Add(&f);
+	}
 }
 
 ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {

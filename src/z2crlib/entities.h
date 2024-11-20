@@ -278,6 +278,7 @@ public:
 	String Name;
 	String BackName;
 	EntityType Type;
+	AccessType Access;
 	
 	ZSourcePos DefPos;
 	
@@ -358,6 +359,7 @@ public:
 	bool IsFunction = false;
 	bool InClass = false;
 	bool IsConstructor = false;
+	bool IsValid = false;
 	
 	ZSourcePos TraitPos;
 	ZSourcePos ParamPos;
