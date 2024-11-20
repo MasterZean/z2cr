@@ -1,11 +1,13 @@
 uses
-	CtrlLib;
+	CtrlLib,
+	z2crlib;
 
 file
 	ZideWindow.h,
 	ZideWindow.cpp,
 	zide.lay,
-	zide.iml;
+	zide.iml,
+	zide.rc;
 
 mainconfig
 	"" = "GUI";
