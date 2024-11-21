@@ -3,8 +3,12 @@ uses
 	z2crlib;
 
 file
+	AssemblyBrowser.h,
+	AssemblyBrowser.cpp,
 	ZideWindow.h,
 	ZideWindow.cpp,
+	main.cpp,
+	zide.h,
 	zide.lay,
 	zide.iml,
 	zide.rc;

@@ -1,38 +1,14 @@
 #ifndef _zide_zide_h
 #define _zide_zide_h
 
-#include <CtrlLib/CtrlLib.h>
+#include "zide.h"
 
-using namespace Upp;
-
-#define LAYOUTFILE <zide/zide.lay>
-#include <CtrlCore/lay.h>
-
-#define IMAGECLASS ZImg
-#define IMAGEFILE <zide/zide.iml>
-#include <Draw/iml_header.h>
-
-class AssemblyBrowser: public ParentCtrl {
-public:
-	AssemblyBrowser();
-
-	int AddModule(const String& aModule, int color);
-	
-	void SetShowPaths(bool show);
-	
-private:
-	FrameTop<ParentCtrl> frame;
-	TreeCtrl treModules;
-	
-	Index<String> modules;
-	
-	bool showPaths = false;
-	
-	int AddModule(int parent, const String& path, const String& ppath, const Image& img);
-};
+#include "AssemblyBrowser.h"
 
 class ZideWindow : public WithzideLayout<TopWindow> {
 public:
+	typedef ZideWindow CLASSNAME;
+	
 	String CurFolder;
 	String CompilerExe;
 	String LastPackage;
@@ -45,13 +21,22 @@ public:
 	void LoadModule(const String& mod, int color);
 	
 private:
-	
 	Vector<String> packages;
 	Index<String> recentPackages;
+	Vector<String> openNodes;
+	String activeFile;
 	
 	Splitter splAsbCanvas;
 	AssemblyBrowser asbAss;
 	ParentCtrl canvas;
+	
+	void OnSelectSource();
+	
+	bool OnRenameFiles(const Vector<String>& files, const String& oldPath, const String& newPath);
+	void OnFileRemoved(const String& file);
+	void OnFileSaved(const String& file);
+	
+	void SetupLast();
 };
 
 #endif
