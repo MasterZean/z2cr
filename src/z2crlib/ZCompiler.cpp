@@ -1,5 +1,28 @@
 #include <z2crlib/ZCompiler.h>
 #include <z2crlib/ZTranspiler.h>
+#include <z2crlib/ZResolver.h>
+
+void printNode(Node* node, int level = 0) {
+	String s;
+	for (int i = 0; i < level; i++)
+		s << "\t";
+	s << "<" << (int)node->NT << ">\n";
+	DUMP(s);
+	
+	Node* child = node->First;
+	
+	while (child) {
+		printNode(child, level + 1);
+		
+		child = child->Next;
+	}
+	
+	s = "";
+	for (int i = 0; i < level; i++)
+		s << "\t";
+	s << "</" << (int)node->NT << ">\n";
+	DUMP(s);
+}
 
 bool ZCompiler::Compile() {
 	irg.FoldConstants = FoldConstants;
@@ -7,9 +30,8 @@ bool ZCompiler::Compile() {
 	if (!ScanSources())
 		return false;
 	
-	ResolveNamespaces();
-	
-	if (!CheckForDuplicates())
+	ZResolver resolver(ass);
+	if (!resolver.Resolve())
 		return false;
 	
 	MainFound = FindMain();
@@ -63,53 +85,6 @@ bool ZCompiler::FindMain() {
 	MainFunction = vf[0];
 	
 	return true;
-}
-
-void ZCompiler::ResolveNamespaces() {
-	ResolveNamespace(ass.CoreNamespace());
-	ResolveNamespace(ass.LangNamespace());
-	
-	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
-		ZNamespace& ns = ass.Namespaces[i];
-		
-		if (ns.IsResolved || ns.Name == "::")
-			continue;
-		
-		ResolveNamespace(ns);
-	}
-}
-
-void ZCompiler::ResolveNamespace(ZNamespace& ns) {
-	auto names = Split(ns.Name, '.', true);
-	
-	ZNamespaceItem* nsp = &ass.NsLookup;
-	String backName;
-	for (int j = 0; j < names.GetCount(); j++) {
-		backName << names[j];
-		nsp = nsp->Add(names[j]);
-		if (j < names.GetCount() - 1)
-			backName << "::";
-		else {
-			ASSERT(nsp->Namespace == nullptr);
-			nsp->Namespace = &ns;
-			
-			ns.NamespaceItem = nsp;
-		}
-	}
-	
-	ns.BackName = backName;
-	
-	for (int j = 0; j < ns.Sections.GetCount(); j++) {
-		ZNamespaceSection& sec = ns.Sections[j];
-		
-		for (int k = 0; k < sec.UsingNames.GetCount(); k++) {
-			ZNamespace* usn = ass.Namespaces.FindPtr(sec.UsingNames[k]);
-			if (usn)
-				sec.Using.Add(usn);
-		}
-	}
-	
-	ns.IsResolved = true;
 }
 
 bool ZCompiler::Transpile() {
@@ -188,28 +163,6 @@ bool ZCompiler::PreCompileVars(ZNamespace& ns) {
 	}
 	
 	return true;
-}
-
-void printNode(Node* node, int level = 0) {
-	String s;
-	for (int i = 0; i < level; i++)
-		s << "\t";
-	s << "<" << (int)node->NT << ">\n";
-	DUMP(s);
-	
-	Node* child = node->First;
-	
-	while (child) {
-		printNode(child, level + 1);
-		
-		child = child->Next;
-	}
-	
-	s = "";
-	for (int i = 0; i < level; i++)
-		s << "\t";
-	s << "</" << (int)node->NT << ">\n";
-	DUMP(s);
 }
 
 bool ZCompiler::Compile(ZNamespace& ns) {
@@ -564,121 +517,6 @@ void ZCompiler::TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name,
 	/*for (int i = 0; i < cls.Vars.GetCount(); i++)
 		if (cls.Vars[i].Name == name)
 			parser.Warning(p, "local '" + name + "' hides a class member");*/
-}
-
-bool ZCompiler::CheckForDuplicates() {
-	dupes.Clear();
-	
-	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
-		CheckForDuplicates(ass.Namespaces[i]);
-	
-	if (dupes.GetCount() == 0)
-		return true;
-		
-	String allErrors;
-	for (int i = 0; i < dupes.GetCount(); i++) {
-		String err;
-		err << "Duplicate symbol: " << dupes.GetKey(i) << ", ";
-		err << "other occurrences at:\n";
-		
-		ArrayMap<String, Vector<ZSourcePos>>& master = dupes[i];
-		//ASSERT(master.GetCount() >= 2);
-		
-		for (int j = 0; j < master.GetCount(); j++) {
-			Vector<ZSourcePos>& list = master[j];
-			
-			for (int j = 1; j < list.GetCount(); j++)
-				err << "\t\t" << list[j].ToString() << "\n";
-		
-			allErrors << ER::Duplicate(list[0], err).ToString();
-		}
-	}
-	
-	throw ZException("", allErrors);
-
-	return false;
-}
-
-
-bool ZCompiler::CheckForDuplicates(ZNamespace& ns) {
-	DuplicateLoop(ns, true);
-	//DuplicateLoop(ns, false);
-	
-	for (int i = 0; i < ns.PreVariables.GetCount(); i++) {
-		ZVariable& f = ns.PreVariables[i];
-		
-		bool valid = true;
-		int index = dupes.Find(f.Name);
-		if (index != -1) {
-			ArrayMap<String, Vector<ZSourcePos>>& master = dupes[index];
-			Vector<ZSourcePos>& list = master[0];//.GetAdd(f.Name);
-			list.Add(f.DefPos);
-			valid = false;
-		}
-		
-		if (valid) {
-			index = ns.Variables.Find(f.Name);
-			if (index != -1) {
-				ArrayMap<String, Vector<ZSourcePos>>& master = dupes[index];
-				Vector<ZSourcePos>& list = master[0];//.GetAdd(f.Name);
-				list.Add(f.DefPos);
-				list.Add(ns.Variables[index]->DefPos);
-				valid = false;
-			}
-			
-			if (valid)
-				ns.Variables.Add(f.Name, &f);
-		}
-	}
-	
-	return true;
-}
-
-void ZCompiler::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
-	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
-		ZFunction& f = ns.PreFunctions[i];
-		ZMethodBundle& d = ns.Methods.GetAdd(f.Name, ZMethodBundle(ns));
-		
-		f.GenerateSignatures();
-		
-		bool valid = true;
-			
-		for (int j = 0; j < d.Functions.GetCount(); j++) {
-			ZFunction& g = *d.Functions[j];
-			
-			if (aPrivate == true && (f.Access == AccessType::Private && g.Access == AccessType::Private))
-				continue;
-			
-			if (aPrivate == false && (f.Access != AccessType::Private || g.Access != AccessType::Private))
-				continue;
-			
-			if (g.DupSig() == f.DupSig()) {
-				int index = dupes.Find(f.Name);
-				if (index == -1) {
-					ArrayMap<String, Vector<ZSourcePos>>& master = dupes.GetAdd(f.Name);
-					Vector<ZSourcePos>& list = master.GetAdd(f.DupSig());
-					list.Add(g.DefPos);
-					list.Add(f.DefPos);
-					LOG("Adding dupe pair: " + f.Name);
-					LOG(g.DupSig());
-					LOG(f.DupSig());
-				}
-				else {
-					ArrayMap<String, Vector<ZSourcePos>>& master = dupes.GetAdd(f.Name);
-					Vector<ZSourcePos>& list = master.GetAdd(f.DupSig());
-					list.Add(f.DefPos);
-					LOG("Updating dupe: " + f.Name);
-					LOG(f.DupSig());
-				}
-					
-				valid = false;
-			}
-		}
-		
-		if (valid)
-			d.Functions.Add(&f);
-		f.DefPos.Source->Functions.Add(&f);
-	}
 }
 
 ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {

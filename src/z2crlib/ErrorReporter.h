@@ -8,6 +8,16 @@ class ER {
 public:
 	static bool PrintPath;
 	
+	static bool  NoColor;
+	
+	static const char* White;
+	static const char* Gray;
+	static const char* Red;
+	static const char* Cyan;
+	static const char* Blue;
+	static const char* Green;
+	static const char* Yellow;
+	
 	static void Error(const ZSource& src, const Point& p, const String& text);
 	
 	static void CantOpenFile(const String& aPath);

@@ -46,9 +46,22 @@ void ZFunction::GenerateSignatures() {
 	else
 		Return.Tt = Ass().CVoid->Tt;
 	
+	fsig = "";
 	dsig = "";
+	csig = "";
 	
 	if (InClass == false) {
+		fsig << Namespace().ProperName << "::";
+		
+		if (IsFunction) {
+			fsig << "func ";
+			csig << ER::Blue << "func ";
+		}
+		else {
+			fsig << "def ";
+			csig << ER::Blue << "func ";
+		}
+		
 		dsig << "global ";
 		dsig << "func ";
 	}
@@ -59,25 +72,43 @@ void ZFunction::GenerateSignatures() {
 			dsig << "def ";
 	}
 	
-	dsig << Name << "(";
+	dsig << Name;
+	fsig << Name;
+
+	csig << ER::Green << Name;
+	
+	String psig = "(";
+	String psigc = String(ER::White) + "(";
 	
 	for (int i = 0; i < Params.GetCount(); i++) {
 		ZVariable& var = Params[i];
 		
-		if (i > 0)
-			dsig << ", ";
+		if (i > 0) {
+			psig << ", ";
+			psigc << ", ";
+		}
 		
-		dsig << Ass().ClassToString(&var.I);
+		psig << Ass().ClassToString(&var.I);
+		psigc << ER::Cyan << Ass().ClassToString(&var.I);
 	}
 	
-	dsig << ")";
+	psig << ")";
+	psigc << ")";
 	
-	fsig = dsig;
+	dsig << psig;
+	fsig << psig;
+	csig << psigc;
 	
-	if (Return.Tt.Class) {
+	if (Return.Tt.Class && Return.Tt.Class != Ass().CVoid) {
 		fsig << ": ";
 		fsig << Ass().ClassToString(Return.Tt);
+		
+		csig << ": ";
+		csig << ER::Cyan << Ass().ClassToString(Return.Tt);
 	}
+	
+		
+	csig << ER::White << "        "  << "[" << ER::Blue << "namespace " << ER::White << Namespace().ProperName << "]";
 	
 	//DUMP(fsig);
 }
@@ -106,7 +137,12 @@ ZNamespace& Assembly::FindAddNamespace(const String& aName) {
 	
 	int index = Namespaces.FindAdd(aName, ZNamespace(*this));
 	ASSERT(index != -1);
-	Namespaces[index].Name = aName;
+	auto& ns = Namespaces[index];
+	ns.Name = aName;
+	if (ns.Name != "::")
+		ns.ProperName = aName.Mid(0, aName.GetCount() - 1);
+	else
+		ns.ProperName = ns.Name;
 	
 	return Namespaces[index];
 }

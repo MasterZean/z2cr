@@ -22,6 +22,8 @@ public:
 		
 		return msg;
 	}
+	
+	void PrettyPrint(Stream& stream);
 };
 
 #endif

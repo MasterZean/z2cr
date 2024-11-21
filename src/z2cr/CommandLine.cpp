@@ -113,6 +113,9 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-ut") {
 			UT = true;
 		}
+		else if (commands[i] == "--nocolor") {
+			NoColor = false;
+		}
 		else {
 			String path = NormalizePath(commands[i]);
 			if (FileExists(path))

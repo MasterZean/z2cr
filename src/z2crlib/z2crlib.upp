@@ -21,6 +21,8 @@ file
 	ZExprParser.cpp,
 	ZCompiler.h,
 	ZCompiler.cpp,
+	ZResolver.h,
+	ZResolver.cpp,
 	ZTranspiler.h,
 	ZTranspiler.cpp,
 	OverloadResolver.h,

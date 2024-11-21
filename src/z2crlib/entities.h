@@ -243,6 +243,7 @@ public:
 class ZNamespace {
 public:
 	String Name;
+	String ProperName;
 	String BackName;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
@@ -337,6 +338,7 @@ public:
 	};
 	
 	bool FromTemplate = false;
+	bool IsDuplicate = false;
 	
 	Node* Value = nullptr;
 	ObjectInfo I;
@@ -381,13 +383,22 @@ public:
 	
 	void GenerateSignatures();
 	
+	const String& FuncSig() const {
+		return fsig;
+	}
+	
 	const String& DupSig() const {
 		return dsig;
+	}
+	
+	const String& ColorSig() const {
+		return csig;
 	}
 	
 private:
 	String dsig;
 	String fsig;
+	String csig;
 };
 
 class ZMethodBundle: public ZEntity {

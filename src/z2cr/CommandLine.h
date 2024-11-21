@@ -26,6 +26,7 @@ public:
 	bool ARCH = false;
 	bool LAZY = false;
 	bool UT = false;
+	bool NoColor = false;
 	
 	bool PP_NOPATH = false;
 	

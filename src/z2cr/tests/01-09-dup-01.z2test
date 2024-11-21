@@ -1,8 +1,9 @@
 // @test dup
 // @file
 /* @errors
-test.z2(9, 5): Duplicate symbol: f, other occurrences at:
-		test.z2(12, 6)
+test.z2(10, 5): error: duplicate symbol: func f()        [namespace test]
+other occurrences at:
+	test.z2(13, 6): func f()        [namespace test]
 */
 namespace test;
 
@@ -15,9 +16,10 @@ func f() {
 // @test dup
 // @file
 /* @errors
-test.z2(10, 5): Duplicate symbol: f, other occurrences at:
-		test.z2(13, 6)
-		test.z2(16, 6)
+test.z2(11, 5): error: duplicate symbol: func f(): Int        [namespace test]
+other occurrences at:
+	test.z2(14, 6): func f(): Double        [namespace test]
+	test.z2(17, 6): func f(): Char        [namespace test]
 */
 namespace test;
 
@@ -33,11 +35,12 @@ func f(): Char {
 // @test dup
 // @file
 /* @errors
-test.z2(12, 5): Duplicate symbol: f, other occurrences at:
-		test.z2(15, 6)
-		test.z2(20, 6)
-		test.z2(18, 5)
-		test.z2(23, 5)
+test.z2(13, 5): error: duplicate symbol: func f(): Int        [namespace test]
+other occurrences at:
+	test.z2(16, 6): func f(): Double        [namespace test]
+	test.z2(21, 6): func f(): Char        [namespace test]
+	test.z2(19, 5): test::val f
+	test.z2(24, 5): test::val f
 */
 namespace test;
 
@@ -57,10 +60,12 @@ val f: Long  = 7000l;
 // @test dup
 // @file test1
 /* @errors
-test1.z2(11, 6): Duplicate symbol: f, other occurrences at:
-		test2.z2(4, 6)
-test2.z2(7, 6): Duplicate symbol: f, other occurrences at:
-		test2.z2(4, 6)
+test1.z2(13, 6): error: duplicate symbol: func f(Int)        [namespace test]
+other occurrences at:
+	test2.z2(4, 6): func f(Int)        [namespace test]
+test1.z2(16, 6): error: duplicate symbol: func f(Double)        [namespace test]
+other occurrences at:
+	test2.z2(7, 6): func f(Double)        [namespace test]
 */
 namespace test;
 
@@ -101,10 +106,12 @@ func f(a: Double) {
 // @test dup
 // @file test1
 /* @errors
-test1.z2(11, 14): Duplicate symbol: f, other occurrences at:
-		test2.z2(4, 14)
-test2.z2(7, 14): Duplicate symbol: f, other occurrences at:
-		test2.z2(4, 14)
+test1.z2(13, 14): error: duplicate symbol: func f(Int)        [namespace test]
+other occurrences at:
+	test2.z2(4, 14): func f(Int)        [namespace test]
+test1.z2(16, 14): error: duplicate symbol: func f(Double)        [namespace test]
+other occurrences at:
+	test2.z2(7, 14): func f(Double)        [namespace test]
 */
 namespace test;
 
@@ -122,3 +129,17 @@ private func f(a: Int) {
 
 private func f(a: Double) {
 }
+
+// @test dup
+// @file
+/* @errors
+test.z2(11, 5): error: duplicate symbol: test::val v
+other occurrences at:
+	test.z2(12, 5): test::val v
+	test.z2(13, 5): test::val v
+*/
+namespace test;
+
+val v = 0;
+val v = 0.7;
+val v = '\n';

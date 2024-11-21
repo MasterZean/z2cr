@@ -35,9 +35,6 @@ public:
 	bool Transpile();
 	bool ScanSources();
 	
-	void ResolveNamespaces();
-	void ResolveNamespace(ZNamespace& ns);
-		
 	void SetMain(const String& aClass, const String& aFile) {
 		mainClass = aClass;
 		mainFile = aFile;
@@ -54,8 +51,7 @@ private:
 	String mainClass;
 	String mainFile;
 	IR irg;
-	ArrayMap<String, ArrayMap<String, Vector<ZSourcePos>>> dupes;
-	
+
 	Vector<ZFunction*> FindMain(ZSource& src);
 	
 	bool PreCompileVars(ZNamespace& ns);
@@ -75,9 +71,6 @@ private:
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
 	bool Transpile(ZTranspiler& cpp, ZFunction& f);
 	
-	bool CheckForDuplicates();
-	bool CheckForDuplicates(ZNamespace& ns);
-	void DuplicateLoop(ZNamespace& ns, bool aPrivate);
 	bool FindMain();
 	
 	void ScanSource(ZSource& src, Array<ZScanner>& scanners);

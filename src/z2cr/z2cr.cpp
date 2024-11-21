@@ -84,6 +84,19 @@ void RunInlineTests(const String& path) {
 	Cout() << "Testing status: " << tester.PassCount << "/" << tester.TestCount << " passed.\n\n";
 }
 
+int separate_console() {
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    if (!GetConsoleScreenBufferInfo( GetStdHandle( STD_OUTPUT_HANDLE), &csbi))
+    {
+        printf( "GetConsoleScreenBufferInfo failed: %lu\n", GetLastError());
+        return FALSE;
+    }
+
+    // if cursor position is (0,0) then we were launched in a separate console
+    return ((!csbi.dwCursorPosition.X) && (!csbi.dwCursorPosition.Y));
+}
+
 CONSOLE_APP_MAIN {
 	String curDir = NativePath(GetCurrentDirectory() + "/");
 	String exeDir = GetFileDirectory(GetExeFilePath());
@@ -101,9 +114,6 @@ CONSOLE_APP_MAIN {
 		return;
 	}
 	
-	if (K.PP_NOPATH)
-		ER::PrintPath = false;
-	
 	if (K.UT) {
 		RunInlineTests(AppendFileName(curDir, "tests"));
 		
@@ -112,9 +122,19 @@ CONSOLE_APP_MAIN {
 		}
 	}
 	
+	if (K.PP_NOPATH)
+		ER::PrintPath = false;
+	ER::NoColor = K.NoColor;
+	
 	if (K.Files.GetCount() == 0 && K.UT == false) {
 		Cout() << ZCompiler::GetName() << " requires a list of input packages or files. Exiting!" << '\n';
 		SetExitCode(-1);
+		
+		if (separate_console()) {
+			Cout() << "Press any key to continue...";
+			ReadStdIn();
+		}
+		
 		return;
 	}
 	
@@ -225,7 +245,9 @@ CONSOLE_APP_MAIN {
 		}
 	}
 	catch (ZException& e) {
-		Cout() << e.ToString() << "\n";
+		//Cout() << e.ToString() << "\n";
+		e.PrettyPrint(Cout());
+		Cout() << "\n";
 		SetExitCode(-1);
 	}
 	catch (CParser::Error& e) {

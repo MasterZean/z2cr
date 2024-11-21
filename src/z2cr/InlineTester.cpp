@@ -17,21 +17,21 @@ bool ZTest::Run() {
 		//Source->LoadVirtual(Con);
 		Source = nullptr;
 	}
-	
-	/*
-	LOG("-----------------------------------------------------------------------------------------------------------------");
+		
+	/*LOG("-----------------------------------------------------------------------------------------------------------------");
 	LOG("NEW TEST");
 	for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 		LOG("=================================================================================================================");
 		LOG(Ass.SourceLookup[i]->Content());
 		LOG("=================================================================================================================");
-	}
-	*/
+	}*/
 			
 	try {
 		ZCompiler compiler(Ass);
 		compiler.SetMain("", "test.z2");
 		compiler.FoldConstants = true;
+		
+		ER::NoColor = true;
 		
 		bool compResult = compiler.Compile();
 		if (compResult == false && compiler.MainFound == false)
@@ -86,6 +86,7 @@ bool ZTest::Run() {
 				DUMP(dump);
 				DUMP(Dumps[td]);
 				result = false;
+				Cout() << Name << "(" << Line << ")" << " test failled because dumps\n";
 			}
 		}
 		
@@ -110,6 +111,7 @@ bool ZTest::Run() {
 				DUMP(dump);
 				DUMP(GlobalVarDef);
 				result = false;
+				Cout() << Name << "(" << Line << ")" << " test failled because GlobalVarDef\n";
 			}
 		}
 			
@@ -118,8 +120,11 @@ bool ZTest::Run() {
 		}
 	}
 	catch (ZException& e) {
-		if (Error != e.ToString()) {
-			LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+		StringStream ss;
+		e.PrettyPrint(ss);
+		String aError = ss;
+		if (Error != aError) {
+			LOG(String().Cat() << Name << "(" << Line << ")" << " test failled because found exception\n");
 			
 			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 				LOG("=================================================================================================================");
@@ -127,9 +132,9 @@ bool ZTest::Run() {
 				LOG("=================================================================================================================");
 			}
 			
-			DUMP(e.ToString());
+			DUMP(aError);
 			DUMP(Error);
-			Cout() << Name << "(" << Line << ")" << " test failled\n";
+			Cout() << Name << "(" << Line << ")" << " test failled because found exception\n";
 			result = false;
 		}
 		else
