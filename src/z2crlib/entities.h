@@ -339,6 +339,7 @@ public:
 	
 	bool FromTemplate = false;
 	bool IsDuplicate = false;
+	bool IsConst = false;
 	
 	Node* Value = nullptr;
 	ObjectInfo I;

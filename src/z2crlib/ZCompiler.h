@@ -65,7 +65,7 @@ private:
 	Node* CompileIf(ZFunction& f, ZParser& parser, ZContext& con);
 	Node* CompileWhile(ZFunction& f, ZParser& parser, ZContext& con);
 	Node* CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con);
-	Node* CompileLocalVar(ZFunction& f, ZParser& parser);
+	Node* CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst);
 	Node *CompileReturn(ZFunction& f, ZParser& parser, ZContext& con);
 	
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);

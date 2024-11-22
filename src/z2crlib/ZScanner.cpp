@@ -155,48 +155,10 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, ZSourcePos* tp) {
 		return true;
 	}
 	else if (parser.Id("val")) {
-		ZSourcePos dp = parser.GetFullPos();
-		
-		String name = parser.ExpectId();
-		
-		if (nmspace == &ass.DefaultNamespace())
-			throw ER::ErrDeclOutsideNamespace(dp);
-		
-		ZVariable& f = nmspace->PrepareVariable(name);
-		f.DefPos = dp;
-		f.BackName = name;
-		f.Section = section;
-		f.Access = accessType;
-		
-		if (parser.Char(':')) {
-			ScanType();
-			
-			if (parser.Char('='))
-				while (!(parser.IsChar(';')/* || (parser.GetSkipNewLines() == false && (parser.PeekChar() == '\n' || parser.PeekChar() == '\r'))*/)) {
-					if (parser.IsChar('{'))
-						ScanBlock();
-					else
-						ScanToken();
-				}
-						
-		}
-		else {
-			if (!parser.IsChar('='))
-				parser.Error(dp.P, "variable must have either an explicit type or be initialized");
-			
-			parser.Expect('=');
-			
-			while (!(parser.IsChar(';'))) {
-				if (parser.IsChar('{'))
-						ScanBlock();
-					else
-						ScanToken();
-			}
-		}
-		
-		parser.ExpectEndStat();
-		
-		return true;
+		return ScanVar(accessType, false);
+	}
+	else if (parser.Id("const")) {
+		return ScanVar(accessType, true);
 	}
 	
 	return false;
@@ -255,6 +217,52 @@ void ZScanner::ScanNamespace() {
 	section->UsingNames = usingNames;
 	
 	namespaceCount++;
+}
+
+bool ZScanner::ScanVar(AccessType accessType, bool aConst) {
+	ZSourcePos dp = parser.GetFullPos();
+		
+	String name = parser.ExpectId();
+	
+	if (nmspace == &ass.DefaultNamespace())
+		throw ER::ErrDeclOutsideNamespace(dp);
+	
+	ZVariable& f = nmspace->PrepareVariable(name);
+	f.DefPos = dp;
+	f.BackName = name;
+	f.Section = section;
+	f.Access = accessType;
+	f.IsConst = aConst;
+	
+	if (parser.Char(':')) {
+		ScanType();
+		
+		if (parser.Char('='))
+			while (!(parser.IsChar(';')/* || (parser.GetSkipNewLines() == false && (parser.PeekChar() == '\n' || parser.PeekChar() == '\r'))*/)) {
+				if (parser.IsChar('{'))
+					ScanBlock();
+				else
+					ScanToken();
+			}
+					
+	}
+	else {
+		if (!parser.IsChar('='))
+			parser.Error(dp.P, String(aConst ? "constant" : "variable") + " must have either an explicit type or be initialized");
+		
+		parser.Expect('=');
+		
+		while (!(parser.IsChar(';'))) {
+			if (parser.IsChar('{'))
+					ScanBlock();
+				else
+					ScanToken();
+		}
+	}
+	
+	parser.ExpectEndStat();
+	
+	return true;
 }
 
 ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {

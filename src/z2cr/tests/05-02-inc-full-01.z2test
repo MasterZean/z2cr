@@ -4,7 +4,7 @@ namespace test;
 
 val a = 12;
 
-// @dumpBody
+/* @dumpBody
 	test::a;
 	++test::a;
 	test::a;
@@ -14,7 +14,7 @@ val a = 12;
 	test::a;
 	test::a++;
 	test::a;
-// @dumpEnd
+*/
 def @main() {
 	a;
 	++a;
@@ -27,7 +27,7 @@ def @main() {
 	a;
 }
 
-// @dumpBody
+/* @dumpBody
 	int32 a = 0;
 	a;
 	++a;
@@ -38,7 +38,7 @@ def @main() {
 	a;
 	a++;
 	a;
-// @dumpEnd
+*/
 def f() {
 	val a = 0;
 	a;
@@ -52,7 +52,7 @@ def f() {
 	a;
 }
 
-// @dumpBody
+/* @dumpBody
 	a;
 	++a;
 	a;
@@ -62,7 +62,7 @@ def f() {
 	a;
 	a++;
 	a;
-// @dumpEnd
+*/
 def g(a: Int) {
 	a;
 	++a;
@@ -75,7 +75,7 @@ def g(a: Int) {
 	a;
 }
 
-// @dumpBody
+/* @dumpBody
 	b;
 	++b;
 	b;
@@ -85,7 +85,7 @@ def g(a: Int) {
 	b;
 	b++;
 	b;
-// @dumpEnd
+*/
 def h(b: Int) {
 	b;
 	++b;

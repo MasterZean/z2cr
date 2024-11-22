@@ -2,7 +2,7 @@
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	1;
 	-1;
 	-1;
@@ -12,7 +12,7 @@ namespace test;
 	-1;
 	1;
 	1;
-// @dumpEnd
+*/
 func f() {	
 	1;
 	-1;
@@ -31,7 +31,7 @@ namespace test;
 
 val a = 0;
 
-// @dumpBody
+/* @dumpBody
 	test::a;
 	-(test::a);
 	-(test::a);
@@ -41,7 +41,7 @@ val a = 0;
 	-(test::a);
 	test::a;
 	test::a;
-// @dumpEnd
+*/
 func f() {	
 	a;
 	-a;
@@ -60,7 +60,7 @@ namespace test;
 
 val a = 0;
 
-// @dumpBody
+/* @dumpBody
 	a;
 	-(a);
 	-(a);
@@ -70,7 +70,7 @@ val a = 0;
 	-(a);
 	a;
 	a;
-// @dumpEnd
+*/
 func f(a: Double) {	
 	a;
 	-a;

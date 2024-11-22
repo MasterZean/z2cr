@@ -5,9 +5,9 @@ String anTest = "// @test";
 String anFile = "// @file";
 String anError = "// @error";
 String anErrors = "/* @errors";
-String anDumpBody = "// @dumpBody";
+String anDumpBody = "/* @dumpBody";
 String anDumpEnd = "// @dumpEnd";
-String anDumpGlobalVarDef = "//* @dumpGlobalVarDef";
+String anDumpGlobalVarDef = "/* @dumpGlobalVarDef";
 
 bool ZTest::Run() {
 	bool result = true;
@@ -172,8 +172,9 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-	//if (!path.EndsWith("02-decl-03-access.z2test"))
+	//if (!path.EndsWith("02-decl-02-const.z2test"))
 	//	return;
+	
 	FileIn file(path);
 	
 	if (file.IsError())
@@ -247,21 +248,24 @@ void InlineTester::AddTestCollection(const String& path) {
 				test->Error = rest;
 		}
 		else if (line.StartsWith(anDumpBody)) {
+			con << line << "\n";
+			
 			String dump;
 			
 			while (!file.IsEof()) {
 				String sub = file.GetLine();
 				lineNo++;
+				localLineNo++;
+				con << sub << "\n";
 				
-				if (sub.StartsWith(anDumpEnd))
+				if (sub.StartsWith("*/"))
 					break;
 				else
 					dump << sub << "\n";
 			}
 			
 			if (test) {
-				//DUMP(localLineNo);
-				test->Dumps.Add(localLineNo - test->Dumps.GetCount(), dump);
+				test->Dumps.Add(localLineNo + 1, dump);
 			}
 		}
 		else if (line.StartsWith(anDumpGlobalVarDef)) {
@@ -305,7 +309,6 @@ void InlineTester::AddTestCollection(const String& path) {
 				test->Error = err;
 		}
 		else {
-			//localLineNo++;
 			con << line << "\n";
 		}
 	}

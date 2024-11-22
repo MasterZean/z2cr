@@ -20,6 +20,7 @@ public:
 	
 	void ScanSingle();
 	void ScanNamespace();
+	bool ScanVar(AccessType accessType, bool aConst);
 	ZFunction& ScanFunc(AccessType accessType, bool aFunc);
 	void ScanBlock();
 	void ScanToken();

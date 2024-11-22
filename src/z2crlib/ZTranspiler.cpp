@@ -6,14 +6,9 @@ void ZTranspiler::WriteIntro() {
 	NL();
 	cs << "#include \"cppcode.h\"";
 	EL();
-	NL();
-	cs << "#include \"stdio.h\"";
-	EL();
 	
 	NL();
 	EL();
-	
-	//new llvm::LLVMContext();
 }
 
 void ZTranspiler::WriteOutro() {
@@ -63,12 +58,15 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, bool modePrivate) {
 		ASSERT(v.Value);
 		
 		NL();
-		cs << "extern "<< v.I.Tt.Class->BackName << " " << v.Name;
+		
+		cs << "extern ";
+		if (v.IsConst)
+			cs << "const ";
+		cs << v.I.Tt.Class->BackName << " " << v.Name;
 		ES();
 	}
 	
-	if (ns.Variables.GetCount())
-		EL();
+	bool first = true;
 		
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
@@ -78,6 +76,12 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, bool modePrivate) {
 				continue;
 			if (modePrivate == true && f.Access != AccessType::Private)
 				continue;
+			
+			if (first) {
+				if (ns.Variables.GetCount())
+					EL();
+				first = false;
+			}
 			
 			NL();
 			WriteFunctionDef(f);
@@ -94,7 +98,16 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, bool modePrivate) {
 }
 
 void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bool wrap) {
-	TranspileDeclarations(ns, true);
+	bool writePriv = false;
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		auto v = *ns.Variables[i];
+		if (v.Access == AccessType::Private) {
+			writePriv = true;
+			break;
+		}
+	}
+	if (writePriv)
+		TranspileDeclarations(ns, true);
 	
 	if (vars) {
 		TranspileValDefintons(ns);
@@ -121,6 +134,8 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
 		
+		if (v.IsConst)
+			cs << "const ";
 		cs << v.I.Tt.Class->BackName << " " << v.Namespace().BackName << "::" << v.Name << " = ";
 		Walk(v.Value);
 		ES();
@@ -669,6 +684,8 @@ void ZTranspiler::Proc(DoWhileNode& node) {
 void ZTranspiler::Proc(LocalNode& node) {
 	ASSERT(node.Var);
 	
+	if (node.Var->IsConst)
+		cs << "const ";
 	cs << node.Tt.Class->BackName << " ";
 	cs << node.Var->Name;
 	

@@ -2,9 +2,9 @@
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	Class(9);
-// @dumpEnd
+*/
 def @main() {
 	Int;
 }
@@ -13,9 +13,9 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	Class(14);
-// @dumpEnd
+*/
 def @main() {
 	Double;
 }
@@ -24,9 +24,9 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	Class(2);
-// @dumpEnd
+*/
 def @main() {
 	sys.core.Void;
 }
@@ -35,7 +35,7 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	Class(0);
 	Class(1);
 	Class(2);
@@ -52,7 +52,7 @@ namespace test;
 	Class(13);
 	Class(14);
 	Class(15);
-// @dumpEnd
+*/
 def @main() {
 	sys.core.Class;
 	Def;
@@ -76,9 +76,9 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	Class(14);
-// @dumpEnd
+*/
 def @main() {
 	Double;
 }
@@ -87,9 +87,9 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	Class(2);
-// @dumpEnd
+*/
 def @main() {
 	sys.core.Void;
 }
@@ -98,7 +98,7 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	Class(0);
 	Class(1);
 	Class(2);
@@ -115,7 +115,7 @@ namespace test;
 	Class(13);
 	Class(14);
 	Class(15);
-// @dumpEnd
+*/
 def @main() {
 	sys.core.Class;
 	sys.core.lang.Def;
@@ -139,12 +139,12 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	true;
 	false;
 	false;
 	false;
-// @dumpEnd
+*/
 def @main() {
 	Int == Int;
 	Int == Bool;
@@ -156,12 +156,12 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	false;
 	true;
 	true;
 	true;
-// @dumpEnd
+*/
 def @main() {
 	Int != Int;
 	Int != Bool;
@@ -173,12 +173,12 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	true;
 	false;
 	false;
 	false;
-// @dumpEnd
+*/
 def @main() {
 	Int == sys.core.lang.Int;
 	Int == sys.core.lang.Bool;
@@ -190,12 +190,12 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	false;
 	true;
 	true;
 	true;
-// @dumpEnd
+*/
 def @main() {
 	Int != sys.core.lang.Int;
 	Int != sys.core.lang.Bool;
@@ -207,12 +207,12 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	true;
 	false;
 	false;
 	false;
-// @dumpEnd
+*/
 def @main() {
 	sys.core.lang.Int == Int;
 	sys.core.lang.Int == Bool;
@@ -224,12 +224,12 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	false;
 	true;
 	true;
 	true;
-// @dumpEnd
+*/
 def @main() {
 	sys.core.lang.Int != Int;
 	sys.core.lang.Int != Bool;

@@ -20,10 +20,10 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	while (true)
 		break;
-// @dumpEnd
+*/
 def @main() {
 	while (true)
 		break;
@@ -33,10 +33,10 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	while (true)
 		continue;
-// @dumpEnd
+*/
 def @main() {
 	while (true)
 		continue;
@@ -46,11 +46,11 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	while (true) {
 		break;
 	}
-// @dumpEnd
+*/
 def @main() {
 	while (true) {
 		break;
@@ -61,11 +61,11 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	while (true) {
 		continue;
 	}
-// @dumpEnd
+*/
 def @main() {
 	while (true) {
 		continue;
@@ -76,11 +76,11 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	do {
 		break;
 	} while (true);
-// @dumpEnd
+*/
 def @main() {
 	do {
 		break;
@@ -91,11 +91,11 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	do {
 		continue;
 	} while (true);
-// @dumpEnd
+*/
 def @main() {
 	do {
 		continue;

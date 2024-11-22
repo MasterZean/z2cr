@@ -1,0 +1,41 @@
+// @test namespace
+// @file
+// @error test.z2(4, 7): declaration encountered outside of a namespace
+const a = 0;
+
+// @test namespace
+// @file
+// @error test.z2(6, 1): scan: identifier expected, end-of-file found
+const
+
+// @test namespace
+// @file
+// @error test.z2(4, 7): scan: identifier expected, boolean constant 'true' found
+const true;
+
+// @test namespace
+// @file
+// @error test.z2(4, 7): scan: identifier expected, character constant found
+const 'a';
+
+// @test namespace
+// @file
+// @error test.z2(4, 7): scan: identifier expected, keyword 'return' found
+const return;
+
+// @test namespace
+// @file
+// @error test.z2(4, 7): scan: identifier expected, '*' found
+const *;
+
+// @test namespace
+// @file
+// @error test.z2(4, 7): scan: identifier expected, floating point constant '0.7' found
+const 0.7;
+
+// @test namespace
+// @file
+// @error test.z2(6, 7): scan: constant must have either an explicit type or be initialized
+namespace test;
+
+const a;

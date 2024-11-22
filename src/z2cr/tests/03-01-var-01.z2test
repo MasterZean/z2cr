@@ -19,13 +19,13 @@ val a5: Int = Int{};
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	int32 a1 = 0;
 	int32 a2 = 0;
 	int32 a3 = 0;
 	int32 a4 = 0;
 	int32 a5 = 0;
-// @dumpEnd
+*/
 def @main() {
 	val a1 = 0;
 	val a2 = 7 - 7;
@@ -55,13 +55,13 @@ val a5: Char = Char{};
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	uint32 a1 = '\0';
 	uint32 a2 = '\0';
 	uint32 a3 = '\0';
 	uint32 a4 = '\0';
 	uint32 a5 = '\0';
-// @dumpEnd
+*/
 def @main() {
 	val a1 = '\0';
 	val a2 = '7' - '7';
@@ -91,13 +91,13 @@ val a5: Float = Float{};
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	float a1 = 0.0f;
 	float a2 = 0.0f;
 	float a3 = 0.0f;
 	float a4 = 0.0f;
 	float a5 = 0.0f;
-// @dumpEnd
+*/
 def @main() {
 	val a1 = 0.0f;
 	val a2 = 7.0f - 7.0f;
@@ -127,13 +127,13 @@ val a5: Double = Double{};
 // @file
 namespace test;
 
-// @dumpBody
+/* @dumpBody
 	double a1 = 0.0;
 	double a2 = 0.0;
 	double a3 = 0.0;
 	double a4 = 0.0;
 	double a5 = 0.0;
-// @dumpEnd
+*/
 def @main() {
 	val a1 = 0.0;
 	val a2 = 7.0 - 7.0;

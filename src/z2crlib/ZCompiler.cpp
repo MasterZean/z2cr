@@ -227,7 +227,9 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 	else if (parser.Id("do"))
 		return CompileDoWhile(f, parser, con);
 	else if (parser.Id("val"))
-		return CompileLocalVar(f, parser);
+		return CompileLocalVar(f, parser, false);
+	else if (parser.Id("const"))
+		return CompileLocalVar(f, parser, true);
 	else if (parser.Id("return"))
 		return CompileReturn(f, parser, con);
 	else if (parser.IsId("break")) {
@@ -385,7 +387,7 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 	return compileVarDec(v, parser, v.DefPos, nullptr);
 }
 
-Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
+Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	auto vp = parser.GetFullPos();
 	
 	String name = parser.ExpectZId();
@@ -396,6 +398,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser) {
 	v.BackName = name;
 	v.DefPos = vp;
 	v.Section = f.Section;
+	v.IsConst = aConst;
 	
 	return compileVarDec(v, parser, vp, &f);
 }
