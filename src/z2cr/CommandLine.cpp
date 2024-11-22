@@ -113,8 +113,11 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-ut") {
 			UT = true;
 		}
-		else if (commands[i] == "--nocolor") {
-			NoColor = false;
+		else if (commands[i] == "-nocolor") {
+			NoColor = true;
+		}
+		else if (commands[i] == "-noconsoletest") {
+			NoConsoleTest = true;
 		}
 		else {
 			String path = NormalizePath(commands[i]);

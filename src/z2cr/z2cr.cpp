@@ -98,18 +98,13 @@ int separate_console() {
 }
 
 CONSOLE_APP_MAIN {
+	bool noConsole = separate_console();
+	
 	String curDir = NativePath(GetCurrentDirectory() + "/");
 	String exeDir = GetFileDirectory(GetExeFilePath());
 	
 	::CommandLine K;
 	if (!K.Read()) {
-		SetExitCode(-1);
-		return;
-	}
-	
-	// check params
-	if (!K.SCU && !K.CPP) {
-		Cout() << ZCompiler::GetName() << " requires the '-scu' or '-c++' parameters. Exiting!" << '\n';
 		SetExitCode(-1);
 		return;
 	}
@@ -121,16 +116,24 @@ CONSOLE_APP_MAIN {
 			return;
 		}
 	}
+		
+	if (!K.SCU && !K.CPP) {
+		Cout() << ZCompiler::GetName() << " requires the '-scu' or '-c++' parameters. Exiting!" << '\n';
+		SetExitCode(-1);
+		return;
+	}
 	
 	if (K.PP_NOPATH)
 		ER::PrintPath = false;
 	ER::NoColor = K.NoColor;
+	if (K.NoConsoleTest)
+		noConsole = false;
 	
 	if (K.Files.GetCount() == 0 && K.UT == false) {
 		Cout() << ZCompiler::GetName() << " requires a list of input packages or files. Exiting!" << '\n';
 		SetExitCode(-1);
 		
-		if (separate_console()) {
+		if (noConsole) {
 			Cout() << "Press any key to continue...";
 			ReadStdIn();
 		}
@@ -146,7 +149,6 @@ CONSOLE_APP_MAIN {
 	
 	StopWatch tm;
 	
-	// compile
 	Assembly ass;
 	
 	try {
@@ -190,8 +192,6 @@ CONSOLE_APP_MAIN {
 		compiler.BuildProfile = compiler.PlatformString + ToUpper(bm.Arch) + "." + ToUpper(bm.Name) + K.O;
 		compiler.BuildPath = exeDir + NativePath("builds/") + compiler.PlatformString + "." + ToUpper(bm.Arch) + "." + ToUpper(bm.Name);
 		RealizeDirectory(compiler.BuildPath);
-		
-		//Cout() << "\n";
 			
 		compiler.SetMain(K.EntryClass, K.EntryFile);
 		
@@ -245,7 +245,6 @@ CONSOLE_APP_MAIN {
 		}
 	}
 	catch (ZException& e) {
-		//Cout() << e.ToString() << "\n";
 		e.PrettyPrint(Cout());
 		Cout() << "\n";
 		SetExitCode(-1);

@@ -27,6 +27,7 @@ public:
 	bool LAZY = false;
 	bool UT = false;
 	bool NoColor = false;
+	bool NoConsoleTest = false;
 	
 	bool PP_NOPATH = false;
 	

@@ -47,7 +47,11 @@ AssemblyBrowser::AssemblyBrowser() {
 	treModules.NoWantFocus();
 	treModules.Open(0);
 	
+	treModules.WhenSel = THISBACK(OnSelectSource);
+	treModules.WhenLeftDouble = THISBACK(OnRename);
 	treModules.WhenBar = THISBACK(OnTreModuleRmbMenu);
+	treModules.WhenDrag = THISBACK(OnDrag);
+	treModules.WhenDropItem = THISBACK(OnDrop);
 }
 
 void AssemblyBrowser::ClearModules() {
@@ -126,6 +130,31 @@ int AssemblyBrowser::AddModule(int parent, const String& path, const String& ppa
 	}
 
 	return item;
+}
+
+void AssemblyBrowser::OnSelectSource() {
+	int i = treModules.GetCursor();
+	if (i == -1)
+		return;
+	
+	String path = treModules[i];
+	if (FileExists(path))
+		WhenSelectSource();
+}
+
+void AssemblyBrowser::OnRename() {
+	int i = treModules.GetCursor();
+	if (i == -1)
+		return;
+	
+	String curName = treModules.GetValue(i);
+	String curPath = treModules[i];
+	String newPath = GetFileDirectory(curPath) + curName;
+	
+	if (FileExists(newPath))
+		OnRenameFile();
+	else if (DirectoryExists(newPath))
+		OnRenameFolder();
 }
 
 void AssemblyBrowser::OnTreModuleRmbMenu(Bar& bar) {
@@ -340,6 +369,73 @@ void AssemblyBrowser::OnDeleteFile() {
 		if (DeleteFile(path)) {
 			treModules.Remove(i);
 			WhenFileRemoved(path);
+		}
+	}
+}
+
+void AssemblyBrowser::OnDrag() {
+	if(!treModules.IsCursor())
+		return;
+	
+	int id = treModules.GetCursor();
+	String text = treModules.Get();
+	
+	if (!FileExists(text))
+		return;
+
+	String label = treModules.GetNode(id).value;
+	Size isz = GetTextSize(label.ToWString(), StdFont());
+	
+	ImageDraw iw(isz);
+	iw.DrawRect(isz, White);
+	iw.DrawText(0, 0, label);
+		
+	VectorMap<String, ClipData> clip;
+	clip.Add("ZIDE PasteClip ACCEPTOR", text);
+
+	if (DoDragAndDrop(clip, iw) == DND_MOVE)
+		treModules.Remove(id);
+}
+
+void AssemblyBrowser::OnDrop(int parent, PasteClip& d) {
+	treModules.AdjustAction(parent, d);
+	
+	String newPath = treModules[parent];
+	
+	if (DirectoryExists(newPath) && d.Accept("ZIDE PasteClip ACCEPTOR")) {
+		String path = ~d;
+		
+		// TODO: still needed?
+		// fix U++ bug?
+		int len = path.GetCount() - 1;
+		while (len >= 0 && path[len] == 0)
+			len--;
+		
+		path = path.Mid(0, len + 1);
+		
+		newPath = AppendFileName(newPath, GetFileName(path));
+		
+		if (path == newPath) {
+			d.Reject();
+			
+			return;
+		}
+		
+		if (!CanMoveFile(path, newPath)) {
+			ErrorOK("[ph Could not rename file because&-|[* " + DeQtf(newPath) + "]&already exists!]");
+			d.Reject();
+			
+			return;
+		}
+		
+		WhenFileSaved(path);
+		
+		if (FileMove(path, newPath)) {
+			WhenFileRemoved(path);
+			
+			treModules.SetCursor(treModules.Insert(parent, treModules.GetChildCount(parent), ZImg::zsrc, newPath, GetFileName(newPath)));
+			
+			WhenSelectSource();
 		}
 	}
 }

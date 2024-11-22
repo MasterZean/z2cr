@@ -20,13 +20,19 @@ public:
 	void SetShowPaths(bool show);
 	
 	void OnTreModuleRmbMenu(Bar& bar);
-		
+	
+	void OnSelectSource();
+	void OnRename();
+	
 	void OnAddFile();
 	void OnAddFolder();
 	void OnRenameFile();
 	void OnRenameFolder();
 	void OnDeleteFile();
 	void OnDeleteFolder();
+	
+	void OnDrag();
+	void OnDrop(int ii, PasteClip& pc);
 	
 	void OnFileNameCopy();
 	

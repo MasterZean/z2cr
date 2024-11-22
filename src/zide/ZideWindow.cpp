@@ -38,7 +38,7 @@ void ZideWindow::Serialize(Stream& s) {
 		s % maximized % width % height;
 	}
 	
-	s % LastPackage % recentPackages % activeFile;
+	s % LastPackage % recentPackages % openNodes % activeFile;
 }
 
 void ZideWindow::LoadPackage(const String& package) {
