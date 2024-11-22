@@ -1,0 +1,132 @@
+// @test access_test
+// @file
+namespace test;
+
+def f() {
+	g = 28;
+}
+
+protected val g = 27;
+
+def @main() {
+	f();
+	g = 29;
+}
+
+// @test access_test
+// @file
+namespace test;
+
+def f() {
+	g = 28;
+}
+
+protected val g = 27;
+
+def @main() {
+	test.f();
+	test.g = 29;
+}
+
+// @test access_test
+// @file
+/* @errors
+test.z2(18, 13): can't access protected member:
+		val g
+*/
+namespace test;
+
+def f() {
+	g = 28;
+}
+
+protected val g = 27;
+
+namespace second {
+	def @main() {
+		test.f();
+		test.g = 29;
+	}
+}
+
+// @test access_test
+// @file test1
+namespace test1;
+
+private val f = 25;
+private val g = 26;
+
+// @file test2
+namespace test2;
+
+private val f = 25;
+private val g = 26;
+
+// @file main
+namespace main;
+
+private val f = 25;
+private val g = 26;
+
+def @main() {
+	f = 100;
+	g = 101;
+}
+
+// @test access_test
+// @file test1
+/* @errors
+main.z2(8, 10): can't access private member:
+		val f
+*/
+namespace test1;
+
+namespace test1;
+
+private val f = 25;
+private val g = 26;
+
+// @file test2
+namespace test2;
+
+private val f = 25;
+private val g = 26;
+
+// @file main
+namespace main;
+
+private val f = 25;
+private val g = 26;
+
+def @main() {
+	test1.f = 100;
+	g = 101;
+}
+
+// @test access_test
+// @file test1
+/* @errors
+main.z2(8, 10): can't access private member:
+		val f
+*/
+namespace test1;
+
+private val f = 25;
+private val g = 26;
+
+// @file test2
+namespace test2;
+
+private val f = 25;
+private val g = 26;
+
+// @file main
+namespace main;
+
+private val f = 25;
+private val g = 26;
+
+def @main() {
+	test2.f = 100;
+	g = 101;
+}

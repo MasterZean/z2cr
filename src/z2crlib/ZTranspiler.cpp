@@ -41,7 +41,7 @@ void ZTranspiler::WriteOutro() {
 	EL();
 }
 
-void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
+void ZTranspiler::TranspileDeclarations(ZNamespace& ns, bool modePrivate) {
 	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
 		return;
 	
@@ -53,6 +53,12 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 	
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
+		
+		if (modePrivate == false && v.Access == AccessType::Private)
+			continue;
+		if (modePrivate == true && v.Access != AccessType::Private)
+			continue;
+		
 		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
 		
@@ -66,8 +72,15 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 		
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
+			ZFunction& f = *ns.Methods[i].Functions[j];
+			
+			if (modePrivate == false && f.Access == AccessType::Private)
+				continue;
+			if (modePrivate == true && f.Access != AccessType::Private)
+				continue;
+			
 			NL();
-			WriteFunctionDef(*ns.Methods[i].Functions[j]);
+			WriteFunctionDef(f);
 			ES();
 		}
 	}
@@ -81,6 +94,8 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns) {
 }
 
 void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bool wrap) {
+	TranspileDeclarations(ns, true);
+	
 	if (vars) {
 		TranspileValDefintons(ns);
 	}
@@ -116,6 +131,8 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
+	if (f.Access == AccessType::Private)
+		cs << "static ";
 	cs << f.Return.Tt.Class->BackName << " " << f.BackName;
 	WriteFunctionParams(f);
 }

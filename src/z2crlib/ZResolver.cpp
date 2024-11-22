@@ -37,6 +37,10 @@ void ZResolver::ResolveNamespace(ZNamespace& ns) {
 	
 	ns.BackName = backName;
 	
+	// TODO: prevent other clashes with main_
+	if (ns.BackName == "main")
+		ns.BackName = "main_";
+	
 	for (int j = 0; j < ns.Sections.GetCount(); j++) {
 		ZNamespaceSection& sec = ns.Sections[j];
 		

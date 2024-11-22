@@ -49,7 +49,7 @@ void ZScanner::ScanSingle() {
 		
 			parser.Expect('}');
 		}
-		else if (ScanDeclaration(AccessType::Public)) {
+		else if (ScanDeclaration(AccessType::Private)) {
 			// ALL GOOD
 		}
 		else {
@@ -71,7 +71,7 @@ void ZScanner::ScanSingle() {
 			
 			parser.Expect('}');
 		}
-		else if (ScanDeclaration(AccessType::Public)) {
+		else if (ScanDeclaration(AccessType::Protected)) {
 			// ALL GOOD
 		}
 		else {

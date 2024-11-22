@@ -7,7 +7,7 @@ String anError = "// @error";
 String anErrors = "/* @errors";
 String anDumpBody = "// @dumpBody";
 String anDumpEnd = "// @dumpEnd";
-String anDumpGlobalVarDef = "// @dumpGlobalVarDef";
+String anDumpGlobalVarDef = "//* @dumpGlobalVarDef";
 
 bool ZTest::Run() {
 	bool result = true;
@@ -123,6 +123,8 @@ bool ZTest::Run() {
 		StringStream ss;
 		e.PrettyPrint(ss);
 		String aError = ss;
+		aError = TrimRight(aError);
+		Error = TrimRight(Error);
 		if (Error != aError) {
 			LOG(String().Cat() << Name << "(" << Line << ")" << " test failled because found exception\n");
 			
@@ -170,7 +172,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-	//if (!path.EndsWith("01-09-dup-01.z2test"))
+	//if (!path.EndsWith("02-decl-03-access.z2test"))
 	//	return;
 	FileIn file(path);
 	
@@ -263,13 +265,17 @@ void InlineTester::AddTestCollection(const String& path) {
 			}
 		}
 		else if (line.StartsWith(anDumpGlobalVarDef)) {
+			con << line << "\n";
+			
 			String dump;
 			
 			while (!file.IsEof()) {
 				String sub = file.GetLine();
 				lineNo++;
+				localLineNo++;
+				con << sub << "\n";
 				
-				if (sub.StartsWith(anDumpEnd))
+				if (sub.StartsWith("*/"))
 					break;
 				else
 					dump << sub << "\n";

@@ -2,13 +2,13 @@
 // @file
 namespace test;
 
-// @dumpGlobalVarDef
+/* @dumpGlobalVarDef
 int32 test::a1 = 0;
 int32 test::a2 = 0;
 int32 test::a3 = 0;
 int32 test::a4 = 0;
 int32 test::a5 = 0;
-// @dumpEnd
+*/
 val a1 = 0;
 val a2 = 7 - 7;
 val a3: Int;
@@ -38,13 +38,13 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpGlobalVarDef
+/* @dumpGlobalVarDef
 uint32 test::a1 = '\0';
 uint32 test::a2 = '\0';
 uint32 test::a3 = '\0';
 uint32 test::a4 = '\0';
 uint32 test::a5 = '\0';
-// @dumpEnd
+*/
 val a1 = '\0';
 val a2 = '7' - '7';
 val a3: Char;
@@ -74,13 +74,13 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpGlobalVarDef
+/* @dumpGlobalVarDef
 float test::a1 = 0.0f;
 float test::a2 = 0.0f;
 float test::a3 = 0.0f;
 float test::a4 = 0.0f;
 float test::a5 = 0.0f;
-// @dumpEnd
+*/
 val a1 = 0.0f;
 val a2 = 7.0f - 7.0f;
 val a3: Float;
@@ -110,13 +110,13 @@ def @main() {
 // @file
 namespace test;
 
-// @dumpGlobalVarDef
+/* @dumpGlobalVarDef
 double test::a1 = 0.0;
 double test::a2 = 0.0;
 double test::a3 = 0.0;
 double test::a4 = 0.0;
 double test::a5 = 0.0;
-// @dumpEnd
+*/
 val a1 = 0.0;
 val a2 = 7.0 - 7.0;
 val a3: Double;

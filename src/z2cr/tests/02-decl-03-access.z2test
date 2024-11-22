@@ -1,0 +1,220 @@
+// @test access_test
+// @file
+namespace test;
+
+def f() {
+	g();
+}
+
+protected def g() {
+}
+
+def @main() {
+	f();
+	g();
+}
+
+// @test access_test
+// @file
+namespace test;
+
+def f() {
+	g();
+}
+
+private def g() {
+}
+
+def @main() {
+	test.f();
+	test.g();
+}
+
+// @test access_test
+// @file
+/* @errors
+test.z2(19, 13): can't access protected member:
+		func g()        [namespace test]
+*/
+namespace test;
+
+def f() {
+	g();
+}
+
+protected def g() {
+}
+
+namespace second {
+	def @main() {
+		test.f();
+		test.g();
+	}
+}
+
+// @test access_test
+// @file test1
+namespace test1;
+
+private func f() {
+	g();
+}
+
+private func g() {
+	
+}
+
+// @file test2
+namespace test2;
+
+private func f() {
+	g();
+}
+
+private func g() {
+	
+}
+
+// @file main
+namespace main;
+
+private func f() {
+	g();
+}
+
+private func g() {	
+}
+
+def @main() {
+	f();
+	g();
+}
+
+// @test access_test
+// @file test1
+/* @errors
+test2.z2(6, 10): can't access private member:
+		func g()        [namespace test1]
+*/
+namespace test1;
+
+private func f() {
+	g();
+}
+
+private func g() {
+	
+}
+
+// @file test2
+namespace test2;
+
+private func f() {
+	g();
+	test1.g();
+}
+
+private func g() {
+	
+}
+
+// @file main
+namespace main;
+
+private func f() {
+	g();
+}
+
+private func g() {	
+}
+
+def @main() {
+	f();
+	g();
+}
+
+// @test access_test
+// @file test1
+/* @errors
+main.z2(14, 10): can't access private member:
+		func g()        [namespace test1]
+*/
+namespace test1;
+
+private func f() {
+	g();
+}
+
+private func g() {
+	
+}
+
+// @file test2
+namespace test2;
+
+private func f() {
+	g();
+}
+
+private func g() {
+	
+}
+
+// @file main
+namespace main;
+
+private func f() {
+	g();
+}
+
+private func g() {	
+}
+
+def @main() {
+	f();
+	g();
+	test1.g();
+}
+
+// @test access_test
+// @file test1
+/* @errors
+main.z2(14, 10): can't access private member:
+		func g()        [namespace test2]
+*/
+namespace test1;
+
+private func f() {
+	g();
+}
+
+private func g() {
+	
+}
+
+// @file test2
+namespace test2;
+
+private func f() {
+	g();
+}
+
+private func g() {
+	
+}
+
+// @file main
+namespace main;
+
+private func f() {
+	g();
+}
+
+private func g() {	
+}
+
+def @main() {
+	f();
+	g();
+	test2.g();
+}

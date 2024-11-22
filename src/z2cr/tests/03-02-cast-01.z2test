@@ -2,7 +2,7 @@
 // @file
 namespace test;
 
-// @dumpGlobalVarDef
+/* @dumpGlobalVarDef
 int32 test::b1 = 0;
 int32 test::b2 = 0;
 int32 test::b3 = 0;
@@ -16,7 +16,7 @@ int32 test::b10 = 0;
 int32 test::b11 = 0;
 int32 test::b12 = 0;
 int32 test::b13 = 0;
-// @dumpEnd
+*/
 val b1 = Int{Bool{}};
 val b2 = Int{Small{}};
 val b3 = Int{Byte{}};
@@ -35,7 +35,7 @@ val b13 = Int{PtrSize{}};
 // @file
 namespace test;
 
-// @dumpGlobalVarDef
+/* @dumpGlobalVarDef
 int32 test::b1 = 112;
 int32 test::b2 = 112;
 int32 test::b3 = 112;
@@ -49,7 +49,7 @@ int32 test::b10 = 112;
 int32 test::b11 = 112;
 int32 test::b12 = 112;
 int32 test::b13 = 112;
-// @dumpEnd
+*/
 val b1 = Int{Bool{112}};
 val b2 = Int{Small{112}};
 val b3 = Int{Byte{112}};
@@ -68,7 +68,7 @@ val b13 = Int{PtrSize{112}};
 // @file
 namespace test;
 
-// @dumpGlobalVarDef
+/* @dumpGlobalVarDef
 bool test::a1 = false;
 int8 test::a2 = 0;
 uint8 test::a3 = 0u;
@@ -95,7 +95,7 @@ int32 test::b10 = (int32)(test::a10);
 int32 test::b11 = (int32)(test::a11);
 int32 test::b12 = (int32)(test::a12);
 int32 test::b13 = (int32)(test::a13);
-// @dumpEnd
+*/
 val a1 = Bool{};
 val a2 = Small{};
 val a3 = Byte{};
