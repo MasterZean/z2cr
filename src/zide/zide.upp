@@ -2,7 +2,7 @@ uses
 	CtrlLib,
 	z2crlib,
 	TabBar,
-	CodeEditor;
+	CodeEditorFork;
 
 file
 	AssemblyBrowser.h,
