@@ -1,10 +1,14 @@
 uses
 	CtrlLib,
-	z2crlib;
+	z2crlib,
+	TabBar,
+	CodeEditor;
 
 file
 	AssemblyBrowser.h,
 	AssemblyBrowser.cpp,
+	EditorManager.h,
+	EditorManager.cpp,
 	ZideWindow.h,
 	ZideWindow.cpp,
 	main.cpp,

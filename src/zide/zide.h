@@ -2,6 +2,8 @@
 #define _zide_zide_h_
 
 #include <CtrlLib/CtrlLib.h>
+#include <TabBar/TabBar.h>
+#include <CodeEditor/CodeEditor.h>
 
 using namespace Upp;
 

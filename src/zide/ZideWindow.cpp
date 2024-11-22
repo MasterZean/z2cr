@@ -11,10 +11,19 @@ ZideWindow::ZideWindow() {
 	splAsbCanvas.Horz(asbAss, canvas);
 	splAsbCanvas.SetPos(1750);
 	
+	canvas.Add(tabs);
+	tabs.SizePos();
+	
+	tabs.WhenTabChange = THISBACK(OnTabChange);
+	tabs.WhenEditorCursor = THISBACK(OnEditorCursor);
+	tabs.WhenEditorChange = THISBACK(OnEditorChange);
+	
 	asbAss.WhenSelectSource = THISBACK(OnSelectSource);
 	asbAss.WhenFileRemoved = THISBACK(OnFileRemoved);
 	asbAss.WhenFileSaved = THISBACK(OnFileSaved);
 	asbAss.WhenRenameFiles = THISBACK(OnRenameFiles);
+	
+	tabs.ShowTabs(false);
 }
 
 void ZideWindow::Serialize(Stream& s) {
@@ -96,6 +105,8 @@ void ZideWindow::LoadModule(const String& mod, int color) {
 void ZideWindow::SetupLast() {
 	asbAss.OpenNodes(openNodes);
 	asbAss.HighlightFile(activeFile);
+	
+	tabs.ShowTabs(tabs.GetCount());
 }
 
 bool ZideWindow::OnRenameFiles(const Vector<String>& files, const String& oldPath, const String& newPath) {
@@ -138,7 +149,7 @@ void ZideWindow::OnFileRemoved(const String& file) {
 void ZideWindow::OnSelectSource() {
 	activeFile = asbAss.GetCursorItem();
 		
-	//tabs.Open(openFile);
+	tabs.Open(activeFile);
 	//mnuMain.Set(THISBACK(DoMainMenu));
 }
 
@@ -146,4 +157,39 @@ void ZideWindow::OnFileSaved(const String& file) {
 	/*int i = tabs.tabFiles.FindKey(file);
 	if (i != -1)
 		tabs.Save(i);*/
+}
+
+void ZideWindow::OnTabChange() {
+	activeFile = tabs.ActiveFile();
+	asbAss.HighlightFile(activeFile);
+	
+	tabs.ShowTabs(tabs.GetCount());
+	//splExplore.Show(tabs.tabFiles.GetCount());
+}
+
+void ZideWindow::OnEditorChange() {
+	OpenFileInfo* info = tabs.GetInfo();
+	if (!info)
+		return;
+	
+	SmartEditor& editor = info->editor;
+	if (!editor.IsEnabled())
+		return;
+	
+	info->Hash++;
+	//if (editThread)
+	//	Thread().Run(callback3(OutlineThread, this, editor.Get(), info->Hash));
+}
+
+void ZideWindow::OnEditorCursor() {
+	OpenFileInfo* info = tabs.GetInfo();
+	if (!info)
+		return;
+	
+	CodeEditor& editor = info->editor;
+	if (!editor.IsEnabled())
+		return;
+	
+	Point p = editor.GetColumnLine(editor.GetCursor());
+	//lblLine.SetText(String().Cat() << "Ln " << (p.y + 1) << ", Cl " << (p.x + 1));
 }

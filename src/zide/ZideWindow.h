@@ -4,6 +4,7 @@
 #include "zide.h"
 
 #include "AssemblyBrowser.h"
+#include "EditorManager.h"
 
 class ZideWindow : public WithzideLayout<TopWindow> {
 public:
@@ -25,17 +26,21 @@ private:
 	Index<String> recentPackages;
 	Vector<String> openNodes;
 	String activeFile;
+	EditorManager tabs;
 	
 	Splitter splAsbCanvas;
 	AssemblyBrowser asbAss;
 	ParentCtrl canvas;
 	
+	void OnTabChange();
 	void OnSelectSource();
+	void OnEditorChange();
+	void OnEditorCursor();
 	
 	bool OnRenameFiles(const Vector<String>& files, const String& oldPath, const String& newPath);
 	void OnFileRemoved(const String& file);
 	void OnFileSaved(const String& file);
-	
+		
 	void SetupLast();
 };
 
