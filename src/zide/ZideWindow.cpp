@@ -9,6 +9,22 @@ ZideWindow::ZideWindow() {
 	int r = HorzLayoutZoom(100);
 	int l = HorzLayoutZoom(250);
 	
+	bool toolbar_in_row = true;
+	mnuMain.Transparent();
+	
+	if (toolbar_in_row) {
+		int tcy = mnuMain.GetStdHeight() + 2 * Zy(2);
+		
+		bararea.Add(mnuMain.LeftPos(0, l).VCenterPos(mnuMain.GetStdHeight()));
+		bararea.Add(lblLine.RightPos(4, r).VSizePos(2, 3));
+		lblLine.AddFrame(ThinInsetFrame());
+		bararea.Height(tcy);
+		
+		AddFrame(bararea);
+	}
+	
+	mnuMain.Set(THISBACK(DoMainMenu));
+		
 	Add(splAsbCanvas);
 	splAsbCanvas.Horz(asbAss, canvas);
 	splAsbCanvas.SetPos(1750);
@@ -23,7 +39,7 @@ ZideWindow::ZideWindow() {
 	asbAss.WhenSelectSource = THISBACK(OnSelectSource);
 	asbAss.WhenFileRemoved = THISBACK(OnFileRemoved);
 	asbAss.WhenFileSaved = THISBACK(OnFileSaved);
-	asbAss.WhenRenameFiles = THISBACK(OnRenameFiles);
+	asbAss.WhenRenameFiles = callback(&tabs, &EditorManager::OnRenameFiles);
 	
 	WhenClose = THISBACK(OnClose);
 	
@@ -51,8 +67,8 @@ void ZideWindow::Serialize(Stream& s) {
 		s % maximized % width % height;
 	}
 	
-	s % LastPackage % recentPackages % openNodes % activeFile;
-	s % settings;
+	s % LastPackage % RecentPackages % openNodes % activeFile % openDialogPreselect;
+	s % settings % oShowPakPaths;
 }
 
 void ZideWindow::LoadPackage(const String& package) {
@@ -94,12 +110,12 @@ void ZideWindow::LoadPackage(const String& package) {
 	openNodes.Add(LastPackage);
 	SetupLast();
 	
-	int i = recentPackages.Find(LastPackage);
+	int i = RecentPackages.Find(LastPackage);
 	if (i == -1)
-		recentPackages.Insert(0, LastPackage);
+		RecentPackages.Insert(0, LastPackage);
 	else {
-		recentPackages.Remove(i);
-		recentPackages.Insert(0, LastPackage);
+		RecentPackages.Remove(i);
+		RecentPackages.Insert(0, LastPackage);
 	}
 }
 
@@ -111,39 +127,10 @@ void ZideWindow::SetupLast() {
 	asbAss.OpenNodes(openNodes);
 	asbAss.HighlightFile(activeFile);
 	
-	tabs.ShowTabs(tabs.GetCount());
-}
-
-bool ZideWindow::OnRenameFiles(const Vector<String>& files, const String& oldPath, const String& newPath) {
-	/*for (int i = 0; i < files.GetCount(); i++) {
-		int j = tabs.tabFiles.FindKey(files[i].ToWString());
-		if (j != -1) {
-			if (tabs.IsChanged(j)) {
-				tabs.Save(j);
-			}
-		}
-	}*/
+	tabs.SetSettings(settings);
 	
-	if (FileMove(oldPath, newPath))
-		for (int i = 0; i < files.GetCount(); i++) {
-			/*int j = tabs.tabFiles.FindKey(files[i].ToWString());
-			if (j != -1) {
-				ASSERT(files[i].StartsWith(oldPath));
-				String np = newPath + files[i].Mid(oldPath.GetLength());
-				WString w1 = tabs.tabFiles.GetKey(j);
-				WString w2 = np.ToWString();
-				int k = tabs.files.Find(w1);
-				ASSERT(k != -1);
-				OpenFileInfo* info = tabs.files.Detach(k);
-				tabs.files.Add(w2);
-				tabs.files.Set(tabs.files.GetCount() - 1, info);
-				DUMP(w1);
-				DUMP(w2);
-				tabs.tabFiles.RenameFile(w1, w2, ZImg::zsrc);
-			}*/
-		}
-		
-	return true;
+	tabs.ShowTabs(tabs.GetCount());
+	asbAss.SetShowPaths(oShowPakPaths);
 }
 
 void ZideWindow::OnFileRemoved(const String& file) {
@@ -196,7 +183,7 @@ void ZideWindow::OnEditorCursor() {
 		return;
 	
 	Point p = editor.GetColumnLine(editor.GetCursor());
-	//lblLine.SetText(String().Cat() << "Ln " << (p.y + 1) << ", Cl " << (p.x + 1));
+	lblLine.SetText(String().Cat() << "Ln " << (p.y + 1) << ", Cl " << (p.x + 1));
 }
 
 void ZideWindow::OnClose() {

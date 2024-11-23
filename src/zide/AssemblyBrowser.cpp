@@ -321,14 +321,15 @@ void AssemblyBrowser::OnRenameFile() {
 }
 
 void AssemblyBrowser::OnRenameFolder() {
-	int i = treModules.GetCursor();
-	if (i == -1)
+	int index = treModules.GetCursor();
+	if (index == -1)
 		return;
 	
-	String curName = treModules.GetValue(i);
+	String curName = treModules.GetValue(index);
 	String newName = curName;
+	
 	if (EditText(curName, "Rename folder", "New folder name") && curName != newName) {
-		String path = treModules[i];
+		String path = treModules[index];
 		String oldPath = GetFileDirectory(path) + newName;
 		String newPath = GetFileDirectory(path) + curName;
 		
@@ -337,37 +338,37 @@ void AssemblyBrowser::OnRenameFolder() {
 
 		WhenRenameFiles(sub, oldPath, newPath);
 
-		TreeCtrl::Node n = treModules.GetNode(i);
+		TreeCtrl::Node n = treModules.GetNode(index);
 		n.key = newPath;
 		n.value = curName;
-		treModules.SetNode(i, n);
+		treModules.SetNode(index, n);
 	}
 }
 
 void AssemblyBrowser::OnDeleteFolder() {
-	int i = treModules.GetCursor();
-	if (i == -1)
+	int index = treModules.GetCursor();
+	if (index == -1)
 		return;
 	
-	String path = treModules[i];
+	String path = treModules[index];
 	int del = PromptDeleteDontDeleteCancel("[ph Are you sure you want to permanently delete the folder:&-|[* " + DeQtf(path) + "]&from disk?]");
 	if (del == 1) {
 		if (DirectoryDelete(path)) {
-			treModules.Remove(i);
+			treModules.Remove(index);
 		}
 	}
 }
 
 void AssemblyBrowser::OnDeleteFile() {
-	int i = treModules.GetCursor();
-	if (i == -1)
+	int index = treModules.GetCursor();
+	if (index == -1)
 		return;
 	
-	String path = treModules[i];
+	String path = treModules[index];
 	int del = PromptDeleteDontDeleteCancel("[ph Are you sure you want to permanently delete the file:&-|[* " + DeQtf(path) + "]&from disk?]");
 	if (del == 1) {
 		if (DeleteFile(path)) {
-			treModules.Remove(i);
+			treModules.Remove(index);
 			WhenFileRemoved(path);
 		}
 	}
@@ -463,6 +464,25 @@ void AssemblyBrowser::HighlightFile(String& file) {
 	
 	if (index != -1)
 		treModules.SetCursor(index);
+}
+
+void AssemblyBrowser::SetShowPaths(bool show) {
+	showPaths = show;
+	
+	for (int i = 0; i < treModules.GetChildCount(0); i++) {
+		int j = treModules.GetChild(0, i);
+		String path = treModules.GetNode(j).key;
+		String module = GetFileName(path);
+		String modPath = GetFileDirectory(path);
+		
+		if (showPaths) {
+			String v = module;
+			v << " (" << modPath << ")";
+			treModules.Set(j, path, v);
+		}
+		else
+			treModules.Set(j, path, module);
+	}
 }
 
 

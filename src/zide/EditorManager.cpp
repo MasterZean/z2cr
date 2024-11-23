@@ -142,6 +142,9 @@ void EditorManager::SetSettings(CodeEditor& editor, Settings& settings, const St
 }
 
 void EditorManager::SetSettings(Settings& settings) {
+	tabFiles.SetAlign(settings.TabPos);
+	tabFiles.Crosses(settings.TabClose >= 0, settings.TabClose);
+	
 	CodeEditor::LoadHlStyles(settings.Style);
 	
 	for (int i = 0; i < files.GetCount(); i++)
@@ -228,5 +231,37 @@ bool EditorManager::PromptSaves() {
 		}
 	}
 
+	return true;
+}
+
+bool EditorManager::OnRenameFiles(const Vector<String>& fileListToRename, const String& oldPath, const String& newPath) {
+	for (int i = 0; i < fileListToRename.GetCount(); i++) {
+		int j = tabFiles.FindKey(fileListToRename[i].ToWString());
+		if (j != -1) {
+			if (IsChanged(j)) {
+				Save(j);
+			}
+		}
+	}
+	
+	if (FileMove(oldPath, newPath))
+		for (int i = 0; i < fileListToRename.GetCount(); i++) {
+			int j = tabFiles.FindKey(fileListToRename[i].ToWString());
+			if (j != -1) {
+				ASSERT(fileListToRename[i].StartsWith(oldPath));
+				String np = newPath + fileListToRename[i].Mid(oldPath.GetLength());
+				WString w1 = tabFiles.GetKey(j);
+				WString w2 = np.ToWString();
+				int k = files.Find(w1);
+				ASSERT(k != -1);
+				OpenFileInfo* info = files.Detach(k);
+				files.Add(w2);
+				files.Set(files.GetCount() - 1, info);
+				DUMP(w1);
+				DUMP(w2);
+				tabFiles.RenameFile(w1, w2, ZImg::zsrc);
+			}
+		}
+		
 	return true;
 }

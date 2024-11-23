@@ -15,6 +15,7 @@ public:
 	String CurFolder;
 	String CompilerExe;
 	String LastPackage;
+	Index<String> RecentPackages;
 	
 	Settings settings;
 	
@@ -27,11 +28,16 @@ public:
 	
 private:
 	Vector<String> packages;
-	Index<String> recentPackages;
 	Vector<String> openNodes;
 	String activeFile;
 	EditorManager tabs;
+	String openDialogPreselect;
+	bool oShowPakPaths = true;
 	
+	FrameTop<StaticBarArea> bararea;
+	MenuBar mnuMain;
+	Label lblLine;
+		
 	Splitter splAsbCanvas;
 	AssemblyBrowser asbAss;
 	ParentCtrl canvas;
@@ -41,13 +47,26 @@ private:
 	void OnEditorChange();
 	void OnEditorCursor();
 	
-	bool OnRenameFiles(const Vector<String>& files, const String& oldPath, const String& newPath);
 	void OnFileRemoved(const String& file);
 	void OnFileSaved(const String& file);
 	
 	void OnClose();
 		
 	void SetupLast();
+	
+	void DoMainMenu(Bar& bar);
+	
+	void DoMenuFile(Bar& bar);
+	void OnMenuFileLoadPackage();
+	void OnMenuFileLoadFile();
+	void OnMenuFileSaveFile();
+	void OnMenuFileSaveAll();
+	void OnMenuShowPackagePaths();
+	void DoMenuRecent(Bar& bar);
+	void OoMenuRecent(const String& path);
+	
+	void DoMenuHelp(Bar& bar);
+	void OnMenuHelpAbout();
 };
 
 #endif

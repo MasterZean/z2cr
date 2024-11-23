@@ -104,6 +104,8 @@ public:
 	void SaveAll();
 	void SaveAllIfNeeded();
 	bool PromptSaves();
+			
+	bool OnRenameFiles(const Vector<String>& fileListToRename, const String& oldPath, const String& newPath);
 	
 private:
 	FileTabs tabFiles;

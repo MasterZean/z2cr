@@ -90,6 +90,7 @@ GUI_APP_MAIN {
 
 	if (!LoadFromFile(zide)) {
 		zide.LastPackage = NativePath("c:/temp/test.pak");
+		zide.RecentPackages.Add(zide.LastPackage);
 	}
 
 	zide.LoadPackage(zide.LastPackage);
