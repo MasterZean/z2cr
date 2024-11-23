@@ -584,7 +584,7 @@ public:
 	CodeEditor();
 	virtual ~CodeEditor();
 
-	static void InitKeywords();
+	//static void InitKeywords();
 };
 
 String ReadList(WithDropChoice<EditString>& e);

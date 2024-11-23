@@ -10,6 +10,7 @@ int                     CSyntax::kw_macros;
 int                     CSyntax::kw_logs;
 int                     CSyntax::kw_sql_base;
 int                     CSyntax::kw_sql_func;
+bool                    CSyntax::is_init_keywords = false;
 
 int CSyntax::InitUpp(const char **q)
 {
@@ -20,6 +21,9 @@ int CSyntax::InitUpp(const char **q)
 
 void CSyntax::InitKeywords()
 {
+	if (is_init_keywords)
+		return;
+	is_init_keywords = true;
     static const char *cpp[] = {
         "__asm", "__cdecl", "__declspec", "__except", "__fastcall",
         "__finally", "__inline", "__int16", "__int32", "__int64",
@@ -364,4 +368,23 @@ int CSyntax::LoadSyntax(const char *keywords[], const char *names[])	// Changed
 	return keyword.GetCount() - 1;
 }
 
+void CSyntax::LoadSyntax(int kind, const char* keywords[], const char* names[])
+{
+	Index<String>& key = keyword[kind];
+	int& brks = breakers[kind];
+	brks = INT_MAX;
+	while(*keywords) {
+		if(**keywords == '!') {
+			brks = key.GetCount();
+			key.Add(1 + *keywords++);
+		}
+		else
+			key.Add(*keywords++);
+	}
+	Index<String>& nam = name[kind];
+	while(*names)
+		nam.Add(*names++);
 }
+
+}
+

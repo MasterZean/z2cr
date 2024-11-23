@@ -13,6 +13,8 @@ public:
 	virtual void            ReformatComment(CodeEditor& e);
 	virtual bool            GetBlockHeader(Point& blk_start, Point& blk_end);
 
+	static void InitKeywords();
+
 protected:
 	bool        comment;       // we are in /* */ block comment
 	bool        linecomment;   // we are in // line comment (because it can be continued by '\')
@@ -46,7 +48,6 @@ protected:
 	int         highlight;    // subtype, 0 = C++
 
 	static int  InitUpp(const char **q);
-	static void InitKeywords();
 	const wchar *DoComment(HighlightOutput& hls, const wchar *p, const wchar *e);
 
 	static Vector<Index<String>> keyword;
@@ -54,6 +55,7 @@ protected:
 	static Vector<Index<String>> name;
 	static Index<String> kw_upp;
 	static int kw_macros, kw_logs, kw_sql_base, kw_sql_func;
+	static bool is_init_keywords;
 
 	
 	static Color BlockColor(int level);
@@ -85,6 +87,20 @@ public:
 	};
 	
 	void    SetHighlight(int h)           { highlight = h; }
+
+	static void SetNames(int high, Index<String>& n) { name[high] = clone(n); }
+
+	static int RegisterNewHighlightType()
+	{
+		auto count = keyword.GetCount();
+		ASSERT(count == name.GetCount());
+		keyword.Add();
+		name.Add();
+		breakers.Add();
+		return count;
+	}
+
+	static void LoadSyntax(int kind, const char* keywords[], const char* names[]);
 
 	CSyntax()                             { Clear(); }
 };
