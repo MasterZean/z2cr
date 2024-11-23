@@ -10,9 +10,13 @@ class ZideWindow : public WithzideLayout<TopWindow> {
 public:
 	typedef ZideWindow CLASSNAME;
 	
+	static int HIGHLIGHT_Z2;
+	
 	String CurFolder;
 	String CompilerExe;
 	String LastPackage;
+	
+	Settings settings;
 	
 	ZideWindow();
 	
@@ -40,6 +44,8 @@ private:
 	bool OnRenameFiles(const Vector<String>& files, const String& oldPath, const String& newPath);
 	void OnFileRemoved(const String& file);
 	void OnFileSaved(const String& file);
+	
+	void OnClose();
 		
 	void SetupLast();
 };

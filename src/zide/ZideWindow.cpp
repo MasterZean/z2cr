@@ -1,5 +1,7 @@
 #include "ZideWindow.h"
 
+int ZideWindow::HIGHLIGHT_Z2;
+
 ZideWindow::ZideWindow() {
 	CtrlLayout(*this, "ZIDE");
 	Sizeable().Zoomable().Icon(ZImg::zide());
@@ -22,6 +24,8 @@ ZideWindow::ZideWindow() {
 	asbAss.WhenFileRemoved = THISBACK(OnFileRemoved);
 	asbAss.WhenFileSaved = THISBACK(OnFileSaved);
 	asbAss.WhenRenameFiles = THISBACK(OnRenameFiles);
+	
+	WhenClose = THISBACK(OnClose);
 	
 	tabs.ShowTabs(false);
 }
@@ -48,6 +52,7 @@ void ZideWindow::Serialize(Stream& s) {
 	}
 	
 	s % LastPackage % recentPackages % openNodes % activeFile;
+	s % settings;
 }
 
 void ZideWindow::LoadPackage(const String& package) {
@@ -192,4 +197,13 @@ void ZideWindow::OnEditorCursor() {
 	
 	Point p = editor.GetColumnLine(editor.GetCursor());
 	//lblLine.SetText(String().Cat() << "Ln " << (p.y + 1) << ", Cl " << (p.x + 1));
+}
+
+void ZideWindow::OnClose() {
+	while (Thread::GetCount()) {
+		Sleep(10);
+	}
+	
+	if (tabs.PromptSaves())
+		Close();
 }

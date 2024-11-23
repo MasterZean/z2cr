@@ -7,6 +7,8 @@ EditorManager::EditorManager() {
 	
 	tabFiles.StyleDefault().Write().Variant1Crosses();
 	tabFiles.WhenAction = THISBACK(OnTabChange);
+	tabFiles.WhenClose = THISBACK(OnTabClose);
+	tabFiles.ConfirmClose = THISBACK(OnConfirmClose);
 }
 
 void EditorManager::Open(const String& item, bool forceReload) {
@@ -40,7 +42,7 @@ void EditorManager::Open(const String& item, bool forceReload) {
 		//f.editor.SetBarLight(settings.Theme == 0);
 		
 		f.editor.AddFrame(RightSeparatorFrame());
-		//String syn = EditorSyntax::GetSyntaxForFilename(item);
+		String syn = EditorSyntax::GetSyntaxForFilename(item);
 		f.editor.WhenAction = THISBACK(OnEditorChange);
 		f.editor.WhenSel = THISBACK(OnEditorCursor);
 		//f.editor.WhenPopup = WhenPopup;
@@ -52,7 +54,7 @@ void EditorManager::Open(const String& item, bool forceReload) {
 		f.editor.HSizePos().VSizePos();
 		WhenEditorCursor();
 		f.editor.SetFocus();
-		//SetSettings(f.editor, settings, syn);
+		SetSettings(f.editor, settings, syn);
 		WhenEditorChange();
 		
 		//f.editor.WhenAssistChange = THISBACK(OnAssistChange);
@@ -119,4 +121,112 @@ void EditorManager::SetChanged(int i, bool changed) {
 		tabFiles.SetColor(i, Color(255, 127, 127));
 	else
 		tabFiles.SetColor(i, Null);
+}
+
+void EditorManager::SetSettings(CodeEditor& editor, Settings& settings, const String& syntax) {
+	editor.ShowTabs(settings.ShowTabs);
+	editor.ShowSpaces(settings.ShowSpaces);
+	editor.ShowLineEndings(settings.ShowNewlines);
+	editor.WarnWhiteSpace(settings.WarnSpaces);
+	editor.TabSize(settings.TabSize);
+	editor.IndentSpaces(settings.IndentSpaces);
+	editor.LineNumbers(settings.ShowLineNums);
+	editor.ShowCurrentLine(settings.HighlightLine ? HighlightSetup::GetHlStyle(HighlightSetup::SHOW_LINE).color : (Color)Null);
+	editor.BorderColumn(settings.LinePos, settings.LineColor);
+	editor.HiliteScope(settings.ScopeHighlight);
+	editor.HiliteBracket(settings.Brackets);
+	editor.ThousandsSeparator(settings.Thousands);
+	editor.LoadHlStyles(settings.Style);
+	
+	editor.Highlight(syntax);
+}
+
+void EditorManager::SetSettings(Settings& settings) {
+	CodeEditor::LoadHlStyles(settings.Style);
+	
+	for (int i = 0; i < files.GetCount(); i++)
+		SetSettings(files[i].editor, settings, EditorSyntax::GetSyntaxForFilename(files.GetKey(i).ToString()));
+	
+	this->settings = settings;
+}
+
+void EditorManager::SetColors(int colors) {
+	for (int i = 0; i < files.GetCount(); i++) {
+		if (colors == 0) {
+			files[i].editor.WhiteTheme();
+			// TODO:
+			//files[i].editor.SetBarLight(true);
+		}
+		else if (colors == 1) {
+			//DarkTheme();
+			// TODO:
+			//files[i].editor.SetBarLight(false);
+		}
+	}
+}
+
+void EditorManager::OnTabClose(Value val) {
+	WString w = val;
+	int j = files.Find(w);
+	if (j != -1)
+		files.Remove(j);
+}
+
+bool EditorManager::OnConfirmClose(Value val) {
+	WString w = val;
+	int i = tabFiles.FindKey(w);
+
+	if (i == -1)
+		return false;
+
+	if (IsChanged(i)) {
+		BeepQuestion();
+		String fn = DeQtf(tabFiles[i].key.ToString());
+		int save = PromptSaveDontSaveCancel("[ph The following file was changed since last save:&-|[* " + fn + "]&Would you like to save it?]");
+		if (save == 1)
+			Save(i);
+		else if (save == -1)
+			return false;
+	}
+		
+	return true;
+}
+
+void EditorManager::Save(int i) {
+	if (i < 0 || i > tabFiles.GetCount())
+		return;
+
+	int j = files.Find(tabFiles[i].key);
+	if (j == -1)
+		return;
+
+	SaveFile(files.GetKey(j).ToString(), files[j].editor.Get());
+	SetChanged(i, false);
+}
+
+void EditorManager::SaveAll() {
+	for (int i = 0; i < tabFiles.GetCount(); i++)
+		Save(i);
+}
+
+void EditorManager::SaveAllIfNeeded() {
+	for (int i = 0; i < tabFiles.GetCount(); i++)
+		if (IsChanged(i))
+			Save(i);
+}
+
+bool EditorManager::PromptSaves() {
+	for (int i = 0; i < tabFiles.GetCount(); i++) {
+		OpenFileInfo& info = GetInfo(i);
+		if (info.IsChanged) {
+			BeepQuestion();
+			int save = PromptSaveDontSaveCancel("[ph The following file was changed since last save:&-|[* " + DeQtf(tabFiles[i].key.ToString()) + "]&Would you like to save it?]");
+			if (save == 1)
+				Save(i);
+			else if (save == -1)
+				return false;
+		}
+	}
+
+	return true;
 }

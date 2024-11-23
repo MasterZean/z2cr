@@ -3,6 +3,34 @@
 
 #include "zide.h"
 
+class Settings {
+public:
+	bool   ShowTabs = false;
+	bool   ShowSpaces = false;
+	bool   ShowNewlines = false;
+	bool   WarnSpaces = true;
+	int    TabSize = 4;
+	bool   IndentSpaces = false;
+	bool   ShowLineNums = true;
+	bool   HighlightLine = true;
+	int    TabPos = AlignedFrame::TOP;
+	int    TabClose = AlignedFrame::RIGHT;
+	int    LinePos = 96;
+	Color  LineColor = LtGray();
+	int    ScopeHighlight = 2;
+	int    Brackets = 1;
+	bool   Thousands = true;
+	int    Theme = 0;
+	
+	String Style;
+	
+	void Serialize(Stream& s) {
+		s % ShowTabs % ShowSpaces % ShowNewlines % WarnSpaces % TabSize % IndentSpaces
+		  % ShowLineNums % HighlightLine % TabPos % TabClose % LinePos % LineColor % Style
+		  % ScopeHighlight % Brackets % Thousands % Theme;
+	}
+};
+
 class SmartEditor: public CodeEditor {
 public:
 	typedef SmartEditor CLASSNAME;
@@ -67,15 +95,30 @@ public:
 		return &files[j];
 	}
 	
+	static void SetSettings(CodeEditor& editor, Settings& settings, const String& syntax);
+	
+	void SetSettings(Settings& settings);
+	void SetColors(int colors);
+	
+	void Save(int i);
+	void SaveAll();
+	void SaveAllIfNeeded();
+	bool PromptSaves();
+	
 private:
 	FileTabs tabFiles;
 	ParentCtrl canvas;
+	
+	Settings settings;
 	
 	ArrayMap<WString, OpenFileInfo> files;
 
 	void OnTabChange();
 	void OnEditorChange();
 	void OnEditorCursor();
+	
+	void OnTabClose(Value val);
+	bool OnConfirmClose(Value val);
 	
 	OpenFileInfo& GetInfo(int i);
 };
