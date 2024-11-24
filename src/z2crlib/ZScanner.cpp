@@ -5,20 +5,21 @@ extern char DoubleOpCh1[9];
 extern char DoubleOpCh2[9];
 
 void ZScanner::Scan() {
-	nmspace = &ass.DefaultNamespace();
+	nameSpace = &ass.DefaultNamespace();
 	
 	while (!parser.IsEof()) {
-		Point p = parser.GetPoint();
-		
+		auto p = parser.GetFullPos();
 		if (parser.Id("namespace")) {
-			ScanNamespace();
+			ScanNamespace(p);
 			
 			if (parser.Char('{')) {
 				bool back = inNamespaceBlock;
 				inNamespaceBlock = true;
 				
-				while (!parser.IsChar('}'))
-					ScanSingle();
+				while (!parser.IsChar('}')) {
+					auto p = parser.GetFullPos();
+					ScanSingle(p);
+				}
 				
 				parser.Expect('}');
 				
@@ -27,18 +28,20 @@ void ZScanner::Scan() {
 			else
 				parser.ExpectEndStat();
 		}
-		else
-			ScanSingle();
+		else {
+			ScanSingle(p);
+		}
 	}
 }
 
-void ZScanner::ScanSingle() {
+void ZScanner::ScanSingle(const ZSourcePos& p) {
 	if (parser.Id("using"))
-		ScanUsing();
+		ScanUsing(p);
 	else if (parser.Id("private")) {
 		if (parser.Char('{')) {
 			while (!parser.IsChar('}')) {
-				if (ScanDeclaration(AccessType::Private)) {
+				auto p = parser.GetFullPos();
+				if (ScanDeclaration(p, AccessType::Private)) {
 					// ALL GOOD
 				}
 				else {
@@ -49,7 +52,7 @@ void ZScanner::ScanSingle() {
 		
 			parser.Expect('}');
 		}
-		else if (ScanDeclaration(AccessType::Private)) {
+		else if (ScanDeclaration(p, AccessType::Private)) {
 			// ALL GOOD
 		}
 		else {
@@ -60,7 +63,8 @@ void ZScanner::ScanSingle() {
 	else if (parser.Id("protected")) {
 		if (parser.Char('{')) {
 			while (!parser.IsChar('}')) {
-				if (ScanDeclaration(AccessType::Protected)) {
+				auto p = parser.GetFullPos();
+				if (ScanDeclaration(p, AccessType::Protected)) {
 					// ALL GOOD
 				}
 				else {
@@ -71,7 +75,7 @@ void ZScanner::ScanSingle() {
 			
 			parser.Expect('}');
 		}
-		else if (ScanDeclaration(AccessType::Protected)) {
+		else if (ScanDeclaration(p, AccessType::Protected)) {
 			// ALL GOOD
 		}
 		else {
@@ -80,14 +84,16 @@ void ZScanner::ScanSingle() {
 		}
 	}
 	else if (parser.Id("namespace")) {
-		ScanNamespace();
+		ScanNamespace(p);
 		
 		if (parser.Char('{')) {
 			bool back = inNamespaceBlock;
 			inNamespaceBlock = true;
 			
-			while (!parser.IsChar('}'))
-				ScanSingle();
+			while (!parser.IsChar('}')) {
+				auto p = parser.GetFullPos();
+				ScanSingle(p);
+			}
 			
 			parser.Expect('}');
 			
@@ -96,7 +102,7 @@ void ZScanner::ScanSingle() {
 		else
 			parser.ExpectEndStat();
 	}
-	else if (ScanDeclaration(AccessType::Public)) {
+	else if (ScanDeclaration(p, AccessType::Public)) {
 		// ALL GOOD
 	}
 	else {
@@ -105,22 +111,36 @@ void ZScanner::ScanSingle() {
 	}
 }
 
-bool ZScanner::ScanDeclaration(AccessType accessType) {
+bool ZScanner::ScanDeclaration(const ZSourcePos& p, AccessType accessType) {
+	const ZSourcePos* tp = nullptr;
+	
 	if (parser.IsChar2('@', '[')) {
-		ZSourcePos tp = parser.GetFullPos();
+		tp = &p;
 		TraitLoop();
-		return ScanDeclarationItem(accessType, &tp);
+	}
+		
+	bool isStatic = false;
+	
+	if (parser.IsId("static")) {
+		parser.ReadId();
+		isStatic = true;
 	}
 	
-	return ScanDeclarationItem(accessType);
-
+	return ScanDeclarationItem(accessType, tp, isStatic);
 }
 
-bool ZScanner::ScanDeclarationItem(AccessType accessType, ZSourcePos* tp) {
-	if (parser.Id("def")) {
+bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZSourcePos* tp, bool isStatic) {
+	ZSourcePos p = parser.GetFullPos();
+	
+	if (parser.Id("class")) {
+		ScanClassBody(p, accessType, isStatic, tp);
+	
+		return true;
+	}
+	else if (parser.Id("def")) {
 		Vector<ZFunction*> funcs;
 		do {
-			ZFunction& f = ScanFunc(accessType, false);
+			ZFunction& f = ScanFunc(accessType, false, isStatic);
 			if (tp)
 				f.TraitPos = *tp;
 			
@@ -139,7 +159,7 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, ZSourcePos* tp) {
 		Vector<ZFunction*> funcs;
 		
 		do {
-			ZFunction& f = ScanFunc(accessType, true);
+			ZFunction& f = ScanFunc(accessType, true, isStatic);
 			if (tp)
 				f.TraitPos = *tp;
 			
@@ -155,13 +175,44 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, ZSourcePos* tp) {
 		return true;
 	}
 	else if (parser.Id("val")) {
-		return ScanVar(accessType, false);
+		return ScanVar(accessType, false, isStatic);
 	}
 	else if (parser.Id("const")) {
-		return ScanVar(accessType, true);
+		return ScanVar(accessType, true, isStatic);
 	}
 	
 	return false;
+}
+
+void ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZSourcePos* tp) {
+	ASSERT(nameSpace);
+
+	String name = parser.ExpectId();
+	
+	curClass = &nameSpace->PrepareClass(name);
+	
+	parser.Expect('{');
+	
+	bool back = inClass;
+	inClass = true;
+	
+	while (!parser.IsChar('}')) {
+		auto p = parser.GetFullPos();
+		ScanSingle(p);
+	}
+	
+	parser.Expect('}');
+	
+
+	if (nameSpace == &ass.DefaultNamespace())
+		throw ER::ErrDeclOutsideNamespace(p);
+	
+	curClass = nullptr;
+	
+	inClass = back;
+	
+	if (inClass)
+		Errors << ER::ErrNestedClasses(p);
 }
 
 void ZScanner::ScanType() {
@@ -170,7 +221,7 @@ void ZScanner::ScanType() {
 		parser.ExpectId();
 }
 
-void ZScanner::ScanUsing() {
+void ZScanner::ScanUsing(const ZSourcePos& p) {
 	parser.ExpectId("def");
 	
 	String name = parser.ExpectId();
@@ -182,7 +233,7 @@ void ZScanner::ScanUsing() {
 		fullName << name << ".";
 	}
 	
-	if (nmspace == nullptr) {
+	if (nameSpace == nullptr) {
 		usingNames << fullName;
 	}
 	else {
@@ -191,9 +242,12 @@ void ZScanner::ScanUsing() {
 	}
 	
 	parser.ExpectEndStat();
+	
+	if (inClass)
+		Errors << ER::ErrUsingInClass(p);
 }
 
-void ZScanner::ScanNamespace() {
+void ZScanner::ScanNamespace(const ZSourcePos& p) {
 	ZSourcePos np = parser.GetFullPos();
 	
 	String name = parser.ExpectId();
@@ -208,26 +262,25 @@ void ZScanner::ScanNamespace() {
 	// TODO: delay throw Errors <<
 	if (inNamespaceBlock)
 		throw ER::ErrNestedNamespace(np);
+	if (inClass)
+		Errors << ER::ErrNamespaceInClass(np);
 	
 	int index = ass.Namespaces.Find(fullName);
 	
-	nmspace = &ass.FindAddNamespace(fullName);
+	nameSpace = &ass.FindAddNamespace(fullName);
 	
-	section = &nmspace->Sections.Add();
+	section = &nameSpace->Sections.Add();
 	section->UsingNames = usingNames;
 	
 	namespaceCount++;
 }
 
-bool ZScanner::ScanVar(AccessType accessType, bool aConst) {
+bool ZScanner::ScanVar(AccessType accessType, bool aConst, bool isStatic) {
 	ZSourcePos dp = parser.GetFullPos();
 		
 	String name = parser.ExpectId();
 	
-	if (nmspace == &ass.DefaultNamespace())
-		throw ER::ErrDeclOutsideNamespace(dp);
-	
-	ZVariable& f = nmspace->PrepareVariable(name);
+	ZVariable& f = (curClass ? curClass: nameSpace)->PrepareVariable(name);
 	f.DefPos = dp;
 	f.BackName = name;
 	f.Section = section;
@@ -236,6 +289,9 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst) {
 	
 	if (parser.Char(':')) {
 		ScanType();
+		
+		if (aConst && !parser.IsChar('='))
+			parser.Error(dp.P, "constant must be intilized with a compile-time value");
 		
 		if (parser.Char('='))
 			while (!(parser.IsChar(';')/* || (parser.GetSkipNewLines() == false && (parser.PeekChar() == '\n' || parser.PeekChar() == '\r'))*/)) {
@@ -247,8 +303,12 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst) {
 					
 	}
 	else {
-		if (!parser.IsChar('='))
-			parser.Error(dp.P, String(aConst ? "constant" : "variable") + " must have either an explicit type or be initialized");
+		if (!parser.IsChar('=')) {
+			if (aConst)
+				parser.Error(dp.P, "constant must be intilized with a compile-time value");
+			else
+				parser.Error(dp.P, String(aConst ? "constant" : "variable") + " must have either an explicit type or be initialized");
+		}
 		
 		parser.Expect('=');
 		
@@ -260,13 +320,23 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst) {
 		}
 	}
 	
+	if (nameSpace == &ass.DefaultNamespace())
+		throw ER::ErrDeclOutsideNamespace(dp);
+		
 	parser.ExpectEndStat();
+	
+	if (curClass == nullptr && isStatic) {
+		if (aConst)
+			Errors << ER::ErrCantBeStatic(dp, "namespace symbolic constant");
+		else
+			Errors << ER::ErrCantBeStatic(dp, "namespace variable");
+	}
 	
 	return true;
 }
 
-ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
-	ASSERT(nmspace);
+ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc, bool isStatic) {
+	ASSERT(nameSpace);
 	
 	ZSourcePos dp = parser.GetFullPos();
 	
@@ -308,13 +378,17 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	if (parser.Char(':'))
 		ScanType();
 	
-	ZFunction& f = nmspace->PrepareFunction(name);
+	ZFunction& f = (curClass ? curClass: nameSpace)->PrepareFunction(name);
 	f.IsFunction = aFunc;
 	f.DefPos = dp;
 	f.ParamPos = pp;
 	f.BackName = bname;
 	f.Section = section;
 	f.Access = accessType;
+	
+	if (curClass == nullptr && isStatic) {
+		Errors << ER::ErrCantBeStatic(dp, "namespace function");
+	}
 	
 	return f;
 }

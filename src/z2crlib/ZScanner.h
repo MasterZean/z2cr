@@ -18,27 +18,28 @@ public:
 
 	void Scan();
 	
-	void ScanSingle();
-	void ScanNamespace();
-	bool ScanVar(AccessType accessType, bool aConst);
-	ZFunction& ScanFunc(AccessType accessType, bool aFunc);
+	void ScanSingle(const ZSourcePos& p);
+	void ScanNamespace(const ZSourcePos& p);
+	bool ScanVar(AccessType accessType, bool aConst, bool isStatic);
+	ZFunction& ScanFunc(AccessType accessType, bool aFunc, bool isStatic);
 	void ScanBlock();
 	void ScanToken();
-	bool ScanDeclaration(AccessType accessType);
+	bool ScanDeclaration(const ZSourcePos& p, AccessType accessType);
 	void ScanType();
-	void ScanUsing();
+	void ScanUsing(const ZSourcePos& p);
 	
 protected:
 	Assembly& ass;
 	ZSource& source;
 	ZParser parser;
-	String nameSpace;
 	String bindName;
 	Index<String> usingNames;
 	bool inNamespaceBlock = false;
+	bool inClass = false;
 	
-	ZNamespace* nmspace = nullptr;
+	ZNamespace* nameSpace = nullptr;
 	ZNamespaceSection* section = nullptr;
+	ZClass* curClass = nullptr;
 	
 	bool isIntrinsic = false;
 	bool isDllImport = false;
@@ -54,7 +55,8 @@ protected:
 	void InterpretTrait(const String& trait);
 	void TraitLoop();
 	
-	bool ScanDeclarationItem(AccessType accessType, ZSourcePos* tp = nullptr);
+	bool ScanDeclarationItem(AccessType accessType, const ZSourcePos* tp, bool isStatic);
+	void ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZSourcePos* tp);
 };
 
 #endif

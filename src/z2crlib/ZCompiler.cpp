@@ -122,15 +122,18 @@ bool ZCompiler::ScanSources() {
 
 	// print non critical errors
 	bool found = false;
+	String error;
 	for (int i = 0; i < scanners.GetCount(); i++) {
 		for (int j = 0; j < scanners[i].Errors.GetCount(); j++) {
-			Cout() << scanners[i].Errors[j].ToString() << "\n";
+			error << scanners[i].Errors[j].ToString() << "\n";
 			found = true;
 		}
 	}
 	
-	if (found)
+	if (found) {
+		throw ZException("", error);
 		return false;
+	}
 	
 	return true;
 }
@@ -538,6 +541,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.1.0 (pre-alpha)";
+	static String name = "Z2CR 0.1.1 (pre-alpha)";
 	return name;
 }

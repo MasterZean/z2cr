@@ -134,6 +134,13 @@ ZVariable& ZNamespace::PrepareVariable(const String& aName) {
 	return f;
 }
 
+ZClass& ZNamespace::PrepareClass(const String& aName) {
+	ZClass& f = PreClasses.Add(ZClass(*this));
+	f.Name = aName;
+	return f;
+}
+
+
 Assembly::Assembly() {
 	FindAddNamespace("::");
 	FindAddNamespace("sys.core.");

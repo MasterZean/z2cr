@@ -1,55 +1,84 @@
 // @test namespace
 // @file
-// @error test.z2(4, 7): declaration encountered outside of a namespace
-const a = 0;
+// @error test.z2(4, 1): declaration encountered outside of a namespace
+class Foo {
+}
 
 // @test namespace
 // @file
 // @error test.z2(6, 1): scan: identifier expected, end-of-file found
-const
+class
 
 // @test namespace
 // @file
 // @error test.z2(4, 7): scan: identifier expected, boolean constant 'true' found
-const true;
+class true;
 
 // @test namespace
 // @file
 // @error test.z2(4, 7): scan: identifier expected, character constant found
-const 'a';
+class 'a';
 
 // @test namespace
 // @file
 // @error test.z2(4, 7): scan: identifier expected, keyword 'return' found
-const return;
+class return;
 
 // @test namespace
 // @file
 // @error test.z2(4, 7): scan: identifier expected, '*' found
-const *;
+class *;
 
 // @test namespace
 // @file
 // @error test.z2(4, 7): scan: identifier expected, floating point constant '0.7' found
-const 0.7;
+class 0.7;
 
 // @test namespace
 // @file
-// @error test.z2(6, 7): scan: constant must be intilized with a compile-time value
+// @error test.z2(8, 1): scan: '{' expected, end-of-file found
 namespace test;
 
-const a;
+class Foo
 
 // @test namespace
 // @file
-// @error test.z2(6, 7): scan: constant must be intilized with a compile-time value
+// @error test.z2(8, 1): scan: syntax error: declaration expected: end-of-file found
 namespace test;
 
-const a: Double;
+class Foo {
 
 // @test namespace
 // @file
-// @error test.z2(6, 14): namespace symbolic constant declaration can't be static
 namespace test;
 
-static const a = true;
+class Foo {
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 5): nested classes are not supported
+namespace test;
+
+class Foo {
+	class Bar {
+	}
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 15): namespace declaration can't be part of a class
+namespace test;
+
+class Foo {
+	namespace test.back;
+}
+
+// @test namespace
+// @file
+// @error test.z2(7, 5): using statement inside a class not supported
+namespace test;
+
+class Foo {
+	using def test.back;
+}

@@ -45,6 +45,21 @@ ZException ER::ErrDeclOutsideNamespace(const ZSourcePos& p) {
 	return ZException(p.ToString(), "declaration encountered outside of a namespace");
 }
 
+ZException ER::ErrNestedClasses(const ZSourcePos& p) {
+	return ZException(p.ToString(), "nested classes are not supported");
+}
+
+ZException ER::ErrUsingInClass(const ZSourcePos& p) {
+	return ZException(p.ToString(), "using statement inside a class not supported");
+}
+
+ZException ER::ErrCantBeStatic(const ZSourcePos& p, const String& type) {
+	return ZException(p.ToString(), type + " declaration can't be static");
+}
+
+ZException ER::ErrNamespaceInClass(const ZSourcePos& p) {
+	return ZException(p.ToString(), "namespace declaration can't be part of a class");
+}
 
 void ZException::PrettyPrint(Stream& stream) {
 #ifdef PLATFORM_WIN32

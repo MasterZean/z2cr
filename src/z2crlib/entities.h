@@ -279,6 +279,7 @@ public:
 	
 	Array<ZFunction> PreFunctions;
 	Array<ZVariable> PreVariables;
+	Array<ZClass>    PreClasses;
 	
 	Array<ZNamespaceSection> Sections;
 	ArrayMap<String, ZMethodBundle> Methods;
@@ -287,6 +288,7 @@ public:
 
 	ZFunction& PrepareFunction(const String& aName);
 	ZVariable& PrepareVariable(const String& aName);
+	ZClass& PrepareClass(const String& aName);
 	
 	bool IsResolved = false;
 	

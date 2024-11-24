@@ -39,3 +39,10 @@ val 0.7;
 namespace test;
 
 val a;
+
+// @test namespace
+// @file
+// @error test.z2(6, 12): namespace variable declaration can't be static
+namespace test;
+
+static val a: Char;

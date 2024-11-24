@@ -26,7 +26,11 @@ public:
 	static ZException Duplicate(const String& name, const ZSourcePos& cur, const ZSourcePos& prev);
 	
 	static ZException ErrNestedNamespace(const ZSourcePos& p);
+	static ZException ErrNestedClasses(const ZSourcePos& p);
+	static ZException ErrUsingInClass(const ZSourcePos& p);
 	static ZException ErrDeclOutsideNamespace(const ZSourcePos& p);
+	static ZException ErrCantBeStatic(const ZSourcePos& p, const String& type);
+	static ZException ErrNamespaceInClass(const ZSourcePos& p);
 	
 	static void ErrIncompatOp(const ZSource& src, const Point& p, const String& op, const String& text, const String& text2) {
 		Error(src, p, "Can't apply operator '" + op + "' on types: \n\t\t'\f" + text + "\f' and \n\t\t'\f" + text2 + "\f'");
