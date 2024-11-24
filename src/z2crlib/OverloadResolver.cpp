@@ -166,7 +166,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -174,7 +174,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &ass.CInt->Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; Gather(oo, params, pi, gi, n, a, &ass.CInt->Tt);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
@@ -192,7 +192,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -200,7 +200,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &ass.CByte->Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1 && ambig) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; Gather(oo, params, pi, gi, n, a, &ass.CByte->Tt);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
@@ -222,7 +222,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -230,7 +230,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &ass.CWord->Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; Gather(oo, params, pi, gi, n, a, &ass.CWord->Tt);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
@@ -249,7 +249,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -257,7 +257,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &ass.CDWord->Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; Gather(oo, params, pi, gi, n, a, &ass.CDWord->Tt);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
@@ -277,7 +277,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -285,7 +285,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &ass.CSmall->Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; Gather(oo, params, pi, gi, n, a, &ass.CSmall->Tt);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
@@ -302,7 +302,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -310,7 +310,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &ass.CShort->Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; Gather(oo, params, pi, gi, n, a, &ass.CShort->Tt);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
@@ -325,7 +325,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -333,7 +333,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &ass.CFloat->Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; Gather(oo, params, pi, gi, n, a, &ass.CFloat->Tt);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
@@ -344,7 +344,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		
-		if (n.IsTemporary) {
+		/*if (n.IsTemporary) {
 			gi.Count = 0; GatherDMove(oo, params, pi, gi, a);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
 		}
@@ -352,7 +352,7 @@ ZFunction* ZFunctionResolver::GatherNumeric(Vector<ZFunction*>& oo, Vector<Node*
 		if (n.IsAddressable) {
 			gi.Count = 0; GatherRef(oo, params, pi, gi, n, a, &a.Tt);
 			if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }
-		}
+		}*/
 		
 		gi.Count = 0; GatherD(oo, params, pi, gi, n, a);
 		if (gi.Count == 1)	return gi.Rez; else if (gi.Count > 1) { ambig = true; return nullptr; }

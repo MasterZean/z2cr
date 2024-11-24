@@ -1,0 +1,133 @@
+// @test namespace
+// @file
+// @error test.z2(9, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def @main() {
+	a = 200;
+}
+
+// @test namespace
+// @file
+// @error test.z2(9, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f() {
+	a = 200;
+}
+
+// @test namespace
+// @file
+// @error test.z2(9, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f() {
+	test.a = 200;
+}
+
+// @test namespace
+// @file
+// @error test.z2(9, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f() {
+	::test.a = 200;
+}
+
+// @test namespace
+// @file
+// @error test.z2(9, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f(a: Int) {
+	test.a = 200;
+}
+
+// @test namespace
+// @file
+// @error test.z2(9, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f(a: Int) {
+	::test.a = 200;
+}
+
+// @test namespace
+// @file
+// @error test.z2(10, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f() {
+	const a = 65;
+	a = 300;
+}
+
+// @test namespace
+// @file
+/* @errors
+test.z2(12, 11): duplicate symbol: a, previous occurrence at:
+		test.z2(11, 7)
+*/
+namespace test;
+
+const a = 45;
+
+def f(a: Int) {
+	const a = 65;
+	a = 200;
+}
+
+// @test namespace
+// @file
+/* @errors
+test.z2(14, 15): duplicate symbol: a, previous occurrence at:
+		test.z2(11, 7)
+*/
+namespace test;
+
+const a = 45;
+
+def f(a: Int) {
+	const b = 65; 
+	{
+		const a = 200;
+		a = -48;
+	}
+}
+
+// @test namespace
+// @file
+// @error test.z2(10, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f(a: Int) {
+	const b = 65;
+	b = 200;
+}
+
+// @test namespace
+// @file
+// @error test.z2(9, 5): can't assign to readonly 'Int' instance
+namespace test;
+
+const a = 45;
+
+def f(a: Int) {
+	a = 200;
+}

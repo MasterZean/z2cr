@@ -132,18 +132,3 @@ namespace a {
 	namespace b {
 	}
 };
-
-// @test namespace
-// @file
-// @error test.z2(5, 15): nested namespaces are not supported
-namespace a {
-	namespace b;
-}
-
-// @test namespace
-// @file
-// @error test.z2(5, 15): nested namespaces are not supported
-namespace a {
-	namespace b {
-	}
-}

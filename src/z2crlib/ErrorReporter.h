@@ -10,13 +10,13 @@ public:
 	
 	static bool  NoColor;
 	
-	static const char* White;
-	static const char* Gray;
-	static const char* Red;
-	static const char* Cyan;
-	static const char* Blue;
-	static const char* Green;
-	static const char* Yellow;
+	static String White;
+	static String Gray;
+	static String Red;
+	static String Cyan;
+	static String Blue;
+	static String Green;
+	static String Yellow;
 	
 	static void Error(const ZSource& src, const Point& p, const String& text);
 	

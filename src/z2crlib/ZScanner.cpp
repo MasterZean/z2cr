@@ -289,6 +289,9 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc) {
 	parser.Expect('(');
 	
 	while (!parser.IsChar(')')) {
+		if (parser.IsId("val"))
+			parser.ReadId();
+		
 		parser.ExpectId();
 		parser.Expect(':');
 		

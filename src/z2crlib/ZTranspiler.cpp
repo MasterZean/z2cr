@@ -462,7 +462,7 @@ void ZTranspiler::Proc(ConstNode& node, Stream& stream) {
 		
 		stream << '\'';
 	}
-	else if (node.Tt.Class == ass.CCls) {
+	else if (node.Tt.Class == ass.CClass) {
 		ZClass& ccc = ass.Classes[(int)node.IntVal];
 		//stream << ass.CCls->NamespaceQual;
 		stream << "Class(" << ccc.RTTIIndex << ")";

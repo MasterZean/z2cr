@@ -236,14 +236,14 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 		ZSourcePos sp = parser.GetFullPos();
 		parser.Id("break");
 		if (!con.InLoop)
-			parser.Error(sp.P, "'break' found outside of loop");
+			parser.Error(sp.P, "'" + ER::Blue + "break" + ER::White + "' found outside of loop");
 		return irg.loopControl(true);
 	}
 	else if (parser.IsId("continue")) {
 		ZSourcePos sp = parser.GetFullPos();
 		parser.Id("continue");
 		if (!con.InLoop)
-			parser.Error(sp.P, "'continue' found outside of loop");
+			parser.Error(sp.P, "'" + ER::Blue + "continue" + ER::White + "' found outside of loop");
 		return irg.loopControl(false);
 	}
 	else {
@@ -258,11 +258,10 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 			if (node->IsAddressable == false)
 				parser.Error(pp.P, "left side of assignment is not a L-value");
 			if (node->IsConst)
-				parser.Error(pp.P, "can't assign to readonly '\f" + ass.ClassToString(rs) + "\f'");
+				parser.Error(pp.P, "can't assign to readonly " + ass.ToQtColor(node) + " instance");
 			
 			if (!node->CanAssign(ass, rs)) {
-				parser.Error(pp.P, "can't assign '\f" + ass.ClassToString(rs) +
-					"\f' instance to '\f" + ass.ClassToString(node) + "\f' instance without a cast");
+				parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to '" + ass.ToQtColor(node) + " instance without a cast");
 			}
 			
 			return irg.attr(node, rs);
@@ -313,7 +312,7 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.EatNewlines();
 	
 	if (node->Tt.Class != ass.CBool)
-		parser.Error(p, "if condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
+		parser.Error(p, ER::Blue + "if" + ER::White + " condition must be of class " + ass.ToQtColor(ass.CBool) + ", " + ass.ToQtColor(node) + " found");
 	
 	ZContext trueCon;
 	trueCon.InLoop = con.InLoop;
@@ -348,7 +347,7 @@ Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	loopCon.InLoop = true;
 	Node* bd = CompileStatement(f, parser, loopCon);
 	if (node->Tt.Class != ass.CBool)
-		parser.Error(p, "while condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
+		parser.Error(p, ER::Blue + "while" + ER::White + " condition must be of class " + ass.ToQtColor(ass.CBool) + ", " + ass.ToQtColor(node) + " found");
 		
 	return irg.whilecond(node, bd);
 }
@@ -375,7 +374,7 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.EatNewlines();
 	
 	if (node->Tt.Class != ass.CBool)
-		parser.Error(p, "do... while condition must be '\fBool\f', '\f" + ass.ClassToString(node) + "\f' found");
+		parser.Error(p, ER::Blue + "do" + ER::White + ".." + ER::Blue + "while" + ER::White + " condition must be of class " + ass.ToQtColor(ass.CBool) + ", " + ass.ToQtColor(node) + " found");
 		
 	return irg.dowhilecond(node, bd);
 }
@@ -408,7 +407,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 	if (parser.Char(':')) {
 		cls = ZExprParser::ParseType(ass, parser);
 		if (cls == ass.CVoid)
-			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
+			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
 		v.I.Tt = cls->Tt;
 	}
 	
@@ -430,12 +429,12 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		
 		if (!cls) {
 			if (node->Tt.Class == ass.CVoid)
-				parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
+				parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
 			v.I.Tt = node->Tt;
 		}
 		
-		if (v.I.Tt.Class == ass.CCls)
-			parser.Error(vp.P, "can't create a variable of type '\fClass\f'");
+		if (v.I.Tt.Class == ass.CClass)
+			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CClass));
 			
 		if (v.I.CanAssign(ass, node)) {
 			v.Value = node;
@@ -455,10 +454,10 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (v.I.Tt.Class == NULL)
 			parser.Error(vp.P, "variable must have either an explicit type or be initialized");
 		
-		if (v.I.Tt.Class == ass.CCls)
-			parser.Error(vp.P, "can't create a variable of type '\fClass\f'");
+		if (v.I.Tt.Class == ass.CClass)
+			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CClass));
 		if (v.I.Tt.Class == ass.CVoid)
-			parser.Error(vp.P, "can't create a variable of type '\fVoid\f'");
+			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
 		
 		if (v.Value == nullptr) {
 			Vector<Node*> params;
@@ -491,8 +490,8 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
 		parser.ExpectEndStat();
 		
 		if (!f.Return.CanAssign(ass, retVal))
-			parser.Error(p, "can't assign '\f" + ass.ClassToString(retVal) +
-				"\f' instance to '\f" + ass.ClassToString(f.Return.Tt) + "\f' instance without a cast");
+			parser.Error(p, "can't assign " + ass.ToQtColor(retVal) +
+				" instance to " + ass.ToQtColor(f.Return.Tt.Class) + " instance without a cast");
 	}
 	
 	con.Return = true;
@@ -509,12 +508,12 @@ void ZCompiler::TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name,
 
 	for (int i = 0; i < over.Params.GetCount(); i++)
 		if (over.Params[i].Name == name)
-			throw ER::Duplicate(name, over.Params[i].DefPos, cur);
+			throw ER::Duplicate(name, cur, over.Params[i].DefPos);
 
 	for (int j = 0; j < over.Blocks.GetCount(); j++)
 		for (int k = 0; k < over.Blocks[j].Locals.GetCount(); k++) {
 			if (over.Blocks[j].Locals[k]->Name == name)
-				throw ER::Duplicate(name, over.Blocks[j].Locals[k]->DefPos, cur);
+				throw ER::Duplicate(name, cur, over.Blocks[j].Locals[k]->DefPos);
 		}
 		
 	/*for (int i = 0; i < cls.Vars.GetCount(); i++)

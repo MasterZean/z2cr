@@ -16,6 +16,13 @@ void ZFunction::GenerateSignatures() {
 	parser.Expect('(');
 	
 	while (!parser.IsChar(')')) {
+		bool isVal = false;
+		
+		if (parser.IsId("val")) {
+			parser.ReadId();
+			isVal = true;
+		}
+		
 		auto pp = parser.GetFullPos();
 		String name = parser.ExpectId();
 		
@@ -35,6 +42,8 @@ void ZFunction::GenerateSignatures() {
 		var.BackName = name;
 		var.I.Tt = cls->Tt;
 		var.DefPos = pp;
+		var.PType = ZVariable::ParamType::tyAuto;
+		var.IsConst = !isVal;
 	}
 	
 	parser.Expect(')');
@@ -257,7 +266,7 @@ ZSource* Assembly::FindSource(const String& aName) {
 void Assembly::AddBuiltInClasses() {
 	ASSERT(Classes.GetCount() == 0);
 
-	CCls      = AddCoreType(CoreNamespace(), "Class", "Class", false, false, false);
+	CClass      = AddCoreType(CoreNamespace(), "Class", "Class", false, false, false);
 	CDef      = AddCoreType(LangNamespace(), "Def", "Def");
 	CVoid     = AddCoreType(CoreNamespace(), "Void", "void");
 	CNull     = AddCoreType(CoreNamespace(), "Null", "");
@@ -359,6 +368,20 @@ String Assembly::ClassToString(ObjectInfo* type, bool qual) {
 	return s;
 }
 
+String Assembly::ToQtColor(ObjectInfo* type) {
+	String s = "'";
+	s << ER::Green << type->Tt.Class->Name;
+	s << ER::White << "'";
+	return s;
+}
+
+String Assembly::ToQtColor(ZClass* type) {
+	String s = "'";
+	s << ER::Green << type->Name;
+	s << ER::White << "'";
+	return s;
+}
+	
 bool Assembly::IsSignedInt(const ObjectType& type) const {
 	return type.Class == CInt || type.Class == CSmall || type.Class == CShort || type.Class == CLong;
 }

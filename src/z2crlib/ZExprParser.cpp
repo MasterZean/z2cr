@@ -60,7 +60,7 @@ Node* ZExprParser::ParseAtom() {
 	else if (parser.IsCharConst()) {
 		uint32 ch = parser.ReadChar();
 		if (ch == -1)
-			parser.Error(opp, "illegal '\fChar\f' literal cosntant");
+			parser.Error(opp, "illegal " + ass.ToQtColor(ass.CChar) + " literal constant");
 		exp = irg.const_char(ch);
 	}
 	else if (parser.Id("true"))
@@ -105,25 +105,25 @@ Node* ZExprParser::ParseAtom() {
 		Node* node = ParseAtom();
 		exp = irg.minus(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '-' ('@minus') on type '\f" + ass.ClassToString(node) + "\f'");
+			parser.Error(opp, "can't apply unary '-' ('@minus') on type " + ass.ToQtColor(node));
 	}
 	else if (parser.Char('+')) {
 		Node* node = ParseAtom();
 		exp = irg.plus(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '+' ('@plus') on type '\f" + ass.ClassToString(node) + "\f'");
+			parser.Error(opp, "can't apply unary '+' ('@plus') on type " + ass.ToQtColor(node));
 	}
 	else if (parser.Char('!')) {
 		Node* node = ParseAtom();
 		exp = irg.op_not(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '!' ('@not') on type '\f" + ass.ClassToString(node) + "\f'");
+			parser.Error(opp, "can't apply unary '!' ('@not') on type " + ass.ToQtColor(node));
 	}
 	else if (parser.Char('~')) {
 		Node* node = ParseAtom();
 		exp = irg.bitnot(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '~' ('@bitnot') on type '\f" + ass.ClassToString(node) + "\f'");
+			parser.Error(opp, "can't apply unary '~' ('@bitnot') on type " + ass.ToQtColor(node));
 	}
 	else {
 		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
@@ -140,7 +140,7 @@ Node* ZExprParser::ParseAtom() {
 			parser.Error(p, "syntax error");
 		}
 		else if (parser.Char('{')) {
-			if (exp->IsLiteral && exp->Tt.Class == ass.CCls) {
+			if (exp->IsLiteral && exp->Tt.Class == ass.CClass) {
 				ZClass& cobj = ass.Classes[(int)exp->IntVal];
 				
 				Vector<Node*> params;

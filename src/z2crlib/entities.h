@@ -21,6 +21,7 @@ enum class AccessType {
 
 enum class EntityType {
 	Unknown,
+	Namespace,
 	Variable,
 	MethodBundle,
 	Function,
@@ -233,6 +234,7 @@ class ZFunction;
 class ZVariable;
 class ZMethodBundle;
 class Assemly;
+class ZNamaspace;
 
 class ZNamespaceSection {
 public:
@@ -240,15 +242,39 @@ public:
 	Vector<ZNamespace*> Using;
 };
 
-class ZNamespace {
+class ZEntity {
 public:
 	String Name;
-	String ProperName;
 	String BackName;
+	EntityType Type;
+	AccessType Access;
+	
+	ZSourcePos DefPos;
+	
+	ZNamespaceSection* Section = nullptr;
+	
+	ZEntity(ZNamespace& aNmspace): nmsspace(aNmspace) {
+		Type = EntityType::Unknown;
+	}
+	
+	ZNamespace& Namespace() {
+		return nmsspace;
+	}
+	
+	inline Assembly& Ass();
+
+private:
+	ZNamespace& nmsspace;
+};
+
+class ZNamespace: public ZEntity {
+public:
+	String ProperName;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	
-	ZNamespace(Assembly& aAss): ass(aAss) {
+	ZNamespace(Assembly& aAss): ZEntity(*this), ass(aAss) {
+		Type = EntityType::Namespace;
 	}
 	
 	Array<ZFunction> PreFunctions;
@@ -274,34 +300,11 @@ private:
 	Assembly& ass;
 };
 
-class ZEntity {
-public:
-	String Name;
-	String BackName;
-	EntityType Type;
-	AccessType Access;
-	
-	ZSourcePos DefPos;
-	
-	ZNamespaceSection* Section = nullptr;
-	
-	ZEntity(ZNamespace& aNmspace): nmsspace(aNmspace) {
-		Type = EntityType::Unknown;
-	}
-	
-	ZNamespace& Namespace() {
-		return nmsspace;
-	}
-	
-	Assembly& Ass() {
-		return nmsspace.Ass();
-	}
+Assembly& ZEntity::Ass() {
+	return nmsspace.Ass();
+}
 
-private:
-	ZNamespace& nmsspace;
-};
-
-class ZClass: public ZEntity, Moveable<ZClass> {
+class ZClass: public ZNamespace, Moveable<ZClass> {
 public:
 	ZClassScanInfo Scan;
 	ZClassMeth Meth;
@@ -311,7 +314,7 @@ public:
 	
 	int RTTIIndex = 0;
 	
-	ZClass(ZNamespace& aNmspace): ZEntity(aNmspace) {
+	ZClass(ZNamespace& aNmspace): ZNamespace(aNmspace.Ass()) {
 		Type = EntityType::Class;
 	}
 	

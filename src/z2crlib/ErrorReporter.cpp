@@ -3,13 +3,13 @@
 bool ER::PrintPath;
 
 bool ER::NoColor = false;
-const char* ER::White = "${white}";
-const char* ER::Gray = "${gray}";
-const char* ER::Red = "${red}";
-const char* ER::Cyan = "${cyan}";
-const char* ER::Blue = "${blue}";
-const char* ER::Green = "${green}";
-const char* ER::Yellow = "${yellow}";
+String ER::White = "${white}";
+String ER::Gray = "${gray}";
+String ER::Red = "${red}";
+String ER::Cyan = "${cyan}";
+String ER::Blue = "${blue}";
+String ER::Green = "${green}";
+String ER::Yellow = "${yellow}";
 
 void ER::Error(const ZSource& src, const Point& p, const String& text) {
 	//ASSERT(0);

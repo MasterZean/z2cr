@@ -13,7 +13,7 @@ public:
 	Index<String> StringConsts;
 	ZNamespaceItem NsLookup;
 	
-	ZClass* CCls = nullptr;
+	ZClass* CClass = nullptr;
 	ZClass* CDef = nullptr;
 	ZClass* CVoid = nullptr;
 	ZClass* CNull = nullptr;
@@ -82,6 +82,10 @@ public:
 	
 	String ClassToString(ObjectInfo* type, bool qual = true);
 	String ClassToString(const ObjectType& type);
+	
+	String ToQtColor(ObjectInfo *type);
+	String ToQtColor(ZClass *type);
+
 	
 	int AddStringConst(const String& str) {
 		return StringConsts.FindAdd(str);

@@ -63,7 +63,7 @@ def f() {
 	a++;
 	a;
 */
-def g(a: Int) {
+def g(val a: Int) {
 	a;
 	++a;
 	a;
@@ -86,7 +86,7 @@ def g(a: Int) {
 	b++;
 	b;
 */
-def h(b: Int) {
+def h(val b: Int) {
 	b;
 	++b;
 	b;

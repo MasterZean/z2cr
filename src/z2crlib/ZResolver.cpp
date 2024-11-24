@@ -68,8 +68,6 @@ void ZResolver::ResolveFunctions() {
 }
 
 void ZResolver::ResolveFunction(ZFunction& f) {
-	
-		
 	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
 	//LOG("Resolved " + f.FuncSig());

@@ -132,10 +132,25 @@ bool ZTest::Run() {
 				LOG("=================================================================================================================");
 				LOG(Ass.SourceLookup[i]->Content());
 				LOG("=================================================================================================================");
+				
 			}
 			
-			DUMP(aError);
-			DUMP(Error);
+			LOG("Found error:");
+			
+			LOG(aError);
+			LOG("-----------------------------------------------------------------------------------------------------------------");
+			LOG("Expected error:");
+			if (Error.GetCount())
+				LOG(Error);
+			else
+				LOG("NONE!");
+			LOG("-----------------------------------------------------------------------------------------------------------------");
+			
+			LOG("");
+			LOG("");
+			LOG("");
+			
+			
 			Cout() << Name << "(" << Line << ")" << " test failled because found exception\n";
 			result = false;
 		}
@@ -172,7 +187,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-	//if (!path.EndsWith("02-decl-02-const.z2test"))
+	//if (!path.EndsWith("02-decl-04-const.z2test"))
 	//	return;
 	
 	FileIn file(path);

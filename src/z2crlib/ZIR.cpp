@@ -716,9 +716,9 @@ Node* IR::opRel(Node* left, Node* right, OpNode::Type op, const Point& p) {
 
 	bool valid = false;
 	
-	if ((op == OpNode::opEq) && left->Tt.Class == ass.CCls && right->Tt.Class == ass.CCls)
+	if ((op == OpNode::opEq) && left->Tt.Class == ass.CClass && right->Tt.Class == ass.CClass)
 		return const_bool(left->IntVal == right->IntVal);
-	else if ((op == OpNode::opNeq) && left->Tt.Class == ass.CCls && right->Tt.Class == ass.CCls)
+	else if ((op == OpNode::opNeq) && left->Tt.Class == ass.CClass && right->Tt.Class == ass.CClass)
 		return const_bool(left->IntVal != right->IntVal);
 	/*else if (testOpRel(ass, l, r, op) == false) {
 		Node* over = GetOp(Over, strops[op], l, r, ass, this, *Comp, p);
@@ -1397,14 +1397,14 @@ MemNode* IR::mem_var(ZEntity* mem) {
 		ZVariable& v = *((ZVariable*)mem);
 		node->SetType(v.I.Tt);
 		node->IsAddressable = true;
-		node->IsConst = false;
+		node->IsConst = v.IsConst;
 	}
 	else if (mem->Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);
 	}
 	
 	/*node->LValue = n ? n->LValue : true;
-	node->IsConst = var.I.IsConst;
+	
 	if (node->LValue && node->IsConst)
 		node->LValue = false;*/
 	
@@ -1481,7 +1481,7 @@ Node* IR::attr(Node* left, Node* right) {
 Node* IR::const_class(ZClass& cls, Node* e) {
 	ConstNode* node = constNodes.Get();
 
-	node->SetType(ass.CCls->Tt);
+	node->SetType(ass.CClass->Tt);
 	node->IsConst = false;
 	node->IsLiteral = true;
 	node->IsCT = true;
