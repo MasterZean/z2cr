@@ -34,17 +34,11 @@ public:
 class SmartEditor: public CodeEditor {
 public:
 	typedef SmartEditor CLASSNAME;
-};
-
-class OpenFileInfo {
-public:
-	SmartEditor editor;
+	
+	int ID = 0;
 	Index<String> classes;
-	bool IsChanged;
-	uint64 Hash;
-
-	OpenFileInfo(): IsChanged(false), Hash(0) {
-	}
+	bool IsChanged = false;
+	uint64 Hash = 0;
 };
 
 class EditorManager: public ParentCtrl {
@@ -82,7 +76,7 @@ public:
 		return tabFiles[i].key;
 	}
 	
-	OpenFileInfo* GetInfo() {
+	SmartEditor* GetEditor() {
 		int i = GetCursor();
 		if (i == -1)
 			return nullptr;
@@ -92,6 +86,7 @@ public:
 		if (j == -1)
 			return nullptr;
 		
+		files[j].ID = j;
 		return &files[j];
 	}
 	
@@ -101,9 +96,11 @@ public:
 	void SetColors(int colors);
 	
 	void Save(int i);
+	void Save(const String& item);
 	void SaveAll();
 	void SaveAllIfNeeded();
 	bool PromptSaves();
+	void RemoveFile(const String& item);
 			
 	bool OnRenameFiles(const Vector<String>& fileListToRename, const String& oldPath, const String& newPath);
 	
@@ -113,7 +110,7 @@ private:
 	
 	Settings settings;
 	
-	ArrayMap<WString, OpenFileInfo> files;
+	ArrayMap<WString, SmartEditor> files;
 
 	void OnTabChange();
 	void OnEditorChange();
@@ -121,8 +118,9 @@ private:
 	
 	void OnTabClose(Value val);
 	bool OnConfirmClose(Value val);
+	bool OnCancelClose(Value val);
 	
-	OpenFileInfo& GetInfo(int i);
+	SmartEditor& GetInfo(int i);
 };
 
 #endif

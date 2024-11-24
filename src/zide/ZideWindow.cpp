@@ -43,6 +43,8 @@ ZideWindow::ZideWindow() {
 	
 	WhenClose = THISBACK(OnClose);
 	
+	lblLine.SetAlign(ALIGN_CENTER);
+	
 	tabs.ShowTabs(false);
 }
 
@@ -134,21 +136,19 @@ void ZideWindow::SetupLast() {
 }
 
 void ZideWindow::OnFileRemoved(const String& file) {
-	//tabs.RemoveFile(file);
-	//mnuMain.Set(THISBACK(DoMainMenu));
+	tabs.RemoveFile(file);
+	mnuMain.Set(THISBACK(DoMainMenu));
 }
 
 void ZideWindow::OnSelectSource() {
 	activeFile = asbAss.GetCursorItem();
 		
 	tabs.Open(activeFile);
-	//mnuMain.Set(THISBACK(DoMainMenu));
+	mnuMain.Set(THISBACK(DoMainMenu));
 }
 
 void ZideWindow::OnFileSaved(const String& file) {
-	/*int i = tabs.tabFiles.FindKey(file);
-	if (i != -1)
-		tabs.Save(i);*/
+	tabs.Save(file);
 }
 
 void ZideWindow::OnTabChange() {
@@ -160,29 +160,21 @@ void ZideWindow::OnTabChange() {
 }
 
 void ZideWindow::OnEditorChange() {
-	OpenFileInfo* info = tabs.GetInfo();
-	if (!info)
+	SmartEditor* editor = tabs.GetEditor();
+	if (!editor)
 		return;
 	
-	SmartEditor& editor = info->editor;
-	if (!editor.IsEnabled())
-		return;
-	
-	info->Hash++;
+	editor->Hash++;
 	//if (editThread)
 	//	Thread().Run(callback3(OutlineThread, this, editor.Get(), info->Hash));
 }
 
 void ZideWindow::OnEditorCursor() {
-	OpenFileInfo* info = tabs.GetInfo();
-	if (!info)
+	SmartEditor* editor = tabs.GetEditor();
+	if (!editor)
 		return;
 	
-	CodeEditor& editor = info->editor;
-	if (!editor.IsEnabled())
-		return;
-	
-	Point p = editor.GetColumnLine(editor.GetCursor());
+	Point p = editor->GetColumnLine(editor->GetCursor());
 	lblLine.SetText(String().Cat() << "Ln " << (p.y + 1) << ", Cl " << (p.x + 1));
 }
 

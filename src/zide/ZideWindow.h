@@ -26,6 +26,10 @@ public:
 	void LoadPackage(const String& package);
 	void LoadModule(const String& mod, int color);
 	
+	SmartEditor* GetEditor() {
+		return tabs.GetEditor();
+	}
+	
 private:
 	Vector<String> packages;
 	Vector<String> openNodes;
@@ -64,6 +68,11 @@ private:
 	void OnMenuShowPackagePaths();
 	void DoMenuRecent(Bar& bar);
 	void OoMenuRecent(const String& path);
+	
+	void DoMenuEdit(Bar& bar);
+	void OnMenuEditGoTo(CodeEditor* editor);
+	
+	void DoMenuFormat(Bar& menu);
 	
 	void DoMenuHelp(Bar& bar);
 	void OnMenuHelpAbout();

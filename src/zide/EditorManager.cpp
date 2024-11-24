@@ -9,6 +9,12 @@ EditorManager::EditorManager() {
 	tabFiles.WhenAction = THISBACK(OnTabChange);
 	tabFiles.WhenClose = THISBACK(OnTabClose);
 	tabFiles.ConfirmClose = THISBACK(OnConfirmClose);
+	tabFiles.CancelClose = THISBACK(OnCancelClose);
+}
+
+bool EditorManager::OnCancelClose(Value val) {
+	int count = tabFiles.GetCount();
+	return count <= 1;
 }
 
 void EditorManager::Open(const String& item, bool forceReload) {
@@ -23,13 +29,13 @@ void EditorManager::Open(const String& item, bool forceReload) {
 	if (i == -1) {
 		int ii = files.Find(w);
 		if (ii == -1) {
-			OpenFileInfo& ff = files.Add(w);
+			SmartEditor& ff = files.Add(w);
 			ii = files.GetCount() - 1;
 			String content = LoadFile(item);
-			ff.editor.Set(content);
+			ff.Set(content);
 		}
 		
-		OpenFileInfo& f = files[ii];
+		SmartEditor& editor = files[ii];
 		
 		
 		tabFiles.AddFile(w, ZImg::zsrc());
@@ -41,20 +47,21 @@ void EditorManager::Open(const String& item, bool forceReload) {
 		// TODO:
 		//f.editor.SetBarLight(settings.Theme == 0);
 		
-		f.editor.AddFrame(RightSeparatorFrame());
+		editor.AddFrame(RightSeparatorFrame());
 		String syn = EditorSyntax::GetSyntaxForFilename(item);
-		f.editor.WhenAction = THISBACK(OnEditorChange);
-		f.editor.WhenSel = THISBACK(OnEditorCursor);
+		editor.WhenAction = THISBACK(OnEditorChange);
+		editor.WhenUpdate = THISBACK(OnEditorChange);
+		editor.WhenSel = THISBACK(OnEditorCursor);
 		//f.editor.WhenPopup = WhenPopup;
-		f.editor.HiliteIfEndif(true);
-		f.editor.CheckEdited();
-		f.editor.HiliteScope(2);
-		f.editor.Annotations(Zx(10));
-		canvas.Add(f.editor);
-		f.editor.HSizePos().VSizePos();
+		editor.HiliteIfEndif(true);
+		editor.CheckEdited();
+		editor.HiliteScope(2);
+		editor.Annotations(Zx(10));
+		canvas.Add(editor);
+		editor.HSizePos().VSizePos();
 		WhenEditorCursor();
-		f.editor.SetFocus();
-		SetSettings(f.editor, settings, syn);
+		editor.SetFocus();
+		SetSettings(editor, settings, syn);
 		WhenEditorChange();
 		
 		//f.editor.WhenAssistChange = THISBACK(OnAssistChange);
@@ -64,13 +71,13 @@ void EditorManager::Open(const String& item, bool forceReload) {
 		WString w = item.ToWString();
 		int j = files.Find(w);
 		if (j != -1) {
-			OpenFileInfo& f = files[j];
+			SmartEditor& editor = files[j];
 			tabFiles.SetCursor(i);
-			f.editor.SetFocus();
+			editor.SetFocus();
 			
 			if (forceReload) {
 				String content = LoadFile(item);
-				f.editor.Set(content);
+				editor.Set(content);
 			}
 		}
 	}
@@ -79,11 +86,11 @@ void EditorManager::Open(const String& item, bool forceReload) {
 void EditorManager::OnTabChange() {
 	WString file = tabFiles[tabFiles.GetCursor()].key;
 	for (int j = 0; j < files.GetCount(); j++)
-		files[j].editor.Hide();
+		files[j].Hide();
 	
 	int i = files.Find(file);
 	if (i != -1)
-		files[i].editor.Show();
+		files[i].Show();
 	
 	WhenTabChange();
 	WhenEditorChange();
@@ -98,7 +105,7 @@ void EditorManager::OnEditorCursor() {
 	WhenEditorCursor();
 }
 
-OpenFileInfo& EditorManager::GetInfo(int i) {
+SmartEditor& EditorManager::GetInfo(int i) {
 	WString w = tabFiles[i].key;
 
 	int j = files.Find(tabFiles[i].key);
@@ -148,7 +155,7 @@ void EditorManager::SetSettings(Settings& settings) {
 	CodeEditor::LoadHlStyles(settings.Style);
 	
 	for (int i = 0; i < files.GetCount(); i++)
-		SetSettings(files[i].editor, settings, EditorSyntax::GetSyntaxForFilename(files.GetKey(i).ToString()));
+		SetSettings(files[i], settings, EditorSyntax::GetSyntaxForFilename(files.GetKey(i).ToString()));
 	
 	this->settings = settings;
 }
@@ -156,14 +163,14 @@ void EditorManager::SetSettings(Settings& settings) {
 void EditorManager::SetColors(int colors) {
 	for (int i = 0; i < files.GetCount(); i++) {
 		if (colors == 0) {
-			files[i].editor.WhiteTheme();
+			files[i].WhiteTheme();
 			// TODO:
-			//files[i].editor.SetBarLight(true);
+			//files[i].SetBarLight(true);
 		}
 		else if (colors == 1) {
 			//DarkTheme();
 			// TODO:
-			//files[i].editor.SetBarLight(false);
+			//files[i].SetBarLight(false);
 		}
 	}
 }
@@ -203,7 +210,7 @@ void EditorManager::Save(int i) {
 	if (j == -1)
 		return;
 
-	SaveFile(files.GetKey(j).ToString(), files[j].editor.Get());
+	SaveFile(files.GetKey(j).ToString(), files[j].Get());
 	SetChanged(i, false);
 }
 
@@ -220,8 +227,8 @@ void EditorManager::SaveAllIfNeeded() {
 
 bool EditorManager::PromptSaves() {
 	for (int i = 0; i < tabFiles.GetCount(); i++) {
-		OpenFileInfo& info = GetInfo(i);
-		if (info.IsChanged) {
+		SmartEditor& editor = GetInfo(i);
+		if (editor.IsChanged) {
 			BeepQuestion();
 			int save = PromptSaveDontSaveCancel("[ph The following file was changed since last save:&-|[* " + DeQtf(tabFiles[i].key.ToString()) + "]&Would you like to save it?]");
 			if (save == 1)
@@ -254,9 +261,9 @@ bool EditorManager::OnRenameFiles(const Vector<String>& fileListToRename, const 
 				WString w2 = np.ToWString();
 				int k = files.Find(w1);
 				ASSERT(k != -1);
-				OpenFileInfo* info = files.Detach(k);
+				SmartEditor* editor = files.Detach(k);
 				files.Add(w2);
-				files.Set(files.GetCount() - 1, info);
+				files.Set(files.GetCount() - 1, editor);
 				DUMP(w1);
 				DUMP(w2);
 				tabFiles.RenameFile(w1, w2, ZImg::zsrc);
@@ -264,4 +271,16 @@ bool EditorManager::OnRenameFiles(const Vector<String>& fileListToRename, const 
 		}
 		
 	return true;
+}
+
+void EditorManager::RemoveFile(const String& item) {
+	files.RemoveKey(item.ToWString());
+	int ki = tabFiles.FindKey(item);
+	tabFiles.CloseForce(ki);
+}
+
+void EditorManager::Save(const String& item) {
+	files.RemoveKey(item.ToWString());
+	int ki = tabFiles.FindKey(item);
+	tabFiles.CloseForce(ki);
 }
