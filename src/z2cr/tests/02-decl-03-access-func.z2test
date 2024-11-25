@@ -34,7 +34,7 @@ def @main() {
 // @file
 /* @errors
 test.z2(19, 13): can't access protected member:
-		func g()        [namespace test]
+		def g()        [namespace test]
 */
 namespace test;
 

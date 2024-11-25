@@ -1,6 +1,9 @@
 #ifndef _z2cr_ZParser_h_
 #define _z2cr_ZParser_h_
 
+#include <z2crlib/entities.h>
+#include <z2crlib/ZSource.h>
+
 class ZParser: public CParser {
 public:
 	enum NumberType {

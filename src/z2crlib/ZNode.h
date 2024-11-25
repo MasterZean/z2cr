@@ -1,6 +1,8 @@
 #ifndef _z2cr_ZNode_h_
 #define _z2cr_ZNode_h_
 
+#include <z2crlib/node.h>
+
 class ConstNode: public Node {
 public:
 	//Constant* Const = nullptr;

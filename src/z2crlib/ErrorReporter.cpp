@@ -10,6 +10,7 @@ String ER::Cyan = "${cyan}";
 String ER::Blue = "${blue}";
 String ER::Green = "${green}";
 String ER::Yellow = "${yellow}";
+String ER::Magenta = "${magenta}";
 
 void ER::Error(const ZSource& src, const Point& p, const String& text) {
 	//ASSERT(0);
@@ -75,7 +76,8 @@ void ZException::PrettyPrint(Stream& stream) {
 	int cGray = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
 	int cRed = FOREGROUND_RED | FOREGROUND_INTENSITY;
 	int cCyan = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-	int cBlue = FOREGROUND_BLUE | FOREGROUND_GREEN;
+	int cBlue = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+	int cMagenta = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE;
 	int cGreen = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
 	int cYellow = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN;
 	
@@ -89,6 +91,7 @@ void ZException::PrettyPrint(Stream& stream) {
 	int cRed = 0;
 	int cCyan = 0;
 	int cBlue = 0;
+	int cMagenta = 0;
 	int cYellow = 0;
 	
 #endif
@@ -112,8 +115,8 @@ void ZException::PrettyPrint(Stream& stream) {
 		return;
 	}
 	
-	const char* colstr[] = { "${white}", "${gray}", "${red}", "${cyan}", "${blue}", "${green}", "${yellow}"};
-	int         colval[] = { cWhite,     cGray,     cRed,     cCyan,     cBlue,     cGreen,     cYellow };
+	const char* colstr[] = { "${white}", "${gray}", "${red}", "${cyan}", "${blue}", "${green}", "${yellow}", "${magenta}"};
+	int         colval[] = { cWhite,     cGray,     cRed,     cCyan,     cBlue,     cGreen,     cYellow,     cMagenta };
 	
 	if (!ER::NoColor)
 		SetConsoleTextAttribute(hConsole, cWhite);

@@ -4,6 +4,7 @@
 
 bool ZResolver::Resolve() {
 	ResolveNamespaces();
+	ResolveClasses();
 	ResolveFunctions();
 	ResolveVariables();
 	
@@ -20,12 +21,13 @@ void ZResolver::ResolveNamespaces() {
 void ZResolver::ResolveNamespace(ZNamespace& ns) {
 	auto names = Split(ns.Name, '.', true);
 	
+	// build namespace item hierachy
 	ZNamespaceItem* nsp = &ass.NsLookup;
 	String backName;
-	for (int j = 0; j < names.GetCount(); j++) {
-		backName << names[j];
-		nsp = nsp->Add(names[j]);
-		if (j < names.GetCount() - 1)
+	for (int i = 0; i < names.GetCount(); i++) {
+		backName << names[i];
+		nsp = nsp->Add(names[i]);
+		if (i < names.GetCount() - 1)
 			backName << "::";
 		else {
 			ASSERT(nsp->Namespace == nullptr);
@@ -41,8 +43,9 @@ void ZResolver::ResolveNamespace(ZNamespace& ns) {
 	if (ns.BackName == "main")
 		ns.BackName = "main_";
 	
-	for (int j = 0; j < ns.Sections.GetCount(); j++) {
-		ZNamespaceSection& sec = ns.Sections[j];
+	// setup sections for using clause
+	for (int i = 0; i < ns.Sections.GetCount(); i++) {
+		ZNamespaceSection& sec = ns.Sections[i];
 		
 		for (int k = 0; k < sec.UsingNames.GetCount(); k++) {
 			ZNamespace* usn = ass.Namespaces.FindPtr(sec.UsingNames[k]);
@@ -54,30 +57,50 @@ void ZResolver::ResolveNamespace(ZNamespace& ns) {
 	ns.IsResolved = true;
 }
 
+void ZResolver::ResolveClasses() {
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
+		ZNamespace& ns = ass.Namespaces[i];
+		
+		for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
+			ZClass& c = ns.PreClasses[j];
+			c.GenerateSignatures();
+		}
+	}
+}
+
 void ZResolver::ResolveFunctions() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
 		ZNamespace& ns = ass.Namespaces[i];
-		//LOG("Resolving " + ns.Name);
-		
-		for (int j = 0; j < ns.PreFunctions.GetCount(); j++) {
-			ZFunction& f = ns.PreFunctions[j];
-			
-			ResolveFunction(f);
+		ResolveNamespaceMembers(ns);
+				
+		for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
+			ZClass& c = ns.PreClasses[j];
+			ResolveNamespaceMembers(c);
 		}
+	}
+}
+
+void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
+	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
+		ZFunction& f = ns.PreFunctions[i];
+		ResolveFunction(f);
+	}
+	
+	for (int i = 0; i < ns.PreVariables.GetCount(); i++) {
+		ZVariable& f = ns.PreVariables[i];
+		f.GenerateSignatures();
 	}
 }
 
 void ZResolver::ResolveFunction(ZFunction& f) {
 	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
-	//LOG("Resolved " + f.FuncSig());
-	
+
 	ZMethodBundle& d = f.Namespace().Methods.GetAdd(f.Name, ZMethodBundle(f.Namespace()));
 	if (d.Name.GetCount() == 0)
 		d.Name = f.Name;
 	d.Functions.Add(&f);
 }
-
 
 void ZResolver::ResolveVariables() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
@@ -105,40 +128,36 @@ bool ZResolver::CheckForDuplicates() {
 
 
 bool ZResolver::CheckForDuplicates(ZNamespace& ns) {
-	DuplicateLoop(ns, true);
-	
+	// verify class duplication
 	VectorMap<String, int> dupes;
-	for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
-		ZVariable& var = ns.PreVariables[j];
-		if (var.IsDuplicate == false) {
-			int& count = dupes.GetAdd(var.Name, 0);
-			count++;
-		}
+	for (int i = 0; i < ns.PreClasses.GetCount(); i++) {
+		ZClass& c = ns.PreClasses[i];
+		int& count = dupes.GetAdd(c.Name, 0);
+		count++;
 	}
 	
 	for (int k = 0; k < dupes.GetCount(); k++) {
 		if (dupes[k] > 1) {
 			String allErrors;
 			
-			for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
-				ZVariable& var = ns.PreVariables[j];
-				if (var.IsDuplicate == false && var.Name == dupes.GetKey(k)) {
-					if (allErrors.GetCount() == 0) {
-						String err;
-						err << ER::Gray << var.DefPos.ToString() << ": ";
-						err << ER::Red << "error: ";
-						err << ER::White << "duplicate symbol: " << var.Namespace().ProperName << "::" << "val " << ER::Green << var.Name;
-						err << "\n" << ER::Gray << "other occurrences at:\n";
-						
-						allErrors << err;
-					}
-					else
-						allErrors << ER::Gray << "\t" << var.DefPos.ToString() << ": " << var.Namespace().ProperName << "::" << "val " << ER::Green << var.Name << "\n";
-				}
+			for (int i = 0; i < ns.PreClasses.GetCount(); i++) {
+				ZClass& c = ns.PreClasses[i];
+				
+				if (c.Name == dupes.GetKey(k))
+					allErrors << DupStr(allErrors, c.DefPos, c.ColorSig());
 			}
 			
 			dupeListing << allErrors;
 		}
+	}
+	
+	// verify members
+	DuplicateLoop(ns, true);
+	
+	// verify class members
+	for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
+		ZClass& c = ns.PreClasses[j];
+		DuplicateLoop(c, true);
 	}
 	
 	return true;
@@ -175,28 +194,16 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 					ZFunction& f = *d.Functions[j];
 					lastFunc = &f;
 					
-					if (f.DupSig() == dupes.GetKey(k)) {
-						if (allErrors.GetCount() == 0) {
-							String err;
-							err << ER::Gray << f.DefPos.ToString() << ": ";
-							err << ER::Red << "error: ";
-							err << ER::White << "duplicate symbol: " << f.ColorSig();
-							err << "\n" << ER::Gray << "other occurrences at:\n";
-							
-							allErrors << err;
-						}
-						else
-							allErrors << "\t" << ER::Gray << f.DefPos.ToString() << ": " << f.ColorSig() << "\n";
-		
-					}
+					if (f.DupSig() == dupes.GetKey(k))
+						allErrors << DupStr(allErrors, f.DefPos, f.ColorSig());
+					
 				}
 				
 				if (lastFunc) {
 					for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
-						ZVariable& var = ns.PreVariables[j];
-						if (var.Name == lastFunc->Name) {
-							allErrors << "\t" << ER::Gray << var.DefPos.ToString() << ": " << var.Namespace().ProperName << "::" << "val " << ER::Green << var.Name << "\n";
-						}
+						ZVariable& v = ns.PreVariables[j];
+						if (v.Name == lastFunc->Name)
+							allErrors << DupStr(allErrors, v.DefPos, v.ColorSig());
 					}
 				}
 				
@@ -204,4 +211,46 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 			}
 		}
 	}
+	
+	VectorMap<String, int> dupes;
+	
+	for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
+		ZVariable& var = ns.PreVariables[j];
+		if (var.IsDuplicate == false) {
+			int& count = dupes.GetAdd(var.Name, 0);
+			count++;
+		}
+	}
+	
+	for (int k = 0; k < dupes.GetCount(); k++) {
+		if (dupes[k] > 1) {
+			String allErrors;
+			
+			for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
+				ZVariable& v = ns.PreVariables[j];
+				if (v.IsDuplicate == false && v.Name == dupes.GetKey(k))
+					allErrors << DupStr(allErrors, v.DefPos, v.ColorSig());
+			}
+			
+			dupeListing << allErrors;
+		}
+	}
+}
+
+String ZResolver::DupStr(const String& allErrors, const ZSourcePos& dp, const String& colorSig) {
+	String err;
+	
+	// append to error
+	if (allErrors.GetCount() != 0) {
+		err << "\t" << ER::Gray << dp.ToString() << ": " << colorSig << "\n";
+		return err;
+	}
+	
+	// first message
+	err << ER::Gray << dp.ToString() << ": ";
+	err << ER::Red << "error: ";
+	err << ER::White << "duplicate symbol: " << colorSig;
+	err << "\n" << ER::Gray << "other occurrences at:\n";
+	
+	return err;
 }

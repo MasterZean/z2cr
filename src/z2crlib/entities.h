@@ -1,179 +1,16 @@
 #ifndef _z2cr_entities_h_
 #define _z2cr_entities_h_
 
-#include <Core/Core.h>
+#include <z2crlib/common.h>
+#include <z2crlib/node.h>
 
-using namespace Upp;
-
-class Assembly;
-class ZNamespace;
-class ZPackage;
-class ZFunction;
 class ZSource;
-class ZClass;
-class Node;
+class ZPackage;
 
-enum class AccessType {
-	Public,
-	Private,
-	Protected
-};
-
-enum class EntityType {
-	Unknown,
-	Namespace,
-	Variable,
-	MethodBundle,
-	Function,
-	Class,
-};
-
-class ObjectType {
-public:
-	ZClass* Class = nullptr;
-	ObjectType* Next = nullptr;
-	int Param = 0;
-	
-	ObjectType() {
-	}
-	
-	ObjectType(ZClass& cls): Class(&cls) {
-	}
-};
-
-class ObjectInfo: Moveable<ObjectInfo> {
-public:
-	ObjectType Tt;
-	ZClass* C1 = nullptr;
-	ZClass* C2 = nullptr;
-	
-	bool IsTemporary = false;
-	bool IsIndirect = false;
-	bool IsAddressable = false;
-	bool IsConst = false;
-	bool IsRef = false;
-	
-	ObjectInfo() = default;
-	
-	ObjectInfo(ZClass* cls) {
-		Tt.Class = cls;
-	}
-	
-	ObjectInfo(ZClass* cls, bool ref) {
-		Tt.Class = cls;
-		//IsRef = ref;
-	}
-	
-	ObjectInfo(ObjectType* tt) {
-		Tt = *tt;
-	}
-	
-	bool CanAssign(Assembly& ass, Node* node);
-	bool CanAssign(Assembly& ass, ObjectInfo& sec, bool isCt);
-};
-
-class NodeType {
-public:
-	enum Type {
-		Invalid,
-		Const,
-		BinaryOp,
-		UnaryOp,
-		Memory,
-		Cast,
-		Temporary,
-		Def,
-		List,
-		Construct,
-		Ptr,
-		Index,
-		SizeOf,
-		Destruct,
-		Property,
-		Deref,
-		Intrinsic,
-		Return,
-		Local,
-		Alloc,
-		Array,
-		Using,
-		Params,
-		Block,
-		If,
-		While,
-		DoWhile,
-		Switch,
-		LoopControl,
-	};
-};
-
-class Node: public ObjectInfo {
-public:
-	Node* Next = nullptr;
-	Node* Prev = nullptr;
-	Node* First = nullptr;
-	Node* Last = nullptr;
-
-	NodeType::Type NT = NodeType::Invalid;
-	
-	bool IsCT = false;
-	bool IsConst = false;
-	bool IsLiteral = false;
-	bool IsSymbolic = false;
-	
-	bool HasSe = false;
-	//bool IsLValue = false;
-	
-	bool IsRef = false;
-	bool IsAddressable = false;
-	bool IsIndirect = false;
-	
-	double DblVal = 0;
-	int64  IntVal = 0;
-
-	void SetType(ObjectType* type, ZClass* efType, ZClass* sType) {
-		Tt = *type;
-		C1 = efType;
-		C2 = sType;
-	}
-
-	void SetType(ObjectType* type) {
-		Tt = *type;
-		C1 = type->Class;
-		C2 = nullptr;
-	}
-
-	void SetType(ObjectType type) {
-		Tt = type;
-		C1 = type.Class;
-		C2 = nullptr;
-	}
-	
-	void SetValue(int i, double d) {
-		IntVal = i;
-		DblVal = d;
-	}
-
-	void AddChild(Node* node) {
-		if (First == NULL) {
-			First = node;
-			Last = node;
-		}
-		else {
-			node->Prev = Last;
-			Last->Next = node;
-
-			Last =  node;
-		}
-	}
-	
-	bool IsZero(Assembly& ass);
-	void PromoteToFloatValue(Assembly& ass);
-	
-	bool IsLValue() const {
-		return IsAddressable && IsConst == false;
-	}
-};
+class ZNamespace;
+class ZVariable;
+class ZMethodBundle;
+class ZFunction;
 
 class ZSourcePos: Moveable<ZSourcePos> {
 public:
@@ -195,7 +32,6 @@ public:
 
 class ZClassScanInfo {
 public:
-	//String Namespace;
 	WithDeepCopy<Vector<String>> TName;
 	
 	bool HasDefaultCons = false;
@@ -230,12 +66,6 @@ public:
 	ZNamespaceItem* Add(const String& aName);
 };
 
-class ZFunction;
-class ZVariable;
-class ZMethodBundle;
-class Assemly;
-class ZNamaspace;
-
 class ZNamespaceSection {
 public:
 	WithDeepCopy<Index<String>> UsingNames;
@@ -249,6 +79,8 @@ public:
 	EntityType Type;
 	AccessType Access;
 	
+	bool InClass = false;
+		
 	ZSourcePos DefPos;
 	
 	ZNamespaceSection* Section = nullptr;
@@ -274,6 +106,10 @@ public:
 	ZNamespaceItem* NamespaceItem = nullptr;
 	
 	ZNamespace(Assembly& aAss): ZEntity(*this), ass(aAss) {
+		Type = EntityType::Namespace;
+	}
+	
+	ZNamespace(Assembly& aAss, ZNamespace& aNs): ZEntity(aNs), ass(aAss) {
 		Type = EntityType::Namespace;
 	}
 	
@@ -316,7 +152,7 @@ public:
 	
 	int RTTIIndex = 0;
 	
-	ZClass(ZNamespace& aNmspace): ZNamespace(aNmspace.Ass()) {
+	ZClass(ZNamespace& aNmspace): ZNamespace(aNmspace.Ass(), aNmspace) {
 		Type = EntityType::Class;
 	}
 	
@@ -330,6 +166,15 @@ public:
 	bool MIsRawVec = false;
 	
 	int Index = -1;
+	
+	const String& ColorSig() const {
+		return csig;
+	}
+	
+	void GenerateSignatures();
+	
+private:
+	String csig;
 };
 
 class ZVariable: Moveable<ZVariable>, public ZEntity {
@@ -354,6 +199,15 @@ public:
 	ZVariable(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Variable;
 	}
+	
+	const String& ColorSig() const {
+		return csig;
+	}
+	
+	void GenerateSignatures();
+	
+private:
+	String csig;
 };
 
 class ZBlock: Moveable<ZBlock> {
@@ -365,7 +219,6 @@ public:
 class ZFunction: Moveable<ZFunction>, public ZEntity {
 public:
 	bool IsFunction = false;
-	bool InClass = false;
 	bool IsConstructor = false;
 	bool IsValid = false;
 	
@@ -415,17 +268,5 @@ public:
 		Type = EntityType::MethodBundle;
 	}
 };
-
-inline bool operator==(const ObjectType& Tt, ObjectType* tt) {
-	return Tt.Class == tt->Class;
-}
-
-inline bool operator==(const ObjectInfo& t1, const ObjectInfo& t2) {
-	return t1.Tt.Class == t2.Tt.Class && t1.IsIndirect == t2.IsIndirect && /*t1.IsConst == t2.IsConst &&*/ t1.IsTemporary == t2.IsTemporary;
-}
-
-inline bool operator!=(const ObjectInfo& t1, const ObjectInfo& t2) {
-	return !(t1 == t2);
-}
 
 #endif

@@ -1,6 +1,9 @@
 #ifndef _z2cr_ExprePArser_h_
 #define _z2cr_ExprePArser_h_
 
+#include <z2crlib/ZParser.h>
+#include <z2crlib/ZIR.h>
+
 class ZExprParser {
 public:
 	ZNamespaceSection* Section = nullptr;

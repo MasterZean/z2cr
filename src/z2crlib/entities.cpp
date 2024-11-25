@@ -1,5 +1,178 @@
 #include <z2crlib/entities.h>
 #include <z2crlib/Assembly.h>
+#include <z2crlib/ErrorReporter.h>
+#include <z2crlib/ZExprParser.h>
+
+void ZVariable::GenerateSignatures() {
+	csig = "";
+	
+	if (IsConst)
+		csig << ER::Magenta << "const ";
+	else
+		csig << ER::Magenta << "val ";
+	
+	csig << ER::Green << Name;
+	
+	csig << ER::White << "        "  << "[";
+	if (InClass)
+		csig << ER::Magenta << "class " << ER::White << Namespace().Namespace().Name << ER::Cyan << Namespace().Name;
+	else
+		csig << ER::Magenta << "namespace " << ER::White << Namespace().ProperName;
+	csig << "]";
+}
+
+void ZClass::GenerateSignatures() {
+	csig = "";
+	
+	csig << ER::Magenta << "class ";
+	csig << ER::Green << Name;
+	
+	csig << ER::White << "        "  << "[";
+	if (InClass)
+		csig << ER::Magenta << "class " << ER::White << Namespace().Namespace().Name << ER::Cyan << Namespace().Name;
+	else
+		csig << ER::Magenta << "namespace " << ER::White << Namespace().ProperName;
+	csig << "]";
+}
+
+void ZFunction::GenerateSignatures() {
+	ZParser parser(ParamPos);
+	
+	parser.Expect('(');
+	
+	while (!parser.IsChar(')')) {
+		bool isVal = false;
+		
+		if (parser.IsId("val")) {
+			parser.ReadId();
+			isVal = true;
+		}
+		
+		auto pp = parser.GetFullPos();
+		String name = parser.ExpectId();
+		
+		if (name == Name)
+			throw ER::Duplicate(name, pp, DefPos);
+		parser.Expect(':');
+		
+		ZClass* cls = ZExprParser::ParseType(Ass(), parser);
+		
+		if (parser.Char(',')) {
+			if (parser.IsChar(')'))
+				parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
+		}
+		
+		ZVariable& var = Params.Add(ZVariable(Namespace()));
+		var.Name = name;
+		var.BackName = name;
+		var.I.Tt = cls->Tt;
+		var.DefPos = pp;
+		var.PType = ZVariable::ParamType::tyAuto;
+		var.IsConst = !isVal;
+	}
+	
+	parser.Expect(')');
+	
+	if (parser.Char(':')) {
+		ZClass* cls = ZExprParser::ParseType(Ass(), parser);
+		Return.Tt = cls->Tt;
+	}
+	else
+		Return.Tt = Ass().CVoid->Tt;
+	
+	fsig = "";
+	dsig = "";
+	csig = "";
+	
+	if (InClass == false) {
+		fsig << Namespace().ProperName << "::";
+		
+		if (IsFunction) {
+			fsig << "func ";
+			csig << ER::Magenta << "func ";
+		}
+		else {
+			fsig << "def ";
+			csig << ER::Magenta << "def ";
+		}
+		
+		dsig << "global ";
+		dsig << "func ";
+	}
+	else {
+		if (IsFunction) {
+			dsig << "func ";
+			csig << ER::Magenta << "func ";
+		}
+		else {
+			dsig << "def ";
+			csig << ER::Magenta << "def ";
+		}
+	}
+	
+	dsig << Name;
+	fsig << Name;
+
+	csig << ER::Green << Name;
+	
+	String psig = "(";
+	String psigc = String(ER::White) + "(";
+	
+	for (int i = 0; i < Params.GetCount(); i++) {
+		ZVariable& var = Params[i];
+		
+		if (i > 0) {
+			psig << ", ";
+			psigc << ", ";
+		}
+		
+		psig << Ass().ClassToString(&var.I);
+		psigc << ER::Cyan << Ass().ClassToString(&var.I) << ER::White;
+	}
+	
+	psig << ")";
+	psigc << ")";
+	
+	dsig << psig;
+	fsig << psig;
+	csig << psigc;
+	
+	if (Return.Tt.Class && Return.Tt.Class != Ass().CVoid) {
+		fsig << ": ";
+		fsig << Ass().ClassToString(Return.Tt);
+		
+		csig << ": ";
+		csig << ER::Cyan << Ass().ClassToString(Return.Tt);
+	}
+	
+		
+	csig << ER::White << "        "  << "[";
+	if (InClass)
+		csig << ER::Magenta << "class " << ER::White << Namespace().Namespace().Name << ER::Cyan << Namespace().Name;
+	else
+		csig << ER::Magenta << "namespace " << ER::White << Namespace().ProperName;
+	csig << "]";
+	
+	//DUMP(fsig);
+}
+
+ZFunction& ZNamespace::PrepareFunction(const String& aName) {
+	ZFunction& f = PreFunctions.Add(ZFunction(*this));
+	f.Name = aName;
+	return f;
+}
+
+ZVariable& ZNamespace::PrepareVariable(const String& aName) {
+	ZVariable& f = PreVariables.Add(ZVariable(*this));
+	f.Name = aName;
+	return f;
+}
+
+ZClass& ZNamespace::PrepareClass(const String& aName) {
+	ZClass& f = PreClasses.Add(ZClass(*this));
+	f.Name = aName;
+	return f;
+}
 
 extern int tabAss[][14];
 

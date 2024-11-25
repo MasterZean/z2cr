@@ -3,6 +3,8 @@ uses
 
 file
 	z2cr.h,
+	common.h,
+	node.h,
 	entities.h,
 	entities.cpp,
 	Assembly.h,

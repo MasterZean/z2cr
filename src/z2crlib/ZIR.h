@@ -1,6 +1,8 @@
 #ifndef _z2cr_ZIR_h_
 #define _z2cr_ZIR_h_
 
+#include <z2crlib/ZNode.h>
+
 template<class Tt>
 class NodePool {
 private:

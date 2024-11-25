@@ -1,6 +1,8 @@
 #ifndef _z2cr_ErrorReporter_h_
 #define _z2cr_ErrorReporter_h_
 
+#include <z2crlib/ZException.h>
+
 class ZSource;
 class ZSourcePos;
 
@@ -17,6 +19,7 @@ public:
 	static String Blue;
 	static String Green;
 	static String Yellow;
+	static String Magenta;
 	
 	static void Error(const ZSource& src, const Point& p, const String& text);
 	

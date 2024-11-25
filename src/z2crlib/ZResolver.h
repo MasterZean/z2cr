@@ -11,6 +11,8 @@ public:
 	bool Resolve();
 	void ResolveNamespaces();
 	void ResolveNamespace(ZNamespace& ns);
+	void ResolveClasses();
+	void ResolveNamespaceMembers(ZNamespace& ns);
 	void ResolveFunctions();
 	void ResolveFunction(ZFunction& f);
 	void ResolveVariables();
@@ -22,6 +24,8 @@ public:
 private:
 	Assembly& ass;
 	String dupeListing;
+	
+	String DupStr(const String& allErrors, const ZSourcePos& dp, const String& colorSig);
 };
 
 #endif
