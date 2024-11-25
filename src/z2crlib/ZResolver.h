@@ -25,7 +25,11 @@ private:
 	Assembly& ass;
 	String dupeListing;
 	
-	String DupStr(const String& allErrors, const ZSourcePos& dp, const String& colorSig);
+	Vector<String> dupeFile;
+	Vector<String> dupeDecl;
+	Vector<String> dupeOwner;
+	
+	String DupStr(const String& allErrors, const ZSourcePos& dp, const String& colorSig, const String& owner);
 };
 
 #endif

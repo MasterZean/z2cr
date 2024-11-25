@@ -5,6 +5,7 @@ bool ER::PrintPath;
 bool ER::NoColor = false;
 String ER::White = "${white}";
 String ER::Gray = "${gray}";
+String ER::DkGray = "${dkgray}";
 String ER::Red = "${red}";
 String ER::Cyan = "${cyan}";
 String ER::Blue = "${blue}";
@@ -102,23 +103,62 @@ void ZException::PrettyPrint(Stream& stream) {
 		stream << Path << ": ";
 	}
 	
-	String input = Error;
+	ER::PrettyPrint(Error, stream, !ER::NoColor);
+}
+
+void ER::PrettyPrint(const String& error, Stream& stream, bool color) {
+#ifdef PLATFORM_WIN32
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // Get handle to standard output
+	WORD                        m_currentConsoleAttr;
+	CONSOLE_SCREEN_BUFFER_INFO   csbi;
+
+	//retrieve and save the current attributes
+	if(GetConsoleScreenBufferInfo(hConsole, &csbi))
+	    m_currentConsoleAttr = csbi.wAttributes;
+
+	int cWhite = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
+	int cGray = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+	int cDkGray = FOREGROUND_INTENSITY;
+	int cRed = FOREGROUND_RED | FOREGROUND_INTENSITY;
+	int cCyan = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+	int cBlue = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+	int cMagenta = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE;
+	int cGreen = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+	int cYellow = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN;
+	
+#else
+
+	int hConsole = 0;
+	int m_currentConsoleAttr;
+	
+	int cWhite = 0;
+	int cGray = 0;
+	int cDkGray = 0;
+	int cRed = 0;
+	int cCyan = 0;
+	int cBlue = 0;
+	int cMagenta = 0;
+	int cYellow = 0;
+	
+#endif
+	
+	String input = error;
 	
 	int index = input.Find("${");
 		
 	if (index == -1) {
-		if (!ER::NoColor)
+		if (color)
 			SetConsoleTextAttribute(hConsole, cWhite);
 		stream << input;
-		if (!ER::NoColor)
+		if (color)
 			SetConsoleTextAttribute(hConsole, m_currentConsoleAttr);
 		return;
 	}
 	
-	const char* colstr[] = { "${white}", "${gray}", "${red}", "${cyan}", "${blue}", "${green}", "${yellow}", "${magenta}"};
-	int         colval[] = { cWhite,     cGray,     cRed,     cCyan,     cBlue,     cGreen,     cYellow,     cMagenta };
+	const char* colstr[] = { "${white}", "${gray}", "${red}", "${cyan}", "${blue}", "${green}", "${yellow}", "${magenta}", "${dkgray}"};
+	int         colval[] = { cWhite,     cGray,     cRed,     cCyan,     cBlue,     cGreen,     cYellow,     cMagenta,     cDkGray };
 	
-	if (!ER::NoColor)
+	if (color)
 		SetConsoleTextAttribute(hConsole, cWhite);
 	
 	while (index != -1) {
@@ -130,7 +170,7 @@ void ZException::PrettyPrint(Stream& stream) {
 			if (post.StartsWith(colstr[i])) {
 				post = post.Mid(strlen(colstr[i]));
 				
-				if (!ER::NoColor)
+				if (color)
 					SetConsoleTextAttribute(hConsole, colval[i]);
 				
 				int index2 = post.Find("${");
@@ -150,6 +190,6 @@ void ZException::PrettyPrint(Stream& stream) {
 		}
 	}
 	
-	if (!ER::NoColor)
+	if (color)
 		SetConsoleTextAttribute(hConsole, m_currentConsoleAttr);
 }

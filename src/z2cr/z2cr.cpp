@@ -100,6 +100,16 @@ int separate_console() {
 CONSOLE_APP_MAIN {
 	bool noConsole = separate_console();
 	
+	/*CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int columns, rows;
+
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+    printf("columns: %d\n", columns);
+    printf("rows: %d\n", rows);*/
+	
 	String curDir = NativePath(GetCurrentDirectory() + "/");
 	String exeDir = GetFileDirectory(GetExeFilePath());
 	

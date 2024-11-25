@@ -13,6 +13,7 @@ public:
 	static bool  NoColor;
 	
 	static String White;
+	static String DkGray;
 	static String Gray;
 	static String Red;
 	static String Cyan;
@@ -37,6 +38,14 @@ public:
 	
 	static void ErrIncompatOp(const ZSource& src, const Point& p, const String& op, const String& text, const String& text2) {
 		Error(src, p, "Can't apply operator '" + op + "' on types: \n\t\t'\f" + text + "\f' and \n\t\t'\f" + text2 + "\f'");
+	}
+	
+	static void PrettyPrint(const String& error, Stream& stream, bool color);
+	
+	static String StripColor(const String& error) {
+		StringStream ss;
+		PrettyPrint(error, ss, false);
+		return ss;
 	}
 };
 

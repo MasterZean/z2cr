@@ -13,12 +13,13 @@ void ZVariable::GenerateSignatures() {
 	
 	csig << ER::Green << Name;
 	
-	csig << ER::White << "        "  << "[";
+	osig = "";
+	osig << ER::White << "";
 	if (InClass)
-		csig << ER::Magenta << "class " << ER::White << Namespace().Namespace().Name << ER::Cyan << Namespace().Name;
+		osig << ER::Magenta << "class " << ER::White << Owner().Namespace().Name << ER::Cyan << Owner().Name;
 	else
-		csig << ER::Magenta << "namespace " << ER::White << Namespace().ProperName;
-	csig << "]";
+		osig << ER::Magenta << "namespace " << ER::White << Owner().ProperName;
+	osig << ER::White << "";
 }
 
 void ZClass::GenerateSignatures() {
@@ -27,12 +28,13 @@ void ZClass::GenerateSignatures() {
 	csig << ER::Magenta << "class ";
 	csig << ER::Green << Name;
 	
-	csig << ER::White << "        "  << "[";
+	osig = "";
+	osig << ER::White << "";
 	if (InClass)
-		csig << ER::Magenta << "class " << ER::White << Namespace().Namespace().Name << ER::Cyan << Namespace().Name;
+		osig << ER::Magenta << "class " << ER::White << Owner().Namespace().Name << ER::Cyan << Owner().Name;
 	else
-		csig << ER::Magenta << "namespace " << ER::White << Namespace().ProperName;
-	csig << "]";
+		osig << ER::Magenta << "namespace " << ER::White << Owner().ProperName;
+	osig << ER::White << "";
 }
 
 void ZFunction::GenerateSignatures() {
@@ -145,13 +147,13 @@ void ZFunction::GenerateSignatures() {
 		csig << ER::Cyan << Ass().ClassToString(Return.Tt);
 	}
 	
-		
-	csig << ER::White << "        "  << "[";
+	osig = "";
+	osig << ER::White << "";
 	if (InClass)
-		csig << ER::Magenta << "class " << ER::White << Namespace().Namespace().Name << ER::Cyan << Namespace().Name;
+		osig << ER::Magenta << "class " << ER::White << Owner().Namespace().Name << ER::Cyan << Owner().Name;
 	else
-		csig << ER::Magenta << "namespace " << ER::White << Namespace().ProperName;
-	csig << "]";
+		osig << ER::Magenta << "namespace " << ER::White << Owner().ProperName;
+	osig << ER::White << "";
 	
 	//DUMP(fsig);
 }

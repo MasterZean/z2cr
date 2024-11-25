@@ -96,7 +96,10 @@ void ZResolver::ResolveFunction(ZFunction& f) {
 	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
 
-	ZMethodBundle& d = f.Namespace().Methods.GetAdd(f.Name, ZMethodBundle(f.Namespace()));
+	DUMP(f.InClass);
+	DUMP(f.Namespace().Name);
+	DUMP(f.Owner().Name);
+	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));
 	if (d.Name.GetCount() == 0)
 		d.Name = f.Name;
 	d.Functions.Add(&f);
@@ -107,9 +110,24 @@ void ZResolver::ResolveVariables() {
 		ZNamespace& ns = ass.Namespaces[i];
 		for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
 			ZVariable& f = ns.PreVariables[j];
-			ns.Variables.Add(f.Name, &f);
+			f.Owner().Variables.Add(f.Name, &f);
 		}
 	}
+}
+
+String Pad(const String& s, int max) {
+	StringBuffer ss;
+	ss.Cat(s);
+	while (ss.GetLength() < max)
+		ss.Cat(' ');
+	return ss;
+}
+
+String PadSp(int max) {
+	StringBuffer ss;
+	while (ss.GetLength() < max)
+		ss.Cat(' ');
+	return ss;
 }
 
 bool ZResolver::CheckForDuplicates() {
@@ -118,10 +136,57 @@ bool ZResolver::CheckForDuplicates() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		CheckForDuplicates(ass.Namespaces[i]);
 	
-	if (dupeListing.GetCount() == 0)
+	ASSERT(dupeDecl.GetCount() == dupeFile.GetCount());
+	ASSERT(dupeOwner.GetCount() == dupeFile.GetCount());
+	
+	if (dupeFile.GetCount() == 0)
 		return true;
+	
+	int maxFile = -1;
+	for (int i = 0; i < dupeFile.GetCount(); i++) {
+		String strip = dupeFile[i];
+		DUMP(strip);
+		if (dupeFile[i].GetCount() > maxFile)
+			maxFile = strip.GetCount();
+	}
 		
-	throw ZException("", dupeListing);
+	int maxDec = -1;
+	for (int i = 0; i < dupeDecl.GetCount(); i++) {
+		String strip = ER::StripColor(dupeDecl[i]);
+		DUMP(strip);
+		if (strip.GetCount() > maxDec)
+			maxDec = strip.GetCount();
+	}
+
+	String err;
+	
+	for (int i = 0; i < dupeFile.GetCount(); i++) {
+		if (i == 0 || dupeFile[i].GetCount() == 0) {
+			if (dupeFile[i].GetCount() == 0) {
+				//if (i != 0)
+				//	err << "\n";
+				i++;
+			}
+			
+			err << ER::Gray << Pad(dupeFile[i], maxFile) << ER::White << ": ";
+			err << ER::Red << "error: ";
+			err << ER::White << "declaration in: " << dupeOwner[i] << "\n";
+			
+			err << "        " << PadSp(maxFile) << "  ";
+			err << dupeDecl[i] << PadSp(maxDec - ER::StripColor(dupeDecl[i]).GetCount());
+			err << "\n";
+			//err << "        " << dupeOwner[i] << "\n";
+			
+			err << ER::White << "    clashes with the following declarations:\n";
+			i++;
+		}
+		
+		err << ER::White << "        " << ER::DkGray << Pad(dupeFile[i], maxFile) << ": " << dupeDecl[i] << PadSp(maxDec - ER::StripColor(dupeDecl[i]).GetCount());
+		err << "\n";
+		//err << "        " << dupeOwner[i] << "\n";
+	}
+	
+	throw ZException("", err);
 
 	return false;
 }
@@ -144,7 +209,7 @@ bool ZResolver::CheckForDuplicates(ZNamespace& ns) {
 				ZClass& c = ns.PreClasses[i];
 				
 				if (c.Name == dupes.GetKey(k))
-					allErrors << DupStr(allErrors, c.DefPos, c.ColorSig());
+					allErrors << DupStr(allErrors, c.DefPos, c.ColorSig(), c.OwnerSig());
 			}
 			
 			dupeListing << allErrors;
@@ -195,7 +260,7 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 					lastFunc = &f;
 					
 					if (f.DupSig() == dupes.GetKey(k))
-						allErrors << DupStr(allErrors, f.DefPos, f.ColorSig());
+						allErrors << DupStr(allErrors, f.DefPos, f.ColorSig(), f.OwnerSig());
 					
 				}
 				
@@ -203,7 +268,7 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 					for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
 						ZVariable& v = ns.PreVariables[j];
 						if (v.Name == lastFunc->Name)
-							allErrors << DupStr(allErrors, v.DefPos, v.ColorSig());
+							allErrors << DupStr(allErrors, v.DefPos, v.ColorSig(), v.OwnerSig());
 					}
 				}
 				
@@ -229,7 +294,7 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 			for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
 				ZVariable& v = ns.PreVariables[j];
 				if (v.IsDuplicate == false && v.Name == dupes.GetKey(k))
-					allErrors << DupStr(allErrors, v.DefPos, v.ColorSig());
+					allErrors << DupStr(allErrors, v.DefPos, v.ColorSig(), v.OwnerSig());
 			}
 			
 			dupeListing << allErrors;
@@ -237,20 +302,31 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 	}
 }
 
-String ZResolver::DupStr(const String& allErrors, const ZSourcePos& dp, const String& colorSig) {
-	String err;
+String ZResolver::DupStr(const String& allErrors, const ZSourcePos& dp, const String& colorSig, const String& owner) {
+	String err = "dummy";
 	
-	// append to error
+	if (allErrors.GetCount() == 0) {
+		dupeFile << "";
+		dupeDecl << "";
+		dupeOwner << "";
+	}
+	
+	dupeFile << dp.ToString();
+	dupeDecl << colorSig;
+	dupeOwner << owner;
+	
+	/*// append to error
 	if (allErrors.GetCount() != 0) {
-		err << "\t" << ER::Gray << dp.ToString() << ": " << colorSig << "\n";
+		err << ER::White << "        " << ER::Gray << dp.ToString() << ": " << colorSig << "\n";
 		return err;
 	}
 	
 	// first message
 	err << ER::Gray << dp.ToString() << ": ";
 	err << ER::Red << "error: ";
-	err << ER::White << "duplicate symbol: " << colorSig;
-	err << "\n" << ER::Gray << "other occurrences at:\n";
+	err << ER::White << "duplicate symbol: " << "the following declarations clash:\n";
+	err << ER::White << "        " << ER::Gray << dp.ToString() << ": " << colorSig << "\n";
+	//err << "\n" <<  ER::Gray << "    other occurrences at:\n";*/
 	
 	return err;
 }

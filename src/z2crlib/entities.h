@@ -89,9 +89,9 @@ public:
 		Type = EntityType::Unknown;
 	}
 	
-	ZNamespace& Namespace() {
-		return nmsspace;
-	}
+	inline ZNamespace& Namespace();
+	
+	inline ZNamespace& Owner();
 	
 	inline Assembly& Ass();
 
@@ -166,15 +166,20 @@ public:
 	bool MIsRawVec = false;
 	
 	int Index = -1;
+		
+	void GenerateSignatures();
 	
 	const String& ColorSig() const {
 		return csig;
 	}
 	
-	void GenerateSignatures();
+	const String& OwnerSig() const {
+		return osig;
+	}
 	
 private:
 	String csig;
+	String osig;
 };
 
 class ZVariable: Moveable<ZVariable>, public ZEntity {
@@ -204,10 +209,15 @@ public:
 		return csig;
 	}
 	
+	const String& OwnerSig() const {
+		return osig;
+	}
+	
 	void GenerateSignatures();
 	
 private:
 	String csig;
+	String osig;
 };
 
 class ZBlock: Moveable<ZBlock> {
@@ -254,10 +264,15 @@ public:
 		return csig;
 	}
 	
+	const String& OwnerSig() const {
+		return osig;
+	}
+	
 private:
 	String dsig;
 	String fsig;
 	String csig;
+	String osig;
 };
 
 class ZMethodBundle: public ZEntity {
@@ -268,5 +283,21 @@ public:
 		Type = EntityType::MethodBundle;
 	}
 };
+
+ZNamespace& ZEntity::Namespace() {
+	if (InClass == true)
+		return nmsspace.Namespace();
+	else
+		return nmsspace;
+}
+
+ZNamespace& ZEntity::Owner() {
+	return nmsspace;
+	/*if (InClass == false)
+		return *this;
+	else
+		return nmsspace;*/
+}
+
 
 #endif
