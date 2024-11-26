@@ -23,7 +23,6 @@ public:
 	
 private:
 	Assembly& ass;
-	String dupeListing;
 	
 	Vector<String> dupeFile;
 	Vector<String> dupeDecl;

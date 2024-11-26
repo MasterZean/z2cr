@@ -1,0 +1,159 @@
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	extern int32 v1;
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::v1 = 27;
+*/
+
+namespace testcpp;
+
+val v1 = Int{27};
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	extern int32 v1;
+	extern int32 v2;
+	extern int32 v3;
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::v1 = 27;
+int32 testcpp::v2 = 28;
+int32 testcpp::v3 = 29;
+*/
+
+namespace testcpp;
+
+val v1 = 27;
+val v2: Int = 28;
+val v3: Int = Int{29};
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	extern int32 v1;
+	extern int32 v2;
+	extern int32 v3;
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::v1 = 27;
+int32 testcpp::v2 = 28;
+int32 testcpp::v3 = 29;
+*/
+
+namespace testcpp;
+
+val v1 = 27;
+val v2: Int = 28;
+protected val v3: Int = Int{29};
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	extern int32 v1;
+	extern int32 v2;
+	extern int32 v3;
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::v1 = 27;
+int32 testcpp::v2 = 28;
+int32 testcpp::v3 = 29;
+*/
+
+namespace testcpp;
+
+val v1 = 27;
+
+protected {
+	val v2: Int = 28;
+	val v3: Int = Int{29};
+}
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	extern int32 v1;
+	extern int32 v2;
+}
+*/
+
+/* @dump namespace: testcpp privint
+namespace testcpp {
+	extern int32 v3;
+}
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::v1 = 27;
+int32 testcpp::v2 = 28;
+int32 testcpp::v3 = 29;
+*/
+
+namespace testcpp;
+
+val v1 = 27;
+val v2: Int = 28;
+private val v3: Int = Int{29};
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	extern int32 v1;
+}
+*/
+
+/* @dump namespace: testcpp privint
+namespace testcpp {
+	extern int32 v2;
+	extern int32 v3;
+}
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::v1 = 27;
+int32 testcpp::v2 = 28;
+int32 testcpp::v3 = 29;
+*/
+
+namespace testcpp;
+
+val v1 = 27;
+
+private {
+	val v2: Int = 28;
+	val v3: Int = Int{29};
+}

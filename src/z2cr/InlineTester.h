@@ -7,8 +7,11 @@ class ZTest: public Moveable<ZTest> {
 public:
 	String Name;
 	String Error = String::GetVoid();
-	//String Con;
 	VectorMap<int, String> Dumps;
+	String DumpNsPubName = String::GetVoid();
+	String DumpNsPubCon = String::GetVoid();
+	String DumpNsPrivCon = String::GetVoid();
+	String DumpNsDef = String::GetVoid();
 	String GlobalVarDef = String::GetVoid();
 	WithDeepCopy<Vector<String>> Files;
 	bool Passed = false;
@@ -19,6 +22,10 @@ public:
 	ZSource* Source = nullptr;
 	
 	bool Run();
+	
+	bool RunDumpNsPub(ZCompiler& compiler);
+	
+	bool DumpEqual(const String& have, const String& want, const String& desc);
 };
 	
 class InlineTester {

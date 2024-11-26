@@ -6,7 +6,7 @@ String anFile = "// @file";
 String anError = "// @error";
 String anErrors = "/* @errors";
 String anDumpBody = "/* @dumpBody";
-String anDumpEnd = "// @dumpEnd";
+String anDumpNsPub = "/* @dump";
 String anDumpGlobalVarDef = "/* @dumpGlobalVarDef";
 
 bool ZTest::Run() {
@@ -120,10 +120,13 @@ bool ZTest::Run() {
 				Cout() << Name << "(" << Line << ")" << " test failled because GlobalVarDef\n";
 			}
 		}
+		
+		if (!DumpNsPubName.IsVoid())
+			result = RunDumpNsPub(compiler);
 			
-		if (result == false) {
-			Cout() << Name << "(" << Line << ")" << " test failled\n";
-		}
+		//if (result == false) {
+		//	Cout() << Name << "(" << Line << ")" << " test failled\n";
+		//}
 	}
 	catch (ZException& e) {
 		StringStream ss;
@@ -171,6 +174,90 @@ bool ZTest::Run() {
 	return result;
 }
 
+bool ZTest::RunDumpNsPub(ZCompiler& compiler) {	
+	int index = Ass.Namespaces.Find(DumpNsPubName + ".");
+	
+	if (index == -1)
+		return false;
+	
+	bool result = true;
+	
+	if (!DumpNsPubCon.IsVoid())	{
+		StringStream ss;
+		ZTranspiler cpp(compiler, ss);
+		
+		cpp.TranspileNamespaceDecl(Ass.Namespaces[index], 0b11);
+		
+		String dump = ss;
+		dump = TrimBoth(dump);
+		
+		if (!DumpEqual(dump, DumpNsPubCon, "namespace public member dump error"))
+			result = false;
+	}
+	
+	if (!DumpNsPrivCon.IsVoid())	{
+		StringStream ss;
+		ZTranspiler cpp(compiler, ss);
+		
+		cpp.TranspileDeclarationsPriv(Ass.Namespaces[index]);
+		
+		String dump = ss;
+		dump = TrimBoth(dump);
+		
+		if (!DumpEqual(dump, DumpNsPrivCon, "namespace private member dump error"))
+			result = false;
+	}
+	
+	if (!DumpNsDef.IsVoid()) {
+		StringStream ss;
+		ZTranspiler cpp(compiler, ss);
+		
+		cpp.TranspileDefinitions(Ass.Namespaces[index], 0b11);
+		
+		String dump = ss;
+		dump = TrimBoth(dump);
+		
+		if (!DumpEqual(dump, DumpNsDef, "namespace definition dump error"))
+			result = false;
+	}
+	
+	return result;
+}
+
+bool ZTest::DumpEqual(const String& have, const String& want, const String& desc) {
+	if (have != want) {
+		LOG(String().Cat() << Name << "(" << Line << ")" << " test failled: " << desc << "\n");
+			
+		for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
+			LOG("=================================================================================================================");
+			LOG(Ass.SourceLookup[i]->Content());
+			LOG("=================================================================================================================");
+			
+		}
+		
+		LOG("Found dump:");
+		
+		LOG(have);
+		LOG("-----------------------------------------------------------------------------------------------------------------");
+		LOG("Expected dump:");
+		if (want.GetCount())
+			LOG(want);
+		else
+			LOG("NONE!");
+		LOG("-----------------------------------------------------------------------------------------------------------------");
+		
+		LOG("");
+		LOG("");
+		LOG("");
+		
+		
+		Cout() << Name << "(" << Line << ")" << " test failled: " << desc << "\n";
+		return false;
+	}
+	
+	return true;
+}
+
 InlineTester::InlineTester() {
 }
 
@@ -193,8 +280,8 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-	//if (!path.EndsWith("02-decl-04-const.z2test"))
-	//	return;
+//	if (!path.EndsWith("06-cpp-01-ns-01.z2test"))
+//		return;
 	
 	FileIn file(path);
 	
@@ -328,6 +415,45 @@ void InlineTester::AddTestCollection(const String& path) {
 			
 			if (test)
 				test->Error = err;
+		}
+		else if (line.StartsWith(anDumpNsPub)) {
+			con << line << "\n";
+			
+			String rest = line.Mid(anDumpNsPub.GetCount());
+			rest = TrimBoth(rest);
+			
+			auto v = Split(rest, " ", true);
+			
+			String err;
+			
+			while (!file.IsEof()) {
+				String sub = file.GetLine();
+				lineNo++;
+				localLineNo++;
+				con << sub << "\n";
+				
+				if (sub.StartsWith("*/"))
+					break;
+				else
+					err << sub << "\n";
+			}
+			
+			if (test) {
+				if (v.GetCount() == 3) {
+					if (v[0] == "namespace:" && v[1].GetCount()) {
+						test->DumpNsPubName = v[1];
+						if (v[2] == "pubint") {
+							test->DumpNsPubCon = TrimBoth(err);
+						}
+						if (v[2] == "privint") {
+							test->DumpNsPrivCon = TrimBoth(err);
+						}
+						if (v[2] == "def") {
+							test->DumpNsDef = TrimBoth(err);
+						}
+					}
+				}
+			}
 		}
 		else {
 			con << line << "\n";

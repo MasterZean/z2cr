@@ -36,8 +36,8 @@ void ZTranspiler::WriteOutro() {
 	EL();
 }
 
-void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int modePrivate) {
-	TranspileNamespaceDecl(ns, modePrivate);
+void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags) {
+	TranspileNamespaceDecl(ns, accessFlags);
 	
 	for (int i = 0; i < ns.Classes.GetCount(); i++) {
 		if (ns.Name == "test.") {
@@ -50,6 +50,20 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int modePrivate) {
 	}
 }
 
+void ZTranspiler::TranspileDeclarationsPriv(ZNamespace& ns) {
+	bool writePriv = false;
+	
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		auto v = *ns.Variables[i];
+		if (v.Access == AccessType::Private) {
+			writePriv = true;
+			break;
+		}
+	}
+	if (writePriv)
+		TranspileDeclarations(ns, 0b100);
+}
+
 void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int modePrivate) {
 	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
 		return;
@@ -60,8 +74,8 @@ void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int modePrivate) {
 	
 	indent++;
 	
-	int vc = TranspileMemberDeclVar(ns, 0b111);
-	int fc = TranspileMemberDeclFunc(ns, 0b111, vc);
+	int vc = TranspileMemberDeclVar(ns, modePrivate);
+	int fc = TranspileMemberDeclFunc(ns, modePrivate, vc);
 	
 	indent--;
 	
@@ -236,17 +250,6 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int modePrivate, int vc
 }
 
 void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bool wrap) {
-	bool writePriv = false;
-	for (int i = 0; i < ns.Variables.GetCount(); i++) {
-		auto v = *ns.Variables[i];
-		if (v.Access == AccessType::Private) {
-			writePriv = true;
-			break;
-		}
-	}
-	if (writePriv)
-		TranspileDeclarations(ns, true);
-	
 	if (vars) {
 		TranspileValDefintons(ns);
 	}

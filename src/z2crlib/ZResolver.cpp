@@ -159,8 +159,6 @@ String PadSp(int max) {
 }
 
 bool ZResolver::CheckForDuplicates() {
-	dupeListing = "";
-	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		CheckForDuplicates(ass.Namespaces[i]);
 	
@@ -229,14 +227,12 @@ bool ZResolver::CheckForDuplicates(ZNamespace& ns) {
 		if (dupes[k] > 1) {
 			String allErrors;
 			
-			for (int i = 0; i < ns.PreClasses.GetCount(); i++) {
-				ZClass& c = ns.PreClasses[i];
+			for (int i = 0; i < ns.Classes.GetCount(); i++) {
+				ZClass& c = *ns.Classes[i];
 				
 				if (c.Name == dupes.GetKey(k))
 					allErrors << DupStr(allErrors, c.DefPos, c.ColorSig(), c.OwnerSig());
 			}
-			
-			dupeListing << allErrors;
 		}
 	}
 	
@@ -244,8 +240,12 @@ bool ZResolver::CheckForDuplicates(ZNamespace& ns) {
 	DuplicateLoop(ns, true);
 	
 	// verify class members
-	for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
-		ZClass& c = ns.PreClasses[j];
+	for (int j = 0; j < ns.Classes.GetCount(); j++) {
+		ZClass& c = *ns.Classes[j];
+		if (c.Name == "sys") {
+			DUMP(&c);
+			c.Name == "sys";
+		}
 		DuplicateLoop(c, true);
 	}
 	
@@ -295,8 +295,6 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 							allErrors << DupStr(allErrors, v.DefPos, v.ColorSig(), v.OwnerSig());
 					}
 				}
-				
-				dupeListing << allErrors;
 			}
 		}
 	}
@@ -320,8 +318,6 @@ void ZResolver::DuplicateLoop(ZNamespace& ns, bool aPrivate) {
 				if (v.IsDuplicate == false && v.Name == dupes.GetKey(k))
 					allErrors << DupStr(allErrors, v.DefPos, v.ColorSig(), v.OwnerSig());
 			}
-			
-			dupeListing << allErrors;
 		}
 	}
 }
