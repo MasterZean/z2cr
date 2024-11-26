@@ -77,7 +77,12 @@ public:
 	void Proc(IntrinsicNode& node);
 	void Proc(LoopControlNode& node);
 	
-	void TranspileDeclarations(ZNamespace& ns, bool modePrivate = false);
+	void TranspileDeclarations(ZNamespace& ns, int modePrivate = false);
+	void TranspileNamespaceDecl(ZNamespace& ns, int modePrivate = false);
+	void TranspileClassDecl(ZNamespace& ns, int modePrivate = false);
+	int  TranspileMemberDeclVar(ZNamespace& ns, int modePrivate);
+	int TranspileMemberDeclFunc(ZNamespace& ns, int modePrivate, int vc);
+
 	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);
 	void TranspileValDefintons(ZNamespace& ns, bool trail = true);
 	

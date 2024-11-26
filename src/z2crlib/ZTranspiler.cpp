@@ -36,7 +36,21 @@ void ZTranspiler::WriteOutro() {
 	EL();
 }
 
-void ZTranspiler::TranspileDeclarations(ZNamespace& ns, bool modePrivate) {
+void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int modePrivate) {
+	TranspileNamespaceDecl(ns, modePrivate);
+	
+	for (int i = 0; i < ns.Classes.GetCount(); i++) {
+		if (ns.Name == "test.") {
+			ns.Name == "test.";
+			DUMP(ns.Classes[i]->Name);
+			DUMP(ns.Classes[i]);
+			DUMP(ns.Classes[i]->Methods.GetCount());
+		}
+		TranspileClassDecl(*ns.Classes[i], -1);
+	}
+}
+
+void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int modePrivate) {
 	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
 		return;
 	
@@ -46,40 +60,169 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, bool modePrivate) {
 	
 	indent++;
 	
+	int vc = TranspileMemberDeclVar(ns, 0b111);
+	int fc = TranspileMemberDeclFunc(ns, 0b111, vc);
+	
+	indent--;
+	
+	NL();
+	cs << "}";
+	EL();
+	EL();
+}
+
+void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int modePrivate) {
+	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
+		return;
+	
+	NL();
+	cs << "namespace " << ns.Namespace().BackName << " {";
+	EL();
+	
+	NL();
+	cs << "class " << ns.BackName << " {";
+	EL();
+	
+	indent++;
+	
+	int vc = TranspileMemberDeclVar(ns, 0b1);
+	vc += TranspileMemberDeclVar(ns, 0b10);
+	vc += TranspileMemberDeclVar(ns, 0b100);
+	
+	int fc = TranspileMemberDeclFunc(ns, 0b1, vc);
+	fc += TranspileMemberDeclFunc(ns, 0b10, vc);
+	fc += TranspileMemberDeclFunc(ns, 0b100, vc);
+	
+	indent--;
+	
+	NL();
+	cs << "}";
+	ES();
+	
+	NL();
+	cs << "}";
+	EL();
+	
+	EL();
+}
+
+int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int modePrivate) {
+	bool first = true;
+	
+	int count = 0;
+	
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
 		
-		if (modePrivate == false && v.Access == AccessType::Private)
-			continue;
-		if (modePrivate == true && v.Access != AccessType::Private)
-			continue;
+		if (modePrivate != -1) {
+			if (v.Access == AccessType::Public && ((modePrivate & 0b1) == 0))
+				continue;
+			if (v.Access == AccessType::Protected && ((modePrivate & 0b10) == 0))
+				continue;
+			if (v.Access == AccessType::Private && ((modePrivate & 0b100) == 0))
+				continue;
+		}
 		
 		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
 		
+		count++;
+		
+		if (first) {
+			if (v.InClass == true) {
+				if (v.Access == AccessType::Public) {
+					indent--;
+					NL();
+					cs << "public:";
+					EL();
+					indent++;
+				}
+				if (v.Access == AccessType::Protected)  {
+					indent--;
+					NL();
+					cs << "protected:";
+					EL();
+					indent++;
+				}
+				if (v.Access == AccessType::Private) {
+					indent--;
+					NL();
+					cs << "private:";
+					EL();
+					indent++;
+				}
+			}
+			first = false;
+		}
+		
 		NL();
 		
-		cs << "extern ";
-		if (v.IsConst)
-			cs << "const ";
+		if (v.InClass) {
+			if (v.IsStatic && v.IsConst)
+				cs << "static const ";
+			else if (v.IsStatic)
+				cs << "static ";
+		}
+		else {
+			cs << "extern ";
+			if (v.IsConst)
+				cs << "const ";
+		}
+
 		cs << v.I.Tt.Class->BackName << " " << v.Name;
 		ES();
 	}
 	
+	return count;
+}
+
+int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int modePrivate, int vc) {
 	bool first = true;
-		
+	
+	int count = 0;
+	
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
 			ZFunction& f = *ns.Methods[i].Functions[j];
 			
-			if (modePrivate == false && f.Access == AccessType::Private)
-				continue;
-			if (modePrivate == true && f.Access != AccessType::Private)
-				continue;
+			if (modePrivate != -1) {
+				if (f.Access == AccessType::Public && ((modePrivate & 0b1) == 0))
+					continue;
+				if (f.Access == AccessType::Protected && ((modePrivate & 0b10) == 0))
+					continue;
+				if (f.Access == AccessType::Private && ((modePrivate & 0b100) == 0))
+					continue;
+			}
 			
+			count++;
 			if (first) {
-				if (ns.Variables.GetCount())
-					EL();
+				if (f.InClass == false) {
+					if (vc)
+						EL();
+				}
+				else {
+					if (f.Access == AccessType::Public) {
+						indent--;
+						NL();
+						cs << "public:";
+						EL();
+						indent++;
+					}
+					if (f.Access == AccessType::Protected)  {
+						indent--;
+						NL();
+						cs << "protected:";
+						EL();
+						indent++;
+					}
+					if (f.Access == AccessType::Private) {
+						indent--;
+						NL();
+						cs << "private:";
+						EL();
+						indent++;
+					}
+				}
 				first = false;
 			}
 			
@@ -89,12 +232,7 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, bool modePrivate) {
 		}
 	}
 	
-	indent--;
-	
-	NL();
-	cs << "}";
-	EL();
-	EL();
+	return count;
 }
 
 void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bool wrap) {
@@ -146,10 +284,15 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (f.Access == AccessType::Private)
+	if (f.InClass == false && f.Access == AccessType::Private)
+		cs << "static ";
+	if (f.InClass == true && f.IsStatic)
 		cs << "static ";
 	cs << f.Return.Tt.Class->BackName << " " << f.BackName;
 	WriteFunctionParams(f);
+	
+	if (f.InClass == true && f.IsFunction && !f.IsStatic)
+		cs << " const";
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {

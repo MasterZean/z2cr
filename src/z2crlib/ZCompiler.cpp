@@ -36,8 +36,15 @@ bool ZCompiler::Compile() {
 	
 	MainFound = FindMain();
 	
-	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
-		PreCompileVars(ass.Namespaces[i]);
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
+		auto& ns = ass.Namespaces[i];
+		PreCompileVars(ns);
+		
+		for (int j = 0; j < ns.Classes.GetCount(); j++) {
+			auto& c = *ns.Classes[j];
+			PreCompileVars(c);
+		}
+	}
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);

@@ -31,6 +31,5 @@ file
 	OverloadResolver.cpp,
 	ZException.h,
 	ErrorReporter.h,
-	ErrorReporter.cpp,
-	build readonly separator;
+	ErrorReporter.cpp;
 

@@ -18,13 +18,13 @@ public:
 
 	void Scan();
 	
-	void ScanSingle(const ZSourcePos& p);
+	void ScanSingle(const ZSourcePos& p, bool isStatic);
 	void ScanNamespace(const ZSourcePos& p);
 	bool ScanVar(AccessType accessType, bool aConst, bool isStatic);
 	ZFunction& ScanFunc(AccessType accessType, bool aFunc, bool isStatic);
 	void ScanBlock();
 	void ScanToken();
-	bool ScanDeclaration(const ZSourcePos& p, AccessType accessType);
+	bool ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool isStatic);
 	void ScanType();
 	void ScanUsing(const ZSourcePos& p);
 	

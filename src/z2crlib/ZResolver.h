@@ -14,7 +14,7 @@ public:
 	void ResolveClasses();
 	void ResolveNamespaceMembers(ZNamespace& ns);
 	void ResolveFunctions();
-	void ResolveFunction(ZFunction& f);
+	void ResolveFunction(ZNamespace& ns, ZFunction& f);
 	void ResolveVariables();
 	
 	bool CheckForDuplicates();

@@ -21,7 +21,7 @@ void ZResolver::ResolveNamespaces() {
 void ZResolver::ResolveNamespace(ZNamespace& ns) {
 	auto names = Split(ns.Name, '.', true);
 	
-	// build namespace item hierachy
+	// build namespace item hierarchy
 	ZNamespaceItem* nsp = &ass.NsLookup;
 	String backName;
 	for (int i = 0; i < names.GetCount(); i++) {
@@ -64,6 +64,9 @@ void ZResolver::ResolveClasses() {
 		for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
 			ZClass& c = ns.PreClasses[j];
 			c.GenerateSignatures();
+			
+			ZClass& cls = ass.AddClass(c);
+			ns.Classes.Add(cls.Name, &cls);
 		}
 	}
 }
@@ -73,8 +76,13 @@ void ZResolver::ResolveFunctions() {
 		ZNamespace& ns = ass.Namespaces[i];
 		ResolveNamespaceMembers(ns);
 				
-		for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
-			ZClass& c = ns.PreClasses[j];
+		for (int j = 0; j < ns.Classes.GetCount(); j++) {
+			ZClass& c = *ns.Classes[j];
+			if (c.Namespace().Name == "test.") {
+				c.Namespace().Name == "test.";
+				DUMP(c.Name);
+				DUMP(&c);
+			}
 			ResolveNamespaceMembers(c);
 		}
 	}
@@ -83,7 +91,7 @@ void ZResolver::ResolveFunctions() {
 void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
 		ZFunction& f = ns.PreFunctions[i];
-		ResolveFunction(f);
+		ResolveFunction(ns, f);
 	}
 	
 	for (int i = 0; i < ns.PreVariables.GetCount(); i++) {
@@ -92,17 +100,27 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 	}
 }
 
-void ZResolver::ResolveFunction(ZFunction& f) {
+void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
 
 	//DUMP(f.InClass);
 	//DUMP(f.Namespace().Name);
-	//DUMP(f.Owner().Name);
+	f.SetOwner(ns);
+	if (f.InClass) {
+		DUMP(f.Owner().Name);
+		DUMP(&f.Owner());
+	}
+
 	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));
 	if (d.Name.GetCount() == 0)
 		d.Name = f.Name;
 	d.Functions.Add(&f);
+	if (f.InClass) {
+		DUMP(f.Owner().Name);
+		DUMP(&f.Owner());
+		DUMP(f.Owner().Methods.GetCount());
+	}
 }
 
 void ZResolver::ResolveVariables() {
@@ -111,6 +129,16 @@ void ZResolver::ResolveVariables() {
 		for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
 			ZVariable& f = ns.PreVariables[j];
 			f.Owner().Variables.Add(f.Name, &f);
+		}
+		
+		for (int j = 0; j < ns.Classes.GetCount(); j++) {
+			ZClass& c = *ns.Classes[j];
+			
+			for (int j = 0; j < c.PreVariables.GetCount(); j++) {
+				ZVariable& f = c.PreVariables[j];
+				f.SetOwner(c);
+				f.Owner().Variables.Add(f.Name, &f);
+			}
 		}
 	}
 }
@@ -173,7 +201,6 @@ bool ZResolver::CheckForDuplicates() {
 			err << "        " << PadSp(maxFile) << "  ";
 			err << dupeDecl[i] << PadSp(maxDec - ER::StripColor(dupeDecl[i]).GetCount());
 			err << "\n";
-			//err << "        " << dupeOwner[i] << "\n";
 			
 			err << ER::White << "    clashes with the following declarations:\n";
 			i++;
@@ -181,7 +208,6 @@ bool ZResolver::CheckForDuplicates() {
 		
 		err << ER::White << "        " << ER::DkGray << Pad(dupeFile[i], maxFile) << ": " << dupeDecl[i] << PadSp(maxDec - ER::StripColor(dupeDecl[i]).GetCount());
 		err << "\n";
-		//err << "        " << dupeOwner[i] << "\n";
 	}
 	
 	throw ZException("", err);
@@ -312,19 +338,6 @@ String ZResolver::DupStr(const String& allErrors, const ZSourcePos& dp, const St
 	dupeFile << dp.ToString();
 	dupeDecl << colorSig;
 	dupeOwner << owner;
-	
-	/*// append to error
-	if (allErrors.GetCount() != 0) {
-		err << ER::White << "        " << ER::Gray << dp.ToString() << ": " << colorSig << "\n";
-		return err;
-	}
-	
-	// first message
-	err << ER::Gray << dp.ToString() << ": ";
-	err << ER::Red << "error: ";
-	err << ER::White << "duplicate symbol: " << "the following declarations clash:\n";
-	err << ER::White << "        " << ER::Gray << dp.ToString() << ": " << colorSig << "\n";
-	//err << "\n" <<  ER::Gray << "    other occurrences at:\n";*/
 	
 	return err;
 }

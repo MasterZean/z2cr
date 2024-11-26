@@ -206,6 +206,15 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	return &typeCls;
 }
 
+ZClass& Assembly::AddClass(ZClass& cls) {
+	ZClass& typeCls = Classes.Add(cls.Namespace().Name + cls.Name, cls);
+	
+	typeCls.ParamType = &typeCls;
+	typeCls.Tt.Class = &typeCls;
+	
+	return typeCls;
+}
+
 String Assembly::ClassToString(const ObjectType& type) {
 	ASSERT(type.Class);
 	return type.Class->Name;

@@ -102,13 +102,26 @@ void ZFunction::GenerateSignatures() {
 		dsig << "func ";
 	}
 	else {
-		if (IsFunction) {
+		if (IsStatic) {
+			dsig << "static ";
 			dsig << "func ";
-			csig << ER::Magenta << "func ";
+			
+			if (IsFunction) {
+				csig << ER::Magenta << "func ";
+			}
+			else {
+				csig << ER::Magenta << "def ";
+			}
 		}
 		else {
-			dsig << "def ";
-			csig << ER::Magenta << "def ";
+			if (IsFunction) {
+				dsig << "func ";
+				csig << ER::Magenta << "func ";
+			}
+			else {
+				dsig << "def ";
+				csig << ER::Magenta << "def ";
+			}
 		}
 	}
 	

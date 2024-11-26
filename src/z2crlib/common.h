@@ -11,8 +11,8 @@ class Node;
 
 enum class AccessType {
 	Public,
+	Protected,
 	Private,
-	Protected
 };
 
 enum class EntityType {

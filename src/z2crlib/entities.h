@@ -80,6 +80,7 @@ public:
 	AccessType Access;
 	
 	bool InClass = false;
+	bool IsStatic = false;
 		
 	ZSourcePos DefPos;
 	
@@ -87,16 +88,24 @@ public:
 	
 	ZEntity(ZNamespace& aNmspace): nmsspace(aNmspace) {
 		Type = EntityType::Unknown;
+		parent = &aNmspace;
 	}
+	
+	ZEntity(const ZEntity& aEnitity) = default;
 	
 	inline ZNamespace& Namespace();
 	
 	inline ZNamespace& Owner();
 	
+	void SetOwner(ZNamespace& aNmspace) {
+		parent = &aNmspace;
+	}
+	
 	inline Assembly& Ass();
 
 private:
 	ZNamespace& nmsspace;
+	ZNamespace* parent;
 };
 
 class ZNamespace: public ZEntity {
@@ -111,6 +120,20 @@ public:
 	
 	ZNamespace(Assembly& aAss, ZNamespace& aNs): ZEntity(aNs), ass(aAss) {
 		Type = EntityType::Namespace;
+	}
+	
+	ZNamespace(const ZNamespace& aNs): ZEntity(aNs), ass(aNs.Ass()) {
+		ProperName = aNs.ProperName;
+		
+		for (int i = 0; i < aNs.PreFunctions.GetCount(); i++) {
+			PreFunctions.Add(aNs.PreFunctions[i]);
+		}
+		for (int i = 0; i < aNs.PreVariables.GetCount(); i++) {
+			PreVariables.Add(aNs.PreVariables[i]);
+		}
+		for (int i = 0; i < aNs.PreClasses.GetCount(); i++) {
+			PreClasses.Add(aNs.PreClasses[i]);
+		}
 	}
 	
 	Array<ZFunction> PreFunctions;
@@ -129,6 +152,10 @@ public:
 	bool IsResolved = false;
 	
 	Assembly& Ass() {
+		return ass;
+	}
+	
+	Assembly& Ass() const {
 		return ass;
 	}
 	
@@ -205,6 +232,8 @@ public:
 		Type = EntityType::Variable;
 	}
 	
+	ZVariable(const ZVariable& aEnitity) = default;
+	
 	const String& ColorSig() const {
 		return csig;
 	}
@@ -238,17 +267,19 @@ public:
 	
 	Node Nodes;
 	
-	Array<ZVariable> Params;
+	WithDeepCopy<Array<ZVariable>> Params;
 	ObjectInfo Return;
-	Vector<ZClass*> TParam;
+	WithDeepCopy<Vector<ZClass*>> TParam;
 	WithDeepCopy<Vector<ZBlock>> Blocks;
-	Array<ZVariable> Locals;
+	WithDeepCopy<Array<ZVariable>> Locals;
 	
 	int Score = 0;
 	
 	ZFunction(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Function;
 	}
+	
+	ZFunction(const ZFunction& aEnitity) = default;
 	
 	void GenerateSignatures();
 	
@@ -292,11 +323,7 @@ ZNamespace& ZEntity::Namespace() {
 }
 
 ZNamespace& ZEntity::Owner() {
-	return nmsspace;
-	/*if (InClass == false)
-		return *this;
-	else
-		return nmsspace;*/
+	return *parent;
 }
 
 

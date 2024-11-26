@@ -85,11 +85,12 @@ public:
 	
 	String ToQtColor(ObjectInfo *type);
 	String ToQtColor(ZClass *type);
-
 	
 	int AddStringConst(const String& str) {
 		return StringConsts.FindAdd(str);
 	}
+	
+	ZClass& AddClass(ZClass& cls);
 	
 private:
 	void AddModule(int parent, const String& path, ZPackage& pak);
