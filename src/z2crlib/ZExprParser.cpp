@@ -356,9 +356,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 			parser.Error(opp, ER::Green + aName + ": ambigous symbol");
 		
 		if (f->Access == AccessType::Protected && &f->Namespace() != Namespace)
-			parser.Error(opp, "can't access protected member:\n\t\t" + f->ColorSig());
+			parser.Error(opp, "can't access protected member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
 		if (f->Access == AccessType::Private && &f->Namespace() != Namespace && &parser.Source() != f->DefPos.Source)
-			parser.Error(opp, "can't access private member:\n\t\t" + f->ColorSig());
+			parser.Error(opp, "can't access private member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
 	 
 		ParamsNode* node = irg.callfunc(*f, nullptr);
 		node->Params = std::move(params);
@@ -370,9 +370,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZVariable* f = ns.Variables[index];
 		
 		if (f->Access == AccessType::Protected && &f->Namespace() != Namespace)
-			parser.Error(opp, "can't access protected member:\n\t\t" + String(ER::Blue) << "val " << ER::Green << f->Name);
+			parser.Error(opp, "can't access protected member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
 		if (f->Access == AccessType::Private && &f->Namespace() != Namespace && &parser.Source() != f->DefPos.Source)
-			parser.Error(opp, "can't access private member:\n\t\t" + String(ER::Blue) << "val " << ER::Green << f->Name);
+			parser.Error(opp, "can't access private member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
 		
 		return irg.mem_var(f);
 	}

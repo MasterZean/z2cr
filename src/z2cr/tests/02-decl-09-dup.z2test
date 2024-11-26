@@ -1,9 +1,10 @@
 // @test dup
 // @file
 /* @errors
-test.z2(10, 5): error: duplicate symbol: def f()        [namespace test]
-other occurrences at:
-	test.z2(13, 6): func f()        [namespace test]
+test.z2(11, 5): error: declaration in: namespace test
+                        def f() 
+    clashes with the following declarations:
+        test.z2(14, 6): func f()
 */
 namespace test;
 
@@ -16,10 +17,11 @@ func f() {
 // @test dup
 // @file
 /* @errors
-test.z2(11, 5): error: duplicate symbol: def f(): Int        [namespace test]
-other occurrences at:
-	test.z2(14, 6): func f(): Double        [namespace test]
-	test.z2(17, 6): func f(): Char        [namespace test]
+test.z2(12, 5): error: declaration in: namespace test
+                        def f(): Int    
+    clashes with the following declarations:
+        test.z2(15, 6): func f(): Double
+        test.z2(18, 6): func f(): Char
 */
 namespace test;
 
@@ -35,12 +37,13 @@ func f(): Char {
 // @test dup
 // @file
 /* @errors
-test.z2(13, 5): error: duplicate symbol: def f(): Int        [namespace test]
-other occurrences at:
-	test.z2(16, 6): func f(): Double        [namespace test]
-	test.z2(21, 6): func f(): Char        [namespace test]
-	test.z2(19, 5): val f        [namespace test]
-	test.z2(24, 5): val f        [namespace test]
+test.z2(14, 5): error: declaration in: namespace test
+                        def f(): Int    
+    clashes with the following declarations:
+        test.z2(17, 6): func f(): Double
+        test.z2(22, 6): func f(): Char  
+        test.z2(20, 5): val f           
+        test.z2(25, 5): val f
 */
 namespace test;
 
@@ -60,12 +63,14 @@ val f: Long  = 7000l;
 // @test dup
 // @file test1
 /* @errors
-test1.z2(13, 6): error: duplicate symbol: func f(Int)        [namespace test]
-other occurrences at:
-	test2.z2(4, 6): func f(Int)        [namespace test]
-test1.z2(16, 6): error: duplicate symbol: func f(Double)        [namespace test]
-other occurrences at:
-	test2.z2(7, 6): func f(Double)        [namespace test]
+test1.z2(15, 6): error: declaration in: namespace test
+                         func f(Int)   
+    clashes with the following declarations:
+        test2.z2(4, 6) : func f(Int)   
+test1.z2(18, 6): error: declaration in: namespace test
+                         func f(Double)
+    clashes with the following declarations:
+        test2.z2(7, 6) : func f(Double)
 */
 namespace test;
 
@@ -106,12 +111,14 @@ func f(a: Double) {
 // @test dup
 // @file test1
 /* @errors
-test1.z2(13, 14): error: duplicate symbol: func f(Int)        [namespace test]
-other occurrences at:
-	test2.z2(4, 14): func f(Int)        [namespace test]
-test1.z2(16, 14): error: duplicate symbol: func f(Double)        [namespace test]
-other occurrences at:
-	test2.z2(7, 14): func f(Double)        [namespace test]
+test1.z2(15, 14): error: declaration in: namespace test
+                          func f(Int)   
+    clashes with the following declarations:
+        test2.z2(4, 14) : func f(Int)   
+test1.z2(18, 14): error: declaration in: namespace test
+                          func f(Double)
+    clashes with the following declarations:
+        test2.z2(7, 14) : func f(Double)
 */
 namespace test;
 
@@ -133,10 +140,11 @@ private func f(a: Double) {
 // @test dup
 // @file
 /* @errors
-test.z2(11, 5): error: duplicate symbol: val v        [namespace test]
-other occurrences at:
-	test.z2(12, 5): val v        [namespace test]
-	test.z2(13, 5): val v        [namespace test]
+test.z2(12, 5): error: declaration in: namespace test
+                        val v
+    clashes with the following declarations:
+        test.z2(13, 5): val v
+        test.z2(14, 5): val v
 */
 namespace test;
 

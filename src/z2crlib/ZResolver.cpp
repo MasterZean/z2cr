@@ -96,9 +96,9 @@ void ZResolver::ResolveFunction(ZFunction& f) {
 	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
 
-	DUMP(f.InClass);
-	DUMP(f.Namespace().Name);
-	DUMP(f.Owner().Name);
+	//DUMP(f.InClass);
+	//DUMP(f.Namespace().Name);
+	//DUMP(f.Owner().Name);
 	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));
 	if (d.Name.GetCount() == 0)
 		d.Name = f.Name;
@@ -145,7 +145,6 @@ bool ZResolver::CheckForDuplicates() {
 	int maxFile = -1;
 	for (int i = 0; i < dupeFile.GetCount(); i++) {
 		String strip = dupeFile[i];
-		DUMP(strip);
 		if (dupeFile[i].GetCount() > maxFile)
 			maxFile = strip.GetCount();
 	}
@@ -153,7 +152,6 @@ bool ZResolver::CheckForDuplicates() {
 	int maxDec = -1;
 	for (int i = 0; i < dupeDecl.GetCount(); i++) {
 		String strip = ER::StripColor(dupeDecl[i]);
-		DUMP(strip);
 		if (strip.GetCount() > maxDec)
 			maxDec = strip.GetCount();
 	}

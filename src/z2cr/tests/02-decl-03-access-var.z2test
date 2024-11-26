@@ -32,7 +32,7 @@ def @main() {
 // @file
 /* @errors
 test.z2(18, 13): can't access protected member:
-		val g
+		val g        [namespace test]
 */
 namespace test;
 
@@ -77,7 +77,7 @@ def @main() {
 // @file test1
 /* @errors
 main.z2(8, 10): can't access private member:
-		val f
+		val f        [namespace test1]
 */
 namespace test1;
 
@@ -107,7 +107,7 @@ def @main() {
 // @file test1
 /* @errors
 main.z2(8, 10): can't access private member:
-		val f
+		val f        [namespace test2]
 */
 namespace test1;
 
