@@ -3,7 +3,7 @@
 
 /* @dump namespace: testcpp pubint
 namespace testcpp {
-	extern int32 v1;
+	extern const int32 v1;
 }
 */
 
@@ -11,21 +11,21 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::v1 = 27;
+const int32 testcpp::v1 = 127;
 */
 
 namespace testcpp;
 
-val v1 = Int{27};
+const v1 = Int{127};
 
 // @test namespace
 // @file
 
 /* @dump namespace: testcpp pubint
 namespace testcpp {
-	extern int32 v1;
-	extern int32 v2;
-	extern int32 v3;
+	extern const int32 v1;
+	extern const int32 v2;
+	extern const int32 v3;
 }
 */
 
@@ -33,25 +33,25 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::v1 = 27;
-int32 testcpp::v2 = 28;
-int32 testcpp::v3 = 29;
+const int32 testcpp::v1 = 127;
+const int32 testcpp::v2 = 128;
+const int32 testcpp::v3 = 129;
 */
 
 namespace testcpp;
 
-val v1 = 27;
-val v2: Int = 28;
-val v3: Int = Int{29};
+const v1 = 127;
+const v2: Int = 128;
+const v3: Int = Int{129};
 
 // @test namespace
 // @file
 
 /* @dump namespace: testcpp pubint
 namespace testcpp {
-	extern int32 v1;
-	extern int32 v2;
-	extern int32 v3;
+	extern const int32 v1;
+	extern const int32 v2;
+	extern const int32 v3;
 }
 */
 
@@ -59,25 +59,25 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::v1 = 27;
-int32 testcpp::v2 = 28;
-int32 testcpp::v3 = 29;
+const int32 testcpp::v1 = 127;
+const int32 testcpp::v2 = 128;
+const int32 testcpp::v3 = 129;
 */
 
 namespace testcpp;
 
-val v1 = 27;
-val v2: Int = 28;
-protected val v3: Int = Int{29};
+const v1 = 127;
+const v2: Int = 128;
+const v3: Int = Int{129};
 
 // @test namespace
 // @file
 
 /* @dump namespace: testcpp pubint
 namespace testcpp {
-	extern int32 v1;
-	extern int32 v2;
-	extern int32 v3;
+	extern const int32 v1;
+	extern const int32 v2;
+	extern const int32 v3;
 }
 */
 
@@ -85,18 +85,18 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::v1 = 27;
-int32 testcpp::v2 = 28;
-int32 testcpp::v3 = 29;
+const int32 testcpp::v1 = 127;
+const int32 testcpp::v2 = 128;
+const int32 testcpp::v3 = 129;
 */
 
 namespace testcpp;
 
-val v1 = 27;
+const v1 = 127;
 
 protected {
-	val v2: Int = 28;
-	val v3: Int = Int{29};
+	const v2: Int = 128;
+	const v3: Int = Int{129};
 }
 
 // @test namespace
@@ -104,58 +104,58 @@ protected {
 
 /* @dump namespace: testcpp pubint
 namespace testcpp {
-	extern int32 v1;
-	extern int32 v2;
+	extern const int32 v1;
+	extern const int32 v2;
 }
 */
 
 /* @dump namespace: testcpp privint
 namespace testcpp {
-	extern int32 v3;
+	extern const int32 v3;
 }
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::v1 = 27;
-int32 testcpp::v2 = 28;
-int32 testcpp::v3 = 29;
+const int32 testcpp::v1 = 127;
+const int32 testcpp::v2 = 128;
+const int32 testcpp::v3 = 129;
 */
 
 namespace testcpp;
 
-val v1 = 27;
-val v2: Int = 28;
-private val v3: Int = Int{29};
+const v1 = 127;
+const v2: Int = 128;
+private const v3: Int = Int{129};
 
 // @test namespace
 // @file
 
 /* @dump namespace: testcpp pubint
 namespace testcpp {
-	extern int32 v1;
+	extern const int32 v1;
 }
 */
 
 /* @dump namespace: testcpp privint
 namespace testcpp {
-	extern int32 v2;
-	extern int32 v3;
+	extern const int32 v2;
+	extern const int32 v3;
 }
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::v1 = 27;
-int32 testcpp::v2 = 28;
-int32 testcpp::v3 = 29;
+const int32 testcpp::v1 = 127;
+const int32 testcpp::v2 = 128;
+const int32 testcpp::v3 = 129;
 */
 
 namespace testcpp;
 
-val v1 = 27;
+const v1 = 127;
 
 private {
-	val v2: Int = 28;
-	val v3: Int = Int{29};
+	const v2: Int = 128;
+	const v3: Int = Int{129};
 }
 
 // @test namespace
@@ -168,22 +168,22 @@ namespace testcpp {
 
 /* @dump namespace: testcpp privint
 namespace testcpp {
-	extern int32 v1;
-	extern int32 v2;
-	extern int32 v3;
+	extern const int32 v1;
+	extern const int32 v2;
+	extern const int32 v3;
 }
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::v1 = 27;
-int32 testcpp::v2 = 28;
-int32 testcpp::v3 = 29;
+const int32 testcpp::v1 = 127;
+const int32 testcpp::v2 = 128;
+const int32 testcpp::v3 = 129;
 */
 
 namespace testcpp;
 
 private {
-	val v1 = 27;
-	val v2: Int = 28;
-	val v3: Int = Int{29};
+	const v1 = 127;
+	const v2: Int = 128;
+	const v3: Int = Int{129};
 }

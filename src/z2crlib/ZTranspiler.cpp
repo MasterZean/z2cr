@@ -50,20 +50,6 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags) {
 	}
 }
 
-void ZTranspiler::TranspileDeclarationsPriv(ZNamespace& ns) {
-	bool writePriv = false;
-	
-	for (int i = 0; i < ns.Variables.GetCount(); i++) {
-		auto v = *ns.Variables[i];
-		if (v.Access == AccessType::Private) {
-			writePriv = true;
-			break;
-		}
-	}
-	if (writePriv)
-		TranspileDeclarations(ns, 0b100);
-}
-
 void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int modePrivate) {
 	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
 		return;
@@ -83,6 +69,20 @@ void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int modePrivate) {
 	cs << "}";
 	EL();
 	EL();
+}
+
+void ZTranspiler::TranspileDeclarationsPriv(ZNamespace& ns) {
+	bool writePriv = false;
+	
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		auto v = *ns.Variables[i];
+		if (v.Access == AccessType::Private) {
+			writePriv = true;
+			break;
+		}
+	}
+	if (writePriv)
+		TranspileDeclarations(ns, 0b100);
 }
 
 void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int modePrivate) {

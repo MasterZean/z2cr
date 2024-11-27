@@ -1,0 +1,104 @@
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	void f();
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+void testcpp::f() {
+}
+*/
+
+namespace testcpp;
+
+def f() {
+}
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	void f();
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+void testcpp::f() {
+}
+*/
+
+namespace testcpp;
+
+func f() {
+}
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	void f(int32 a, double b);
+	void g(int32 a, double b);
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+void testcpp::f(int32 a, double b) {
+}
+
+void testcpp::g(int32 a, double b) {
+}
+*/
+
+namespace testcpp;
+
+def f(a: Int, b: Double) {
+}
+
+protected def g(a: Int, b: Double) {
+}
+
+// @test namespace
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	int64 f(int32 a, double b);
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int64 testcpp::f(int32 a, double b) {
+	return 0ll;
+}
+
+uint64 testcpp::g(int32 a, double b) {
+	return 0ull;
+}
+*/
+
+namespace testcpp;
+
+namespace testcpp;
+
+def f(a: Int, b: Double): Long {
+}
+
+private def g(a: Int, b: Double): QWord {
+}
