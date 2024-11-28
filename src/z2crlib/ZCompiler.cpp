@@ -102,9 +102,9 @@ bool ZCompiler::Transpile() {
 	
 	cpp.WriteIntro();
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
-		cpp.TranspileDeclarations(ass.Namespaces[i], 0b11);
+		cpp.TranspileDeclarations(ass.Namespaces[i], 0b11, true);
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
-		cpp.TranspileDeclarationsPriv(ass.Namespaces[i]);
+		cpp.TranspileDeclarations(ass.Namespaces[i], 0b100, false);
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		cpp.TranspileDefinitions(ass.Namespaces[i]);
 	cpp.WriteOutro();

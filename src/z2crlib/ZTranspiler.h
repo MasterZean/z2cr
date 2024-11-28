@@ -77,8 +77,78 @@ public:
 	void Proc(IntrinsicNode& node);
 	void Proc(LoopControlNode& node);
 	
-	void TranspileDeclarations(ZNamespace& ns, int accessFlags);
-	void TranspileDeclarationsPriv(ZNamespace& ns);
+	void BeginNamespace(ZNamespace& ns) {
+		inNamespace = &ns;
+		firstInNamespace = true;
+		namespaceWrites = 0;
+	}
+	
+	void NewMember() {
+		if (inNamespace) {
+			if (firstInNamespace) {
+				NL();
+				cs << "namespace " << inNamespace->BackName << " {";
+				EL();
+				
+				indent++;
+				
+				firstInNamespace = false;
+			}
+			
+			namespaceWrites++;
+		}
+		
+		if (inClass) {
+			if (firstInClass) {
+				if (classWrites)
+					NL();
+				
+				NL();
+				cs << "class " << inClass->BackName << " {";
+				EL();
+				
+				indent++;
+				
+				firstInClass = false;
+			}
+			
+			classWrites++;
+		}
+	}
+	
+	void EndNamespace() {
+		if (inNamespace && namespaceWrites) {
+			indent--;
+			
+			NL();
+			cs << "}";
+			EL();
+			EL();
+		}
+		
+		inNamespace = nullptr;
+	}
+	
+	void BeginClass(ZClass& cls) {
+		inClass = &cls;
+		firstInClass = true;
+		classWrites = 0;
+	}
+	
+	void EndClass() {
+		if (inClass && classWrites) {
+			indent--;
+			
+			NL();
+			cs << "}";
+			ES();
+			//EL();
+		}
+		
+		inClass = nullptr;
+	}
+	
+	void TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes);
 	void TranspileNamespaceDecl(ZNamespace& ns, int accessFlags = 0);
 	void TranspileClassDecl(ZNamespace& ns, int accessFlags = 0);
 	int  TranspileMemberDeclVar(ZNamespace& ns, int accessFlags);
@@ -92,6 +162,13 @@ public:
 private:
 	void Walk(Node* node);
 	void WalkChildren(Node* node);
+	
+	ZNamespace* inNamespace = nullptr;
+	ZClass* inClass = nullptr;
+	bool firstInNamespace = true;
+	bool firstInClass = true;
+	int namespaceWrites = 0;
+	int classWrites = 0;
 };
 
 #endif

@@ -1,0 +1,126 @@
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static int32 b1;
+		static int64 b2;
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::Test::b1 = 56;
+int64 testcpp::Test::b2 = 57;
+*/
+
+namespace testcpp;
+
+class Test {
+	static val b1 = 56;
+	static val b2: Long = 57;
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static int32 b1;
+	protected:
+		static double b3;
+	private:
+		static int64 b2;
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::Test::b1 = 56;
+int64 testcpp::Test::b2 = 57;
+double testcpp::Test::b3 = 58;
+*/
+
+namespace testcpp;
+
+class Test {
+	static val b1 = 56;
+	private static val b2: Long = 57;
+	protected static val b3: Double = 58;
+}
+
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static int32 b1;
+		static int64 b2;
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::Test::b1 = 56;
+int64 testcpp::Test::b2 = 57;
+*/
+
+namespace testcpp;
+
+static class Test {
+	val b1 = 56;
+	val b2: Long = 57;
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static int32 b1;
+	protected:
+		static double b3;
+	private:
+		static int64 b2;
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+int32 testcpp::Test::b1 = 56;
+int64 testcpp::Test::b2 = 57;
+double testcpp::Test::b3 = 58;
+*/
+
+namespace testcpp;
+
+static class Test {
+	val b1 = 56;
+	private val b2: Long = 57;
+	protected val b3: Double = 58;
+}

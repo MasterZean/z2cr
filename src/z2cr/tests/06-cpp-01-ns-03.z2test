@@ -81,6 +81,9 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp privint
+namespace testcpp {
+	static uint64 g(int32 a, double b);
+}
 */
 
 /* @dump namespace: testcpp def
@@ -92,8 +95,6 @@ uint64 testcpp::g(int32 a, double b) {
 	return 0ull;
 }
 */
-
-namespace testcpp;
 
 namespace testcpp;
 

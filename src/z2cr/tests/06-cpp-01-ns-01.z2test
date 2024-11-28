@@ -162,8 +162,6 @@ private {
 // @file
 
 /* @dump namespace: testcpp pubint
-namespace testcpp {
-}
 */
 
 /* @dump namespace: testcpp privint

@@ -2,6 +2,20 @@
 
 extern String opss[];
 
+bool CanAccess(AccessType access, int accessFlags) {
+	if (accessFlags == -1)
+		return true;
+	
+	if (access == AccessType::Public && ((accessFlags & 0b1) == 0))
+		return false;
+	if (access == AccessType::Protected && ((accessFlags & 0b10) == 0))
+		return false;
+	if (access == AccessType::Private && ((accessFlags & 0b100) == 0))
+		return false;
+	
+	return true;
+}
+
 void ZTranspiler::WriteIntro() {
 	NL();
 	cs << "#include \"cppcode.h\"";
@@ -36,68 +50,36 @@ void ZTranspiler::WriteOutro() {
 	EL();
 }
 
-void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags) {
+void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes) {
+	BeginNamespace(ns);
 	TranspileNamespaceDecl(ns, accessFlags);
+	EndNamespace();
+	
+	if (!classes)
+		return;
 	
 	for (int i = 0; i < ns.Classes.GetCount(); i++) {
-		if (ns.Name == "test.") {
-			ns.Name == "test.";
-			DUMP(ns.Classes[i]->Name);
-			DUMP(ns.Classes[i]);
-			DUMP(ns.Classes[i]->Methods.GetCount());
-		}
-		TranspileClassDecl(*ns.Classes[i], -1);
+		ZClass& cls = *ns.Classes[i];
+		
+		if (!CanAccess(cls.Access, accessFlags))
+			continue;
+		
+		BeginNamespace(ns);
+		BeginClass(cls);
+		TranspileClassDecl(cls, -1);
+		EndClass();
+		EndNamespace();
 	}
 }
 
-void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int modePrivate) {
-	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
-		return;
-	
-	NL();
-	cs << "namespace " << ns.BackName << " {";
-	EL();
-	
-	indent++;
-	
-	int vc = TranspileMemberDeclVar(ns, modePrivate);
-	int fc = TranspileMemberDeclFunc(ns, modePrivate, vc);
-	
-	indent--;
-	
-	NL();
-	cs << "}";
-	EL();
-	EL();
+void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int accessFlags) {
+	int vc = TranspileMemberDeclVar(ns, accessFlags);
+	int fc = TranspileMemberDeclFunc(ns, accessFlags, vc);
 }
 
-void ZTranspiler::TranspileDeclarationsPriv(ZNamespace& ns) {
-	bool writePriv = false;
-	
-	for (int i = 0; i < ns.Variables.GetCount(); i++) {
-		auto v = *ns.Variables[i];
-		if (v.Access == AccessType::Private) {
-			writePriv = true;
-			break;
-		}
-	}
-	if (writePriv)
-		TranspileDeclarations(ns, 0b100);
-}
-
-void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int modePrivate) {
+void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int accessFlags) {
 	if (ns.Variables.GetCount() + ns.Methods.GetCount() == 0)
 		return;
-	
-	NL();
-	cs << "namespace " << ns.Namespace().BackName << " {";
-	EL();
-	
-	NL();
-	cs << "class " << ns.BackName << " {";
-	EL();
-	
-	indent++;
 	
 	int vc = TranspileMemberDeclVar(ns, 0b1);
 	vc += TranspileMemberDeclVar(ns, 0b10);
@@ -106,21 +88,9 @@ void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int modePrivate) {
 	int fc = TranspileMemberDeclFunc(ns, 0b1, vc);
 	fc += TranspileMemberDeclFunc(ns, 0b10, vc);
 	fc += TranspileMemberDeclFunc(ns, 0b100, vc);
-	
-	indent--;
-	
-	NL();
-	cs << "}";
-	ES();
-	
-	NL();
-	cs << "}";
-	EL();
-	
-	EL();
 }
 
-int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int modePrivate) {
+int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 	bool first = true;
 	
 	int count = 0;
@@ -128,18 +98,17 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int modePrivate) {
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
 		
-		if (modePrivate != -1) {
-			if (v.Access == AccessType::Public && ((modePrivate & 0b1) == 0))
-				continue;
-			if (v.Access == AccessType::Protected && ((modePrivate & 0b10) == 0))
-				continue;
-			if (v.Access == AccessType::Private && ((modePrivate & 0b100) == 0))
-				continue;
-		}
+		if (ns.Name == "buntron.")
+			ns.Name == "buntron.";
 		
+		if (!CanAccess(v.Access, accessFlags))
+			continue;
+
 		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
 		
+		NewMember();
+				
 		count++;
 		
 		if (first) {
@@ -190,7 +159,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int modePrivate) {
 	return count;
 }
 
-int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int modePrivate, int vc) {
+int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, int vc) {
 	bool first = true;
 	
 	int count = 0;
@@ -199,16 +168,12 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int modePrivate, int vc
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
 			ZFunction& f = *ns.Methods[i].Functions[j];
 			
-			if (modePrivate != -1) {
-				if (f.Access == AccessType::Public && ((modePrivate & 0b1) == 0))
-					continue;
-				if (f.Access == AccessType::Protected && ((modePrivate & 0b10) == 0))
-					continue;
-				if (f.Access == AccessType::Private && ((modePrivate & 0b100) == 0))
-					continue;
-			}
+			if (!CanAccess(f.Access, accessFlags))
+				continue;
 			
+			NewMember();
 			count++;
+			
 			if (first) {
 				if (f.InClass == false) {
 					if (vc)
@@ -252,6 +217,11 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int modePrivate, int vc
 void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bool wrap) {
 	if (vars) {
 		TranspileValDefintons(ns);
+		
+		for (int i = 0; i < ns.Classes.GetCount(); i++) {
+			ZClass& cls = *ns.Classes[i];
+			TranspileValDefintons(cls);
+		}
 	}
 	
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
@@ -277,7 +247,11 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		
 		if (v.IsConst)
 			cs << "const ";
-		cs << v.I.Tt.Class->BackName << " " << v.Namespace().BackName << "::" << v.Name << " = ";
+		cs << v.I.Tt.Class->BackName << " ";
+		if (!v.InClass)
+			cs << v.Owner().BackName << "::" << v.Name << " = ";
+		else
+			cs << v.Namespace().BackName << "::" << v.Owner().BackName << "::" << v.Name << " = ";
 		Walk(v.Value);
 		ES();
 	}

@@ -186,7 +186,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		
-		cpp.TranspileNamespaceDecl(Ass.Namespaces[index], 0b11);
+		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
 		
 		String dump = ss;
 		dump = TrimBoth(dump);
@@ -199,7 +199,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		
-		cpp.TranspileDeclarationsPriv(Ass.Namespaces[index]);
+		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b100, false);
 		
 		String dump = ss;
 		dump = TrimBoth(dump);
@@ -280,7 +280,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-//	if (!path.EndsWith("06-cpp-01-ns-01.z2test"))
+//	if (!path.EndsWith("06-cpp-01-ns-04.z2test"))
 //		return;
 	
 	FileIn file(path);
