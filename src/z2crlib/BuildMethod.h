@@ -59,7 +59,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 	
 	static void Get(Vector<BuildMethod>& methods, bool print = false);
 	
-	static String Exe(const String& exe) {
+	static String ExeName(const String& exe) {
 	#ifdef PLATFORM_WIN32
 		return exe + ".exe";
 	#endif

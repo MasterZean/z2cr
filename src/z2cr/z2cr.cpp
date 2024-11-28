@@ -5,7 +5,7 @@ using namespace Upp;
 #include <z2crlib/StopWatch.h>
 #include <z2crlib/ZCompiler.h>
 #include <z2cr/CommandLine.h>
-#include <z2cr/BuildMethod.h>
+#include <z2crlib/BuildMethod.h>
 #include <z2cr/Builder.h>
 #include <z2cr/InlineTester.h>
 
@@ -89,8 +89,8 @@ int separate_console() {
 
     if (!GetConsoleScreenBufferInfo( GetStdHandle( STD_OUTPUT_HANDLE), &csbi))
     {
-        printf( "GetConsoleScreenBufferInfo failed: %lu\n", GetLastError());
-        return FALSE;
+        //printf( "GetConsoleScreenBufferInfo failed: %lu\n", GetLastError());
+        return 0;
     }
 
     // if cursor position is (0,0) then we were launched in a separate console

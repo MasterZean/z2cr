@@ -32,6 +32,13 @@ ZideWindow::ZideWindow() {
 	canvas.Add(tabs);
 	tabs.SizePos();
 	
+	console.Height(Zy(150));
+	canvas.AddFrame(splBottom.Bottom(console, Zy(150)));
+	
+	console.WhenLeft = THISBACK(OnOutputSel);
+	
+	splBottom.Hide();
+	
 	tabs.WhenTabChange = THISBACK(OnTabChange);
 	tabs.WhenEditorCursor = THISBACK(OnEditorCursor);
 	tabs.WhenEditorChange = THISBACK(OnEditorChange);
@@ -185,4 +192,150 @@ void ZideWindow::OnClose() {
 	
 	if (tabs.PromptSaves())
 		Close();
+}
+
+String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
+	String cmd = CompilerExe;
+	if (cmd.GetCount() == 0)
+		cmd = BuildMethod::ExeName("z2c");
+	cmd << " -";
+	if (scu)
+		cmd << "scu ";
+	else
+		cmd << "c++ ";
+	
+	cmd << "-mainfile " << file << " ";
+	/*cmd << "-pak " << lastPackage << " ";
+	if (optimize == 2)
+		cmd << " -O2";
+	else if (optimize == 1)
+		cmd << " -O1";
+	else if (optimize == 0)
+		cmd << " -Od";
+
+	if (libMode)
+		cmd << " -lib";
+	
+	if (popMethodList.GetCursor() != -1)
+		cmd << " -bm " << popMethodList.Get(popMethodList.GetCursor(), 0);
+	
+	cmd << " -arch " << arch;*/
+	
+	//if (p.x > 0)
+	//	cmd << " -acp " << p.x << " " << p.y;
+	
+	DUMP(cmd);
+	String t, tt;
+	LocalProcess lp(cmd);
+
+	while (lp.Read(t)) {
+		if (t.GetCount())
+			tt << t;
+	}
+	res = BuildMethod::IsSuccessCode(lp.GetExitCode());
+
+	if (res == false && tt.GetCount() == 0) {
+		DUMP(tt);
+		cmd = GetFileDirectory(GetExeFilePath()) + BuildMethod::ExeName("z2c");
+
+		if (!FileExists(cmd))
+			tt = "Could not find: " + cmd;
+	}
+	
+	return tt;
+}
+
+void ZideWindow::AddOutputLine(const String& str) {
+	DUMP(str);
+	console << str;
+	console.ScrollEnd();
+}
+
+bool ZideWindow::IsVerbose() const {
+	return console.VerboseBuild;
+}
+
+void ZideWindow::PutConsole(const char *s) {
+	console << s << "\n";
+}
+
+void ZideWindow::PutVerbose(const char *s) {
+	if(console.VerboseBuild) {
+		PutConsole(s);
+		console.Sync();
+	}
+}
+
+void ZideWindow::OutPutEnd() {
+	//console.ScrollEnd();
+	console.ScrollLineUp();
+	console.ScrollLineUp();
+	Title("ZIDE - Execution done in " + sw.ToString() + " sec.");
+	running = false;
+}
+
+void ZideWindow::OnOutputSel() {
+	if (console.GetSelection().GetLength() != 0)
+		return;
+	
+	Point p = console.GetColumnLine(console.GetCursor());
+	
+	for (int i = 0; i < 5; i++) {
+		if (p.y >= 0 &&	GetLineOfError(p.y))
+			return;
+		
+		p.y--;
+	}
+}
+
+bool ZideWindow::GetLineOfError(int ln) {
+	auto temp = GetEditor();
+	if (!temp)
+		return false;
+	
+	CodeEditor& editor = *temp;
+	
+	String line = console.GetUtf8Line(ln);
+	
+//#ifdef PLATFORM_WIN32
+	int s = line.Find("(");
+	int e = line.Find(")");
+//#endif
+
+/*#ifdef PLATFORM_POSIX
+	int s = line.Find(":");
+	int e = line.Find(": error: ");
+#endif*/
+	
+	if (s > -1 && s < e) {
+		String file = TrimLeft(line.Left(s));
+
+		if (FileExists(file)) {
+			tabs.Open(file);
+			
+			String rest = line.Mid(s + 1, e - s - 1);
+			Vector<String> v = Split(rest, ",");
+			if (v.GetCount() == 2) {
+				int x = StrInt(TrimBoth(v[0])) - 1;
+				int y = StrInt(TrimBoth(v[1])) - 1;
+				
+				editor.SetCursor(editor.GetGPos(x, y));
+				editor.SetFocus();
+				
+				return true;
+			}
+			else if (v.GetCount() == 1) {
+				int x = StrInt(TrimBoth(v[0])) - 1;
+				
+				editor.SetCursor(editor.GetGPos(x, 1));
+				editor.SetFocus();
+			
+				return true;
+			}
+			
+			return false;
+		}
+	}
+	
+	return false;
 }

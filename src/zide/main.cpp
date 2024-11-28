@@ -4,15 +4,6 @@
 #define IMAGEFILE <zide/zide.iml>
 #include <Draw/iml_source.h>
 
-static String ExeName(const String& exe) {
-#ifdef PLATFORM_WIN32
-	return exe + ".exe";
-#endif
-#ifdef PLATFORM_POSIX
-	return exe;
-#endif
-}
-
 static const char *z2_keywords[] = {
 	"alias",
 	"break",
@@ -84,7 +75,7 @@ GUI_APP_MAIN {
 	
 	zide.CurFolder = GetFileDirectory(GetExeFilePath());
 	
-	FindFile ff(NativePath(zide.CurFolder + "/" + ExeName("z2c")));
+	FindFile ff(NativePath(zide.CurFolder + "/" + BuildMethod::ExeName("z2c")));
 	if (ff.IsExecutable())
 		zide.CompilerExe = ff.GetPath();
 

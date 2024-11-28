@@ -31,5 +31,7 @@ file
 	OverloadResolver.cpp,
 	ZException.h,
 	ErrorReporter.h,
-	ErrorReporter.cpp;
+	ErrorReporter.cpp,
+	BuildMethod.h,
+	BuildMethod.cpp;
 

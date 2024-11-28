@@ -5,7 +5,7 @@
 
 using namespace Upp;
 
-#include <z2cr/BuildMethod.h>
+#include <z2crlib/BuildMethod.h>
 
 class Builder {
 public:

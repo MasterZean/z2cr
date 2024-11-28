@@ -1,5 +1,85 @@
 #include "ZideWindow.h"
 
+LocalProcess globalExecutor;
+void* globalProcesID;
+
+void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
+#ifdef PLATFORM_WIN32
+
+	if (newConsole) {
+		int n = file.GetLength() + 1;
+		Buffer<char> cmd(n);
+		memcpy(cmd, file, n);
+		
+		SECURITY_ATTRIBUTES sa;
+		ZeroMemory(&sa, sizeof(SECURITY_ATTRIBUTES));
+		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+		sa.lpSecurityDescriptor = NULL;
+		sa.bInheritHandle = TRUE;
+		
+		PROCESS_INFORMATION pi;
+		ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+		
+		STARTUPINFO si;
+		ZeroMemory(&si, sizeof(STARTUPINFO));
+		si.dwFlags = STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_SHOW;
+		si.cb = sizeof(STARTUPINFO);
+		
+		if (CreateProcess(NULL, cmd, &sa, &sa, TRUE,
+			             NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
+		                NULL, NULL, &si, &pi)) {
+		    globalProcesID = (void*)pi.hProcess;
+		    
+		    WaitForSingleObject(pi.hProcess, INFINITE);
+		                    
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+			
+			globalProcesID = nullptr;
+		}
+		else
+			;//PutConsole("Unable to launch " + String(_cmdline));
+	}
+	else {
+		
+#endif
+
+		String t, tt;
+		
+		globalExecutor.Kill();
+		globalExecutor.ConvertCharset(false);
+		globalExecutor.Start(file);
+		
+		while (globalExecutor.Read(t)) {
+			if (t.GetCount()) {
+				PostCallback(callback1(zide, &ZideWindow::AddOutputLine, t));
+			}
+		}
+		
+#ifdef PLATFORM_WIN32
+	}
+#endif
+	
+	PostCallback(callback(zide, &ZideWindow::OutPutEnd));
+}
+
+int AdjustForTabs(const String& text, int col, int tabSize) {
+	int pos = 1;
+	
+	for (int i = 0; i < text.GetLength(); i++) {
+		if (text[i] == '\t') {
+			int newpos = (pos + tabSize - 1) / tabSize * tabSize + 1;
+			col -= newpos - pos - 1;
+			pos = newpos;
+		}
+		else
+			pos++;
+	}
+	
+	return col;
+}
+
 void ZideWindow::DoMainMenu(Bar& bar) {
 	int i = tabs.GetCursor();
 	bool tab = i != -1;
@@ -9,7 +89,7 @@ void ZideWindow::DoMainMenu(Bar& bar) {
 	if (tab) {
 		bar.Add("Edit",   THISBACK(DoMenuEdit));
 		bar.Add("Format", THISBACK(DoMenuFormat));
-		//bar.Add("Build",  THISBACK(DoMenuBuild));
+		bar.Add("Build",  THISBACK(DoMenuBuild));
 	}
 	
 	bar.Add("Help",       THISBACK(DoMenuHelp));
@@ -180,6 +260,144 @@ void ZideWindow::DoMenuFormat(Bar& menu) {
 		.Help("Remove tabs and spaces at line endings");
 	menu.Add("Duplicate line",      callback(&editor, &CodeEditor::DuplicateLine))
 	    .Help("Duplice the current line").Key(K_CTRL | K_D);
+}
+
+void ZideWindow::DoMenuBuild(Bar& bar) {
+	if (running) {
+		bar.Add("Kill current process",  THISBACK(OnMenuBuildKill))
+			.Key(K_CTRL | K_F5);
+		bar.Separator();
+	}
+	
+	bar.Add("Compile && run current file in console",  THISBACK1(OnMenuBuildRun, false))
+		.Key(K_F5)
+		.Enable(!running && canBuild);
+	bar.Add("Compile && run current file in new console",  THISBACK1(OnMenuBuildRun, true))
+		.Key(K_CTRL | K_F5)
+		.Enable(!running && canBuild);
+	bar.Separator();
+	
+	/*bar.Add("Compile current file", CtrlImg::Toggle(), THISBACK(OnMenuBuildBuild))
+		.Key(K_F7)
+		.Enable(!running && canBuild);
+	bar.Add("Frontend only compile current file",      THISBACK(OnMenuBuildFrontend))
+		.Key(K_F8)
+		.Enable(!running && canBuild);
+	bar.Separator();
+	
+	bar.Add("Mirror mode",                             THISBACK(OnMenuBuildMirror))
+		.Check(mirrorMode);
+	bar.Separator();
+	
+	bar.Add("Build methods...",                        THISBACK(OnMenuBuildMethods));
+	bar.Separator();
+	bar.Add("Optimize backend code",                   THISBACK(DoMenuOptimize));
+	bar.Add("Library mode",                            THISBACK(OnMenuBuildLibMode))
+		.Check(libMode);
+	bar.Separator();*/
+	
+	bar.Add("Show log",                                THISBACK(OnMenuBuildShowLog))
+		.Check(splBottom.IsShown());
+}
+
+void ZideWindow::OnMenuBuildKill() {
+#ifdef PLATFORM_WIN32
+	if (globalProcesID) {
+		TerminateProcess((HANDLE)globalProcesID, -1);
+		globalProcesID = nullptr;
+	}
+	else {
+		globalExecutor.Kill();
+	}
+#else
+	globalExecutor.Kill();
+#endif
+	
+	console << "Process killed!";
+	console.ScrollEnd();
+	
+	running = false;
+}
+
+void ZideWindow::OnMenuBuildRun(bool newConsole) {
+	auto temp = GetEditor();
+	if (!temp)
+		return;
+	
+	CodeEditor& editor = *temp;
+	
+	String file = NativePath(tabs.ActiveFile());
+	tabs.SaveAllIfNeeded();
+	
+	// TODO:
+	//editor.ClearErrors();
+	//editor.RefreshLayoutDeep();
+	editor.Errors(Vector<Point>());
+		
+	splBottom.Show();
+
+	bool res = false;
+	String t, tt;
+	console.Set(String());
+	tt = Build(file, true, res);
+
+	if (res) {
+		String ename = GetFileDirectory(file) + GetFileTitle(file) + BuildMethod::ExeName("");
+		
+		if (!newConsole)
+			console.Set(tt + "Running " + ename + "\n");
+		else
+			console.Set(tt);
+		Title("ZIDE - Executing: " + ename);
+		
+		sw.Reset();
+		running = true;
+		
+		Thread().Run(callback3(ExecutableThread, this, ename, newConsole));
+	}
+	else {
+		console.Set(tt);
+		console.ScrollEnd();
+		
+		int errors = 0;
+		Vector<String> lines = Split(tt, '\n');
+		Vector<Point> errorList;
+		for (int i = 0; i < lines.GetCount(); i++) {
+			String s = TrimBoth(lines[i]);
+			
+			int ii = s.Find('(');
+			if (ii != -1) {
+				int jj = s.Find(')', ii);
+				if (ii < jj) {
+					String path = s.Mid(0, ii);
+					if (path == file) {
+						String ll = s.Mid(ii + 1, jj - ii - 1);
+						Vector<String> s2 = Split(ll, ',');
+						if (s2.GetCount() == 2) {
+							int line = StrInt(s2[0]) - 1;
+							int col = StrInt(s2[1]) - 1;
+							
+							String text = editor.GetUtf8Line(line);
+							col = AdjustForTabs(text, col, settings.TabSize);
+							
+							errorList.Add(Point(col, line));
+							errors++;
+						}
+					}
+				}
+			}
+		}
+		
+		if (errors) {
+			//editor.Errors(std::move(errorList));
+			//TODO:
+			editor.RefreshLayoutDeep();
+		}
+	}
+}
+
+void ZideWindow::OnMenuBuildShowLog() {
+	splBottom.Show(!splBottom.IsShown());
 }
 
 void ZideWindow::DoMenuHelp(Bar& bar) {
