@@ -102,15 +102,26 @@ public:
 	}
 	
 	inline Assembly& Ass();
+	
+	virtual const String& ColorSig() const {
+		return dummy;
+	}
+	
+	virtual const String& OwnerSig() const {
+		return dummy;
+	}
 
 private:
 	ZNamespace& nmsspace;
 	ZNamespace* parent;
+	
+	static String dummy;
 };
 
 class ZNamespace: public ZEntity {
 public:
 	String ProperName;
+	Vector<ZSource*> Sources;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	

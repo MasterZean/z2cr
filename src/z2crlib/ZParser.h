@@ -59,6 +59,7 @@ public:
 	void ExpectEndStat();
 	
 	void Error(const Point& p, const String& text);
+	void Warning(const Point& p, const String& text);
 	
 	uint32 ReadChar();
 	ZParser::NumberType ReadInt64(int64& oInt, double& oDub, int& base);

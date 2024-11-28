@@ -67,6 +67,10 @@ void ZResolver::ResolveClasses() {
 			
 			ZClass& cls = ass.AddClass(c);
 			ns.Classes.Add(cls.Name, &cls);
+			
+			for (int k = 0; k < ns.Sources.GetCount(); k++) {
+				ns.Sources[k]->AddReference(cls.Namespace().Name + cls.Name, Point(1, 1));
+			}
 		}
 	}
 }
@@ -78,11 +82,6 @@ void ZResolver::ResolveFunctions() {
 				
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
 			ZClass& c = *ns.Classes[j];
-			if (c.Namespace().Name == "test.") {
-				c.Namespace().Name == "test.";
-				DUMP(c.Name);
-				DUMP(&c);
-			}
 			ResolveNamespaceMembers(c);
 		}
 	}
@@ -242,10 +241,6 @@ bool ZResolver::CheckForDuplicates(ZNamespace& ns) {
 	// verify class members
 	for (int j = 0; j < ns.Classes.GetCount(); j++) {
 		ZClass& c = *ns.Classes[j];
-		if (c.Name == "sys") {
-			DUMP(&c);
-			c.Name == "sys";
-		}
 		DuplicateLoop(c, true);
 	}
 	

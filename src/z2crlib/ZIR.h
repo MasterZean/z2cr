@@ -113,7 +113,7 @@ public:
 	Node* cast(Node* left, ObjectType* tt, bool sc = true, bool ptr = false);
 	
 	ParamsNode* callfunc(ZFunction& over, Node* object);
-	MemNode* mem_var(ZEntity* var);
+	MemNode* mem_var(ZEntity& var);
 	
 	BlockNode* block();
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);

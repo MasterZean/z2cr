@@ -207,10 +207,15 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 }
 
 ZClass& Assembly::AddClass(ZClass& cls) {
+	int type = Classes.GetCount();
 	ZClass& typeCls = Classes.Add(cls.Namespace().Name + cls.Name, cls);
 	
 	typeCls.ParamType = &typeCls;
+	typeCls.Index = type;
+	typeCls.ParamType = &typeCls;
 	typeCls.Tt.Class = &typeCls;
+	
+	typeCls.RTTIIndex = type;
 	
 	return typeCls;
 }

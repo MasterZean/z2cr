@@ -3,6 +3,8 @@
 #include <z2crlib/ErrorReporter.h>
 #include <z2crlib/ZExprParser.h>
 
+String ZEntity::dummy;
+
 void ZVariable::GenerateSignatures() {
 	csig = "";
 	

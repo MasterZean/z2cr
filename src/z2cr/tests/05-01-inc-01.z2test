@@ -1,6 +1,6 @@
 // @test namespace
 // @file
-// @error test.z2(7, 6): expression is not a l-value, can't apply operator '++'
+// @error test.z2(7, 6): expression is not a l-value, can't apply operator postfix '++'
 namespace test;
 
 def @main() {
@@ -9,7 +9,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 9): expression is not a l-value, can't apply operator '++'
+// @error test.z2(7, 9): expression is not a l-value, can't apply operator postfix '++'
 namespace test;
 
 def @main() {
@@ -18,7 +18,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 11): expression is not a l-value, can't apply operator '++'
+// @error test.z2(7, 11): expression is not a l-value, can't apply operator postfix '++'
 namespace test;
 
 def @main() {
@@ -45,7 +45,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 6): expression is not a l-value, can't apply operator '--'
+// @error test.z2(7, 6): expression is not a l-value, can't apply operator postfix '--'
 namespace test;
 
 def @main() {
@@ -54,7 +54,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 9): expression is not a l-value, can't apply operator '--'
+// @error test.z2(7, 9): expression is not a l-value, can't apply operator postfix '--'
 namespace test;
 
 def @main() {
@@ -63,7 +63,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 11): expression is not a l-value, can't apply operator '--'
+// @error test.z2(7, 11): expression is not a l-value, can't apply operator postfix '--'
 namespace test;
 
 def @main() {
@@ -90,7 +90,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 7): expression is not a l-value, can't apply operator '++'
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator prefix '++'
 namespace test;
 
 def @main() {
@@ -99,7 +99,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 7): expression is not a l-value, can't apply operator '++'
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator prefix '++'
 namespace test;
 
 def @main() {
@@ -108,7 +108,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 7): expression is not a l-value, can't apply operator '++'
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator prefix '++'
 namespace test;
 
 def @main() {
@@ -135,7 +135,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 7): expression is not a l-value, can't apply operator '--'
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator prefix '--'
 namespace test;
 
 def @main() {
@@ -144,7 +144,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 7): expression is not a l-value, can't apply operator '--'
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator prefix '--'
 namespace test;
 
 def @main() {
@@ -153,7 +153,7 @@ def @main() {
 
 // @test namespace
 // @file
-// @error test.z2(7, 7): expression is not a l-value, can't apply operator '--'
+// @error test.z2(7, 7): expression is not a l-value, can't apply operator prefix '--'
 namespace test;
 
 def @main() {

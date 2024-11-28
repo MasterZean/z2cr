@@ -1387,19 +1387,19 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	return node;
 }
 
-MemNode* IR::mem_var(ZEntity* mem) {
+MemNode* IR::mem_var(ZEntity& mem) {
 	bool isThis = false;
 
 	MemNode* node = memNodes.Get();
-	node->Mem = mem;
+	node->Mem = &mem;
 	
-	if (mem->Type == EntityType::Variable) {
-		ZVariable& v = *((ZVariable*)mem);
+	if (mem.Type == EntityType::Variable) {
+		ZVariable& v = static_cast<ZVariable&>(mem);
 		node->SetType(v.I.Tt);
 		node->IsAddressable = true;
 		node->IsConst = v.IsConst;
 	}
-	else if (mem->Type == EntityType::MethodBundle) {
+	else if (mem.Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);
 	}
 	

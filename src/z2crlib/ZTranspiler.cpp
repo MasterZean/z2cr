@@ -98,9 +98,6 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
 		
-		if (ns.Name == "buntron.")
-			ns.Name == "buntron.";
-		
 		if (!CanAccess(v.Access, accessFlags))
 			continue;
 
@@ -113,27 +110,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 		
 		if (first) {
 			if (v.InClass == true) {
-				if (v.Access == AccessType::Public) {
-					indent--;
-					NL();
-					cs << "public:";
-					EL();
-					indent++;
-				}
-				if (v.Access == AccessType::Protected)  {
-					indent--;
-					NL();
-					cs << "protected:";
-					EL();
-					indent++;
-				}
-				if (v.Access == AccessType::Private) {
-					indent--;
-					NL();
-					cs << "private:";
-					EL();
-					indent++;
-				}
+				WriteClassAccess(v.Access);
 			}
 			first = false;
 		}
@@ -180,27 +157,7 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, int vc
 						EL();
 				}
 				else {
-					if (f.Access == AccessType::Public) {
-						indent--;
-						NL();
-						cs << "public:";
-						EL();
-						indent++;
-					}
-					if (f.Access == AccessType::Protected)  {
-						indent--;
-						NL();
-						cs << "protected:";
-						EL();
-						indent++;
-					}
-					if (f.Access == AccessType::Private) {
-						indent--;
-						NL();
-						cs << "private:";
-						EL();
-						indent++;
-					}
+					WriteClassAccess(f.Access);
 				}
 				first = false;
 			}
@@ -336,6 +293,32 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 		EL();
 	}
 }
+
+void ZTranspiler::WriteClassAccess(AccessType access) {
+	if (access == AccessType::Public) {
+		indent--;
+		NL();
+		cs << "public:";
+		EL();
+		indent++;
+	}
+	if (access == AccessType::Protected)  {
+		indent--;
+		NL();
+		cs << "protected:";
+		EL();
+		indent++;
+	}
+	if (access == AccessType::Private) {
+		indent--;
+		NL();
+		cs << "private:";
+		EL();
+		indent++;
+	}
+}
+
+
 
 void ZTranspiler::WalkNode(Node* node) {
 	if (node->NT == NodeType::Block || node->NT == NodeType::Local) {
@@ -675,8 +658,13 @@ void ZTranspiler::Proc(DefNode& node) {
 void ZTranspiler::Proc(MemNode& node) {
 	ASSERT(node.Mem);
 	
-	if (node.IsLocal == false && node.IsParam == false)
-		cs << node.Mem->Namespace().BackName << "::";
+	if (node.IsLocal == false && node.IsParam == false) {
+		if (node.Mem->InClass)
+			cs << node.Mem->Namespace().BackName << "::" << node.Mem->Owner().BackName << "::";
+		else
+			cs << node.Mem->Owner().BackName << "::";
+	}
+	
 	cs << node.Mem->BackName;
 }
 
@@ -695,8 +683,6 @@ void ZTranspiler::Proc(BlockNode& node) {
 	if (node.EndBlockStat)
 		EL();
 }
-
-
 
 void ZTranspiler::Proc(IfNode& node) {
 	ASSERT(node.Cond);
@@ -876,3 +862,5 @@ void ZTranspiler::Proc(LoopControlNode& node) {
 	else
 		cs << "continue";
 }
+
+

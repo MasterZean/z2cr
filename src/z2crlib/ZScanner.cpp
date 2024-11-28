@@ -270,6 +270,7 @@ void ZScanner::ScanNamespace(const ZSourcePos& p) {
 	int index = ass.Namespaces.Find(fullName);
 	
 	nameSpace = &ass.FindAddNamespace(fullName);
+	nameSpace->Sources.Add(&source);
 	
 	section = &nameSpace->Sections.Add();
 	section->UsingNames = usingNames;

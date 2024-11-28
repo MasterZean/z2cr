@@ -156,6 +156,11 @@ void ZParser::Error(const Point& p, const String& text) {
 	//Cout() << source.Path() << "(" << p.x << ", " << p.y << "): " << text << "\n";
 }
 
+void ZParser::Warning(const Point& p, const String& text) {
+	Cout() << source.Path << "(" << p.x << ", " << p.y << ")" << Mode;
+	Cout() << text << "\n";
+}
+
 String ZParser::Identify() {
 	if (IsId("true"))
 		return "boolean constant 'true'";

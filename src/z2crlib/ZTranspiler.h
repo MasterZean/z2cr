@@ -169,6 +169,8 @@ private:
 	bool firstInClass = true;
 	int namespaceWrites = 0;
 	int classWrites = 0;
+	
+	void WriteClassAccess(AccessType access);
 };
 
 #endif

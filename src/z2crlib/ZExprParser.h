@@ -9,6 +9,7 @@ public:
 	ZNamespaceSection* Section = nullptr;
 	ZNamespace* Namespace = nullptr;
 	ZFunction* Function = nullptr;
+	ZClass* Class = nullptr;
 	
 	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
 	}
@@ -26,10 +27,11 @@ public:
 	Node* ParseBin(int prec, Node* left, CParser::Pos& backupPoint);
 	Node* ParseAtom();
 	Node* ParseNumeric();
-	Node *ParseId();
+	Node* ParseId();
 	Node* ParseNamespace();
 	Node* ParseNamespace(const String& s, Point opp);
 	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp);
+	Node* ParseDot(Node* exp);
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
@@ -53,6 +55,8 @@ private:
 	
 	static Point OPS[256];
 	static bool OPCONT[256];
+	
+	void TestAccess(ZEntity& f, const Point& opp);
 };
 
 #endif

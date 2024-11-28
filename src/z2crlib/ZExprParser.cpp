@@ -3,6 +3,8 @@
 
 extern String opss[];
 
+String CLS_STR = "class";
+
 Node* ZExprParser::Parse() {
 	Node* left = ParseAtom();
 	
@@ -83,7 +85,7 @@ Node* ZExprParser::ParseAtom() {
 		Point p = parser.GetPoint();
 		exp = ParseAtom();
 		if (!exp->IsLValue())
-			parser.Error(p, "expression is not a l-value, can't apply operator '++'");
+			parser.Error(p, "expression is not a l-value, can't apply operator prefix '++'");
 		Node* op = irg.inc(exp, true);
 		exp = op;
 		
@@ -94,7 +96,7 @@ Node* ZExprParser::ParseAtom() {
 		Point p = parser.GetPoint();
 		exp = ParseAtom();
 		if (!exp->IsLValue())
-			parser.Error(p, "expression is not a l-value, can't apply operator '--'");
+			parser.Error(p, "expression is not a l-value, can't apply operator prefix '--'");
 		Node* op = irg.dec(exp, true);
 		exp = op;
 		
@@ -151,19 +153,18 @@ Node* ZExprParser::ParseAtom() {
 			}
 		}
 		else if (parser.Char('.')) {
-			// TODO: fix
-			parser.Error(p, "syntax error");
+			exp = ParseDot(exp);
 		}
 		else if (parser.Char2('+', '+')) {
 			if (!exp->IsLValue())
-				parser.Error(p, "expression is not a l-value, can't apply operator '++'");
+				parser.Error(p, "expression is not a l-value, can't apply operator postfix '++'");
 			Node* op = irg.inc(exp);
 			exp = op;
 			ASSERT(exp->Tt.Class);
 		}
 		else if (parser.Char2('-', '-')) {
 			if (!exp->IsLValue())
-				parser.Error(p, "expression is not a l-value, can't apply operator '--'");
+				parser.Error(p, "expression is not a l-value, can't apply operator postfix '--'");
 			Node* op = irg.dec(exp);
 			exp = op;
 			ASSERT(exp->Tt.Class);
@@ -186,10 +187,13 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
+//	if (s == "Test")
+//		s == "Int";
+	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
 			if (Function->Params[j].Name == s) {
-				auto node = irg.mem_var(&Function->Params[j]);
+				auto node = irg.mem_var(Function->Params[j]);
 				node->IsLocal = true;
 				return node;
 			}
@@ -199,7 +203,7 @@ Node* ZExprParser::ParseId() {
 			ZBlock& b = Function->Blocks[j];
 			for (int k = 0; k < b.Locals.GetCount(); k++)
 				if (b.Locals[k]->Name == s) {
-					auto node = irg.mem_var(b.Locals[k]);
+					auto node = irg.mem_var(*b.Locals[k]);
 					node->IsLocal = true;
 					return node;
 				}
@@ -355,10 +359,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		if (ambig)
 			parser.Error(opp, ER::Green + aName + ": ambigous symbol");
 		
-		if (f->Access == AccessType::Protected && &f->Namespace() != Namespace)
-			parser.Error(opp, "can't access protected member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
-		if (f->Access == AccessType::Private && &f->Namespace() != Namespace && &parser.Source() != f->DefPos.Source)
-			parser.Error(opp, "can't access private member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
+		TestAccess(*f, opp);
 	 
 		ParamsNode* node = irg.callfunc(*f, nullptr);
 		node->Params = std::move(params);
@@ -367,14 +368,54 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 	
 	index = ns.Variables.Find(aName);
 	if (index != -1) {
-		ZVariable* f = ns.Variables[index];
-		
-		if (f->Access == AccessType::Protected && &f->Namespace() != Namespace)
-			parser.Error(opp, "can't access protected member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
-		if (f->Access == AccessType::Private && &f->Namespace() != Namespace && &parser.Source() != f->DefPos.Source)
-			parser.Error(opp, "can't access private member:\n\t\t" + f->ColorSig() + "        " + "[" + f->OwnerSig() + "]");
-		
+		ZVariable& f = *ns.Variables[index];
+		TestAccess(f, opp);
 		return irg.mem_var(f);
+	}
+	
+	return nullptr;
+}
+
+Node *ZExprParser::ParseDot(Node *exp) {
+	Point p = parser.GetPoint();
+	String s;
+	
+	if (parser.Char('@'))
+		s = "@" + parser.ExpectId();
+	else
+		s = parser.ExpectId();
+	
+	// case .class
+	if (s == CLS_STR ) {
+		if (exp->Tt.Class == ass.CClass) {
+			if (!exp->IsLiteral)
+				parser.Warning(p, "chained .${magenta}class${white} statements detected. "
+					"Expression is equivalent to '${cyan}Class${white}.${magenta}class${white}' which is '${cyan}Class${white}'");
+			if (exp->IntVal == 1)
+				parser.Warning(p, "'${cyan}Class${white}.${magenta}class${white}' is '${cyan}Class${white}'. Is this intentional?");
+			
+			exp = irg.const_class(ass.Classes[(int)exp->IntVal], nullptr);
+			exp->IsLiteral = false;
+
+			ASSERT(exp->Tt.Class);
+			return exp;
+		}
+		else {
+			exp = irg.const_class(*exp->Tt.Class, exp);
+			exp->IsLiteral = false;
+			
+			ASSERT(exp->Tt.Class);
+			return exp;
+		}
+	}
+	
+	// static members
+	if (exp->Tt.Class == ass.CClass) {
+		if (exp->IsLiteral) {
+			ZClass& cs = ass.Classes[(int)exp->IntVal];
+			
+			return ParseMember(cs, s, p);
+		}
 	}
 	
 	return nullptr;
@@ -504,6 +545,21 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<N
 	}
 	
 	return nullptr;
+}
+
+void ZExprParser::TestAccess(ZEntity& f, const Point& opp) {
+	if (f.InClass == false) {
+		if (f.Access == AccessType::Protected && &f.Namespace() != Namespace)
+			parser.Error(opp, "can't access protected member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
+		if (f.Access == AccessType::Private && &f.Namespace() != Namespace && &parser.Source() != f.DefPos.Source)
+			parser.Error(opp, "can't access private member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
+	}
+	else {
+		if (f.Access == AccessType::Protected && &f.Owner() != Class)
+			parser.Error(opp, "can't access protected member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
+		if (f.Access == AccessType::Private)
+			parser.Error(opp, "can't access private member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
+	}
 }
 
 int ZExprParser::GetPriority(int& op, bool& opc) {
