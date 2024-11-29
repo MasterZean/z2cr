@@ -2,6 +2,21 @@
 #include <z2crlib/ZSource.h>
 #include <z2crlib/ZScanner.h>
 
+String Pad(const String& s, int max) {
+	StringBuffer ss;
+	ss.Cat(s);
+	while (ss.GetLength() < max)
+		ss.Cat(' ');
+	return ss;
+}
+
+String PadSp(int max) {
+	StringBuffer ss;
+	while (ss.GetLength() < max)
+		ss.Cat(' ');
+	return ss;
+}
+
 bool ZResolver::Resolve() {
 	ResolveNamespaces();
 	ResolveClasses();
@@ -129,21 +144,6 @@ void ZResolver::ResolveVariables() {
 			}
 		}
 	}
-}
-
-String Pad(const String& s, int max) {
-	StringBuffer ss;
-	ss.Cat(s);
-	while (ss.GetLength() < max)
-		ss.Cat(' ');
-	return ss;
-}
-
-String PadSp(int max) {
-	StringBuffer ss;
-	while (ss.GetLength() < max)
-		ss.Cat(' ');
-	return ss;
 }
 
 bool ZResolver::CheckForDuplicates() {

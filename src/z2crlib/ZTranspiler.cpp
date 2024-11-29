@@ -653,10 +653,20 @@ void ZTranspiler::Proc(UnaryOpNode& node) {
 }
 
 void ZTranspiler::Proc(DefNode& node) {
-	cs << node.Function->Namespace().BackName << "::";
-	if (node.Function->InClass)
-		cs << node.Function->Owner().BackName << "::";
-	cs << node.Function->BackName;
+	ZFunction& f = *node.Function;
+	
+	if (f.IsStatic) {
+		cs << f.Namespace().BackName << "::";
+		if (f.InClass)
+			cs << f.Owner().BackName << "::";
+	}
+	else {
+		ASSERT(node.Object);
+		Walk(node.Object);
+		cs << ".";
+	}
+	
+	cs << f.BackName;
 	cs << '(';
 	
 	int count = node.Params.GetCount();
@@ -808,8 +818,13 @@ void ZTranspiler::Proc(LocalNode& node) {
 	
 	if (node.Var->IsConst)
 		cs << "const ";
-	cs << node.Tt.Class->BackName << " ";
-	cs << node.Var->Name;
+	if (node.Tt.Class->CoreSimple)
+		cs << node.Tt.Class->BackName;
+	else {
+		cs << node.Var->Namespace().BackName << "::";
+		cs << node.Tt.Class->BackName;
+	}
+	cs << " " << node.Var->Name;
 	
 	if (node.Var->Value) {
 		cs << " = ";

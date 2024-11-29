@@ -1387,7 +1387,7 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	return node;
 }
 
-MemNode* IR::mem_var(ZEntity& mem) {
+MemNode* IR::mem_var(ZEntity& mem, Node* object) {
 	bool isThis = false;
 
 	MemNode* node = memNodes.Get();
@@ -1402,6 +1402,8 @@ MemNode* IR::mem_var(ZEntity& mem) {
 	else if (mem.Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);
 	}
+	
+	node->Object = object;
 	
 	/*node->LValue = n ? n->LValue : true;
 	

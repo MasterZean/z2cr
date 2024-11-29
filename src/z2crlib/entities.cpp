@@ -15,13 +15,7 @@ void ZVariable::GenerateSignatures() {
 	
 	csig << ER::Green << Name;
 	
-	osig = "";
-	osig << ER::White << "";
-	if (InClass)
-		osig << ER::Magenta << "class " << ER::White << Owner().Namespace().Name << ER::Cyan << Owner().Name;
-	else
-		osig << ER::Magenta << "namespace " << ER::White << Owner().ProperName;
-	osig << ER::White << "";
+	osig = ER::ToColor(Owner());
 }
 
 void ZClass::GenerateSignatures() {
@@ -30,13 +24,7 @@ void ZClass::GenerateSignatures() {
 	csig << ER::Magenta << "class ";
 	csig << ER::Green << Name;
 	
-	osig = "";
-	osig << ER::White << "";
-	if (InClass)
-		osig << ER::Magenta << "class " << ER::White << Owner().Namespace().Name << ER::Cyan << Owner().Name;
-	else
-		osig << ER::Magenta << "namespace " << ER::White << Owner().ProperName;
-	osig << ER::White << "";
+	osig = ER::ToColor(Owner());
 }
 
 void ZFunction::GenerateSignatures() {
@@ -162,15 +150,7 @@ void ZFunction::GenerateSignatures() {
 		csig << ER::Cyan << Ass().ClassToString(Return.Tt);
 	}
 	
-	osig = "";
-	osig << ER::White << "";
-	if (InClass)
-		osig << ER::Magenta << "class " << ER::White << Owner().Namespace().Name << ER::Cyan << Owner().Name;
-	else
-		osig << ER::Magenta << "namespace " << ER::White << Owner().ProperName;
-	osig << ER::White << "";
-	
-	//DUMP(fsig);
+	osig = ER::ToColor(Owner());
 }
 
 ZFunction& ZNamespace::PrepareFunction(const String& aName) {

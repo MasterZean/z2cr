@@ -122,6 +122,7 @@ class MemNode: public Node/*: public ObjectNode*/ {
 public:
 	//String Mem;
 	ZEntity* Mem = nullptr;
+	Node* Object = nullptr;
 
 	bool IsThis = false;
 	bool IsThisNop = false;

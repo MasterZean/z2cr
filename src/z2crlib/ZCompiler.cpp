@@ -191,6 +191,10 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 		}
 	}
 	
+	for (int j = 0; j < ns.Classes.GetCount(); j++) {
+		Compile(*ns.Classes[j]);
+	}
+	
 	return true;
 }
 

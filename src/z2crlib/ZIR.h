@@ -115,7 +115,7 @@ public:
 	
 	ParamsNode* callfunc(ZFunction& over, Node* object);
 	
-	MemNode* mem_var(ZEntity& var);
+	MemNode* mem_var(ZEntity& var, Node* object = nullptr);
 	TempNode *mem_temp(ZClass& cls, ZFunction *constructor);
 	
 	BlockNode* block();

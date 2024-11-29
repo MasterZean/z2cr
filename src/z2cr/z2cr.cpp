@@ -309,6 +309,8 @@ CONSOLE_APP_MAIN {
 	
 	if (K.PP_NOPATH)
 		ER::PrintPath = false;
+	else
+		ER::PrintPath = true;
 	ER::NoColor = K.NoColor;
 	if (K.NoConsoleTest)
 		noConsole = false;

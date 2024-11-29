@@ -13,6 +13,24 @@ String ER::Green = "${green}";
 String ER::Yellow = "${yellow}";
 String ER::Magenta = "${magenta}";
 
+String ER::ToColor(ZNamespace& ns, bool qt ) {
+	StringStream ss;
+	
+	ss << ER::White;
+	if (qt)
+		ss << "'";
+	if (ns.IsClass)
+		ss << ER::Magenta << "class " << ER::White << ns.Namespace().Name << ER::Cyan << ns.Name;
+	else
+		ss << ER::Magenta << "namespace " << ER::White << ns.ProperName;
+	ss << ER::White;
+	if (qt)
+		ss << "'";
+	
+	return ss;
+}
+
+
 void ER::Error(const ZSource& src, const Point& p, const String& text) {
 	//ASSERT(0);
 	if (PrintPath)
@@ -63,25 +81,23 @@ ZException ER::ErrNamespaceInClass(const ZSourcePos& p) {
 	return ZException(p.ToString(), "namespace declaration can't be part of a class");
 }
 
-void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ObjectType* ci, ZMethodBundle* def, Vector<Node*>& params, int limit, bool cons) {
+void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamespace& owner, ZMethodBundle* def, Vector<Node*>& params, int limit, bool cons) {
 	String s;
-	ObjectInfo i;
-	i.Tt = *ci;
+
 	if (cons) {
-		s << "Class '\f" << ass.ClassToString(&i) << "\f' does not have a constructor\n\t\t";
+		s << ER::ToColor(owner) << ": does not have a constructor\n\t\t";
 	}
 	else {
-		String z = ass.ClassToString(&i);
-		s << "Class '\f" << z << "\f' does not have an overload\n\t\t";
+		s << ER::ToColor(owner) << ": does not have an overload\n\t\t";
 		if (limit == 2)
 			s << "func ";
 		else if (limit == 1)
 			s << "def  ";
 		
 		if (def)
-			s << def->Name;
+			s << ER::Green << def->Name << ER::White;
 		else
-			s << z;
+			s << owner.Name;
 	}
 	
 	if (cons)
@@ -92,7 +108,7 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ObjectT
 	for (int k = 0; k < params.GetCount(); k++) {
 		//if (params[k]->IsConst)
 		//	s << "const ";
-		s << ass.ClassToString(params[k]);
+		s << ER::Cyan << ass.ClassToString(params[k]) << ER::White;
 		if (k < params.GetCount() - 1)
 			s << ", ";
 	}
@@ -102,7 +118,7 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ObjectT
 		s << ")\n";
 	
 	if (def && def->IsTemplate)
-		s << "Class \f" << ass.ClassToString(&i) <<"\f has an incompatible template '" << def->Name << "'";
+		s << ER::ToColor(owner) << ": has an incompatible template '" << def->Name << "'";
 	else if (def) {
 		s << "\texisting overloads\n";
 		for (int i = 0; i < def->Functions.GetCount(); i++) {
@@ -111,7 +127,7 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ObjectT
 			if (ol.IsDeleted)
 				continue;
 			
-			if (ol.IsConstructor == 1)
+			/*if (ol.IsConstructor == 1)
 				s << "\t\t" << "{" << ol.FuncSig() << "}\n";
 			else if (ol.IsConstructor == 2)
 				s << "\t\t" << ol.Name << "{" << ol.FuncSig() << "}\n";
@@ -122,17 +138,13 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ObjectT
 				else
 					s << "def  ";
 				s << ol.Name << "(" << ol.FuncSig() << ")\n";
-			}
+			}*/
+			s << "\t\t" << ol.ColorSig();
 		}
 	}
 	
 	Error(source, p, s);
 }
-
-/*void ER::Error(const ZClass& cls, const Point& p, const String& text) {
-	//DUMP(text);
-	Error(*cls.DefPos.Source, p, text);
-}*/
 
 void ZException::PrettyPrint(Stream& stream) {
 #ifdef PLATFORM_WIN32

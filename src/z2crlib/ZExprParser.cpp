@@ -187,8 +187,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Test")
-		s == "Int";
+//	if (s == "Test")
+//		s == "Int";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -211,7 +211,7 @@ Node* ZExprParser::ParseId() {
 	}
 	
 	if (Section != nullptr && Namespace != nullptr && Section->Using.GetCount() == 0) {
-		Node* node = ParseMember(*Namespace, s, opp);
+		Node* node = ParseMember(*Namespace, s, opp, true);
 		
 		if (node == nullptr) {
 			int index = parser.Source().ShortNameLookup.Find(s);
@@ -251,7 +251,7 @@ Node* ZExprParser::ParseId() {
 			ZNamespace& ns = *Section->Using[i];
 			
 			if (member == nullptr)
-				member = ParseMember(ns, s, opp);
+				member = ParseMember(ns, s, opp, true);
 		}
 	}
 	
@@ -303,7 +303,7 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			name = "@" + parser.ExpectId();
 			
 			ASSERT(ns->Namespace);
-			Node* node = ParseMember(*ns->Namespace, name, opp);
+			Node* node = ParseMember(*ns->Namespace, name, opp, true);
 			if (!node)
 				parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
 			return node;
@@ -329,7 +329,7 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 					return irg.const_class(*ns->Namespace->Classes[clsIndex]);
 				}
 				else {
-					Node* node = ParseMember(*ns->Namespace, name, opp);
+					Node* node = ParseMember(*ns->Namespace, name, opp, true);
 					
 					if (!node)
 						parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
@@ -344,7 +344,7 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 	return nullptr;
 }
 
-Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp) {
+Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp, bool onlyStatic, Node* object) {
 	int index = ns.Methods.Find(aName);
 	
 	if (index != -1) {
@@ -357,14 +357,19 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZFunction* f = GetBase(&ns.Methods[index], nullptr, params, 1, false, ambig);
 		
 		if (!f)
-			ER::CallError(parser.Source(), opp, ass, &ass.CClass->Tt, &ns.Methods[index], params, 0/*ol->IsCons*/);
+			ER::CallError(parser.Source(), opp, ass, ns, &ns.Methods[index], params, 0/*ol->IsCons*/);
 		
 		if (ambig)
 			parser.Error(opp, ER::Green + aName + ": ambigous symbol");
 		
 		TestAccess(*f, opp);
+		
+		if (onlyStatic && !f->IsStatic)
+			parser.Error(opp, ER::Green + aName + ER::White + ": is not a static member");
+		if (!onlyStatic && f->IsStatic)
+			parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 	 
-		ParamsNode* node = irg.callfunc(*f, nullptr);
+		ParamsNode* node = irg.callfunc(*f, object);
 		node->Params = std::move(params);
 		return node;
 	}
@@ -372,7 +377,13 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 	index = ns.Variables.Find(aName);
 	if (index != -1) {
 		ZVariable& f = *ns.Variables[index];
+		
 		TestAccess(f, opp);
+		if (onlyStatic && !f.IsStatic)
+			parser.Error(opp, ER::Green + aName + ER::White + ": is not a static member");
+		if (!onlyStatic && f.IsStatic)
+			parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
+		
 		return irg.mem_var(f);
 	}
 	
@@ -417,11 +428,19 @@ Node *ZExprParser::ParseDot(Node *exp) {
 		if (exp->IsLiteral) {
 			ZClass& cs = ass.Classes[(int)exp->IntVal];
 			
-			Node* node = ParseMember(cs, s, p);
+			Node* node = ParseMember(cs, s, p, true);
 			if (!node)
 				parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
 			return node;
 		}
+	}
+	// instance members
+	else {
+		ZClass& cs = *exp->Tt.Class;
+		Node* node = ParseMember(cs, s, p, false, exp);
+		if (!node)
+			parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
+		return node;
 	}
 	
 	return nullptr;

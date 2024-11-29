@@ -30,7 +30,7 @@ public:
 	Node* ParseId();
 	Node* ParseNamespace();
 	Node* ParseNamespace(const String& s, Point opp);
-	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp);
+	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp, bool onlyStatic, Node* object = nullptr);
 	Node* ParseDot(Node* exp);
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);

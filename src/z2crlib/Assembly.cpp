@@ -215,6 +215,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	typeCls.ParamType = &typeCls;
 	typeCls.Tt.Class = &typeCls;
 	typeCls.DefPos = cls.DefPos;
+	typeCls.IsClass = cls.IsClass;
 	
 	typeCls.RTTIIndex = type;
 	

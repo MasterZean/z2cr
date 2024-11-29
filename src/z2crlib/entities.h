@@ -122,6 +122,7 @@ class ZNamespace: public ZEntity {
 public:
 	String ProperName;
 	Vector<ZSource*> Sources;
+	bool IsClass = false;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	

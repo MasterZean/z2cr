@@ -193,6 +193,7 @@ void ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	curClass = &nameSpace->PrepareClass(name);
 	curClass->BackName = name;
 	curClass->DefPos = dp;
+	curClass->IsClass = true;
 	
 	parser.Expect('{');
 	
@@ -291,6 +292,8 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst, bool isStatic) {
 	f.IsConst = aConst;
 	f.InClass = curClass != nullptr;
 	f.IsStatic = isStatic;
+	if (curClass == nullptr)
+		f.IsStatic = true;
 		
 	if (parser.Char(':')) {
 		ScanType();
@@ -392,6 +395,8 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc, bool isStatic) 
 	f.Access = accessType;
 	f.InClass = curClass != nullptr;
 	f.IsStatic = isStatic;
+	if (curClass == nullptr)
+		f.IsStatic = true;
 	
 	if (curClass == nullptr && isStatic) {
 		Errors << ER::ErrCantBeStatic(dp, "namespace function");
