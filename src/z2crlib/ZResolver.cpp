@@ -103,23 +103,12 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
 
-	//DUMP(f.InClass);
-	//DUMP(f.Namespace().Name);
 	f.SetOwner(ns);
-	if (f.InClass) {
-		DUMP(f.Owner().Name);
-		DUMP(&f.Owner());
-	}
 
 	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));
 	if (d.Name.GetCount() == 0)
 		d.Name = f.Name;
 	d.Functions.Add(&f);
-	if (f.InClass) {
-		DUMP(f.Owner().Name);
-		DUMP(&f.Owner());
-		DUMP(f.Owner().Methods.GetCount());
-	}
 }
 
 void ZResolver::ResolveVariables() {

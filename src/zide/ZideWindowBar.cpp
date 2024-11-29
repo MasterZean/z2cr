@@ -5,7 +5,6 @@ void* globalProcesID;
 
 void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 #ifdef PLATFORM_WIN32
-
 	if (newConsole) {
 		int n = file.GetLength() + 1;
 		Buffer<char> cmd(n);

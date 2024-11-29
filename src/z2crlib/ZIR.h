@@ -59,7 +59,8 @@ protected:
 	NodePool<ReturnNode> retNodes;
 	NodePool<IntrinsicNode> intNodes;
 	NodePool<LoopControlNode> loopControlNodes;
-	
+	NodePool<TempNode> tempNodes;
+		
 public:
 	public:
 	bool FoldConstants = false;
@@ -113,7 +114,9 @@ public:
 	Node* cast(Node* left, ObjectType* tt, bool sc = true, bool ptr = false);
 	
 	ParamsNode* callfunc(ZFunction& over, Node* object);
+	
 	MemNode* mem_var(ZEntity& var);
+	TempNode *mem_temp(ZClass& cls, ZFunction *constructor);
 	
 	BlockNode* block();
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);

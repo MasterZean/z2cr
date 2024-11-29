@@ -246,7 +246,6 @@ String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
 }
 
 void ZideWindow::AddOutputLine(const String& str) {
-	DUMP(str);
 	console << str;
 	console.ScrollEnd();
 }

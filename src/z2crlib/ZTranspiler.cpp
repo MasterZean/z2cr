@@ -130,6 +130,12 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 		}
 
 		cs << v.I.Tt.Class->BackName << " " << v.Name;
+		
+		if (v.InClass && !v.IsStatic) {
+			cs << " = ";
+			Walk(v.Value);
+		}
+		
 		ES();
 	}
 	
@@ -183,7 +189,6 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 	
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		ZMethodBundle& d = ns.Methods[i];
-		
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
 			
@@ -194,6 +199,24 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 			WriteFunctionBody(f, wrap);
 		}
 	}
+	
+	for (int i = 0; i < ns.Classes.GetCount(); i++) {
+		ZClass& cls = *ns.Classes[i];
+		
+		for (int j = 0; j < cls.Methods.GetCount(); j++) {
+			ZMethodBundle& d = cls.Methods[j];
+			
+			for (int j = 0; j < d.Functions.GetCount(); j++) {
+				ZFunction& f = *d.Functions[j];
+				
+				NL();
+				
+				if (fDecl)
+					WriteFunctionDecl(f);
+				WriteFunctionBody(f, wrap);
+			}
+		}
+	}
 }
 
 void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
@@ -201,6 +224,9 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		auto v = *ns.Variables[i];
 		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
+		
+		if (v.InClass && !v.IsStatic)
+			continue;
 		
 		if (v.IsConst)
 			cs << "const ";
@@ -230,8 +256,14 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
-	cs << f.Return.Tt.Class->BackName << " " << f.Namespace().BackName << "::" << f.BackName;
+	cs << f.Return.Tt.Class->BackName << " " << f.Namespace().BackName << "::";
+	if (f.InClass)
+		cs << f.Owner().Name << "::";
+	cs << f.BackName;
 	WriteFunctionParams(f);
+	
+	if (f.InClass && f.IsFunction && !f.IsStatic)
+		cs << " const";
 }
 
 void ZTranspiler::WriteFunctionParams(ZFunction& f) {
@@ -330,52 +362,6 @@ void ZTranspiler::WalkNode(Node* node) {
 		Walk(node);
 		return;
 	}
-	
-	if (node->Tt.Class == ass.CQWord) {
-		cs << "printf(\"%llu\\n\", ";
-		Walk(node);
-		cs << ")";
-	}
-	else if (node->Tt.Class == ass.CLong) {
-		cs << "printf(\"%lld\\n\", ";
-		Walk(node);
-		cs << ")";
-	}
-	else if (node->Tt.Class == ass.CDWord || node->Tt.Class == ass.CWord || node->Tt.Class == ass.CByte) {
-		cs << "printf(\"%u\\n\", ";
-		Walk(node);
-		cs << ")";
-	}
-	else if (node->Tt.Class == ass.CPtrSize) {
-		cs << "printf(\"%u\\n\", ";
-		Walk(node);
-		cs << ")";
-	}
-	else if (node->Tt.Class == ass.CInt || node->Tt.Class == ass.CSmall || node->Tt.Class == ass.CShort) {
-		cs << "printf(\"%d\\n\", ";
-		Walk(node);
-		cs << ")";
-	}
-	else if (node->Tt.Class == ass.CFloat) {
-		cs << "printf(\"%g\\n\", ";
-		Walk(node);
-		cs << ")";
-	}
-	else if (node->Tt.Class == ass.CDouble) {
-		cs << "printf(\"%g\\n\", ";
-		Walk(node);
-		cs << ")";
-	}
-	else if (node->Tt.Class == ass.CBool) {
-		cs << "printf(\"%s\\n\", ";
-		Walk(node);
-		cs << " ? \"true\" : \"false\")";
-	}
-	else if (node->Tt.Class == ass.CChar) {
-		Walk(node);
-	}
-	else
-		Walk(node);
 }
 
 void ZTranspiler::Walk(Node* node) {
@@ -390,8 +376,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(MemNode*)node);
 	else if (node->NT == NodeType::Cast)
 		Proc(*(CastNode*)node);
-	/*else if (node->NT == NodeType::Temporary)
-		Proc((TempNode*)node);*/
+	else if (node->NT == NodeType::Temporary)
+		Proc(*(TempNode*)node);
 	else if (node->NT == NodeType::Def)
 		Proc(*(DefNode*)node);
 	/*else if (node->NT == NodeType::List)
@@ -640,7 +626,10 @@ void ZTranspiler::Proc(UnaryOpNode& node) {
 }
 
 void ZTranspiler::Proc(DefNode& node) {
-	cs << node.Function->Namespace().BackName << "::" << node.Function->BackName;
+	cs << node.Function->Namespace().BackName << "::";
+	if (node.Function->InClass)
+		cs << node.Function->Owner().BackName << "::";
+	cs << node.Function->BackName;
 	cs << '(';
 	
 	int count = node.Params.GetCount();
@@ -863,4 +852,28 @@ void ZTranspiler::Proc(LoopControlNode& node) {
 		cs << "continue";
 }
 
+void ZTranspiler::Proc(TempNode& node) {
+	ZClass& cls = *node.Tt.Class;
+	
+	if (cls.CoreSimple) {
+		cs << cls.Namespace().ProperName << "::";
+		cs << cls.Name << "::" << node.Constructor->BackName << '(';
+	}
+	else {
+		cs << cls.Namespace().ProperName << "::";
+		cs << cls.Name;
+		cs << '(';
+	}
+	
+	int count = node.Params.GetCount();
+	for (int i = 0; i < count; i++) {
+		Node* p = node.Params[i];
+		
+		Walk(p);
+		if (i < count - 1)
+			cs << ", ";
+	}
+	
+	cs << ')';
+}
 

@@ -61,7 +61,7 @@ void CreateZSyntax(One<EditorSyntax>& e, int kind) {
 GUI_APP_MAIN {
 	SetLanguage(LNG_ENGLISH);
 	SetDefaultCharset(CHARSET_UTF8);
-	
+
 	// register new syntax
 	CSyntax::InitKeywords();
 	ZideWindow::HIGHLIGHT_Z2 = CSyntax::RegisterNewHighlightType();

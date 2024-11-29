@@ -19,5 +19,5 @@ file
 	zide.rc;
 
 mainconfig
-	"" = "GUI";
+	"" = "GUI MT SSE2";
 

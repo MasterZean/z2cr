@@ -215,7 +215,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	// TODO: make smarter
 	if (!con.Return && f.Return.Tt.Class != ass.CVoid) {
 		Vector<Node*> dummy;
-		Node* defRet = ZExprParser::Temporary(ass, irg, *f.Return.Tt.Class, dummy);
+		Node* defRet = ZExprParser::Temporary(ass, irg, *f.Return.Tt.Class, dummy/*, Point(-1, -1)*/);
 		target.AddChild(irg.ret(defRet));
 	}
 	
@@ -473,7 +473,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		
 		if (v.Value == nullptr) {
 			Vector<Node*> params;
-			v.Value = ZExprParser::Temporary(ass, irg, *v.I.Tt.Class, params);
+			v.Value = ZExprParser::Temporary(ass, irg, *v.I.Tt.Class, params/*, Point(-1, -1)*/);
 		}
 	}
 		
@@ -550,6 +550,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.1.1 (pre-alpha)";
+	static String name = "Z2CR 0.1.2 (pre-alpha)";
 	return name;
 }

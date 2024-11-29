@@ -1412,6 +1412,17 @@ MemNode* IR::mem_var(ZEntity& mem) {
 	return node;
 }
 
+TempNode* IR::mem_temp(ZClass& cls, ZFunction* constructor) {
+	TempNode* node = tempNodes.Get();
+	
+	node->Constructor = constructor;
+	node->SetType(cls);
+
+	ASSERT(node->Tt.Class);
+	
+	return node;
+}
+
 BlockNode* IR::block() {
 	return blockNodes.Get();
 }

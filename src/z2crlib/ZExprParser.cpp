@@ -148,7 +148,7 @@ Node* ZExprParser::ParseAtom() {
 				Vector<Node*> params;
 				getParams(params, '}');
 				
-				Node* temp = Temporary(ass, irg, cobj, params);
+				Node* temp = Temporary(ass, irg, cobj, params/*, p*/);
 				exp = temp;
 			}
 		}
@@ -187,8 +187,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "Test")
-//		s == "Int";
+	if (s == "Test")
+		s == "Int";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -414,7 +414,10 @@ Node *ZExprParser::ParseDot(Node *exp) {
 		if (exp->IsLiteral) {
 			ZClass& cs = ass.Classes[(int)exp->IntVal];
 			
-			return ParseMember(cs, s, p);
+			Node* node = ParseMember(cs, s, p);
+			if (!node)
+				parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
+			return node;
 		}
 	}
 	
@@ -507,7 +510,7 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 	parser.Expect(end);
 }
 
-Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<Node*>& params) {
+Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<Node*>& params/*, const Point& p*/) {
 	Node* dr = nullptr;
 	
 	if (&cls == ass.CFloat) {
@@ -543,6 +546,17 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<N
 			return irg.cast(dr, &cls.Tt);
 		}
 	}
+	else {
+		return irg.mem_temp(cls, nullptr);
+	}
+	/*else if (&cls == ass.CVoid)
+		parser.Error(p, "'\fVoid\f' class can't be instantiated, use 'void' instead");
+	else if (&cls == ass.CNull)
+		parser.Error(p, "'\fNull\f' class can't be instantiated, use 'null' instead");
+	else if (&cls == ass.CCls)
+		parser.Error(p, "'\fClass\f' class can't be instantiated");
+	else if (&cls == ass.CDef)
+		parser.Error(p, "'\fDef\f' class can't be instantiated");*/
 	
 	return nullptr;
 }

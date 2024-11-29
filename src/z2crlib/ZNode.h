@@ -89,13 +89,22 @@ public:
 
 class DefNode: public ParamsNode {
 public:
-	::ZFunction* Function = nullptr;
+	ZFunction* Function = nullptr;
 	Node* Object = nullptr;
 	bool Property = false;
 	bool IsDestructor = false;
 
 	DefNode() {
 		NT = NodeType::Def;
+	}
+};
+
+class TempNode: public ParamsNode {
+public:
+	ZFunction *Constructor = nullptr;
+
+	TempNode() {
+		NT = NodeType::Temporary;
 	}
 };
 
