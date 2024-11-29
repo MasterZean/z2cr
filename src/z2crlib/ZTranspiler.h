@@ -55,6 +55,7 @@ public:
 	}
 	
 	void WriteIntro();
+	void WriteClassForward();
 	void WriteOutro();
 	
 	void WriteFunctionDef(ZFunction& f);

@@ -63,6 +63,77 @@ ZException ER::ErrNamespaceInClass(const ZSourcePos& p) {
 	return ZException(p.ToString(), "namespace declaration can't be part of a class");
 }
 
+void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ObjectType* ci, ZMethodBundle* def, Vector<Node*>& params, int limit, bool cons) {
+	String s;
+	ObjectInfo i;
+	i.Tt = *ci;
+	if (cons) {
+		s << "Class '\f" << ass.ClassToString(&i) << "\f' does not have a constructor\n\t\t";
+	}
+	else {
+		String z = ass.ClassToString(&i);
+		s << "Class '\f" << z << "\f' does not have an overload\n\t\t";
+		if (limit == 2)
+			s << "func ";
+		else if (limit == 1)
+			s << "def  ";
+		
+		if (def)
+			s << def->Name;
+		else
+			s << z;
+	}
+	
+	if (cons)
+		s << "{";
+	else
+		s << "(";
+	
+	for (int k = 0; k < params.GetCount(); k++) {
+		//if (params[k]->IsConst)
+		//	s << "const ";
+		s << ass.ClassToString(params[k]);
+		if (k < params.GetCount() - 1)
+			s << ", ";
+	}
+	if (cons)
+		s << "}\n";
+	else
+		s << ")\n";
+	
+	if (def && def->IsTemplate)
+		s << "Class \f" << ass.ClassToString(&i) <<"\f has an incompatible template '" << def->Name << "'";
+	else if (def) {
+		s << "\texisting overloads\n";
+		for (int i = 0; i < def->Functions.GetCount(); i++) {
+			ZFunction& ol = *def->Functions[i];
+			
+			if (ol.IsDeleted)
+				continue;
+			
+			if (ol.IsConstructor == 1)
+				s << "\t\t" << "{" << ol.FuncSig() << "}\n";
+			else if (ol.IsConstructor == 2)
+				s << "\t\t" << ol.Name << "{" << ol.FuncSig() << "}\n";
+			else {
+				s << "\t\t";
+				if (ol.IsFunction)
+					s << "func ";
+				else
+					s << "def  ";
+				s << ol.Name << "(" << ol.FuncSig() << ")\n";
+			}
+		}
+	}
+	
+	Error(source, p, s);
+}
+
+/*void ER::Error(const ZClass& cls, const Point& p, const String& text) {
+	//DUMP(text);
+	Error(*cls.DefPos.Source, p, text);
+}*/
+
 void ZException::PrettyPrint(Stream& stream) {
 #ifdef PLATFORM_WIN32
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // Get handle to standard output

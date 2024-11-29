@@ -269,8 +269,9 @@ public:
 class ZFunction: Moveable<ZFunction>, public ZEntity {
 public:
 	bool IsFunction = false;
-	bool IsConstructor = false;
+	int IsConstructor = 0;
 	bool IsValid = false;
+	bool IsDeleted = false;
 	
 	ZSourcePos TraitPos;
 	ZSourcePos ParamPos;
@@ -320,6 +321,9 @@ private:
 class ZMethodBundle: public ZEntity {
 public:
 	Array<ZFunction*> Functions;
+	
+	//TODO:
+	bool IsTemplate = false;
 	
 	ZMethodBundle(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::MethodBundle;

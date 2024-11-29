@@ -1,6 +1,7 @@
 #ifndef _z2cr_ErrorReporter_h_
 #define _z2cr_ErrorReporter_h_
 
+#include <z2crlib/entities.h>
 #include <z2crlib/ZException.h>
 
 class ZSource;
@@ -23,6 +24,7 @@ public:
 	static String Magenta;
 	
 	static void Error(const ZSource& src, const Point& p, const String& text);
+	//static void Error(const ZClass& cls, const Point& p, const String& text);
 	
 	static void CantOpenFile(const String& aPath);
 	
@@ -35,6 +37,8 @@ public:
 	static ZException ErrDeclOutsideNamespace(const ZSourcePos& p);
 	static ZException ErrCantBeStatic(const ZSourcePos& p, const String& type);
 	static ZException ErrNamespaceInClass(const ZSourcePos& p);
+	
+	static void CallError(const ZSource& source, const Point& p, Assembly& ass, ObjectType* ci, ZMethodBundle* def, Vector<Node*>& params, int limit, bool cons = false);
 	
 	static void ErrIncompatOp(const ZSource& src, const Point& p, const String& op, const String& text, const String& text2) {
 		Error(src, p, "Can't apply operator '" + op + "' on types: \n\t\t'\f" + text + "\f' and \n\t\t'\f" + text2 + "\f'");

@@ -25,6 +25,27 @@ void ZTranspiler::WriteIntro() {
 	EL();
 }
 
+void ZTranspiler::WriteClassForward() {
+	int count = 0;
+	
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
+		ZNamespace& ns = ass.Namespaces[i];
+		
+		for (int j = 0; j < ns.Classes.GetCount(); j++) {
+			ZClass& cls = *ns.Classes[j];
+					
+			NL();
+			cs << "namespace " + ns.BackName + " { class " + cls.Name + "; }";
+			EL();
+			
+			count++;
+		}
+	}
+	
+	if (count)
+		EL();
+}
+
 void ZTranspiler::WriteOutro() {
 	if (comp.MainFunction == nullptr)
 		return;
@@ -275,7 +296,13 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 		if (i > 0)
 			cs << ", ";
 		
-		cs << var.I.Tt.Class->ParamType->BackName << " " << var.Name;
+		ZClass& pclass = *var.I.Tt.Class->ParamType;
+		
+		if (pclass.CoreSimple)
+			cs << pclass.BackName;
+		else
+			cs << "const "<< pclass.Namespace().ProperName << "::" << pclass.BackName << "&";
+		cs << " " << var.Name;
 	}
 	
 	cs << ")";

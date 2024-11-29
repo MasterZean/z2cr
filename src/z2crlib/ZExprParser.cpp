@@ -356,6 +356,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		bool ambig = false;
 		ZFunction* f = GetBase(&ns.Methods[index], nullptr, params, 1, false, ambig);
 		
+		if (!f)
+			ER::CallError(parser.Source(), opp, ass, &ass.CClass->Tt, &ns.Methods[index], params, 0/*ol->IsCons*/);
+		
 		if (ambig)
 			parser.Error(opp, ER::Green + aName + ": ambigous symbol");
 		

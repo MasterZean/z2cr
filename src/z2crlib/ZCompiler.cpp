@@ -101,6 +101,7 @@ bool ZCompiler::Transpile() {
 	//cpp.PrintDebug = true;
 	
 	cpp.WriteIntro();
+	cpp.WriteClassForward();
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		cpp.TranspileDeclarations(ass.Namespaces[i], 0b11, true);
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
