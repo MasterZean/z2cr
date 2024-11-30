@@ -80,8 +80,13 @@ GUI_APP_MAIN {
 		zide.CompilerExe = ff.GetPath();
 
 	if (!LoadFromFile(zide)) {
-		zide.LastPackage = NativePath("c:/temp/test.pak");
+		String pakPath = NativePath(zide.CurFolder + "source/ut/org.z2legacy.ut");
+		zide.LastPackage = pakPath;
 		zide.RecentPackages.Add(zide.LastPackage);
+		
+		String helloPath = NativePath(pakPath + "/HelloWorld.z2");
+		if (FileExists(helloPath))
+			zide.ActiveFile = helloPath;
 	}
 
 	zide.LoadPackage(zide.LastPackage);

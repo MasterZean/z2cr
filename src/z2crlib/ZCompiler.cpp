@@ -161,10 +161,14 @@ Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
 	Vector<ZFunction*> mains;
 	
 	for (int i = 0; i < src.Functions.GetCount(); i++) {
-		if (mainClass.GetCount() && src.Functions[i]->Namespace().Name != mainClass + ".")
+		ZFunction& f = *src.Functions[i];
+		if (mainClass.GetCount() && f.Namespace().Name != mainClass + ".")
 			continue;
-		if (src.Functions[i]->Name == "@main" && src.Functions[i]->Params.GetCount() == 0)
-			mains.Add(src.Functions[i]);
+		
+		if (f.Name == "@main" && f.Params.GetCount() == 0) {
+			if ((f.InClass && !f.IsStatic) || f.InClass == false)
+				mains.Add(src.Functions[i]);
+		}
 	}
 	
 	return mains;

@@ -74,9 +74,24 @@ void ZTranspiler::WriteOutro() {
 	
 	indent++;
 	
-	NL();
-	cs << comp.MainFunction->Namespace().BackName << "::" << comp.MainFunction->BackName << "();";
-	EL();
+	if (comp.MainFunction->InClass == false) {
+		NL();
+		cs << comp.MainFunction->Namespace().BackName << "::" << comp.MainFunction->BackName << "();";
+		EL();
+	}
+	else {
+		NL();
+		cs << "auto temp = new " << comp.MainFunction->Namespace().BackName << "::" << comp.MainFunction->Owner().BackName << "()";
+		ES();
+		
+		NL();
+		cs << "temp->" << comp.MainFunction->BackName << "()";
+		ES();
+		
+		NL();
+		cs << "delete temp";
+		ES();
+	}
 	
 	NL();
 	cs << "return 0;";
@@ -336,7 +351,7 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 	
 	String params;
 	
-	if (PrintDebug) {
+	/*if (PrintDebug) {
 		NL();
 		cs << "printf(\"enter: %s::%s(%s)\\n\", ";
 		for (int i = 0; i < f.Params.GetCount(); i++) {
@@ -347,17 +362,17 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 		cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
 		cs << ")";
 		ES();
-	}
+	}*/
 	
 	WalkChildren(&f.Nodes);
 		
-	if (PrintDebug) {
+	/*if (PrintDebug) {
 		NL();
 		cs << "printf(\"exit: %s::%s(%s)\\n\", ";
 		cs << "\"" << f.Namespace().BackName << "\"" << ", " << "\"" << f.BackName << "\""  << ", " << "\"" << params << "\"" ;
 		cs << ")";
 		ES();
-	}
+	}*/
 	
 	indent--;
 	
@@ -403,10 +418,11 @@ void ZTranspiler::WalkNode(Node* node) {
 		return;
 	}
 	
-	if (!PrintDebug) {
+	Walk(node);
+	/*if (!PrintDebug) {
 		Walk(node);
 		return;
-	}
+	}*/
 }
 
 void ZTranspiler::Walk(Node* node) {
@@ -890,9 +906,10 @@ void ZTranspiler::Proc(ReturnNode& node) {
 }
 
 void ZTranspiler::Proc(IntrinsicNode& node) {
+	cs << "(";
 	for (int i = 0; i < node.Value.GetCount(); i++) {
 		if (i > 0)
-			cs <<"; ";
+			cs << ", ";
 		
 		cs << "::printf";
 		if (node.Value[i]->Tt.Class == ass.CChar)
@@ -903,6 +920,7 @@ void ZTranspiler::Proc(IntrinsicNode& node) {
 		
 		cs << ")";
 	}
+	cs << ")";
 }
 
 void ZTranspiler::Proc(LoopControlNode& node) {

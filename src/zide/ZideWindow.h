@@ -48,6 +48,7 @@ public:
 	String CompilerExe;
 	String LastPackage;
 	Index<String> RecentPackages;
+	String ActiveFile;
 	
 	Settings settings;
 	
@@ -73,7 +74,6 @@ public:
 private:
 	Vector<String> packages;
 	Vector<String> openNodes;
-	String activeFile;
 	EditorManager tabs;
 	String openDialogPreselect;
 	bool oShowPakPaths = true;

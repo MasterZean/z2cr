@@ -33,10 +33,6 @@ protected:
 	}
 
 	void Walk(Node* node, Stream& ss) {
-		/*Stream* back = cs;
-		cs = &ss;
-		WalkNode(node);
-		cs = back;*/
 		WalkNode(node);
 	}
 
@@ -49,7 +45,6 @@ protected:
 
 class ZTranspiler: public ZNodeWalker {
 public:
-	bool PrintDebug = false;
 	int CppVersion = 2017;
 	
 	ZTranspiler(ZCompiler& aComp, Stream& aStream): ZNodeWalker(aComp, aStream) {

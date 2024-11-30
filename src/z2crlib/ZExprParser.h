@@ -18,6 +18,8 @@ public:
 		ASSERT(entity.Section);
 		Section = entity.Section;
 		Namespace = &entity.Namespace();
+		if (entity.Type == EntityType::Function)
+			Function = static_cast<ZFunction*>(&entity);
 	}
 	
 	static void Initialize();

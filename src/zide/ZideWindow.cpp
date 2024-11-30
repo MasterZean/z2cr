@@ -76,7 +76,7 @@ void ZideWindow::Serialize(Stream& s) {
 		s % maximized % width % height;
 	}
 	
-	s % LastPackage % RecentPackages % openNodes % activeFile % openDialogPreselect;
+	s % LastPackage % RecentPackages % openNodes % ActiveFile % openDialogPreselect;
 	s % settings % oShowPakPaths;
 }
 
@@ -134,7 +134,7 @@ void ZideWindow::LoadModule(const String& mod, int color) {
 
 void ZideWindow::SetupLast() {
 	asbAss.OpenNodes(openNodes);
-	asbAss.HighlightFile(activeFile);
+	asbAss.HighlightFile(ActiveFile);
 	
 	tabs.SetSettings(settings);
 	
@@ -148,9 +148,9 @@ void ZideWindow::OnFileRemoved(const String& file) {
 }
 
 void ZideWindow::OnSelectSource() {
-	activeFile = asbAss.GetCursorItem();
+	ActiveFile = asbAss.GetCursorItem();
 		
-	tabs.Open(activeFile);
+	tabs.Open(ActiveFile);
 	mnuMain.Set(THISBACK(DoMainMenu));
 }
 
@@ -159,8 +159,8 @@ void ZideWindow::OnFileSaved(const String& file) {
 }
 
 void ZideWindow::OnTabChange() {
-	activeFile = tabs.ActiveFile();
-	asbAss.HighlightFile(activeFile);
+	ActiveFile = tabs.ActiveFile();
+	asbAss.HighlightFile(ActiveFile);
 	
 	tabs.ShowTabs(tabs.GetCount());
 	//splExplore.Show(tabs.tabFiles.GetCount());

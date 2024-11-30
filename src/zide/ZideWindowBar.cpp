@@ -6,9 +6,10 @@ void* globalProcesID;
 void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 #ifdef PLATFORM_WIN32
 	if (newConsole) {
-		int n = file.GetLength() + 1;
+		String command = "cmd.exe + /C \"" + file + "\"; & pause";
+		int n = command.GetLength() + 1;
 		Buffer<char> cmd(n);
-		memcpy(cmd, file, n);
+		memcpy(cmd, command, n);
 		
 		SECURITY_ATTRIBUTES sa;
 		ZeroMemory(&sa, sizeof(SECURITY_ATTRIBUTES));
