@@ -19,7 +19,6 @@ Assembly::Assembly() {
 }
 
 ZNamespace& Assembly::FindAddNamespace(const String& aName) {
-	
 	int index = Namespaces.FindAdd(aName, ZNamespace(*this));
 	ASSERT(index != -1);
 	auto& ns = Namespaces[index];
@@ -28,6 +27,8 @@ ZNamespace& Assembly::FindAddNamespace(const String& aName) {
 		ns.ProperName = aName.Mid(0, aName.GetCount() - 1);
 	else
 		ns.ProperName = ns.Name;
+	
+	ns.NameElements = Split(ns.Name, '.', true);
 	
 	return Namespaces[index];
 }

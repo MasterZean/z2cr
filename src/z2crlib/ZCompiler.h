@@ -19,6 +19,7 @@ public:
 	bool   BuildMode = false;
 	String OutPath;
 	String CppPath;
+	int CppVersion = 2017;
 	
 	PlatformType Platform;
 	String PlatformString;

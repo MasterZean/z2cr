@@ -369,6 +369,7 @@ CONSOLE_APP_MAIN {
 			
 		ZCompiler compiler(ass);
 		compiler.BuildMode = true;
+		compiler.CppVersion = bm.CppVersion;
 		
 		if (IsFullPath(K.OutPath))
 			compiler.OutPath = K.OutPath;

@@ -34,16 +34,24 @@ void ZResolver::ResolveNamespaces() {
 }
 
 void ZResolver::ResolveNamespace(ZNamespace& ns) {
-	auto names = Split(ns.Name, '.', true);
-	
 	// build namespace item hierarchy
 	ZNamespaceItem* nsp = &ass.NsLookup;
 	String backName;
-	for (int i = 0; i < names.GetCount(); i++) {
-		backName << names[i];
-		nsp = nsp->Add(names[i]);
-		if (i < names.GetCount() - 1)
+	String backNameLegacy;
+	String legacySufix;
+	for (int i = 0; i < ns.NameElements.GetCount(); i++) {
+		backName << ns.NameElements[i];
+		
+		if (i == 0)
+			backNameLegacy << ns.NameElements[i] << " {";
+		else
+			backNameLegacy << " namespace "  << ns.NameElements[i] << " {";
+		legacySufix << "}";
+			
+		nsp = nsp->Add(ns.NameElements[i]);
+		if (i < ns.NameElements.GetCount() - 1) {
 			backName << "::";
+		}
 		else {
 			ASSERT(nsp->Namespace == nullptr);
 			nsp->Namespace = &ns;
@@ -53,6 +61,8 @@ void ZResolver::ResolveNamespace(ZNamespace& ns) {
 	}
 	
 	ns.BackName = backName;
+	ns.BackNameLegacy = backNameLegacy;
+	ns.LegacySufix = legacySufix;
 	
 	// TODO: prevent other clashes with main_
 	if (ns.BackName == "main")

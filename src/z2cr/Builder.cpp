@@ -184,7 +184,7 @@ void Builder::DoEnvGCC() {
 	
 	ss << "PATH=";
 	//ss << bm.Tools << "\\" << ";";
-	ss << bm.Compiler << "\\bin\\" << ";";
+	ss << GetFileFolder(bm.Compiler) << ";";
 	ss << GetEnv("PATH") << ";";
 	ss.Put(0);
 
@@ -225,7 +225,7 @@ bool Builder::CompileGCC(const String& src, const String& out) {
 	
 	cmd << QT << cppPath << QT << " ";
 	cmd << "-w " << optimize << " ";
-	cmd << "-c -x c++ -fpermissive -fexceptions -msse2 -std=c++11";
+	cmd << "-c -x c++ -fpermissive -fexceptions -msse2 -std=c++17";
 	cmd << " -m";
 	if (arch == "x64")
 		cmd << "64";
@@ -273,23 +273,6 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 	//String O = optimize;
 	bool result = true;
 
-	/*c << "SET PATH=%PATH%;";
-	c << bm.Compiler << "\\bin" << ";";
-	c << " & ";*/
-	
-	/*StringStream ss;
-	
-	ss << "PATH=";
-	ss << GetEnv("PATH") << ";";
-	ss << bm.Compiler << "\\bin" << ";";
-	ss.Put(0);
-	
-	ss.Put(0);
-	
-	env = ss;
-	DUMP(c);
-	DUMP(env);*/
-	
 	cppPath = bm.Compiler;
 	linkPath = cppPath;
 	

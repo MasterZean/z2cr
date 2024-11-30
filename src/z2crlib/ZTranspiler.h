@@ -50,6 +50,7 @@ protected:
 class ZTranspiler: public ZNodeWalker {
 public:
 	bool PrintDebug = false;
+	int CppVersion = 2017;
 	
 	ZTranspiler(ZCompiler& aComp, Stream& aStream): ZNodeWalker(aComp, aStream) {
 	}
@@ -89,7 +90,8 @@ public:
 		if (inNamespace) {
 			if (firstInNamespace) {
 				NL();
-				cs << "namespace " << inNamespace->BackName << " {";
+				cs << "namespace ";
+				NsIntro(*inNamespace);
 				EL();
 				
 				indent++;
@@ -123,7 +125,7 @@ public:
 			indent--;
 			
 			NL();
-			cs << "}";
+			NsOutro(*inNamespace);
 			EL();
 			EL();
 		}
@@ -173,6 +175,9 @@ private:
 	int classWrites = 0;
 	
 	void WriteClassAccess(AccessType access);
+	
+	void NsIntro(ZNamespace& ns);
+	void NsOutro(ZNamespace& ns);
 };
 
 #endif

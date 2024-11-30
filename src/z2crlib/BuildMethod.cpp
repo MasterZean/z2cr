@@ -471,69 +471,90 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 				String cppExe = AppendFileName(p, "\\bin\\c++.exe");
 				
 				if (FileExists(cppExe)) {
-					BuildMethod gcc;
-					gcc.Name = s;
-					gcc.Compiler = p;
-					gcc.Sdk = p;
-					gcc.Type = btGCC;
-					
-					String p = GetTempPath();
-					String pc = AppendFileName(p, "A42.cpp");
-					String po = AppendFileName(p, "A42.exe");
-					 
-					{
-						FileOut f(pc);
-						f << "#include <iostream>\n int main() {\n\tstd::cout << \"A42\";\n\treturn 0;\n }\n";
-					}
-					
-					String t, tt;
-					bool res = true;
-					
-					{
-						String c;
-						c << "SET PATH=%PATH%;";
-						c << GetFileFolder(cppExe) << ";";
-						c << " & ";
-						c << cppExe + " " + pc + " -m32 -o " + po;
+					for(int x64 = 1; x64 >= 0; x64--) {
+						BuildMethod gcc;
+						gcc.Name = s;
+						gcc.Compiler = cppExe;
+						gcc.Sdk = p;
+						gcc.Type = btGCC;
+						gcc.Arch = x64 == 1 ? "x64" : "x86";
+						gcc.CppVersion = 2017;
 						
-						String pp = "cmd.exe /C \"" + c + "\"";
-						LocalProcess lp(pp);
-						tt = "";
-						while (lp.Read(t)) {
-							if (t.GetCount())
-								tt << t;
+						String p = GetTempPath();
+						String pc = AppendFileName(p, "A42.cpp");
+						String po = AppendFileName(p, "A42.exe");
+						 
+						{
+							FileOut f(pc);
+							f << "#include <iostream>\n namespace test::cpp::seventeen {} int main() {\n\tstd::cout << \"A42\";\n\treturn 0;\n }\n";
 						}
-						DUMP(tt);
-						res = lp.GetExitCode() == 0;
 						
-						if (res) {
-							gcc.Arch = "x86";
-							methods.Add(gcc);
-							Cout() << "Found BM: " << gcc.Name << "\n";
+						String t, tt;
+						bool res = true;
+						
+						{
+							String c;
+							c << "SET PATH=%PATH%;";
+							c << GetFileFolder(cppExe) << ";";
+							c << " & ";
+							c << cppExe + " " + pc + " -m";
+							if (gcc.Arch == "x86")
+								c << "32";
+							else
+								c << "64";
+							c << " -o " + po;
+							
+							String pp = "cmd.exe /C \"" + c + "\"";
+							DUMP(pp);
+							LocalProcess lp(pp);
+							tt = "";
+							while (lp.Read(t)) {
+								if (t.GetCount())
+									tt << t;
+							}
+							DUMP(tt);
+							res = lp.GetExitCode() == 0;
+							
+							if (res) {
+								methods.Add(gcc);
+								Cout() << "Found BM: " << gcc.Name << "." << gcc.Arch << "\n";
+								
+								continue;
+							}
 						}
-					}
-					
-					{
-						String c;
-						c << "SET PATH=%PATH%;";
-						c << GetFileFolder(cppExe) << ";";
-						c << " & ";
-						c << cppExe + " " + pc + " -m64 -o " + po;
 						
-						String pp = "cmd.exe /C \"" + c + "\"";
-						LocalProcess lp(pp);
-						tt = "";
-						while (lp.Read(t)) {
-							if (t.GetCount())
-								tt << t;
+						{
+							FileOut f(pc);
+							f << "#include <iostream>\n int main() {\n\tstd::cout << \"A42\";\n\treturn 0;\n }\n";
 						}
-						DUMP(tt);
-						res = lp.GetExitCode() == 0;
 						
-						if (res) {
-							gcc.Arch = "x64";
-							methods.Add(gcc);
-							Cout() << "Found BM: " << gcc.Name << "\n";
+						{
+							String c;
+							c << "SET PATH=%PATH%;";
+							c << GetFileFolder(cppExe) << ";";
+							c << " & ";
+							c << cppExe + " " + pc + " -m";
+							if (gcc.Arch == "x86")
+								c << "32";
+							else
+								c << "64";
+							c << " -o " + po;
+							
+							String pp = "cmd.exe /C \"" + c + "\"";
+							LocalProcess lp(pp);
+							tt = "";
+							while (lp.Read(t)) {
+								if (t.GetCount())
+									tt << t;
+							}
+							DUMP(tt);
+							res = lp.GetExitCode() == 0;
+							
+							if (res) {
+								gcc.CppVersion = 2011;
+								methods.Add(gcc);
+								Cout() << "Found BM: " << gcc.Name << "." << gcc.Arch << "\n";
+							}
 						}
 					}
 				}
@@ -565,8 +586,38 @@ bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
 		clang.Type = btGCC;
 		clang.Arch = x64 == 1 ? "x64" : "x86";
 		
-		methods.Add(clang);
-		Cout() << "Found BM: " << clang.Name << "." << clang.Arch << "\n";
+		String p = GetTempPath();
+		String pc = p + "/A42.cpp";
+		String po = p + "/A42";
+		 
+		{
+			FileOut f(pc);
+			f << "#include <iostream>\n int main() {\n\tstd::cout << \"A42\";\n\treturn 0;\n }\n";
+		}
+		
+		String cppExe = clang.Compiler;
+		String command = cppExe + " " + pc + " -m";
+		if (clang.Arch == "x86")
+			command << "32";
+		else
+			command << "64";
+		command << " -o " << po;
+		
+		{
+			LocalProcess lp(command);
+			String tt = "";
+			String t;
+			while (lp.Read(t)) {
+				if (t.GetCount())
+					tt << t;
+			}
+			bool res = lp.GetExitCode() == 0;
+			
+			if (res) {
+				methods.Add(clang);
+				Cout() << "Found BM: " << clang.Name << "." << clang.Arch << "\n";
+			}
+		}
 	}
 	
 	return true;

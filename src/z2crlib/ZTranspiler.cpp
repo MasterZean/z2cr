@@ -25,6 +25,20 @@ void ZTranspiler::WriteIntro() {
 	EL();
 }
 
+void ZTranspiler::NsIntro(ZNamespace& ns) {
+	if (CppVersion >= 2017)
+		cs << ns.BackName<< " { ";
+	else
+		cs << ns.BackNameLegacy << " ";
+}
+
+void ZTranspiler::NsOutro(ZNamespace& ns) {
+	if (CppVersion >= 2017)
+		cs << " }";
+	else
+		cs << " " << ns.LegacySufix;
+}
+
 void ZTranspiler::WriteClassForward() {
 	int count = 0;
 	
@@ -35,7 +49,11 @@ void ZTranspiler::WriteClassForward() {
 			ZClass& cls = *ns.Classes[j];
 					
 			NL();
-			cs << "namespace " + ns.BackName + " { class " + cls.Name + "; }";
+			cs << "namespace ";
+			NsIntro(ns);
+			cs << "class " << cls.Name << ";";
+			NsOutro(ns);
+			
 			EL();
 			
 			count++;
@@ -301,7 +319,7 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 		if (pclass.CoreSimple)
 			cs << pclass.BackName;
 		else
-			cs << "const "<< pclass.Namespace().ProperName << "::" << pclass.BackName << "&";
+			cs << "const "<< pclass.Namespace().BackName << "::" << pclass.BackName << "&";
 		cs << " " << var.Name;
 	}
 	
@@ -898,11 +916,11 @@ void ZTranspiler::Proc(TempNode& node) {
 	ZClass& cls = *node.Tt.Class;
 	
 	if (cls.CoreSimple) {
-		cs << cls.Namespace().ProperName << "::";
+		cs << cls.Namespace().BackName << "::";
 		cs << cls.Name << "::" << node.Constructor->BackName << '(';
 	}
 	else {
-		cs << cls.Namespace().ProperName << "::";
+		cs << cls.Namespace().BackName << "::";
 		cs << cls.Name;
 		cs << '(';
 	}

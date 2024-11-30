@@ -53,6 +53,7 @@ void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 		while (globalExecutor.Read(t)) {
 			if (t.GetCount()) {
 				PostCallback(callback1(zide, &ZideWindow::AddOutputLine, t));
+				Sleep(5);
 			}
 		}
 		

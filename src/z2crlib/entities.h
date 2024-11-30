@@ -120,9 +120,12 @@ private:
 
 class ZNamespace: public ZEntity {
 public:
+	Vector<String> NameElements;
 	String ProperName;
 	Vector<ZSource*> Sources;
 	bool IsClass = false;
+	String BackNameLegacy;
+	String LegacySufix;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	

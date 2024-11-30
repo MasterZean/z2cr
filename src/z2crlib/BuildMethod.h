@@ -22,6 +22,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 	WithDeepCopy<Vector<String>> Path;
 	WithDeepCopy<Vector<String>> Lib;
 	WithDeepCopy<Vector<String>> Include;
+	int CppVersion = 2017;
 	
 	void Xmlize(XmlIO& xml) {
 		xml("name", Name);
@@ -55,6 +56,7 @@ struct BuildMethod: public Moveable<BuildMethod> {
 		xml("sdk", Sdk);
 		xml.List("include", "path", Include);
 		xml.List("lib", "path", Lib);
+		xml("cppversion", CppVersion);
 	}
 	
 	static void Get(Vector<BuildMethod>& methods, bool print = false);

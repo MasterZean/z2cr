@@ -98,6 +98,7 @@ bool ZCompiler::Transpile() {
 	CppPath = AppendFileName(BuildPath, "out.cpp");
 	FileOut out(CppPath);
 	ZTranspiler cpp(*this, out);
+	cpp.CppVersion = CppVersion;
 	//cpp.PrintDebug = true;
 	
 	cpp.WriteIntro();
