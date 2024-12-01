@@ -6,10 +6,27 @@ extern String opss[];
 String CLS_STR = "class";
 
 Node* ZExprParser::Parse() {
+	Point p = parser.GetPoint();
 	Node* left = ParseAtom();
 	
 	CParser::Pos backupPoint;
 	Node* exp = ParseBin(0, left, backupPoint);
+	
+	if (parser.Char('?')) {
+		if (exp->Tt.Class != ass.CBool)
+			parser.Error(p, "ternary operator '?': first operand must have type " + ass.ToQtColor(ass.CBool));
+
+		left = Parse();
+		parser.Expect(':');
+		Node* right = Parse();
+
+		// TODO
+		if (left->Tt.Class != right->Tt.Class)//!TypesEqualDeep(ass, &left->Tt, &right->Tt))
+			parser.Error(p, "ternary operator '?': second and third operand must have the same type, but they are " +
+					ass.ToQtColor(left) + " and " + ass.ToQtColor(right));
+
+		exp = irg.opTern(exp, left, right);
+	}
 	
 	return exp;
 }
@@ -127,6 +144,11 @@ Node* ZExprParser::ParseAtom() {
 		if (exp == nullptr)
 			parser.Error(opp, "can't apply unary '~' ('@bitnot') on type " + ass.ToQtColor(node));
 	}
+	else if (parser.Char('(')) {
+		Node* node = Parse();
+		parser.Expect(')');
+		exp = irg.list(node);
+	}
 	else {
 		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
 		return nullptr;
@@ -210,6 +232,13 @@ Node* ZExprParser::ParseId() {
 		}
 	}
 	
+	if (Class != nullptr) {
+		Node* node = ParseMember(*Class, s, opp, false);
+		
+		if (node)
+			return node;
+	}
+	
 	if (Section != nullptr && Namespace != nullptr && Section->Using.GetCount() == 0) {
 		Node* node = ParseMember(*Namespace, s, opp, true);
 		
@@ -218,9 +247,6 @@ Node* ZExprParser::ParseId() {
 			
 			if (index != -1)
 				node = irg.const_class(*parser.Source().ShortNameLookup[index]);
-		
-			//if (node == nullptr)
-			//	parser.Error(opp, "unknown identifier: " + s);
 		}
 		
 		if (node)

@@ -20,6 +20,9 @@ public:
 		Namespace = &entity.Namespace();
 		if (entity.Type == EntityType::Function)
 			Function = static_cast<ZFunction*>(&entity);
+		
+		if (entity.InClass)
+			Class = static_cast<ZClass*>(&entity.Owner());
 	}
 	
 	static void Initialize();

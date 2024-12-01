@@ -1225,8 +1225,8 @@ Node* IR::inc(Node* node, bool prefix) {
 	n->Op = OpNode::opInc;
 	n->Prefix = prefix;
 
-	n->SetType(ass.CVoid->Tt);
-	//n->SetType(node->Tt);
+	//n->SetType(ass.CVoid->Tt);
+	n->SetType(node->Tt);
 	n->HasSe = true;
 	ASSERT(n->Tt.Class);
 	
@@ -1240,7 +1240,8 @@ Node* IR::dec(Node* node, bool prefix) {
 	n->Op = OpNode::opDec;
 	n->Prefix = prefix;
 
-	n->SetType(ass.CVoid->Tt);
+	//n->SetType(ass.CVoid->Tt);
+	n->SetType(node->Tt);
 	n->HasSe = true;
 	ASSERT(n->Tt.Class);
 	
@@ -1290,6 +1291,31 @@ Node* IR::op_bitxor(Node* left, Node* right) {
 	node->DblVal = 0;
 	ASSERT(node->Tt.Class);
 	return node;
+}
+
+Node* IR::opTern(Node* cond, Node* left, Node* right) {
+	if (cond->IsCT) {
+		if (cond->IntVal == 1)
+			return left;
+		else
+			return right;
+	}
+
+	OpNode* n = opNodes.Get();
+	n->OpA = cond;
+	if (left->IsIndirect)
+		left = deref(left);
+	if (right->IsIndirect)
+		right = deref(right);
+	n->OpB = left;
+	n->OpC = right;
+	n->Op = OpNode::opTernary;
+	n->SetType(left->Tt);
+	n->HasSe = cond->HasSe || left->HasSe || right->HasSe;
+	n->IsAddressable = left->IsAddressable && right->IsAddressable;
+	
+	ASSERT(n->Tt.Class);
+	return n;
 }
 
 Node* IR::cast(Node* left, ObjectType* tt, bool sc, bool ptr) {
@@ -1539,3 +1565,24 @@ LoopControlNode *IR::loopControl(bool aBreak) {
 	return l;
 }
 
+ListNode* IR::list(Node* node) {
+	if (node->NT == NodeType::List)
+		return static_cast<ListNode*>(node);
+	
+	ListNode* l = listNodes.Get();
+	
+	l->Params.Add(node);
+	l->Tt = node->Tt;
+	l->C1 = node->C1;
+	l->C2 = node->C2;
+	l->IsConst = node->IsConst;
+	l->IsCT = node->IsCT;
+	l->IsLiteral = node->IsLiteral;
+	l->HasSe = node->HasSe;
+	l->IntVal = node->IntVal;
+	l->DblVal = node->DblVal;
+	l->IsAddressable = node->IsAddressable;
+	ASSERT(l->Tt.Class);
+	
+	return l;
+}

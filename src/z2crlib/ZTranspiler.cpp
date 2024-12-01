@@ -441,9 +441,9 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(TempNode*)node);
 	else if (node->NT == NodeType::Def)
 		Proc(*(DefNode*)node);
-	/*else if (node->NT == NodeType::List)
-		Proc((ListNode*)node);
-	else if (node->NT == NodeType::Construct)
+	else if (node->NT == NodeType::List)
+		Proc(*(ListNode*)node);
+	/*else if (node->NT == NodeType::Construct)
 		Proc((ConstructNode*)node);
 	else if (node->NT == NodeType::Ptr)
 		Proc((PtrNode*)node);
@@ -631,16 +631,37 @@ void ZTranspiler::Proc(OpNode& node) {
 	ASSERT(l);
 	ASSERT(r);
 	
-	if (!node.Assign)
+	if (node.Op == OpNode::opTernary) {
 		cs << "(";
-	Walk(l);
-	cs << ' ' << opss[node.Op];
-	//if (node.Assign)
-	//	cs << '=';
-	cs << ' ';
-	Walk(r);
-	if (!node.Assign)
+		Walk(l);
+		cs << ") ? (";
+		Walk(r);
+		cs << ") : (";
+		ASSERT(node.OpC);
+		Walk(node.OpC);
 		cs << ")";
+	}
+	else if (node.Op == OpNode::opMod && (ass.IsFloat(l->Tt) || ass.IsFloat(l->Tt))) {
+		if (l->Tt.Class != ass.CDouble && r->Tt.Class != ass.CDouble)
+			cs << "(float)";
+		cs << "fmod(";
+		Walk(l);
+		cs << ", ";
+		Walk(r);
+		cs << ')';
+	}
+	else {
+		if (!node.Assign)
+			cs << "(";
+		Walk(l);
+		cs << ' ' << opss[node.Op];
+		//if (node.Assign)
+		//	cs << '=';
+		cs << ' ';
+		Walk(r);
+		if (!node.Assign)
+			cs << ")";
+	}
 }
 
 void ZTranspiler::Proc(UnaryOpNode& node) {
@@ -695,9 +716,11 @@ void ZTranspiler::Proc(DefNode& node) {
 			cs << f.Owner().BackName << "::";
 	}
 	else {
-		ASSERT(node.Object);
-		Walk(node.Object);
-		cs << ".";
+		//ASSERT(node.Object);
+		if (node.Object) {
+			Walk(node.Object);
+			cs << ".";
+		}
 	}
 	
 	cs << f.BackName;
@@ -947,6 +970,21 @@ void ZTranspiler::Proc(TempNode& node) {
 	for (int i = 0; i < count; i++) {
 		Node* p = node.Params[i];
 		
+		Walk(p);
+		if (i < count - 1)
+			cs << ", ";
+	}
+	
+	cs << ')';
+}
+
+void ZTranspiler::Proc(ListNode& node) {
+	cs << '(';
+	
+	int count = node.Params.GetCount();
+	for (int i = 0; i < count; i++) {
+		Node *p = node.Params[i];
+	
 		Walk(p);
 		if (i < count - 1)
 			cs << ", ";

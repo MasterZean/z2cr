@@ -108,6 +108,13 @@ public:
 	}
 };
 
+class ListNode: public ParamsNode {
+public:
+	ListNode() {
+		NT = NodeType::List;
+	}
+};
+
 class BlockNode: public Node {
 public:
 	Node Nodes;

@@ -26,11 +26,14 @@ bool IsUpperString(const char *q)
 
 Color CSyntax::BlockColor(int level)
 {
+	level = level - 1;
+	if (level == -1)
+		return GetHlStyle(PAPER_NORMAL).color;
 	if(hilite_scope == 1)
-		return GetHlStyle(level & 1 ? PAPER_BLOCK1 : PAPER_NORMAL).color;
+		return  GetHlStyle(level & 1 ? PAPER_BLOCK1 : PAPER_NORMAL).color;
 	if(hilite_scope == 2) {
 		int q = level % 5;
-		return GetHlStyle(q ? PAPER_BLOCK1 + q - 1 : PAPER_NORMAL).color;
+		return  GetHlStyle(q ? PAPER_BLOCK1 + q - 1 : PAPER_NORMAL).color;
 	}
 	return GetHlStyle(PAPER_NORMAL).color;
 }

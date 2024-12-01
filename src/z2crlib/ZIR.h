@@ -60,6 +60,7 @@ protected:
 	NodePool<IntrinsicNode> intNodes;
 	NodePool<LoopControlNode> loopControlNodes;
 	NodePool<TempNode> tempNodes;
+	NodePool<ListNode> listNodes;
 		
 public:
 	public:
@@ -102,6 +103,8 @@ public:
 	Node* op_shl(Node* left, Node* right, const Point& p);
 	Node* op_shr(Node* left, Node* right, const Point& p);
 	
+	Node *opTern(Node *cond, Node *left, Node *right);
+	
 	Node* minus(Node* node);
 	Node* plus(Node* node);
 	Node* op_not(Node* node);
@@ -130,6 +133,7 @@ public:
 	LocalNode* local(ZVariable& v);
 	
 	Node* attr(Node* left, Node* right);
+	ListNode* list(Node *node);
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {
 		if (op <= OpNode::opMod)
