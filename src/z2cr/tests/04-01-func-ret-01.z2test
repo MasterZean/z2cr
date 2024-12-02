@@ -26,7 +26,7 @@ namespace test;
 val a = 0;
 
 /* @dumpBody
-	if ((test::a > 7))
+	if (test::a > 7)
 		return 0;
 	return 0;
 */
@@ -42,7 +42,7 @@ namespace test;
 val a = 0;
 
 /* @dumpBody
-	if ((test::a > 7))
+	if (test::a > 7)
 		;
 	else
 		return 0;
@@ -62,7 +62,7 @@ namespace test;
 val a = 0;
 
 /* @dumpBody
-	if ((test::a > 7)) {
+	if (test::a > 7) {
 	}
 	else
 		return 0;
@@ -82,7 +82,7 @@ namespace test;
 val a = 0;
 
 /* @dumpBody
-	if ((test::a > 7))
+	if (test::a > 7)
 		return 7;
 	else
 		return 8;
@@ -102,7 +102,7 @@ val a = 56.7;
 val b: Float;
 
 /* @dumpBody
-	while (((test::a - test::b) >= 0.00001))
+	while (test::a - test::b >= 0.00001)
 		return 23;
 	return 0;
 */
@@ -120,10 +120,10 @@ val b: Float = 68;
 
 /* @dumpBody
 	do {
-		test::a = (test::a + 1);
-		test::b = (test::b - 1);
+		test::a = test::a + 1;
+		test::b = test::b - 1;
 		return 23;
-	} while (((test::a - test::b) >= 0.00001));
+	} while (test::a - test::b >= 0.00001);
 */
 func f(): Int {	
 	do {

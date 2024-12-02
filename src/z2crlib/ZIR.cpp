@@ -1483,6 +1483,17 @@ DoWhileNode* IR::dowhilecond(Node* cond, Node* body) {
 	return node;
 }
 
+ForLoopNode* IR::forloop(Node* init, Node* cond, Node* iter, Node* body) {
+	ForLoopNode* node = forLoopNodes.Get();
+	
+	node->Init = init;
+	node->Cond = cond;
+	node->Iter = iter;
+	node->Body = body;
+	
+	return node;
+}
+
 LocalNode* IR::local(ZVariable& v) {
 	LocalNode* var = localNodes.Get();
 	var->Var = &v;

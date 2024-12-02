@@ -197,6 +197,18 @@ public:
 	}
 };
 
+class ForLoopNode: public Node {
+public:
+	Node* Init = nullptr;
+	Node* Cond = nullptr;
+	Node* Iter = nullptr;
+	Node* Body = nullptr;
+	
+	ForLoopNode() {
+		NT = NodeType::ForLoop;
+	}
+};
+
 class LocalNode: public Node {
 public:
 	ZVariable* Var = nullptr;

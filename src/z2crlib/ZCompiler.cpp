@@ -248,6 +248,8 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 		return CompileWhile(f, parser, con);
 	else if (parser.Id("do"))
 		return CompileDoWhile(f, parser, con);
+	else if (parser.Id("for"))
+		return CompileFor(f, parser, con);
 	else if (parser.Id("val"))
 		return CompileLocalVar(f, parser, false);
 	else if (parser.Id("const"))
@@ -269,32 +271,36 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 		return irg.loopControl(false);
 	}
 	else {
-		ZExprParser ep(f, parser, irg);
-		ep.Function = &f;
-		auto pp = parser.GetFullPos();
-		Node* node = ep.Parse();
-		
-		if (parser.Char('=')) {
-			Node* rs = ep.Parse();
-			
-			if (node->IsAddressable == false)
-				parser.Error(pp.P, "left side of assignment is not a L-value");
-			if (node->IsConst)
-				parser.Error(pp.P, "can't assign to readonly " + ass.ToQtColor(node) + " instance");
-			
-			if (!node->CanAssign(ass, rs)) {
-				parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to '" + ass.ToQtColor(node) + " instance without a cast");
-			}
-			
-			return irg.attr(node, rs);
-		}
-
+		Node* node = CompileExpression(f, parser, con);
 		parser.ExpectEndStat();
-		
 		return node;
 	}
 	
 	return nullptr;
+}
+
+Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con) {
+	ZExprParser ep(f, parser, irg);
+	ep.Function = &f;
+	auto pp = parser.GetFullPos();
+	Node* node = ep.Parse();
+	
+	if (parser.Char('=')) {
+		Node* rs = ep.Parse();
+		
+		if (node->IsAddressable == false)
+			parser.Error(pp.P, "left side of assignment is not a L-value");
+		if (node->IsConst)
+			parser.Error(pp.P, "can't assign to readonly " + ass.ToQtColor(node) + " instance");
+		
+		if (!node->CanAssign(ass, rs)) {
+			parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to '" + ass.ToQtColor(node) + " instance without a cast");
+		}
+		
+		return irg.attr(node, rs);
+	}
+
+	return node;
 }
 
 Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser, ZContext& con) {
@@ -399,6 +405,43 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 		parser.Error(p, ER::Blue + "do" + ER::White + ".." + ER::Blue + "while" + ER::White + " condition must be of class " + ass.ToQtColor(ass.CBool) + ", " + ass.ToQtColor(node) + " found");
 		
 	return irg.dowhilecond(node, bd);
+}
+
+Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
+	Node* init = nullptr;
+	Node* iter = nullptr;
+	
+	parser.Expect('(');
+	
+	ZExprParser ep(f, parser, irg);
+	if (!parser.IsChar(';')) {
+		init = CompileExpression(f, parser, con);
+	}
+		
+	parser.Expect(';');
+	
+	Point p = parser.GetPoint();
+
+	Node* node = ep.Parse();
+	
+	if (node->Tt.Class != ass.CBool)
+		parser.Error(p, ER::Blue + "for" + ER::White + " condition must be of class " + ass.ToQtColor(ass.CBool) + ", " + ass.ToQtColor(node) + " found");
+	
+	parser.Expect(';');
+	
+	if (!parser.IsChar(')'))
+		iter = CompileExpression(f, parser, con);
+	
+	parser.Expect(')');
+	parser.EatNewlines();
+	
+	ZContext loopCon;
+	loopCon.InLoop = true;
+	Node* bd = CompileStatement(f, parser, loopCon);
+	if (loopCon.Return)
+		con.Return = true;
+	
+	return irg.forloop(init, node, iter, bd);
 }
 
 bool ZCompiler::CompileVar(ZVariable& v) {
@@ -560,6 +603,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.1.3 (pre-alpha)";
+	static String name = "Z2CR 0.1.4 (pre-alpha)";
 	return name;
 }

@@ -55,6 +55,7 @@ protected:
 	NodePool<IfNode> ifNodes;
 	NodePool<WhileNode> whileNodes;
 	NodePool<DoWhileNode> doWhileNodes;
+	NodePool<ForLoopNode> forLoopNodes;
 	NodePool<LocalNode> localNodes;
 	NodePool<ReturnNode> retNodes;
 	NodePool<IntrinsicNode> intNodes;
@@ -125,6 +126,8 @@ public:
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);
 	WhileNode* whilecond(Node* cond, Node* body);
 	DoWhileNode* dowhilecond(Node* cond, Node* body);
+	ForLoopNode* forloop(Node* init, Node* cond, Node* iter, Node* body);
+
 	ReturnNode* ret(Node* node);
 	LoopControlNode* loopControl(bool aBreak);
 	

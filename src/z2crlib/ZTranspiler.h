@@ -68,6 +68,7 @@ public:
 	void Proc(IfNode& node);
 	void Proc(WhileNode& node);
 	void Proc(DoWhileNode& node);
+	void Proc(ForLoopNode& node);
 	void Proc(LocalNode& node);
 	void Proc(CastNode& node);
 	void Proc(ReturnNode& node);

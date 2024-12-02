@@ -33,6 +33,7 @@ public:
 		If,
 		While,
 		DoWhile,
+		ForLoop,
 		Switch,
 		LoopControl,
 	};

@@ -27,16 +27,16 @@ void ZTranspiler::WriteIntro() {
 
 void ZTranspiler::NsIntro(ZNamespace& ns) {
 	if (CppVersion >= 2017)
-		cs << ns.BackName<< " { ";
+		cs << ns.BackName<< " {";
 	else
-		cs << ns.BackNameLegacy << " ";
+		cs << ns.BackNameLegacy;
 }
 
 void ZTranspiler::NsOutro(ZNamespace& ns) {
 	if (CppVersion >= 2017)
-		cs << " }";
+		cs << "}";
 	else
-		cs << " " << ns.LegacySufix;
+		cs << ns.LegacySufix;
 }
 
 void ZTranspiler::WriteClassForward() {
@@ -51,7 +51,9 @@ void ZTranspiler::WriteClassForward() {
 			NL();
 			cs << "namespace ";
 			NsIntro(ns);
+			cs << " ";
 			cs << "class " << cls.Name << ";";
+			cs << " ";
 			NsOutro(ns);
 			
 			EL();
@@ -475,6 +477,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(WhileNode*)node);
 	else if (node->NT == NodeType::DoWhile)
 		Proc(*(DoWhileNode*)node);
+	else if (node->NT == NodeType::ForLoop)
+		Proc(*(ForLoopNode*)node);
 	else if (node->NT == NodeType::LoopControl)
 		Proc(*(LoopControlNode*)node);
 	else
@@ -485,10 +489,9 @@ void ZTranspiler::WalkChildren(Node* node) {
 	Node* child = node->First;
 	
 	while (child) {
-		//if (child->NT != NodeType::Block/* && child->NT != NodeType::If*/)
-			NL();
+		NL();
 		WalkNode(child);
-		if (child->NT != NodeType::Block && child->NT != NodeType::If && child->NT != NodeType::While)
+		if (child->NT != NodeType::Block && child->NT != NodeType::If && child->NT != NodeType::While && child->NT != NodeType::ForLoop)
 			ES();
 		
 		child = child->Next;
@@ -632,11 +635,11 @@ void ZTranspiler::Proc(OpNode& node) {
 	ASSERT(r);
 	
 	if (node.Op == OpNode::opTernary) {
-		cs << "(";
+		cs << "((";
 		Walk(l);
-		cs << ") ? (";
+		cs << ") ? ";
 		Walk(r);
-		cs << ") : (";
+		cs << " : ";
 		ASSERT(node.OpC);
 		Walk(node.OpC);
 		cs << ")";
@@ -651,16 +654,16 @@ void ZTranspiler::Proc(OpNode& node) {
 		cs << ')';
 	}
 	else {
-		if (!node.Assign)
-			cs << "(";
+		//if (!node.Assign)
+		//	cs << "(";
 		Walk(l);
 		cs << ' ' << opss[node.Op];
 		//if (node.Assign)
 		//	cs << '=';
 		cs << ' ';
 		Walk(r);
-		if (!node.Assign)
-			cs << ")";
+		//if (!node.Assign)
+		//	cs << ")";
 	}
 }
 
@@ -741,7 +744,7 @@ void ZTranspiler::Proc(DefNode& node) {
 void ZTranspiler::Proc(MemNode& node) {
 	ASSERT(node.Mem);
 	
-	if (node.IsLocal == false && node.IsParam == false) {
+	if (node.IsLocal == false && node.IsParam == false && node.Mem->InClass == false) {
 		if (node.Mem->InClass)
 			cs << node.Mem->Namespace().BackName << "::" << node.Mem->Owner().BackName << "::";
 		else
@@ -868,6 +871,44 @@ void ZTranspiler::Proc(DoWhileNode& node) {
 	cs << " while (";
 	Walk(node.Cond);
 	cs << ")";
+}
+
+void ZTranspiler::Proc(ForLoopNode& node) {
+	ASSERT(node.Cond);
+	
+	cs << "for (";
+	if (node.Init)
+		Walk(node.Init);
+	cs << "; ";
+	Walk(node.Cond);
+	cs << "; ";
+	if (node.Iter)
+		Walk(node.Iter);
+	cs << ")";
+	
+	if (node.Body) {
+		if (node.Body->NT != NodeType::Block) {
+			EL();
+			
+			indent++;
+			NL();
+			WalkNode(node.Body);
+			ES();
+			indent--;
+		}
+		else {
+			cs << " ";
+			WalkNode(node.Body);
+		}
+	}
+	else {
+		EL();
+		
+		indent++;
+		NL();
+		ES();
+		indent--;
+	}
 }
 
 void ZTranspiler::Proc(LocalNode& node) {

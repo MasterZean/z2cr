@@ -63,9 +63,13 @@ private:
 		
 	Node* CompileBlock(ZFunction& f, ZParser& parser, ZContext& con);
 	Node* CompileStatement(ZFunction& f, ZParser& parser, ZContext& con);
+	Node *CompileExpression(ZFunction& f, ZParser& parser, ZContext& con);
+	
 	Node* CompileIf(ZFunction& f, ZParser& parser, ZContext& con);
 	Node* CompileWhile(ZFunction& f, ZParser& parser, ZContext& con);
 	Node* CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con);
+	Node *CompileFor(ZFunction& f, ZParser& parser, ZContext& con);
+
 	Node* CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst);
 	Node *CompileReturn(ZFunction& f, ZParser& parser, ZContext& con);
 	
