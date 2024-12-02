@@ -52,6 +52,8 @@ private:
 	String mainClass;
 	String mainFile;
 	IR irg;
+	
+	ZClass* Class = nullptr;
 
 	Vector<ZFunction*> FindMain(ZSource& src);
 	
@@ -79,7 +81,7 @@ private:
 	bool FindMain();
 	
 	void ScanSource(ZSource& src, Array<ZScanner>& scanners);
-	void TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur);
+	void TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur);
 	
 	Node* compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f);
 };

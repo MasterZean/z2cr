@@ -197,8 +197,11 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 	}
 	
 	for (int j = 0; j < ns.Classes.GetCount(); j++) {
-		Compile(*ns.Classes[j]);
+		Class = ns.Classes[j];
+		Compile(*Class);
 	}
+	
+	Class = nullptr;
 	
 	return true;
 }
@@ -250,10 +253,16 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 		return CompileDoWhile(f, parser, con);
 	else if (parser.Id("for"))
 		return CompileFor(f, parser, con);
-	else if (parser.Id("val"))
-		return CompileLocalVar(f, parser, false);
-	else if (parser.Id("const"))
-		return CompileLocalVar(f, parser, true);
+	else if (parser.Id("val")) {
+		Node* node = CompileLocalVar(f, parser, false);
+		parser.ExpectEndStat();
+		return node;
+	}
+	else if (parser.Id("const")) {
+		Node* node = CompileLocalVar(f, parser, true);
+		parser.ExpectEndStat();
+		return node;
+	}
 	else if (parser.Id("return"))
 		return CompileReturn(f, parser, con);
 	else if (parser.IsId("break")) {
@@ -415,7 +424,10 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 	
 	ZExprParser ep(f, parser, irg);
 	if (!parser.IsChar(';')) {
-		init = CompileExpression(f, parser, con);
+		if (parser.Id("val"))
+			init = CompileLocalVar(f, parser, false);
+		else
+			init = CompileExpression(f, parser, con);
 	}
 		
 	parser.Expect(';');
@@ -448,14 +460,16 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 	ZParser parser(v.DefPos);
 	parser.ExpectZId();
 	
-	return compileVarDec(v, parser, v.DefPos, nullptr);
+	Node* node = compileVarDec(v, parser, v.DefPos, nullptr);
+	parser.ExpectEndStat();
+	return node;
 }
 
 Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	auto vp = parser.GetFullPos();
 	
 	String name = parser.ExpectZId();
-	TestVarDup(/*cls, */f, name, vp);
+	TestVarDup(Class, f, name, vp);
 	
 	ZVariable& v = f.Locals.Add(ZVariable(f.Namespace()));
 	v.Name = name;
@@ -490,7 +504,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		ZExprParser ep(v, parser, irg);
 		ep.Function = f;
 		Node* node = ep.Parse();
-		parser.ExpectEndStat();
+		//parser.ExpectEndStat();
 		
 		if (!cls) {
 			if (node->Tt.Class == ass.CVoid)
@@ -514,7 +528,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		}
 	}
 	else {
-		parser.ExpectEndStat();
+		//parser.ExpectEndStat();
 		
 		if (v.I.Tt.Class == NULL)
 			parser.Error(vp.P, "variable must have either an explicit type or be initialized");
@@ -564,12 +578,12 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
 	return irg.ret(retVal);
 }
 
-void ZCompiler::TestVarDup(/*ZClass& cls,*/ ZFunction& over, const String& name, const ZSourcePos& cur) {
+void ZCompiler::TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur) {
 	if (over.Name == name)
-		throw ER::Duplicate(name, over.DefPos, cur);
+		throw ER::Duplicate(name, cur, over.DefPos);
 
-	/*if (cls.Scan.Name == name)
-		parser.Dup(p, cls.Position, name);*/
+	if (cls && cls->Name == name)
+		throw ER::Duplicate(name, cur, cls->DefPos);
 
 	for (int i = 0; i < over.Params.GetCount(); i++)
 		if (over.Params[i].Name == name)
