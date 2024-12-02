@@ -190,7 +190,8 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
 			
-			CompileFunc(f, f.Nodes);
+			if (f.IsExternBind() == false)
+				CompileFunc(f, f.Nodes);
 			
 			//printNode(&f.Nodes);
 		}

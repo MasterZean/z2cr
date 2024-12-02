@@ -108,8 +108,11 @@ void ZTranspiler::WriteOutro() {
 
 void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes) {
 	BeginNamespace(ns);
-	TranspileNamespaceDecl(ns, accessFlags);
+	TranspileNamespaceDecl(ns, accessFlags, false);
 	EndNamespace();
+	
+	if (TranspileMemberDeclFunc(ns, accessFlags, true, 0))
+		EL();
 	
 	if (!classes)
 		return;
@@ -128,9 +131,9 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 	}
 }
 
-void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int accessFlags) {
+void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int accessFlags, bool doBinds) {
 	int vc = TranspileMemberDeclVar(ns, accessFlags);
-	int fc = TranspileMemberDeclFunc(ns, accessFlags, vc);
+	int fc = TranspileMemberDeclFunc(ns, accessFlags, doBinds, vc);
 }
 
 void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int accessFlags) {
@@ -141,9 +144,9 @@ void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int accessFlags) {
 	vc += TranspileMemberDeclVar(ns, 0b10);
 	vc += TranspileMemberDeclVar(ns, 0b100);
 	
-	int fc = TranspileMemberDeclFunc(ns, 0b1, vc);
-	fc += TranspileMemberDeclFunc(ns, 0b10, vc);
-	fc += TranspileMemberDeclFunc(ns, 0b100, vc);
+	int fc = TranspileMemberDeclFunc(ns, 0b1, false, vc);
+	fc += TranspileMemberDeclFunc(ns, 0b10, false, vc);
+	fc += TranspileMemberDeclFunc(ns, 0b100, false, vc);
 }
 
 int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
@@ -198,7 +201,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 	return count;
 }
 
-int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, int vc) {
+int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool doBinds, int vc) {
 	bool first = true;
 	
 	int count = 0;
@@ -208,6 +211,15 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, int vc
 			ZFunction& f = *ns.Methods[i].Functions[j];
 			
 			if (!CanAccess(f.Access, accessFlags))
+				continue;
+			
+			bool bindc = f.Trait.Flags & ZTrait::BINDC;
+			if (f.Trait.Flags & ZTrait::BINDC)
+				f.Name == "a";
+			
+			if (doBinds == false && bindc == true)
+				continue;
+			if (doBinds == true && bindc == false)
 				continue;
 			
 			NewMember();
@@ -225,6 +237,10 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, int vc
 			}
 			
 			NL();
+			if (bindc)
+				cs << "extern \"C\" ";
+			else if (f.Trait.Flags & ZTrait::BINDCPP)
+				cs << "extern ";
 			WriteFunctionDef(f);
 			ES();
 		}
@@ -247,6 +263,9 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 		ZMethodBundle& d = ns.Methods[i];
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
+			
+			if (f.IsExternBind())
+				continue;
 			
 			NL();
 			
@@ -713,7 +732,9 @@ void ZTranspiler::Proc(UnaryOpNode& node) {
 void ZTranspiler::Proc(DefNode& node) {
 	ZFunction& f = *node.Function;
 	
-	if (f.IsStatic) {
+	if (f.Trait.Flags & ZTrait::BINDC)
+		cs << "::";
+	else if (f.IsStatic) {
 		cs << f.Namespace().BackName << "::";
 		if (f.InClass)
 			cs << f.Owner().BackName << "::";

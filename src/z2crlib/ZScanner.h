@@ -52,11 +52,11 @@ protected:
 	int namespaceCount = 0;
 	ZSourcePos namespacePos;
 	
-	void InterpretTrait(const String& trait);
-	void TraitLoop();
+	int InterpretTrait(int flags, const String& trait);
+	int TraitLoop();
 	
-	bool ScanDeclarationItem(AccessType accessType, const ZSourcePos* tp, bool isStatic);
-	void ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZSourcePos* tp);
+	bool ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic);
+	void ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);
 };
 
 #endif

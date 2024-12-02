@@ -30,6 +30,17 @@ public:
 	String ToString() const;
 };
 
+class ZTrait {
+public:
+	enum {
+		BINDC =   0b01,
+		BINDCPP = 0b10
+	};
+	
+	const ZSourcePos* TP = nullptr;
+	int Flags = 0;
+};
+
 class ZClassScanInfo {
 public:
 	WithDeepCopy<Vector<String>> TName;
@@ -277,7 +288,7 @@ public:
 	bool IsValid = false;
 	bool IsDeleted = false;
 	
-	ZSourcePos TraitPos;
+	ZTrait Trait;
 	ZSourcePos ParamPos;
 	ZSourcePos BodyPos;
 	
@@ -313,6 +324,10 @@ public:
 	
 	const String& OwnerSig() const {
 		return osig;
+	}
+	
+	const bool IsExternBind() const {
+		return (Trait.Flags & ZTrait::BINDC) || (Trait.Flags & ZTrait::BINDCPP);
 	}
 	
 private:

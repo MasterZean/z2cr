@@ -150,10 +150,10 @@ public:
 	}
 	
 	void TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes);
-	void TranspileNamespaceDecl(ZNamespace& ns, int accessFlags = 0);
+	void TranspileNamespaceDecl(ZNamespace& ns, int accessFlags = 0, bool doBinds = false);
 	void TranspileClassDecl(ZNamespace& ns, int accessFlags = 0);
 	int  TranspileMemberDeclVar(ZNamespace& ns, int accessFlags);
-	int TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, int vc);
+	int TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool doBinds, int vc);
 
 	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);
 	void TranspileValDefintons(ZNamespace& ns, bool trail = true);

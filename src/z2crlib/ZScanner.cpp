@@ -112,11 +112,11 @@ void ZScanner::ScanSingle(const ZSourcePos& p, bool isStatic) {
 }
 
 bool ZScanner::ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool isStatic) {
-	const ZSourcePos* tp = nullptr;
+	ZTrait trait;
 	
 	if (parser.IsChar2('@', '[')) {
-		tp = &p;
-		TraitLoop();
+		trait.TP = &p;
+		trait.Flags = TraitLoop();
 	}
 		
 	bool newStatic = false;
@@ -126,14 +126,14 @@ bool ZScanner::ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool 
 		newStatic = true;
 	}
 	
-	return ScanDeclarationItem(accessType, tp, newStatic || isStatic);
+	return ScanDeclarationItem(accessType, trait, newStatic || isStatic);
 }
 
-bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZSourcePos* tp, bool isStatic) {
+bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic) {
 	ZSourcePos p = parser.GetFullPos();
 	
 	if (parser.Id("class")) {
-		ScanClassBody(p, accessType, isStatic, tp);
+		ScanClassBody(p, accessType, isStatic, trait);
 	
 		return true;
 	}
@@ -141,17 +141,20 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZSourcePos* tp, 
 		Vector<ZFunction*> funcs;
 		do {
 			ZFunction& f = ScanFunc(accessType, false, isStatic);
-			if (tp)
-				f.TraitPos = *tp;
+			f.Trait = trait;
 			
 			funcs.Add(&f);
 		} while (parser.Char(','));
 		
-		ZSourcePos bp = parser.GetFullPos();
-		ScanBlock();
-		
-		for (int i = 0; i < funcs.GetCount(); i++)
-			funcs[i]->BodyPos = bp;
+		if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP))
+			parser.ExpectEndStat();
+		else {
+			ZSourcePos bp = parser.GetFullPos();
+			ScanBlock();
+			
+			for (int i = 0; i < funcs.GetCount(); i++)
+				funcs[i]->BodyPos = bp;
+		}
 		
 		return true;
 	}
@@ -160,8 +163,7 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZSourcePos* tp, 
 		
 		do {
 			ZFunction& f = ScanFunc(accessType, true, isStatic);
-			if (tp)
-				f.TraitPos = *tp;
+			f.Trait = trait;
 			
 			funcs.Add(&f);
 		} while (parser.Char(','));
@@ -184,7 +186,7 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZSourcePos* tp, 
 	return false;
 }
 
-void ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZSourcePos* tp) {
+void ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait) {
 	ASSERT(nameSpace);
 
 	ZSourcePos dp = parser.GetFullPos();
@@ -450,9 +452,15 @@ void ZScanner::ScanToken() {
 	}
 }
 
-void ZScanner::InterpretTrait(const String& trait) {
-	if (trait == "bindc")
+int ZScanner::InterpretTrait(int flags, const String& trait) {
+	if (trait == "bindc") {
 		bindName = trait;
+		flags = flags | ZTrait::BINDC;
+	}
+	else if (trait == "bindcpp") {
+		bindName = trait;
+		flags = flags | ZTrait::BINDCPP;
+	}
 	else if (trait == "intrinsic")
 		isIntrinsic = true;
 	else if (trait == "dllimport")
@@ -465,9 +473,13 @@ void ZScanner::InterpretTrait(const String& trait) {
 		isNoDoc = true;
 	else if (trait == "force")
 		isForce = true;
+	
+	return flags;
 }
 
-void ZScanner::TraitLoop() {
+int ZScanner::TraitLoop() {
+	int flags = 0;
+	
 	bindName = "";
 	isIntrinsic = false;
 	isDllImport = false;
@@ -479,15 +491,17 @@ void ZScanner::TraitLoop() {
 	if (parser.Char2('@', '[')) {
 		
 		String trait = parser.ExpectId();
-		InterpretTrait(trait);
+		flags = InterpretTrait(flags, trait);
 		
 		while (!parser.IsChar(']')) {
 			parser.Expect(',');
 			
 			trait = parser.ExpectId();
-			InterpretTrait(trait);
+			flags = InterpretTrait(flags, trait);
 		}
 		
 		parser.Expect(']');
 	}
+	
+	return flags;
 }
