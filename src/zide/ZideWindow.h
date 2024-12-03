@@ -38,7 +38,7 @@ public:
 	}
 };
 
-class ZideWindow : public WithzideLayout<TopWindow> {
+class ZideWindow : public WithZideLayout<TopWindow> {
 public:
 	typedef ZideWindow CLASSNAME;
 	
@@ -77,6 +77,7 @@ private:
 	EditorManager tabs;
 	String openDialogPreselect;
 	bool oShowPakPaths = true;
+	Vector<BuildMethod> methods;
 	StopWatch sw;
 	
 	FrameTop<StaticBarArea> bararea;
@@ -123,10 +124,12 @@ private:
 	void OnMenuEditGoTo(CodeEditor* editor);
 	
 	void DoMenuFormat(Bar& menu);
+	void OnMenuFormatShowSettings();
 	
 	void DoMenuBuild(Bar& bar);
 	void OnMenuBuildKill();
 	void OnMenuBuildRun(bool newConsole);
+	void OnMenuBuildMethods();
 	void OnMenuBuildShowLog();
 	
 	void DoMenuHelp(Bar& bar);

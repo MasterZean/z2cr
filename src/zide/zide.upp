@@ -9,6 +9,7 @@ file
 	AssemblyBrowser.cpp,
 	EditorManager.h,
 	EditorManager.cpp,
+	BuildMethodsWindow.h,
 	ZideWindow.h,
 	ZideWindow.cpp,
 	ZideWindowBar.cpp,

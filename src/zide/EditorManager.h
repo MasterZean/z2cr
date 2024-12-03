@@ -93,6 +93,7 @@ public:
 	static void SetSettings(CodeEditor& editor, Settings& settings, const String& syntax);
 	
 	void SetSettings(Settings& settings);
+	void SetTabSettings(const Settings& settings);
 	void SetColors(int colors);
 	
 	void Save(int i);

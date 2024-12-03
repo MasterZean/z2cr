@@ -53,6 +53,19 @@ ZideWindow::ZideWindow() {
 	lblLine.SetAlign(ALIGN_CENTER);
 	
 	tabs.ShowTabs(false);
+	
+	String curDir = GetFileDirectory(GetExeFilePath()); //NativePath(GetCurrentDirectory() + "\\");
+	LoadFromXMLFile(methods, curDir + "buildMethods.xml");
+	if (methods.GetCount() == 0) {
+		methods.Clear();
+		Cout() << "No cached build method found! Trying to auto-detect...\n";
+		BuildMethod::Get(methods);
+		if (methods.GetCount() == 0) {
+			PromptOK("Could not find any build methods. Building is dissabled!");
+			canBuild = false;
+		}
+		StoreAsXMLFile(methods, "methods", curDir + "buildMethods.xml");
+	}
 }
 
 void ZideWindow::Serialize(Stream& s) {

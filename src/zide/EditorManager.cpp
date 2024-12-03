@@ -149,8 +149,7 @@ void EditorManager::SetSettings(CodeEditor& editor, Settings& settings, const St
 }
 
 void EditorManager::SetSettings(Settings& settings) {
-	tabFiles.SetAlign(settings.TabPos);
-	tabFiles.Crosses(settings.TabClose >= 0, settings.TabClose);
+	SetTabSettings(settings);
 	
 	CodeEditor::LoadHlStyles(settings.Style);
 	
@@ -158,6 +157,11 @@ void EditorManager::SetSettings(Settings& settings) {
 		SetSettings(files[i], settings, EditorSyntax::GetSyntaxForFilename(files.GetKey(i).ToString()));
 	
 	this->settings = settings;
+}
+
+void EditorManager::SetTabSettings(const Settings& settings) {
+	tabFiles.SetAlign(settings.TabPos);
+	tabFiles.Crosses(settings.TabClose >= 0, settings.TabClose);
 }
 
 void EditorManager::SetColors(int colors) {

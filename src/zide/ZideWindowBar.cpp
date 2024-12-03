@@ -1,4 +1,5 @@
 #include "ZideWindow.h"
+#include "BuildMethodsWindow.h"
 
 LocalProcess globalExecutor;
 void* globalProcesID;
@@ -64,6 +65,10 @@ void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 	
 	PostCallback(callback(zide, &ZideWindow::OutPutEnd));
 }
+
+struct FormatDlg: TabDlg {
+	ColorPusher hl_color[CodeEditor::HL_COUNT];
+};
 
 int AdjustForTabs(const String& text, int col, int tabSize) {
 	int pos = 1;
@@ -250,8 +255,8 @@ void ZideWindow::DoMenuFormat(Bar& menu) {
 	
 	CodeEditor& editor = *temp;
 	
-	//menu.Add("Settings...",         THISBACK(OnMenuFormatShowSettings));
-	//menu.Separator();
+	menu.Add("Settings...",         THISBACK(OnMenuFormatShowSettings));
+	menu.Separator();
 	
 	menu.Add("Spaces to tabs",      callback1(&editor, &CodeEditor::MakeTabsOrSpaces, true))
 		.Help("Convert leading blanks on each line to tabs");
@@ -261,6 +266,82 @@ void ZideWindow::DoMenuFormat(Bar& menu) {
 		.Help("Remove tabs and spaces at line endings");
 	menu.Add("Duplicate line",      callback(&editor, &CodeEditor::DuplicateLine))
 	    .Help("Duplice the current line").Key(K_CTRL | K_D);
+}
+
+void ZideWindow::OnMenuFormatShowSettings() {
+	Settings backSettings = settings;
+	
+	FormatDlg dlg;
+	dlg.Title("Settings").Sizeable();
+	dlg.SetMinSize(Size(602, 413));
+	dlg.Cancel().Apply();
+	
+	WithSetupEditorLayout<ParentCtrl> edt;
+	
+	edt.filetabs
+		.Add(AlignedFrame::LEFT, "Left")
+		.Add(AlignedFrame::TOP, "Top")
+		.Add(AlignedFrame::RIGHT, "Right")
+		.Add(AlignedFrame::BOTTOM, "Bottom")
+		.Add(-1, "Off");
+		
+	edt.tabs_crosses
+		.Add(AlignedFrame::LEFT, "Left")
+		.Add(AlignedFrame::RIGHT, "Right")
+		.Add(-1, "Off");
+		
+	edt.tabsize.MinMax(1, 100).NotNull();
+	edt.optScope.SetVertical();
+	edt.optBracket.SetVertical();
+	
+	CtrlRetriever rtvr;
+	rtvr
+		(edt.showtabs, settings.ShowTabs)
+		(edt.showspaces, settings.ShowSpaces)
+		(edt.shownewlines, settings.ShowNewlines)
+		(edt.warnwhitespace, settings.WarnSpaces)
+		(edt.tabsize, settings.TabSize)
+		(edt.indentspaces, settings.IndentSpaces)
+		(edt.ShowLineNums, settings.ShowLineNums)
+		(edt.HighlightLine, settings.HighlightLine)
+		(edt.filetabs, settings.TabPos)
+		(edt.tabs_crosses, settings.TabClose)
+		(edt.LinePos, settings.LinePos)
+		(edt.LineColor, settings.LineColor)
+		(edt.optScope, settings.ScopeHighlight)
+		(edt.optBracket, settings.Brackets)
+		(edt.optThousands, settings.Thousands);
+	rtvr <<= dlg.Breaker(222);
+	
+	dlg.Add(edt, "Editor");
+
+	dlg.WhenClose = dlg.Acceptor(IDEXIT);
+	
+	int dialogAction = 0;
+	
+	for(;;) {
+		dialogAction = dlg.Run();
+		
+		rtvr.Retrieve();
+		
+		tabs.SetTabSettings(settings);
+		
+		auto temp = GetEditor();
+		if (temp) {
+			CodeEditor& editor = *temp;
+			String file = tabs.ActiveFile();
+			
+			EditorManager::SetSettings(editor, settings, EditorSyntax::GetSyntaxForFilename(file.ToString()));
+		}
+		
+		if (dialogAction == IDYES || dialogAction == IDEXIT || dialogAction == IDCANCEL)
+			break;
+	}
+	
+	if (dialogAction == IDEXIT || dialogAction == IDCANCEL)
+		settings = backSettings;
+	
+	tabs.SetSettings(settings);
 }
 
 void ZideWindow::DoMenuBuild(Bar& bar) {
@@ -288,11 +369,11 @@ void ZideWindow::DoMenuBuild(Bar& bar) {
 	
 	bar.Add("Mirror mode",                             THISBACK(OnMenuBuildMirror))
 		.Check(mirrorMode);
-	bar.Separator();
+	bar.Separator();*/
 	
 	bar.Add("Build methods...",                        THISBACK(OnMenuBuildMethods));
 	bar.Separator();
-	bar.Add("Optimize backend code",                   THISBACK(DoMenuOptimize));
+	/*bar.Add("Optimize backend code",                   THISBACK(DoMenuOptimize));
 	bar.Add("Library mode",                            THISBACK(OnMenuBuildLibMode))
 		.Check(libMode);
 	bar.Separator();*/
@@ -318,6 +399,11 @@ void ZideWindow::OnMenuBuildKill() {
 	console.ScrollEnd();
 	
 	running = false;
+}
+
+void ZideWindow::OnMenuBuildMethods() {
+	BuildMethodsWindow bmw(methods);
+	bmw.Run(true);
 }
 
 void ZideWindow::OnMenuBuildRun(bool newConsole) {
