@@ -35,6 +35,10 @@ bool ZCompiler::Compile() {
 		return false;
 	
 	LibLink = std::move(resolver.LibLink);
+	
+	LibLink.FindAdd("winmm");
+	LibLink.FindAdd("user32");
+	
 	MainFound = FindMain();
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
@@ -461,7 +465,7 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 bool ZCompiler::CompileVar(ZVariable& v) {
 	ZParser parser(v.DefPos);
 	parser.ExpectZId();
-	
+
 	Node* node = compileVarDec(v, parser, v.DefPos, nullptr);
 	parser.ExpectEndStat();
 	return node;
@@ -486,10 +490,10 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	if (parser.Char(':')) {
-		cls = ZExprParser::ParseType(ass, parser);
-		if (cls == ass.CVoid)
+		auto ti = ZExprParser::ParseType(ass, parser);
+		if (ti.Tt.Class == ass.CVoid)
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
-		v.I.Tt = cls->Tt;
+		v.I = ti;
 	}
 	
 	bool assign = false;
@@ -511,6 +515,8 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (!cls) {
 			if (node->Tt.Class == ass.CVoid)
 				parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
+			if (node->Tt.Class == ass.CNull)
+				parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CNull));
 			v.I.Tt = node->Tt;
 		}
 		

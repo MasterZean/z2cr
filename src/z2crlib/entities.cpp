@@ -47,7 +47,7 @@ void ZFunction::GenerateSignatures() {
 			throw ER::Duplicate(name, pp, DefPos);
 		parser.Expect(':');
 		
-		ZClass* cls = ZExprParser::ParseType(Ass(), parser);
+		auto ti = ZExprParser::ParseType(Ass(), parser);
 		
 		if (parser.Char(',')) {
 			if (parser.IsChar(')'))
@@ -57,7 +57,7 @@ void ZFunction::GenerateSignatures() {
 		ZVariable& var = Params.Add(ZVariable(Namespace()));
 		var.Name = name;
 		var.BackName = name;
-		var.I.Tt = cls->Tt;
+		var.I = ti;
 		var.DefPos = pp;
 		var.PType = ZVariable::ParamType::tyAuto;
 		var.IsConst = !isVal;
@@ -66,8 +66,8 @@ void ZFunction::GenerateSignatures() {
 	parser.Expect(')');
 	
 	if (parser.Char(':')) {
-		ZClass* cls = ZExprParser::ParseType(Ass(), parser);
-		Return.Tt = cls->Tt;
+		auto ti = ZExprParser::ParseType(Ass(), parser);
+		Return.Tt = ti.Tt;
 	}
 	else
 		Return.Tt = Ass().CVoid->Tt;

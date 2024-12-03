@@ -410,7 +410,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		if (!onlyStatic && f.IsStatic)
 			parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		
-		return irg.mem_var(f);
+		return irg.mem_var(f, object);
 	}
 	
 	return nullptr;
@@ -507,7 +507,11 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ZClass* ZExprParser::ParseType(Assembly& ass, ZParser& parser) {
+ObjectInfo ZExprParser::ParseType(Assembly& ass, ZParser& parser) {
+	ObjectInfo ti;
+	ti.IsRef = false;
+	ti.IsConst = false;
+	
 	auto tt = parser.GetFullPos();
 	String shtype = parser.ExpectId();
 	String type = shtype;
@@ -533,6 +537,25 @@ ZClass* ZExprParser::ParseType(Assembly& ass, ZParser& parser) {
 			ER::Error(parser.Source(), tt.P, "unknown namespace reference: " + type);
 	}
 	
+	if (cls == ass.CPtr) {
+		parser.Expect('<');
+		
+		if (parser.IsId("const"))
+			parser.ReadId();
+		ObjectInfo sub = ParseType(ass, parser);
+		
+		parser.Expect('>');
+
+		if (sub.Tt.Class == ass.CVoid)
+			parser.Error(tt.P, "can't have a pointer to '\fVoid\f'");
+		if (ass.IsPtr(sub.Tt))
+			parser.Error(tt.P, ZCompiler::GetName() + " does not support nested pointer types");
+				
+		ti.Tt = sub.Tt.Class->Pt;
+		return ti;
+	}
+	
+	ti.Tt = cls->Tt;
 	return cls;
 }
 
@@ -593,6 +616,21 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<N
 				dr = irg.deref(dr);
 			return irg.cast(dr, &cls.Tt);
 		}
+	}
+	else if (&cls == ass.CPtr) {
+		/*if (InVarMode)
+			parser.Error(p, "inline member initialization can't take addresses");
+		if (InConstMode)
+			parser.Error(p, "addresses are not constants");
+
+		if (params.GetCount() != 1 || params[0]->NT != NodeType::Memory)
+			parser.Error(p, "local variable expected to take its address");
+		*/
+
+		if (params.GetCount() == 0)
+			return irg.const_null();
+		else
+			return irg.mem_ptr(params[0]);
 	}
 	else {
 		return irg.mem_temp(cls, nullptr);

@@ -177,6 +177,8 @@ private:
 	
 	void NsIntro(ZNamespace& ns);
 	void NsOutro(ZNamespace& ns);
+	
+	void WriteType(ObjectType* tt);
 };
 
 #endif

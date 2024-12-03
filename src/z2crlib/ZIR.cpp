@@ -1451,6 +1451,11 @@ TempNode* IR::mem_temp(ZClass& cls, ZFunction* constructor) {
 	return node;
 }
 
+Node *IR::mem_ptr(Node *node) {
+	node->SetType(ass.CByte->Pt);
+	return node;
+}
+
 BlockNode* IR::block() {
 	return blockNodes.Get();
 }

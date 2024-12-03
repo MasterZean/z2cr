@@ -159,6 +159,15 @@ void ZTranspiler::TranspileClassDecl(ZNamespace& ns, int accessFlags) {
 	fc += TranspileMemberDeclFunc(ns, 0b100, false, vc);
 }
 
+void ZTranspiler::WriteType(ObjectType* tt) {
+	if (tt->Class == ass.CPtr) {
+		WriteType(tt->Next);
+		cs << "*";
+	}
+	else
+		cs << tt->Class->BackName;
+}
+
 int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 	bool first = true;
 	
@@ -198,7 +207,8 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 				cs << "const ";
 		}
 
-		cs << v.I.Tt.Class->BackName << " " << v.Name;
+		WriteType(&v.I.Tt);
+		cs << " " << v.Name;
 		
 		if (v.InClass && !v.IsStatic) {
 			cs << " = ";
@@ -224,8 +234,6 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 				continue;
 			
 			bool bindc = f.Trait.Flags & ZTrait::BINDC;
-			if (f.Trait.Flags & ZTrait::BINDC)
-				f.Name == "a";
 			
 			if (doBinds == false && bindc == true)
 				continue;
@@ -318,7 +326,8 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		
 		if (v.IsConst)
 			cs << "const ";
-		cs << v.I.Tt.Class->BackName << " ";
+		WriteType(&v.I.Tt);
+		cs << " ";
 		if (!v.InClass)
 			cs << v.Owner().BackName << "::" << v.Name << " = ";
 		else
@@ -367,10 +376,16 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 		
 		ZClass& pclass = *var.I.Tt.Class->ParamType;
 		
-		if (pclass.CoreSimple)
+		if (var.I.Tt.Class == ass.CPtr)
+			WriteType(&var.I.Tt);
+		else if (pclass.CoreSimple)
 			cs << pclass.BackName;
-		else
-			cs << "const "<< pclass.Namespace().BackName << "::" << pclass.BackName << "&";
+		else {
+			if (f.Trait.Flags & ZTrait::BINDC)
+				cs << pclass.Namespace().BackName << "::" << pclass.BackName;
+			else
+				cs << "const "<< pclass.Namespace().BackName << "::" << pclass.BackName << "&";
+		}
 		cs << " " << var.Name;
 	}
 	
@@ -660,6 +675,11 @@ void ZTranspiler::Proc(ConstNode& node, Stream& stream) {
 		//stream << "S_[" << (int)node.IntVal << ']';
 		stream << AsCString(ass.StringConsts[(int)node.IntVal]);
 	}
+	else if (node.Tt.Class == ass.CPtr) {
+		// TODO: fix
+		//stream << "S_[" << (int)node.IntVal << ']';
+		stream << "(uint8*)(" << AsCString(ass.StringConsts[(int)node.IntVal]) << ")";
+	}
 }
 
 void ZTranspiler::Proc(OpNode& node) {
@@ -787,6 +807,11 @@ void ZTranspiler::Proc(MemNode& node) {
 			cs << node.Mem->Owner().BackName << "::";
 	}
 	
+	if (node.Object) {
+		Walk(node.Object);
+		cs << ".";
+	}
+		
 	cs << node.Mem->BackName;
 }
 
@@ -955,7 +980,7 @@ void ZTranspiler::Proc(LocalNode& node) {
 	if (node.Tt.Class->CoreSimple)
 		cs << node.Tt.Class->BackName;
 	else {
-		cs << node.Var->Namespace().BackName << "::";
+		cs << node.Tt.Class->Namespace().BackName << "::";
 		cs << node.Tt.Class->BackName;
 	}
 	cs << " " << node.Var->Name;

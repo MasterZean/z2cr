@@ -92,6 +92,15 @@ public:
 	
 	ZClass& AddClass(ZClass& cls);
 	
+	ObjectType GetPtr(ObjectType* sub) {
+		ObjectType obj;
+		obj.Class = CPtr;
+		obj.Param = 0;
+		obj.Next = sub;
+
+		return obj;
+	}
+	
 private:
 	void AddModule(int parent, const String& path, ZPackage& pak);
 	ZSource& AddModuleSource(ZPackage& aPackage, const String& aFile, bool aLoadFile);

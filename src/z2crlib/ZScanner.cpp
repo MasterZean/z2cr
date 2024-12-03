@@ -227,6 +227,15 @@ void ZScanner::ScanType() {
 	parser.ExpectId();
 	while (parser.Char('.'))
 		parser.ExpectId();
+	
+	if (parser.Char('<')) {
+		String ss = parser.ExpectId();
+		if (ss == "const")
+			parser.ExpectId();
+		if (parser.Char(','))
+			ScanToken();
+		parser.Expect('>');
+	}
 }
 
 void ZScanner::ScanUsing(const ZSourcePos& p) {

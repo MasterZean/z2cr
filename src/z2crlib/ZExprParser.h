@@ -4,6 +4,7 @@
 #include <z2crlib/ZParser.h>
 #include <z2crlib/ZIR.h>
 #include <z2crlib/ErrorReporter.h>
+#include <z2crlib/ZCompiler.h>
 
 class ZExprParser {
 public:
@@ -41,7 +42,7 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
-	static ZClass* ParseType(Assembly& ass, ZParser& parser);
+	static ObjectInfo ParseType(Assembly& ass, ZParser& parser);
 	static Node* Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<Node*>&/*, const Point& p*/);
 	
 private:

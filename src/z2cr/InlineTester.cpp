@@ -175,7 +175,7 @@ bool ZTest::Run() {
 	return result;
 }
 
-bool ZTest::RunDumpNsPub(ZCompiler& compiler) {	
+bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 	int index = Ass.Namespaces.Find(DumpNsPubName + ".");
 	
 	if (index == -1)

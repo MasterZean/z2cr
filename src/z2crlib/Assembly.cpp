@@ -178,8 +178,8 @@ void Assembly::AddBuiltInClasses() {
 	
 	CIntrinsic = AddCoreType(LangNamespace(),      "Intrinsic",   "Intrinsic",   false, false, false);
 
-	//for (int i = 0; i < Classes.GetCount(); i++)
-	//	Classes[i].Pt = GetPtr(&Classes[i].Tt);
+	for (int i = 0; i < Classes.GetCount(); i++)
+		Classes[i].Pt = GetPtr(&Classes[i].Tt);
 }
 
 ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& backendName, bool num, bool integer, bool core) {

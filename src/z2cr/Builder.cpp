@@ -301,9 +301,9 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 	
 	Cout() << "linking... ";
 	if (arch == "x64")
-		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -lwinmm -luser32 --static -o \"" + outPath + outTitle + ".exe\" -m";
+		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" --static -o \"" + outPath + outTitle + ".exe\" -m";
 	else
-		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -lwinmm -luser32 --static -o \"" + outPath + outTitle + ".exe\" -m";
+		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" --static -o \"" + outPath + outTitle + ".exe\" -m";
 	
 	if (arch == "x64")
 		d << "64";

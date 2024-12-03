@@ -203,6 +203,7 @@ public:
 	ZClassMeth Meth;
 	
 	ObjectType Tt;
+	ObjectType Pt;
 	ZClass* ParamType;
 	
 	int RTTIIndex = 0;
