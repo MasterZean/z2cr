@@ -1,5 +1,6 @@
 #include <z2cr/InlineTester.h>
 #include <z2crlib/ZTranspiler.h>
+#include <z2crlib/ErrorReporter.h>
 
 String anTest = "// @test";
 String anFile = "// @file";

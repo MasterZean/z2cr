@@ -59,6 +59,8 @@ public:
 	void WriteFunctionParams(ZFunction& f);
 	void WriteFunctionBody(ZFunction& f, bool wrap = true);
 	
+	void WriteCBinds(const Vector<ZFunction*>& CBinds);
+	
 	void Proc(ConstNode& node, Stream& stream);
 	void Proc(OpNode& node);
 	void Proc(UnaryOpNode& node);

@@ -2,7 +2,10 @@
 #define _z2cr_ZCompiler_h_
 
 #include <z2crlib/entities.h>
+#include <z2crlib/Assembly.h>
 #include <z2crlib/ZScanner.h>
+#include <z2crlib/ZIR.h>
+#include <z2crlib/ZExprParser.h>
 
 class ZTranspiler;
 
@@ -20,6 +23,7 @@ public:
 	String OutPath;
 	String CppPath;
 	int CppVersion = 2017;
+	Index<String> LibLink;
 	
 	PlatformType Platform;
 	String PlatformString;
@@ -54,6 +58,7 @@ private:
 	IR irg;
 	
 	ZClass* Class = nullptr;
+	Vector<ZFunction*> CBinds;
 
 	Vector<ZFunction*> FindMain(ZSource& src);
 	

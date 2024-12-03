@@ -137,6 +137,7 @@ public:
 	bool IsClass = false;
 	String BackNameLegacy;
 	String LegacySufix;
+	WithDeepCopy<Vector<String>> LibLink;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	
@@ -150,6 +151,7 @@ public:
 	
 	ZNamespace(const ZNamespace& aNs): ZEntity(aNs), ass(aNs.Ass()) {
 		ProperName = aNs.ProperName;
+		LibLink = aNs.LibLink;
 		
 		for (int i = 0; i < aNs.PreFunctions.GetCount(); i++) {
 			PreFunctions.Add(aNs.PreFunctions[i]);

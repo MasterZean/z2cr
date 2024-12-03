@@ -5,6 +5,8 @@
 
 class ZResolver {
 public:
+	Index<String> LibLink;
+	
 	ZResolver(Assembly& aAss): ass(aAss) {
 	}
 	

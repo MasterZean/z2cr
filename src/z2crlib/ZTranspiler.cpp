@@ -106,6 +106,9 @@ void ZTranspiler::WriteOutro() {
 	EL();
 }
 
+void ZTranspiler::WriteCBinds(const Vector<ZFunction *>& CBinds){
+}
+
 void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes) {
 	BeginNamespace(ns);
 	TranspileNamespaceDecl(ns, accessFlags, false);
@@ -113,6 +116,13 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 	
 	if (TranspileMemberDeclFunc(ns, accessFlags, true, 0))
 		EL();
+	
+	for (int i = 0; i < ns.Classes.GetCount(); i++) {
+		ZClass& cls = *ns.Classes[i];
+		
+		if (TranspileMemberDeclFunc(cls, accessFlags, true, 0))
+			EL();
+	}
 	
 	if (!classes)
 		return;
@@ -230,7 +240,7 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 					if (vc)
 						EL();
 				}
-				else {
+				else if (doBinds == false) {
 					WriteClassAccess(f.Access);
 				}
 				first = false;
@@ -284,6 +294,9 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 			for (int j = 0; j < d.Functions.GetCount(); j++) {
 				ZFunction& f = *d.Functions[j];
 				
+				if (f.IsExternBind())
+					continue;
+				
 				NL();
 				
 				if (fDecl)
@@ -319,9 +332,11 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (f.InClass == false && f.Access == AccessType::Private)
+	if (f.Trait.Flags & ZTrait::BINDC)
+		;
+	else if (f.InClass == false && f.Access == AccessType::Private)
 		cs << "static ";
-	if (f.InClass == true && f.IsStatic)
+	else if (f.InClass == true && f.IsStatic)
 		cs << "static ";
 	cs << f.Return.Tt.Class->BackName << " " << f.BackName;
 	WriteFunctionParams(f);

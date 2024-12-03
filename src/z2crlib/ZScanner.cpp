@@ -1,4 +1,6 @@
-#include "z2cr.h"
+#include <z2crlib/ZScanner.h>
+#include <z2crlib/Assembly.h>
+#include <z2crlib/ErrorReporter.h>
 
 extern char SingleOp[24];
 extern char DoubleOpCh1[9];
@@ -196,6 +198,7 @@ void ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	curClass->BackName = name;
 	curClass->DefPos = dp;
 	curClass->IsClass = true;
+	curClass->LibLink = std::move(libLink);
 	
 	parser.Expect('{');
 	
@@ -452,7 +455,7 @@ void ZScanner::ScanToken() {
 	}
 }
 
-int ZScanner::InterpretTrait(int flags, const String& trait) {
+int ZScanner::InterpretTrait(ZParser& parser, int flags, const String& trait) {
 	if (trait == "bindc") {
 		bindName = trait;
 		flags = flags | ZTrait::BINDC;
@@ -460,6 +463,12 @@ int ZScanner::InterpretTrait(int flags, const String& trait) {
 	else if (trait == "bindcpp") {
 		bindName = trait;
 		flags = flags | ZTrait::BINDCPP;
+	}
+	else if (trait == "liblink") {
+		parser.Expect('=');
+		if (!parser.IsString())
+			parser.Error(parser.GetPoint(), "string literal expected");
+		libLink << parser.ReadString();
 	}
 	else if (trait == "intrinsic")
 		isIntrinsic = true;
@@ -487,17 +496,18 @@ int ZScanner::TraitLoop() {
 	isCDecl = false;
 	isNoDoc = false;
 	isForce = false;
+	libLink.Clear();
 	
 	if (parser.Char2('@', '[')) {
 		
 		String trait = parser.ExpectId();
-		flags = InterpretTrait(flags, trait);
+		flags = InterpretTrait(parser, flags, trait);
 		
 		while (!parser.IsChar(']')) {
 			parser.Expect(',');
 			
 			trait = parser.ExpectId();
-			flags = InterpretTrait(flags, trait);
+			flags = InterpretTrait(parser, flags, trait);
 		}
 		
 		parser.Expect(']');

@@ -1,6 +1,7 @@
 #include <z2crlib/ZResolver.h>
 #include <z2crlib/ZSource.h>
 #include <z2crlib/ZScanner.h>
+#include <z2crlib/ErrorReporter.h>
 
 String Pad(const String& s, int max) {
 	StringBuffer ss;
@@ -90,6 +91,9 @@ void ZResolver::ResolveClasses() {
 			ZClass& c = ns.PreClasses[j];
 			c.GenerateSignatures();
 			
+			for (int k = 0; k < c.LibLink.GetCount(); k++)
+				LibLink.FindAdd(c.LibLink[k]);
+			
 			ZClass& cls = ass.AddClass(c);
 			ns.Classes.Add(cls.Name, &cls);
 			
@@ -127,7 +131,7 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
-
+	
 	f.SetOwner(ns);
 
 	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));

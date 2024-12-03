@@ -1,7 +1,8 @@
 #ifndef _z2cr_Scanner_h_
 #define _z2cr_Scanner_h_
 
-#include "z2cr.h"
+#include <z2crlib/ZParser.h>
+#include <z2crlib/ZException.h>
 
 enum class PlatformType {
 	WINDOWS,
@@ -47,12 +48,13 @@ protected:
 	bool isNoDoc = false;
 	bool isForce = false;
 	bool isCDecl = false;
+	Vector<String> libLink;
 	
 	PlatformType pt;
 	int namespaceCount = 0;
 	ZSourcePos namespacePos;
 	
-	int InterpretTrait(int flags, const String& trait);
+	int InterpretTrait(ZParser& parser, int flags, const String& trait);
 	int TraitLoop();
 	
 	bool ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic);

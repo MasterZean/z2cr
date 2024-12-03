@@ -3,6 +3,7 @@
 
 #include <z2crlib/ZParser.h>
 #include <z2crlib/ZIR.h>
+#include <z2crlib/ErrorReporter.h>
 
 class ZExprParser {
 public:

@@ -3,12 +3,12 @@
 
 String QT = "\"";
 
-bool Builder::Build(const String& path, const String& origPath) {
+bool Builder::Build(const String& path, const String& origPath, const Index<String>& libs) {
 	if (bm.Type == BuildMethod::btMSC)
-		return BuildMSC(path, origPath);
+		return BuildMSC(path, origPath, libs);
 	
 	if (bm.Type == BuildMethod::btGCC)
-		return BuildGCC(path, origPath);
+		return BuildGCC(path, origPath, libs);
 
 	return false;
 }
@@ -119,7 +119,7 @@ bool Builder::CompileMSC(const String& src, const String& out) {
 }
 
 
-bool Builder::BuildMSC(const String& path, const String& origPath) {
+bool Builder::BuildMSC(const String& path, const String& origPath, const Index<String>& libs) {
 	bool result = true;
 
 	DoPathsMSC();
@@ -263,7 +263,7 @@ bool Builder::CompileGCC(const String& src, const String& out) {
 	}
 }
 
-bool Builder::BuildGCC(const String& path, const String& origPath) {
+bool Builder::BuildGCC(const String& path, const String& origPath, const Index<String>& libs) {
 	DUMP(path);
 	String inPath = GetFileDirectory(path);
 	String inTitle = GetFileTitle(path);
@@ -309,6 +309,9 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 		d << "64";
 	else
 		d << "32";
+	
+	for (int i = 0; i < libs.GetCount(); i++)
+		d << " -l" << libs[i];
 	//d << "";
 	//d << " -lmingw32";
 	//d << " -Wl,--subsystem,windows";

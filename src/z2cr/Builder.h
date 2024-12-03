@@ -28,7 +28,7 @@ public:
 		optimize = ao;
 	}
 		
-	bool Build(const String& path, const String& origPath);
+	bool Build(const String& path, const String& origPath, const Index<String>& libs);
 	
 private:
 	BuildMethod bm;
@@ -40,8 +40,8 @@ private:
 	String env;
 	String optimize;
 	
-	bool BuildMSC(const String& path, const String& origPath);
-	bool BuildGCC(const String& path, const String& origPath);
+	bool BuildMSC(const String& path, const String& origPath, const Index<String>& libs);
+	bool BuildGCC(const String& path, const String& origPath, const Index<String>& libs);
 	
 	void DoPathsMSC();
 	void DoEnvMSC();

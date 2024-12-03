@@ -34,6 +34,7 @@ bool ZCompiler::Compile() {
 	if (!resolver.Resolve())
 		return false;
 	
+	LibLink = std::move(resolver.LibLink);
 	MainFound = FindMain();
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {

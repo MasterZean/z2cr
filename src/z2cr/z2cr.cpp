@@ -8,6 +8,7 @@ using namespace Upp;
 #include <z2crlib/BuildMethod.h>
 #include <z2cr/Builder.h>
 #include <z2cr/InlineTester.h>
+#include <z2crlib/ErrorReporter.h>
 
 bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& bm) {
 	Vector<BuildMethod> methods;
@@ -420,7 +421,7 @@ CONSOLE_APP_MAIN {
 		
 		Cout() << "Using '" << ToUpper(bm.Name) << "." << ToUpper(bm.Arch) << "' back end compiler.\n\n";
 		
-		bool buildOk = builder.Build(compiler.CppPath, compiler.OutPath);
+		bool buildOk = builder.Build(compiler.CppPath, compiler.OutPath, compiler.LibLink);
 		if (buildOk) {
 			Cout() << "\n";
 			Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";
