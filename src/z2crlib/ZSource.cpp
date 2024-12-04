@@ -44,16 +44,43 @@ void ZSource::AddReference(const String& ns, Point pt) {
 	
 	int i = FindIndex(References, ns);
 	if (i == -1) {
-		i = pak.Ass().Classes.Find(ns);
-		if (i != -1) {
+		//i = pak.Ass().Classes.Find(ns);
+		//if (i != -1) {
 			References.Add(ns);
 			ReferencePos.Add();
 			
+			//auto shortName = ns.Mid(dotPos + 1);
+			
+			//ShortNameLookup.FindAdd(shortName, &pak.Ass().Classes[i]);
+		//}
+	}
+}
+
+void ZSource::AlignReferences() {
+	for (int k = 0; k < References.GetCount(); k++) {
+		const String& ns = References[k];
+		int dotPos = ns.ReverseFind('.');
+		
+		int i = pak.Ass().Classes.Find(ns);
+		if (i != -1) {
 			auto shortName = ns.Mid(dotPos + 1);
 			
 			ShortNameLookup.FindAdd(shortName, &pak.Ass().Classes[i]);
 		}
 	}
+	
+	for (int k = 0; k < AliasMap.GetCount(); k++) {
+		const String& key = AliasMap.GetKey(k);
+		
+		int i = pak.Ass().Classes.Find(AliasMap[k]);
+		if (i != -1) {
+			ShortNameLookup.FindAdd(key, &pak.Ass().Classes[i]);
+		}
+	}
+}
+
+void ZSource::AddAlias(const String& alias, const String& ref) {
+	AliasMap.FindAdd(alias, ref);
 }
 
 bool ZSource::LoadFile() {

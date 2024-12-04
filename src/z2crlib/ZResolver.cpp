@@ -102,6 +102,9 @@ void ZResolver::ResolveClasses() {
 			}
 		}
 	}
+	
+	for (int i = 0; i < ass.SourceLookup.GetCount(); i++)
+		ass.SourceLookup[i]->AlignReferences();
 }
 
 void ZResolver::ResolveFunctions() {

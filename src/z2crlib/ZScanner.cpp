@@ -239,10 +239,17 @@ void ZScanner::ScanType() {
 }
 
 void ZScanner::ScanUsing(const ZSourcePos& p) {
-	parser.ExpectId("def");
+	bool def = parser.Id("def");
 	
 	String name = parser.ExpectId();
 	String fullName = name;
+	String alias;
+	
+	if (parser.Char('=')) {
+		alias = fullName;
+		fullName = parser.ExpectId();
+	}
+	
 	fullName << ".";
 	
 	while (parser.Char('.')) {
@@ -250,15 +257,24 @@ void ZScanner::ScanUsing(const ZSourcePos& p) {
 		fullName << name << ".";
 	}
 	
-	if (nameSpace == nullptr) {
-		usingNames << fullName;
+	parser.ExpectEndStat();
+	
+	if (def == true) {
+		if (nameSpace == nullptr) {
+			usingNames << fullName;
+		}
+		else {
+			ASSERT(section);
+			section->UsingNames.FindAdd(fullName);
+		}
 	}
 	else {
-		ASSERT(section);
-		section->UsingNames.FindAdd(fullName);
+		String mid = fullName.Mid(0, fullName.GetCount() - 1);
+		source.AddReference(mid, p.P);
+		
+		if (alias.GetCount())
+			source.AddAlias(alias, mid);
 	}
-	
-	parser.ExpectEndStat();
 	
 	if (inClass)
 		Errors << ER::ErrUsingInClass(p);

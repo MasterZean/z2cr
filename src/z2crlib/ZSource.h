@@ -11,6 +11,7 @@ public:
 	Vector<String> References;
 	Vector<Point> ReferencePos;
 	ArrayMap<String, ZClass*> ShortNameLookup;
+	VectorMap<String, String> AliasMap;
 	
 	bool IsScaned = false;
 	bool IsScanError = false;
@@ -43,6 +44,8 @@ public:
 	void AddStdClassRefs();
 	
 	void AddReference(const String& ns, Point pt);
+	void AlignReferences();
+	void AddAlias(const String& alias, const String& ref);
 	
 private:
 	ZPackage& pak;
