@@ -581,7 +581,7 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 	parser.Expect(end);
 }
 
-Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<Node*>& params/*, const Point& p*/) {
+Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>& params/*, const Point& p*/) {
 	Node* dr = nullptr;
 	
 	if (&cls == ass.CFloat) {
@@ -633,7 +633,10 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, const Vector<N
 			return irg.mem_ptr(params[0]);
 	}
 	else {
-		return irg.mem_temp(cls, nullptr);
+		//return irg.mem_temp(cls, nullptr);
+		TempNode* node = irg.mem_temp(cls, nullptr);
+		node->Params = std::move(params);
+		return node;
 	}
 	/*else if (&cls == ass.CVoid)
 		parser.Error(p, "'\fVoid\f' class can't be instantiated, use 'void' instead");

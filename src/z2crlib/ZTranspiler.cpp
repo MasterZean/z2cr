@@ -114,16 +114,6 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 	TranspileNamespaceDecl(ns, accessFlags, false);
 	EndNamespace();
 	
-	if (TranspileMemberDeclFunc(ns, accessFlags, true, 0))
-		EL();
-	
-	for (int i = 0; i < ns.Classes.GetCount(); i++) {
-		ZClass& cls = *ns.Classes[i];
-		
-		if (TranspileMemberDeclFunc(cls, accessFlags, true, 0))
-			EL();
-	}
-	
 	if (!classes)
 		return;
 	
@@ -138,6 +128,16 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 		TranspileClassDecl(cls, -1);
 		EndClass();
 		EndNamespace();
+	}
+	
+	if (TranspileMemberDeclFunc(ns, accessFlags, true, 0))
+		EL();
+	
+	for (int i = 0; i < ns.Classes.GetCount(); i++) {
+		ZClass& cls = *ns.Classes[i];
+		
+		if (TranspileMemberDeclFunc(cls, accessFlags, true, 0))
+			EL();
 	}
 }
 
@@ -341,13 +341,26 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (f.Trait.Flags & ZTrait::BINDC)
+	if (f.IsConstructor) {
+		cs << f.Owner().BackName;
+		WriteFunctionParams(f);
+		return;
+	}
+	else if (f.Trait.Flags & ZTrait::BINDC)
 		;
 	else if (f.InClass == false && f.Access == AccessType::Private)
 		cs << "static ";
 	else if (f.InClass == true && f.IsStatic)
 		cs << "static ";
-	cs << f.Return.Tt.Class->BackName << " " << f.BackName;
+	
+	if (f.Return.Tt.Class->CoreSimple)
+		cs << f.Return.Tt.Class->BackName;
+	else {
+		cs << f.Return.Tt.Class->Namespace().BackName << "::";
+		cs << f.Return.Tt.Class->BackName;
+	}
+	
+	cs << " " << f.BackName;
 	WriteFunctionParams(f);
 	
 	if (f.InClass == true && f.IsFunction && !f.IsStatic)
@@ -355,7 +368,22 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
-	cs << f.Return.Tt.Class->BackName << " " << f.Namespace().BackName << "::";
+	if (f.IsConstructor) {
+		cs << f.Namespace().BackName << "::";
+		cs << f.Owner().Name << "::";
+		cs << f.Owner().Name;
+		WriteFunctionParams(f);
+		return;
+	}
+	
+	if (f.Return.Tt.Class->CoreSimple)
+		cs << f.Return.Tt.Class->BackName;
+	else {
+		cs << f.Return.Tt.Class->Namespace().BackName << "::";
+		cs << f.Return.Tt.Class->BackName;
+	}
+	
+	cs << " " << f.Namespace().BackName << "::";
 	if (f.InClass)
 		cs << f.Owner().Name << "::";
 	cs << f.BackName;

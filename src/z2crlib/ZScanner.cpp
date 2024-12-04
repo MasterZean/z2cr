@@ -134,61 +134,46 @@ bool ZScanner::ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool 
 bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic) {
 	ZSourcePos p = parser.GetFullPos();
 	
-	if (parser.Id("class")) {
-		ScanClassBody(p, accessType, isStatic, trait);
+	if (parser.Id("class"))
+		return ScanClassBody(p, accessType, isStatic, trait);
+	else if (parser.Id("def"))
+		return ScanFuncMulti(accessType, trait, 0, false, isStatic);
+	else if (parser.Id("func"))
+		return ScanFuncMulti(accessType, trait, 0, true, isStatic);
+	else if (parser.Id("this"))
+		return ScanFuncMulti(accessType, trait, 1, false, isStatic);
+	else if (parser.Id("val"))
+		return ScanVar(accessType, false, isStatic);
+	else if (parser.Id("const"))
+		return ScanVar(accessType, true, isStatic);
 	
-		return true;
-	}
-	else if (parser.Id("def")) {
-		Vector<ZFunction*> funcs;
-		do {
-			ZFunction& f = ScanFunc(accessType, false, isStatic);
-			f.Trait = trait;
-			
-			funcs.Add(&f);
-		} while (parser.Char(','));
+	return false;
+}
+
+bool ZScanner::ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isCons, bool aFunc, bool isStatic) {
+	Vector<ZFunction*> funcs;
 		
-		if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP))
-			parser.ExpectEndStat();
-		else {
-			ZSourcePos bp = parser.GetFullPos();
-			ScanBlock();
-			
-			for (int i = 0; i < funcs.GetCount(); i++)
-				funcs[i]->BodyPos = bp;
-		}
+	do {
+		ZFunction& f = ScanFunc(accessType, isCons, aFunc, isStatic);
+		f.Trait = trait;
 		
-		return true;
-	}
-	else if (parser.Id("func")) {
-		Vector<ZFunction*> funcs;
-		
-		do {
-			ZFunction& f = ScanFunc(accessType, true, isStatic);
-			f.Trait = trait;
-			
-			funcs.Add(&f);
-		} while (parser.Char(','));
-		
+		funcs.Add(&f);
+	} while (parser.Char(','));
+	
+	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP))
+		parser.ExpectEndStat();
+	else {
 		ZSourcePos bp = parser.GetFullPos();
 		ScanBlock();
 		
 		for (int i = 0; i < funcs.GetCount(); i++)
 			funcs[i]->BodyPos = bp;
-		
-		return true;
-	}
-	else if (parser.Id("val")) {
-		return ScanVar(accessType, false, isStatic);
-	}
-	else if (parser.Id("const")) {
-		return ScanVar(accessType, true, isStatic);
 	}
 	
-	return false;
+	return true;
 }
 
-void ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait) {
+bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait) {
 	ASSERT(nameSpace);
 
 	ZSourcePos dp = parser.GetFullPos();
@@ -221,6 +206,8 @@ void ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	
 	if (inClass)
 		Errors << ER::ErrNestedClasses(p);
+	
+	return true;
 }
 
 void ZScanner::ScanType() {
@@ -373,7 +360,7 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst, bool isStatic) {
 	return true;
 }
 
-ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc, bool isStatic) {
+ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, bool isStatic) {
 	ASSERT(nameSpace);
 	
 	ZSourcePos dp = parser.GetFullPos();
@@ -389,9 +376,18 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc, bool isStatic) 
 		bname = "_" + s;
 	}
 	else {
-		name = parser.ExpectId();
-		bname = name;
+		if (isCons == 0) {
+			name = parser.ExpectId();
+			bname = name;
+		}
+		else {
+			name = "this";
+			bname = name;
+		}
 	}
+	
+	if (isCons && curClass == nullptr)
+		parser.Error(dp.P, "constructor defintion found outside of class");
 	
 	ZSourcePos pp = parser.GetFullPos();
 	parser.Expect('(');
@@ -416,7 +412,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc, bool isStatic) 
 	if (parser.Char(':'))
 		ScanType();
 	
-	ZFunction& f = (curClass ? curClass: nameSpace)->PrepareFunction(name);
+	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : (curClass ? curClass: nameSpace)->PrepareFunction(name));
 	f.IsFunction = aFunc;
 	f.DefPos = dp;
 	f.ParamPos = pp;
@@ -425,6 +421,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, bool aFunc, bool isStatic) 
 	f.Access = accessType;
 	f.InClass = curClass != nullptr;
 	f.IsStatic = isStatic;
+	f.IsConstructor = isCons;
 	if (curClass == nullptr)
 		f.IsStatic = true;
 	

@@ -22,7 +22,8 @@ public:
 	void ScanSingle(const ZSourcePos& p, bool isStatic);
 	void ScanNamespace(const ZSourcePos& p);
 	bool ScanVar(AccessType accessType, bool aConst, bool isStatic);
-	ZFunction& ScanFunc(AccessType accessType, bool aFunc, bool isStatic);
+	bool ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isCons, bool aFunc, bool isStatic);
+	ZFunction& ScanFunc(AccessType accessType, int isCons, bool aFunc, bool isStatic);
 	void ScanBlock();
 	void ScanToken();
 	bool ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool isStatic);
@@ -58,7 +59,7 @@ protected:
 	int TraitLoop();
 	
 	bool ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic);
-	void ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);
+	bool ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);
 };
 
 #endif

@@ -153,6 +153,12 @@ void ZFunction::GenerateSignatures() {
 	osig = ER::ToColor(Owner());
 }
 
+ZFunction& ZNamespace::PrepareConstructor(const String& aName) {
+	ZFunction& f = PreConstructors.Add(ZFunction(*this));
+	f.Name = aName;
+	return f;
+}
+
 ZFunction& ZNamespace::PrepareFunction(const String& aName) {
 	ZFunction& f = PreFunctions.Add(ZFunction(*this));
 	f.Name = aName;

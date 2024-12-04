@@ -120,6 +120,13 @@ void ZResolver::ResolveFunctions() {
 }
 
 void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
+	if (ns.IsClass) {
+		for (int i = 0; i < ns.PreConstructors.GetCount(); i++) {
+			ZFunction& f = ns.PreConstructors[i];
+			ResolveFunction(ns, f);
+		}
+	}
+	
 	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
 		ZFunction& f = ns.PreFunctions[i];
 		ResolveFunction(ns, f);

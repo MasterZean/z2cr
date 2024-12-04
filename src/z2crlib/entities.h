@@ -153,18 +153,18 @@ public:
 		ProperName = aNs.ProperName;
 		LibLink = aNs.LibLink;
 		
-		for (int i = 0; i < aNs.PreFunctions.GetCount(); i++) {
+		for (int i = 0; i < aNs.PreConstructors.GetCount(); i++)
+			PreConstructors.Add(aNs.PreConstructors[i]);
+		for (int i = 0; i < aNs.PreFunctions.GetCount(); i++)
 			PreFunctions.Add(aNs.PreFunctions[i]);
-		}
-		for (int i = 0; i < aNs.PreVariables.GetCount(); i++) {
+		for (int i = 0; i < aNs.PreVariables.GetCount(); i++)
 			PreVariables.Add(aNs.PreVariables[i]);
-		}
-		for (int i = 0; i < aNs.PreClasses.GetCount(); i++) {
+		for (int i = 0; i < aNs.PreClasses.GetCount(); i++)
 			PreClasses.Add(aNs.PreClasses[i]);
-		}
 	}
 	
 	Array<ZFunction> PreFunctions;
+	Array<ZFunction> PreConstructors;
 	Array<ZVariable> PreVariables;
 	Array<ZClass>    PreClasses;
 	
@@ -173,9 +173,10 @@ public:
 	VectorMap<String, ZVariable*> Variables;
 	VectorMap<String, ZClass*> Classes;
 
+	ZFunction& PrepareConstructor(const String& aName);
 	ZFunction& PrepareFunction(const String& aName);
 	ZVariable& PrepareVariable(const String& aName);
-	ZClass& PrepareClass(const String& aName);
+	ZClass&    PrepareClass(const String& aName);
 	
 	bool IsResolved = false;
 	
