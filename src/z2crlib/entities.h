@@ -135,9 +135,11 @@ public:
 	String ProperName;
 	Vector<ZSource*> Sources;
 	bool IsClass = false;
+	bool IsDefined = false;
 	String BackNameLegacy;
 	String LegacySufix;
 	WithDeepCopy<Vector<String>> LibLink;
+	Index<ZNamespace*> DependsOn;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	
@@ -152,6 +154,7 @@ public:
 	ZNamespace(const ZNamespace& aNs): ZEntity(aNs), ass(aNs.Ass()) {
 		ProperName = aNs.ProperName;
 		LibLink = aNs.LibLink;
+		IsClass = aNs.IsClass;
 		
 		for (int i = 0; i < aNs.PreConstructors.GetCount(); i++)
 			PreConstructors.Add(aNs.PreConstructors[i]);

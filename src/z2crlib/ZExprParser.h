@@ -11,20 +11,27 @@ public:
 	ZNamespaceSection* Section = nullptr;
 	ZNamespace* Namespace = nullptr;
 	ZFunction* Function = nullptr;
-	ZClass* Class = nullptr;
+	ZNamespace* Class = nullptr;
 	
-	ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
-	}
+	//ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
+	//}
 	
-	ZExprParser(ZEntity& entity, ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
+	ZExprParser(ZEntity& entity, ZNamespace* ns, ZFunction* f, ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
+		if (ns && ns->IsClass) {
+			//Namespace = &ns->Namespace();
+			Class = ns;
+		}
+		//else
+		//	Namespace = ns;
 		ASSERT(entity.Section);
 		Section = entity.Section;
 		Namespace = &entity.Namespace();
-		if (entity.Type == EntityType::Function)
+		Function = f;
+		/*if (entity.Type == EntityType::Function)
 			Function = static_cast<ZFunction*>(&entity);
 		
 		if (entity.InClass)
-			Class = static_cast<ZClass*>(&entity.Owner());
+			Class = static_cast<ZClass*>(&entity.Owner());*/
 	}
 	
 	static void Initialize();

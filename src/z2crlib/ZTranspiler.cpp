@@ -119,15 +119,8 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 	
 	for (int i = 0; i < ns.Classes.GetCount(); i++) {
 		ZClass& cls = *ns.Classes[i];
-		
-		if (!CanAccess(cls.Access, accessFlags))
-			continue;
-		
-		BeginNamespace(ns);
-		BeginClass(cls);
-		TranspileClassDecl(cls, -1);
-		EndClass();
-		EndNamespace();
+		DUMP(cls.IsClass);
+		TranspileClassDeclMaster(cls, accessFlags);
 	}
 	
 	if (TranspileMemberDeclFunc(ns, accessFlags, true, 0))
@@ -139,6 +132,33 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 		if (TranspileMemberDeclFunc(cls, accessFlags, true, 0))
 			EL();
 	}
+}
+
+bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags) {
+	if (!CanAccess(cls.Access, accessFlags))
+		return false;
+	
+	if (cls.IsDefined)
+		return false;
+	
+	cls.IsDefined = true;
+	
+	if (cls.IsClass) {
+		if (!((ZClass&)cls).CoreSimple) {
+			DUMP(cls.Name);
+			DUMP(cls.DependsOn.GetCount());
+		}
+	}
+	for (int j = 0; j < cls.DependsOn.GetCount(); j++)
+		TranspileClassDeclMaster(*cls.DependsOn[j], accessFlags);
+	
+	BeginNamespace(cls.Namespace());
+	BeginClass(cls);
+	TranspileClassDecl(cls, -1);
+	EndClass();
+	EndNamespace();
+	
+	return true;
 }
 
 void ZTranspiler::TranspileNamespaceDecl(ZNamespace& ns, int accessFlags, bool doBinds) {
@@ -164,8 +184,12 @@ void ZTranspiler::WriteType(ObjectType* tt) {
 		WriteType(tt->Next);
 		cs << "*";
 	}
-	else
+	else if (tt->Class->CoreSimple)
 		cs << tt->Class->BackName;
+	else {
+		cs << tt->Class->Namespace().BackName << "::";
+		cs << tt->Class->BackName;
+	}
 }
 
 int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {

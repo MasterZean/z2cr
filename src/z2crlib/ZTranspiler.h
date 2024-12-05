@@ -132,7 +132,7 @@ public:
 		inNamespace = nullptr;
 	}
 	
-	void BeginClass(ZClass& cls) {
+	void BeginClass(ZNamespace& cls) {
 		inClass = &cls;
 		firstInClass = true;
 		classWrites = 0;
@@ -153,6 +153,7 @@ public:
 	
 	void TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes);
 	void TranspileNamespaceDecl(ZNamespace& ns, int accessFlags = 0, bool doBinds = false);
+	bool TranspileClassDeclMaster(ZNamespace& cls, int accessFlags);
 	void TranspileClassDecl(ZNamespace& ns, int accessFlags = 0);
 	int  TranspileMemberDeclVar(ZNamespace& ns, int accessFlags);
 	int TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool doBinds, int vc);
@@ -167,7 +168,7 @@ private:
 	void WalkChildren(Node* node);
 	
 	ZNamespace* inNamespace = nullptr;
-	ZClass* inClass = nullptr;
+	ZNamespace* inClass = nullptr;
 	bool firstInNamespace = true;
 	bool firstInClass = true;
 	int namespaceWrites = 0;
