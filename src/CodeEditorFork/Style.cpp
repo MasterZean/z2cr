@@ -15,18 +15,21 @@ int     HighlightSetup::indent_amount = 4;
 #define HL_COLOR(x, a, b)    #x,
 static const char *s_hl_color[] = {
 #include "hl_color.i"
+#include "hl_color_extra.i"
 };
 #undef  HL_COLOR
 
 #define HL_COLOR(a, x, b)    x,
 static const char *s_hl_name[] = {
 #include "hl_color.i"
+#include "hl_color_extra.i"
 };
 #undef  HL_COLOR
 
 #define HL_COLOR(a, b, x)    x,
 static bool s_hl_font[] = {
 #include "hl_color.i"
+#include "hl_color_extra.i"
 };
 #undef  HL_COLOR
 

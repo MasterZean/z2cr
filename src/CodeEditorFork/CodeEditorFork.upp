@@ -9,6 +9,7 @@ file
 	Syntax readonly separator,
 	Syntax.h,
 	hl_color.i,
+	hl_color_extra.i,
 	Register.cpp,
 	HighlightOut.cpp,
 	Syntax.cpp,

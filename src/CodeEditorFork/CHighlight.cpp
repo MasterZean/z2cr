@@ -387,9 +387,12 @@ void CSyntax::Highlight(const wchar *ltext, const wchar *e, HighlightOutput& hls
 			hls.SetPaper(pos0, hls.pos - pos0, hl_style[PAPER_LNG].color);
 		}
 		else
-		if(iscib(*p)) {
+		if(iscib(*p) || (highlight == HIGHLIGHT_COUNT && *p == '@' && iscib(*(p + 1)))) {
 			const wchar *q = p;
 			StringBuffer id;
+			if (highlight == HIGHLIGHT_COUNT)
+				if (*q == '@')
+					id.Cat(*q++);
 			while((iscidl(*q) || highlight == HIGHLIGHT_CSS && *q == '-') && q < e)
 				id.Cat(*q++);
 			String iid = id;
@@ -397,15 +400,26 @@ void CSyntax::Highlight(const wchar *ltext, const wchar *e, HighlightOutput& hls
 				iid = ToUpper(iid);
 			int uq = highlight == 0 ? kw_upp.Find(iid) : -1;
 			int nq = keyword[highlight].Find(iid);
-			hls.Put(int(q - p), !include && nq >= 0 ? hl_style[nq >= breakers[highlight] ? INK_BREAK_KEYWORD : INK_KEYWORD] :
+			if (highlight == HIGHLIGHT_COUNT) {
+				if (iid == "true" || iid == "false" || iid == "null" || iid == "void" )
+					hls.Put(int(q - p), hl_style[INK_CONST_INT]);
+				else
+					hls.Put(int(q - p), (nq = keyword[highlight].Find(iid)) >= 0 ? hl_style[INK_KEYWORD] :
 			                    name[highlight].Find(iid) >= 0 ? hl_style[INK_UPP] :
-			                    uq >= 0 ? uq < kw_macros ? hl_style[INK_UPPMACROS] :
-			                              uq < kw_logs ? hl_style[INK_UPPLOGS] :
-			                              uq < kw_sql_base ? hl_style[INK_SQLBASE] :
-			                              uq < kw_sql_func ? hl_style[INK_SQLFUNC] :
-			                              hl_style[INK_SQLBOOL] :
 			                    IsUpperString(iid) && !macro ? hl_style[INK_UPPER] :
-			                    hl_style[INK_NORMAL]);
+			                    iid[0] == '@' ? hl_style[INK_SLOT] : hl_style[INK_NORMAL]);
+			}
+			else {
+				hls.Put(int(q - p), !include && nq >= 0 ? hl_style[nq >= breakers[highlight] ? INK_BREAK_KEYWORD : INK_KEYWORD] :
+				                    name[highlight].Find(iid) >= 0 ? hl_style[INK_UPP] :
+				                    uq >= 0 ? uq < kw_macros ? hl_style[INK_UPPMACROS] :
+				                              uq < kw_logs ? hl_style[INK_UPPLOGS] :
+				                              uq < kw_sql_base ? hl_style[INK_SQLBASE] :
+				                              uq < kw_sql_func ? hl_style[INK_SQLFUNC] :
+				                              hl_style[INK_SQLBOOL] :
+				                    IsUpperString(iid) && !macro ? hl_style[INK_UPPER] :
+				                    hl_style[INK_NORMAL]);
+			}
 			p = q;
 			if(nq == 0)
 				was_namespace = true;

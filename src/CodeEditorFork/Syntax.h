@@ -41,6 +41,7 @@ public:
 #define HL_COLOR(x, a, b)      x,
 	enum {
 #include "hl_color.i"
+#include "hl_color_extra.i"
 		HL_COUNT
 	};
 #undef HL_COLOR
