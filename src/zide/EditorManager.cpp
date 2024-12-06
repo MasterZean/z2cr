@@ -1,5 +1,65 @@
 #include "EditorManager.h"
 
+void WhiteTheme() {
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_SLOT, Magenta);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_CONST_BIN, Blue);
+}
+
+void DarkTheme() {
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_NORMAL, Color(255, 251, 247), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_NORMAL, Color(51, 51, 51));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_SELECTED, White);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_SELECTED, Color(0, 120, 215));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_DISABLED, Color(109, 109, 109));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_READONLY, Color(91, 91, 91));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_COMMENT, Color(134, 134, 134), false, true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_COMMENT_WORD, Blue, true, true);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_COMMENT_WORD, Yellow);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_CONST_STRING, Color(238, 222, 130));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_OPERATOR, Color(249, 167, 40), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_KEYWORD, Color(254, 95, 146), true, true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_UPP, Color(188, 234, 100), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_SLOT, Color(188, 234, 100), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_LNG, Color(59, 75, 78));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_ERROR, LtRed);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_PAR0, White, true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_PAR1, Color(233, 126, 117), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_PAR2, Color(61, 124, 61), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_PAR3, Color(143, 58, 143), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_CONST_INT, Color(205, 170, 249), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_CONST_FLOAT, Color(0xE2, 0x7F, 0xC8), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_CONST_HEX, Color(0xE2, 0x7F, 0xC8), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_CONST_OCT, Color(0xE2, 0x7F, 0xC8), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_CONST_STRINGOP, Color(205, 170, 249));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_BRACKET0, Color(127, 127, 127), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_BRACKET, Color(197, 127, 127), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_BLOCK1, Color(35, 35, 35));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_BLOCK2, Color(44, 31, 65));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_BLOCK3, Color(18, 55, 2));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_BLOCK4, Color(78, 78, 3));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_MACRO, White, true, true);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_MACRO, Color(71, 71, 71));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_IFDEF, Color(73, 73, 73));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_IFDEF, Color(170, 170, 170));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_UPPER, Color(28, 255, 0));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_SQLBASE, Color(113, 255, 255), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_SQLFUNC, Color(113, 255, 255), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_SQLBOOL, Color(113, 255, 255), true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_UPPMACROS, Color(255, 127, 255));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_UPPLOGS, Green);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_DIFF_FILE_INFO, Black, true);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_DIFF_HEADER, Color(28, 127, 200));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_DIFF_ADDED, Color(28, 42, 255));
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_DIFF_REMOVED, LtRed);
+	HighlightSetup::SetHlStyle(HighlightSetup::INK_DIFF_COMMENT, Color(80, 255, 80));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_SELWORD, Yellow);
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_ERROR, Color(226, 42, 0));
+	HighlightSetup::SetHlStyle(HighlightSetup::PAPER_WARNING, Color(255, 255, 205));
+	HighlightSetup::SetHlStyle(HighlightSetup::SHOW_LINE, Color(67, 67, 67));
+	HighlightSetup::SetHlStyle(HighlightSetup::WHITESPACE, Color(126, 186, 234));
+	HighlightSetup::SetHlStyle(HighlightSetup::WARN_WHITESPACE, Color(191, 126, 126));
+}
+
 EditorManager::EditorManager() {
 	AddFrame(tabFiles);
 	Add(canvas);
@@ -167,14 +227,12 @@ void EditorManager::SetTabSettings(const Settings& settings) {
 void EditorManager::SetColors(int colors) {
 	for (int i = 0; i < files.GetCount(); i++) {
 		if (colors == 0) {
-			files[i].WhiteTheme();
-			// TODO:
-			//files[i].SetBarLight(true);
+			files[i].WhiteTheme(false);
+			WhiteTheme();
 		}
 		else if (colors == 1) {
-			//DarkTheme();
-			// TODO:
-			//files[i].SetBarLight(false);
+			files[i].DarkTheme(false);
+			DarkTheme();
 		}
 	}
 }

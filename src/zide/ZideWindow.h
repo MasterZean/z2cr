@@ -91,12 +91,17 @@ private:
 	SplitterFrame splBottom;
 	FrameBottom<Console> console;
 	
+	Vector<int> colors;
+	
 	bool running = false;
 	bool canBuild = true;
 	
 	void OnOutputSel();
 	bool GetLineOfError(int ln);
-	
+	void ReadHlStyles(ArrayCtrl& hlstyle);
+	void OrderColors();
+	const char *GetHlName(int i, CodeEditor& editor);
+
 	void OnTabChange();
 	void OnSelectSource();
 	void OnEditorChange();

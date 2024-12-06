@@ -124,4 +124,7 @@ private:
 	SmartEditor& GetInfo(int i);
 };
 
+void WhiteTheme();
+void DarkTheme();
+
 #endif

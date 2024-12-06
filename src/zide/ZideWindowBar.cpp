@@ -5,9 +5,11 @@ LocalProcess globalExecutor;
 void* globalProcesID;
 
 void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
+	String command;
 #ifdef PLATFORM_WIN32
 	if (newConsole) {
-		String command = "cmd.exe + /C \"" + file + "\"; & pause";
+		command = "cmd.exe /C cd \"" + GetFileDirectory(file) + "\" && \"" + file + "\" && pause";
+		DUMP(command);
 		int n = command.GetLength() + 1;
 		Buffer<char> cmd(n);
 		memcpy(cmd, command, n);
@@ -46,11 +48,14 @@ void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 		
 #endif
 
+		command = "cmd.exe /C cd \"" + GetFileDirectory(file) + "\" && \"" + file + "\"";
+		DUMP(command);
+		
 		String t, tt;
 		
 		globalExecutor.Kill();
 		globalExecutor.ConvertCharset(false);
-		globalExecutor.Start(file);
+		globalExecutor.Start(command);
 		
 		while (globalExecutor.Read(t)) {
 			if (t.GetCount()) {
@@ -69,6 +74,10 @@ void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 struct FormatDlg: TabDlg {
 	ColorPusher hl_color[CodeEditor::HL_COUNT];
 };
+
+void HlPusherFactory(One<Ctrl>& ctrl) {
+	ctrl.Create<ColorPusher>().NotNull().Track();
+}
 
 int AdjustForTabs(const String& text, int col, int tabSize) {
 	int pos = 1;
@@ -313,7 +322,31 @@ void ZideWindow::OnMenuFormatShowSettings() {
 		(edt.optThousands, settings.Thousands);
 	rtvr <<= dlg.Breaker(222);
 	
+	WithSetupHlLayout<ParentCtrl> hlt;
+	
+	hlt.arcStyle.AddColumn("Style");
+	hlt.arcStyle.AddColumn("Color").Ctrls(HlPusherFactory);
+	hlt.arcStyle.AddColumn("Bold").Ctrls<Option>();
+	hlt.arcStyle.AddColumn("Italic").Ctrls<Option>();
+	hlt.arcStyle.AddColumn("Underline").Ctrls<Option>();
+	hlt.arcStyle.ColumnWidths("211 80 45 45 80");
+	hlt.arcStyle.EvenRowColor().NoHorzGrid().SetLineCy(EditField::GetStdHeight() + 2);
+	ReadHlStyles(hlt.arcStyle);
+		
+	hlt.lstLanguage.Add("Z2");
+	hlt.lstLanguage.SetIndex(0);
+	
+	hlt.lstScheme.Add("Light");
+	hlt.lstScheme.Add("Dark");
+	hlt.lstScheme.SetIndex(IsDarkTheme()/*settings.Theme*/);
+	hlt.lstScheme << dlg.Breaker(224);
+		
+	rtvr <<= dlg.Breaker(222);
+	hlt.arcStyle.WhenCtrlsAction = dlg.Breaker(222);
+	hlt.btnRestore <<= dlg.Breaker(223);
+	
 	dlg.Add(edt, "Editor");
+	dlg.Add(hlt, "Syntax highlighting");
 
 	dlg.WhenClose = dlg.Acceptor(IDEXIT);
 	
@@ -322,15 +355,35 @@ void ZideWindow::OnMenuFormatShowSettings() {
 	for(;;) {
 		dialogAction = dlg.Run();
 		
-		rtvr.Retrieve();
-		
-		tabs.SetTabSettings(settings);
-		
 		auto temp = GetEditor();
 		if (temp) {
 			CodeEditor& editor = *temp;
-			String file = tabs.ActiveFile();
+		
+			if (dialogAction == 223) {
+				settings.Theme = hlt.lstScheme.GetIndex();
+				tabs.SetColors(settings.Theme);
+				ReadHlStyles(hlt.arcStyle);
+			}
+			else if (dialogAction == 224) {
+				settings.Theme = hlt.lstScheme.GetIndex();
+				tabs.SetColors(settings.Theme);
+				ReadHlStyles(hlt.arcStyle);
+			}
 			
+			for(int i = 0; i < colors.GetCount(); i++) {
+				int j = colors[i];
+				editor.SetHlStyle(j, hlt.arcStyle.Get(i, 1), hlt.arcStyle.Get(i, 2),
+				                     hlt.arcStyle.Get(i, 3), hlt.arcStyle.Get(i, 4));
+			}
+			
+			rtvr.Retrieve();
+			
+			tabs.SetTabSettings(settings);
+			
+			auto temp = GetEditor();
+				
+			String file = tabs.ActiveFile();
+				
 			EditorManager::SetSettings(editor, settings, EditorSyntax::GetSyntaxForFilename(file.ToString()));
 		}
 		
@@ -338,8 +391,11 @@ void ZideWindow::OnMenuFormatShowSettings() {
 			break;
 	}
 	
-	if (dialogAction == IDEXIT || dialogAction == IDCANCEL)
+	if (dialogAction == IDEXIT || dialogAction == IDCANCEL) {
 		settings = backSettings;
+		tabs.SetColors(settings.Theme);
+		ReadHlStyles(hlt.arcStyle);
+	}
 	
 	tabs.SetSettings(settings);
 }

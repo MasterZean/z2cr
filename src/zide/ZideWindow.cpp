@@ -66,7 +66,55 @@ ZideWindow::ZideWindow() {
 		}
 		StoreAsXMLFile(methods, "methods", curDir + "buildMethods.xml");
 	}
+	
+	OrderColors();
 }
+
+void ZideWindow::OrderColors() {
+	colors.Add(HighlightSetup::INK_NORMAL);
+	colors.Add(HighlightSetup::PAPER_NORMAL);
+	colors.Add(HighlightSetup::INK_SELECTED);
+	colors.Add(HighlightSetup::PAPER_SELECTED);
+	
+	colors.Add(HighlightSetup::INK_KEYWORD);
+	colors.Add(HighlightSetup::INK_UPP);
+	colors.Add(HighlightSetup::INK_SLOT);
+	
+	colors.Add(HighlightSetup::INK_CONST_STRING);
+	colors.Add(HighlightSetup::INK_CONST_STRINGOP);
+	
+	colors.Add(HighlightSetup::INK_CONST_INT);
+	colors.Add(HighlightSetup::INK_CONST_HEX);
+	colors.Add(HighlightSetup::INK_CONST_OCT);
+	colors.Add(HighlightSetup::INK_CONST_BIN);
+	colors.Add(HighlightSetup::INK_CONST_FLOAT);
+	
+	colors.Add(HighlightSetup::INK_OPERATOR);
+		
+	colors.Add(HighlightSetup::INK_COMMENT);
+	colors.Add(HighlightSetup::INK_COMMENT_WORD);
+	colors.Add(HighlightSetup::PAPER_COMMENT_WORD);
+	
+	colors.Add(HighlightSetup::INK_ERROR);
+	colors.Add(HighlightSetup::INK_PAR0);
+	colors.Add(HighlightSetup::INK_PAR1);
+	colors.Add(HighlightSetup::INK_PAR2);
+	colors.Add(HighlightSetup::INK_PAR3);
+	
+	colors.Add(HighlightSetup::PAPER_BRACKET0);
+	colors.Add(HighlightSetup::PAPER_BRACKET);
+	colors.Add(HighlightSetup::PAPER_BLOCK1);
+	colors.Add(HighlightSetup::PAPER_BLOCK2);
+	colors.Add(HighlightSetup::PAPER_BLOCK3);
+	colors.Add(HighlightSetup::PAPER_BLOCK4);
+	
+	if (IsDarkTheme())
+		DarkTheme();
+	else
+		WhiteTheme();
+	
+	//settings.Theme = IsDarkTheme();
+};
 
 void ZideWindow::Serialize(Stream& s) {
 	int version = 1;
@@ -350,4 +398,25 @@ bool ZideWindow::GetLineOfError(int ln) {
 	}
 	
 	return false;
+}
+
+void ZideWindow::ReadHlStyles(ArrayCtrl& hlstyle) {
+	auto temp = GetEditor();
+	if (!temp)
+		return;
+	
+	CodeEditor& editor = *temp;
+	
+	hlstyle.Clear();
+	for(int i = 0; i < colors.GetCount(); i++) {
+		const HlStyle& s = editor.GetHlStyle(colors[i]);
+		hlstyle.Add(GetHlName(colors[i], editor), s.color, s.bold, s.italic, s.underline);
+	}
+}
+
+const char* ZideWindow::GetHlName(int i, CodeEditor& editor) {
+	if (i == HighlightSetup::INK_UPP)
+		return "Class name text";
+	else
+		return editor.GetHlName(i);
 }
