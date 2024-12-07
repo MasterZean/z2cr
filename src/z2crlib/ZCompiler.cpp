@@ -295,7 +295,7 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 }
 
 Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con) {
-	ZExprParser ep(f, Class, &f, parser, irg);
+	ZExprParser ep(f, Class, &f, *this, parser, irg);
 	auto pp = parser.GetFullPos();
 	Node* node = ep.Parse();
 	
@@ -348,7 +348,7 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	
-	ZExprParser ep(f, Class, &f, parser, irg);
+	ZExprParser ep(f, Class, &f, *this, parser, irg);
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.EatNewlines();
@@ -380,7 +380,7 @@ Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	
-	ZExprParser ep(f, Class, &f, parser, irg);
+	ZExprParser ep(f, Class, &f, *this, parser, irg);
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.EatNewlines();
@@ -409,7 +409,7 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	
-	ZExprParser ep(f, Class, &f, parser, irg);
+	ZExprParser ep(f, Class, &f, *this, parser, irg);
 	Node* node = ep.Parse();
 	parser.Expect(')');
 	parser.ExpectEndStat();
@@ -427,7 +427,7 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 	
 	parser.Expect('(');
 	
-	ZExprParser ep(f, Class, &f, parser, irg);
+	ZExprParser ep(f, Class, &f, *this, parser, irg);
 	if (!parser.IsChar(';')) {
 		if (parser.Id("val"))
 			init = CompileLocalVar(f, parser, false);
@@ -469,8 +469,6 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 	parser.ExpectEndStat();
 	
 	if (v.InClass && !v.I.Tt.Class->CoreSimple) {
-		DUMP(v.Owner().Name);
-		DUMP(v.I.Tt.Class->Name);
 		v.Owner().DependsOn.FindAdd(v.I.Tt.Class);
 	}
 
@@ -513,7 +511,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 	//}
 	
 	if (assign) {
-		ZExprParser ep(v, Class, f, parser, irg);
+		ZExprParser ep(v, Class, f, *this, parser, irg);
 		Node* node = ep.Parse();
 		
 		if (!cls) {
@@ -573,7 +571,7 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
 	if (f.Return.Tt.Class == ass.CVoid)
 		parser.ExpectEndStat();
 	else {
-		ZExprParser ep(f, Class, &f, parser, irg);
+		ZExprParser ep(f, Class, &f, *this, parser, irg);
 		retVal = ep.Parse();
 		parser.ExpectEndStat();
 		
@@ -585,6 +583,10 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
 	con.Return = true;
 	
 	return irg.ret(retVal);
+}
+
+ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) {
+	return *ass.CVoid;
 }
 
 void ZCompiler::TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur) {

@@ -51,6 +51,8 @@ public:
 	
 	static String& GetName();
 	
+	ZClass& ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval);
+	
 private:
 	Assembly& ass;
 	String mainClass;

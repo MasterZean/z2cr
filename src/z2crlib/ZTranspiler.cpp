@@ -143,12 +143,6 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags) {
 	
 	cls.IsDefined = true;
 	
-	if (cls.IsClass) {
-		if (!((ZClass&)cls).CoreSimple) {
-			DUMP(cls.Name);
-			DUMP(cls.DependsOn.GetCount());
-		}
-	}
 	for (int j = 0; j < cls.DependsOn.GetCount(); j++)
 		TranspileClassDeclMaster(*cls.DependsOn[j], accessFlags);
 	
@@ -377,12 +371,7 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	else if (f.InClass == true && f.IsStatic)
 		cs << "static ";
 	
-	if (f.Return.Tt.Class->CoreSimple)
-		cs << f.Return.Tt.Class->BackName;
-	else {
-		cs << f.Return.Tt.Class->Namespace().BackName << "::";
-		cs << f.Return.Tt.Class->BackName;
-	}
+	WriteType(&f.Return.Tt);
 	
 	cs << " " << f.BackName;
 	WriteFunctionParams(f);
@@ -400,12 +389,7 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		return;
 	}
 	
-	if (f.Return.Tt.Class->CoreSimple)
-		cs << f.Return.Tt.Class->BackName;
-	else {
-		cs << f.Return.Tt.Class->Namespace().BackName << "::";
-		cs << f.Return.Tt.Class->BackName;
-	}
+	WriteType(&f.Return.Tt);
 	
 	cs << " " << f.Namespace().BackName << "::";
 	if (f.InClass)
@@ -513,23 +497,13 @@ void ZTranspiler::WriteClassAccess(AccessType access) {
 	}
 }
 
-
-
 void ZTranspiler::WalkNode(Node* node) {
-	if (node->NT == NodeType::Block || node->NT == NodeType::Local) {
-		Walk(node);
-		return;
-	}
-	
 	Walk(node);
-	/*if (!PrintDebug) {
-		Walk(node);
-		return;
-	}*/
 }
 
 void ZTranspiler::Walk(Node* node) {
 	ASSERT_(node, "Null node");
+	
 	if (node->NT == NodeType::Const)
 		Proc(*(ConstNode*)node, cs);
 	else if (node->NT == NodeType::BinaryOp)

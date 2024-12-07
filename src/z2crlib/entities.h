@@ -105,6 +105,7 @@ public:
 	ZEntity(const ZEntity& aEnitity) = default;
 	
 	inline ZNamespace& Namespace();
+	inline const ZNamespace& Namespace() const;
 	
 	inline ZNamespace& Owner();
 	
@@ -362,6 +363,14 @@ ZNamespace& ZEntity::Namespace() {
 	else
 		return nmsspace;
 }
+
+const ZNamespace& ZEntity::Namespace() const {
+	if (InClass == true)
+		return nmsspace.Namespace();
+	else
+		return nmsspace;
+}
+
 
 ZNamespace& ZEntity::Owner() {
 	return *parent;

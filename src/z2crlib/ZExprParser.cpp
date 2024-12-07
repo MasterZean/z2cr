@@ -23,7 +23,7 @@ Node* ZExprParser::Parse() {
 		// TODO
 		if (left->Tt.Class != right->Tt.Class)//!TypesEqualDeep(ass, &left->Tt, &right->Tt))
 			parser.Error(p, "ternary operator '?': second and third operand must have the same type, but they are " +
-					ass.ToQtColor(left) + " and " + ass.ToQtColor(right));
+					ass.ToQtColor(&left->Tt) + " and " + ass.ToQtColor(&right->Tt));
 
 		exp = irg.opTern(exp, left, right);
 	}
@@ -174,6 +174,9 @@ Node* ZExprParser::ParseAtom() {
 				exp = temp;
 			}
 		}
+		else if (parser.IsChar('<') && !parser.IsChar2('<', '<') && exp->NT == NodeType::Const && exp->Tt.Class == ass.CClass && exp->IsLiteral) {
+			exp = ParseAtomClassInst(exp);
+		}
 		else if (parser.Char('.')) {
 			exp = ParseDot(exp);
 		}
@@ -201,6 +204,100 @@ Node* ZExprParser::ParseAtom() {
 	return exp;
 }
 
+Node* ZExprParser::ParseAtomClassInst(Node* exp) {
+	Point posPreTemp = parser.GetPoint();
+			
+	parser.Char('<');
+	
+	ZClass& mainClass = ass.Classes[(int)exp->IntVal];
+	
+	Vector<Node*> nodes;
+	
+	while (true) {
+		Point posSub = parser.GetPoint();
+		Node* sub = Parse();
+		
+		nodes << sub;
+		
+		if (!sub->IsCT)
+			ER::ErrNotCompileTimeInst(parser.Source(), posSub);
+		
+		if (parser.Char(',')) {
+		}
+		else if (parser.IsChar('>'))
+			break;
+	}
+		
+	parser.Expect('>');
+	
+	if (mainClass.MIsRawVec) {
+		if (nodes.GetCount() < 1 || nodes.GetCount() > 2)
+			ER::ErrCArrayWrongArgumentNo(parser.Source(), posPreTemp, mainClass, nodes.GetCount());
+	}
+	else {
+		int target = mainClass.Scan.TName.GetCount();
+	
+		if (ass.IsPtr(mainClass.Tt))
+			target = 1;
+			
+		if (nodes.GetCount() != target)
+			ER::ErrClassTemplateWrongArgumentNo(parser.Source(), posPreTemp, mainClass, target, nodes.GetCount());
+	}
+	
+	return ParseSpec(mainClass, exp, nodes, posPreTemp);
+}
+
+Node* ZExprParser::ParseSpec(ZClass& mainClass, Node* exp, Vector<Node*>& nodes, const Point& p) {
+	ZClass& ownClass = ass.Classes[(int)exp->IntVal];
+	
+	// TODO: is needed?
+	/*if (ass.IsPtr(ownClass.Tt)) {
+		//if (!exp->IsRef && !exp->LValue)
+		//	parser.Error(p, "can't take adress of this object");
+		
+		Node* ptr = irg.mem_ptr(exp, 0);
+		ptr->IsLiteral = true;
+		ptr->IsConst = true;
+		ptr->IsCT = true;
+		
+		return irg.cast(ptr, &ass.Classes[(int)nodes[0]->IntVal].Pt);
+	}*/
+	
+	int rawSize = -1;
+	
+	if (&ownClass == ass.CRaw) {
+		if (nodes.GetCount() == 2) {
+			Point ppp = parser.GetPoint();
+			Node* nn = nodes[1];
+			
+			if (!nn->IsCT)
+				ER::ErrNotCompileTimeInst(parser.Source(), ppp);
+			
+			if (!ass.IsInteger(nn->Tt)) {
+				ZClass& sub = ass.Classes[(int)nodes[0]->IntVal];
+				ZClass& inst = comp.ResolveInstance(ownClass, sub, p, true);
+				ER::ErrItemCountNotInteger(parser.Source(), ppp, ass.ToQtColor(&inst.Tt));
+			}
+			
+			if (ass.IsSignedInt(nn->Tt) && nn->IntVal <= 0) {
+				ZClass& sub = ass.Classes[(int)nodes[0]->IntVal];
+				ZClass& inst = comp.ResolveInstance(ownClass, sub, p, true);
+				ER::ErrItemCountNegative(parser.Source(), ppp, ass.ToQtColor(&inst.Tt));
+			}
+			
+			rawSize = (int)nn->IntVal;
+		}
+	}
+	
+	ZClass& sub = ass.Classes[(int)nodes[0]->IntVal];
+	ZClass& inst = comp.ResolveInstance(ownClass, sub, p, true);
+	
+	exp->IntVal = inst.Index;
+	exp->Tt.Param = rawSize;
+
+	return exp;
+}
+
 Node* ZExprParser::ParseId() {
 	Point opp = parser.GetPoint();
 	String s;
@@ -209,8 +306,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "camera")
-		s == "Int";
+//	if (s == "camera")
+//		s == "Int";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {

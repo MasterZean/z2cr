@@ -84,6 +84,7 @@ public:
 	String ClassToString(const ObjectType& type);
 	
 	String ToQtColor(ObjectInfo *type);
+	String ToQtColor(ObjectType *type);
 	String ToQtColor(ZClass *type);
 	
 	int AddStringConst(const String& str) {

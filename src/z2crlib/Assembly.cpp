@@ -269,6 +269,13 @@ String Assembly::ToQtColor(ObjectInfo* type) {
 	return s;
 }
 
+String Assembly::ToQtColor(ObjectType* type) {
+	String s = "'";
+	s << ER::Green << type->Class->Name;
+	s << ER::White << "'";
+	return s;
+}
+
 String Assembly::ToQtColor(ZClass* type) {
 	String s = "'";
 	s << ER::Green << type->Name;

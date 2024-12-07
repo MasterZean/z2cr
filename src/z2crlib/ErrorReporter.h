@@ -23,7 +23,7 @@ public:
 	static String Yellow;
 	static String Magenta;
 	
-	static String ToColor(ZNamespace& ns, bool qt = false);
+	static String ToColor(const ZNamespace& ns, bool qt = false);
 	
 	static void Error(const ZSource& src, const Point& p, const String& text);
 	
@@ -39,6 +39,10 @@ public:
 	static ZException ErrCantBeStatic(const ZSourcePos& p, const String& type);
 	static ZException ErrNamespaceInClass(const ZSourcePos& p);
 	
+	static void ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo);
+	
+	static void ErrClassTemplateWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int target, int argNo);
+	
 	static void CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamespace& owner, ZMethodBundle* def, Vector<Node*>& params, int limit, bool cons = false);
 	
 	static void ErrIncompatOp(const ZSource& src, const Point& p, const String& op, const String& text, const String& text2) {
@@ -51,6 +55,18 @@ public:
 		StringStream ss;
 		PrettyPrint(error, ss, false);
 		return ss;
+	}
+	
+	static void ErrNotCompileTimeInst(const ZSource& source, const Point& p) {
+		Error(source, p, "Only compile time constants can be used for specilization.");
+	}
+	
+	static void ErrItemCountNegative(const ZSource& source, const Point& p, const String& text) {
+		Error(source, p, "\f'" + text + "'\f" + " can only be instantiated with a greater than 0 item count.");
+	}
+	
+	static void ErrItemCountNotInteger(const ZSource& source, const Point& p, const String& text) {
+		Error(source, p, "\f'" + text + "'\f" + " can only be instantiated with a integer item count.");
 	}
 };
 

@@ -13,7 +13,7 @@ String ER::Green = "${green}";
 String ER::Yellow = "${yellow}";
 String ER::Magenta = "${magenta}";
 
-String ER::ToColor(ZNamespace& ns, bool qt ) {
+String ER::ToColor(const ZNamespace& ns, bool qt ) {
 	StringStream ss;
 	
 	ss << ER::White;
@@ -79,6 +79,22 @@ ZException ER::ErrCantBeStatic(const ZSourcePos& p, const String& type) {
 
 ZException ER::ErrNamespaceInClass(const ZSourcePos& p) {
 	return ZException(p.ToString(), "namespace declaration can't be part of a class");
+}
+
+void ER::ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo) {
+	String err = "template " + ToColor(cls, true) + " must be instanced with 1 or 2 arguments";
+				err << ", " << IntStr(argNo) << " provided.";
+				
+	Error(source, p, err);
+}
+
+void ER::ErrClassTemplateWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int target, int argNo) {
+	String err = "template " + ToColor(cls, true) + "' must be instanced with " + IntStr(target) + " argument";
+	if (target != 1)
+		err << "s";
+	err << ", " << IntStr(argNo) << " provided.";
+	
+	Error(source, p, err);
 }
 
 void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamespace& owner, ZMethodBundle* def, Vector<Node*>& params, int limit, bool cons) {

@@ -6,6 +6,8 @@
 #include <z2crlib/ErrorReporter.h>
 #include <z2crlib/ZCompiler.h>
 
+class ZCompiler;
+
 class ZExprParser {
 public:
 	ZNamespaceSection* Section = nullptr;
@@ -16,22 +18,14 @@ public:
 	//ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
 	//}
 	
-	ZExprParser(ZEntity& entity, ZNamespace* ns, ZFunction* f, ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
-		if (ns && ns->IsClass) {
-			//Namespace = &ns->Namespace();
-			Class = ns;
-		}
-		//else
-		//	Namespace = ns;
+	ZExprParser(ZEntity& entity, ZNamespace* ns, ZFunction* f, ZCompiler& aComp, ZParser& aPos, IR& aIrg): parser(aPos), comp(aComp), irg(aIrg), ass(aIrg.Ass()) {
 		ASSERT(entity.Section);
 		Section = entity.Section;
 		Namespace = &entity.Namespace();
 		Function = f;
-		/*if (entity.Type == EntityType::Function)
-			Function = static_cast<ZFunction*>(&entity);
-		
-		if (entity.InClass)
-			Class = static_cast<ZClass*>(&entity.Owner());*/
+		if (ns && ns->IsClass)
+			Class = ns;
+
 	}
 	
 	static void Initialize();
@@ -46,6 +40,8 @@ public:
 	Node* ParseNamespace(const String& s, Point opp);
 	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp, bool onlyStatic, Node* object = nullptr);
 	Node* ParseDot(Node* exp);
+	Node* ParseAtomClassInst(Node* exp);
+	Node *ParseSpec(ZClass& mainClass, Node *exp, Vector<Node *>& nodes, const Point& p);
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
@@ -56,6 +52,7 @@ private:
 	Assembly& ass;
 	ZParser& parser;
 	IR& irg;
+	ZCompiler& comp;
 	
 	static bool initialized;
 	
