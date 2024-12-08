@@ -124,7 +124,7 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamesp
 	for (int k = 0; k < params.GetCount(); k++) {
 		//if (params[k]->IsConst)
 		//	s << "const ";
-		s << ER::Cyan << ass.ClassToString(params[k]) << ER::White;
+		s << ass.TypeToColor(params[k]->Tt);
 		if (k < params.GetCount() - 1)
 			s << ", ";
 	}
@@ -155,7 +155,7 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamesp
 					s << "def  ";
 				s << ol.Name << "(" << ol.FuncSig() << ")\n";
 			}*/
-			s << "\t\t" << ol.ColorSig();
+			s << "\t\t" << ol.ColorSig() << "\n";
 		}
 	}
 	

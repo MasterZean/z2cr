@@ -119,7 +119,6 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 	
 	for (int i = 0; i < ns.Classes.GetCount(); i++) {
 		ZClass& cls = *ns.Classes[i];
-		DUMP(cls.IsClass);
 		TranspileClassDeclMaster(cls, accessFlags);
 	}
 	

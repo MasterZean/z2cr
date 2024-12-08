@@ -5,30 +5,63 @@ extern String opss[];
 
 String CLS_STR = "class";
 
-Node* ZExprParser::Parse() {
+Node* ZExprParser::Parse(bool secondOnlyAttempt) {
 	Point p = parser.GetPoint();
 	Node* left = ParseAtom();
+	ASSERT(left->Tt.Class);
 	
-	CParser::Pos backupPoint;
-	Node* exp = ParseBin(0, left, backupPoint);
+	if (secondOnlyAttempt == false) {
+		CParser::Pos backupPoint;
+		Node* exp = ParseBin(0, left, backupPoint);
+		
+		if (parser.Char('?')) {
+			if (exp->Tt.Class != ass.CBool)
+				parser.Error(p, "ternary operator '?': first operand must have type " + ass.ToQtColor(ass.CBool));
 	
-	if (parser.Char('?')) {
-		if (exp->Tt.Class != ass.CBool)
-			parser.Error(p, "ternary operator '?': first operand must have type " + ass.ToQtColor(ass.CBool));
-
-		left = Parse();
-		parser.Expect(':');
-		Node* right = Parse();
-
-		// TODO
-		if (left->Tt.Class != right->Tt.Class)//!TypesEqualDeep(ass, &left->Tt, &right->Tt))
-			parser.Error(p, "ternary operator '?': second and third operand must have the same type, but they are " +
-					ass.ToQtColor(&left->Tt) + " and " + ass.ToQtColor(&right->Tt));
-
-		exp = irg.opTern(exp, left, right);
+			left = Parse();
+			parser.Expect(':');
+			Node* right = Parse();
+	
+			// TODO
+			if (left->Tt.Class != right->Tt.Class)//!TypesEqualDeep(ass, &left->Tt, &right->Tt))
+				parser.Error(p, "ternary operator '?': second and third operand must have the same type, but they are " +
+						ass.ToQtColor(&left->Tt) + " and " + ass.ToQtColor(&right->Tt));
+	
+			exp = irg.opTern(exp, left, right);
+		}
+		
+		return exp;
 	}
-	
-	return exp;
+	else {
+		CParser::Pos backupPoint = parser.GetPos();
+		
+		try {
+			Node* exp = ParseBin(0, left, backupPoint);
+		
+			if (parser.Char('?')) {
+				if (exp->Tt.Class != ass.CBool)
+					parser.Error(p, "ternary operator '?': first operand must have type " + ass.ToQtColor(ass.CBool));
+		
+				left = Parse();
+				parser.Expect(':');
+				Node* right = Parse();
+		
+				// TODO
+				if (left->Tt.Class != right->Tt.Class)//!TypesEqualDeep(ass, &left->Tt, &right->Tt))
+					parser.Error(p, "ternary operator '?': second and third operand must have the same type, but they are " +
+							ass.ToQtColor(&left->Tt) + " and " + ass.ToQtColor(&right->Tt));
+		
+				exp = irg.opTern(exp, left, right);
+			}
+			
+			return exp;
+		}
+		catch (...) {
+			parser.SetPos(backupPoint);
+			
+			return left;
+		}
+	}
 }
 
 Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
@@ -215,7 +248,7 @@ Node* ZExprParser::ParseAtomClassInst(Node* exp) {
 	
 	while (true) {
 		Point posSub = parser.GetPoint();
-		Node* sub = Parse();
+		Node* sub = Parse(true);
 		
 		nodes << sub;
 		
@@ -306,7 +339,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "camera")
+//	if (s == "CArray")
 //		s == "Int";
 	
 	if (Function) {
@@ -604,7 +637,8 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ObjectInfo ZExprParser::ParseType(Assembly& ass, ZParser& parser) {
+ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
+	Assembly& ass = comp.Ass();
 	ObjectInfo ti;
 	ti.IsRef = false;
 	ti.IsConst = false;
@@ -639,21 +673,45 @@ ObjectInfo ZExprParser::ParseType(Assembly& ass, ZParser& parser) {
 		
 		if (parser.IsId("const"))
 			parser.ReadId();
-		ObjectInfo sub = ParseType(ass, parser);
+		ObjectInfo sub = ParseType(comp, parser);
 		
 		parser.Expect('>');
 
-		if (sub.Tt.Class == ass.CVoid)
-			parser.Error(tt.P, "can't have a pointer to '\fVoid\f'");
-		if (ass.IsPtr(sub.Tt))
-			parser.Error(tt.P, ZCompiler::GetName() + " does not support nested pointer types");
+		if (sub.Tt.Class == ass.CVoid || sub.Tt.Class == ass.CNull || sub.Tt.Class == ass.CClass)
+			parser.Error(tt.P, "can't have a pointer to " + ass.ToQtColor(&sub));
+		//if (ass.IsPtr(sub.Tt))
+		//	parser.Error(tt.P, ZCompiler::GetName() + " does not support nested pointer types");
 				
 		ti.Tt = sub.Tt.Class->Pt;
 		return ti;
 	}
 	
+	if (parser.Char('<')) {
+		if (!cls->IsTemplate)
+			parser.Error(tt.P, " class " + ass.ToQtColor(cls) + " is not a template");
+		
+		ObjectInfo sub = ParseType(comp, parser);
+		
+		Node* node = nullptr;
+		if (parser.Char(',')) {
+			// TODO: fix
+			ZNamespace ns(ass);
+			ns.Sections.Add();
+			ZVariable dummy(ns);
+			dummy.Section = &ns.Sections[0];
+			ZExprParser ep(dummy, nullptr, nullptr, comp, parser, comp.IRG());
+			node = ep.Parse(true);
+		}
+		
+		parser.Expect('>');
+		
+		cls = &comp.ResolveInstance(*cls, *sub.Tt.Class, tt.P, true);
+		if (node)
+			cls->Tt.Param = node->IntVal;
+	}
+	
 	ti.Tt = cls->Tt;
-	return cls;
+	return ti;
 }
 
 ZFunction* ZExprParser::GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig) {

@@ -216,13 +216,21 @@ void ZScanner::ScanType() {
 		parser.ExpectId();
 	
 	if (parser.Char('<')) {
-		String ss = parser.ExpectId();
-		if (ss == "const")
-			parser.ExpectId();
-		if (parser.Char(','))
-			ScanToken();
+		ScanSubType();
+		
+		while (parser.Char(','))
+			ScanSubType();
 		parser.Expect('>');
 	}
+}
+
+void ZScanner::ScanSubType() {
+	if (parser.IsId("const"))
+		ScanType();
+	else if (parser.IsId())
+		ScanType();
+	else
+		ScanToken();
 }
 
 void ZScanner::ScanUsing(const ZSourcePos& p) {
@@ -339,9 +347,9 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst, bool isStatic) {
 		
 		while (!(parser.IsChar(';'))) {
 			if (parser.IsChar('{'))
-					ScanBlock();
-				else
-					ScanToken();
+				ScanBlock();
+			else
+				ScanToken();
 		}
 	}
 	

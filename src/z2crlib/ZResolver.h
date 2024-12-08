@@ -1,13 +1,13 @@
 #ifndef _z2crlib_ZResolver_h_
 #define _z2crlib_ZResolver_h_
 
-#include <z2crlib/Assembly.h>
+#include <z2crlib/ZCompiler.h>
 
 class ZResolver {
 public:
 	Index<String> LibLink;
 	
-	ZResolver(Assembly& aAss): ass(aAss) {
+	ZResolver(ZCompiler& aComp): comp(aComp), ass(comp.Ass()) {
 	}
 	
 	bool Resolve();
@@ -24,6 +24,7 @@ public:
 	void DuplicateLoop(ZNamespace& ns, bool aPrivate);
 	
 private:
+	ZCompiler& comp;
 	Assembly& ass;
 	
 	Vector<String> dupeFile;

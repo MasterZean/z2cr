@@ -80,6 +80,8 @@ public:
 	bool IsFloat(const ObjectType& type) const;
 	bool IsUnsignedInt(const ObjectType& type) const;
 	
+	String TypeToString(ObjectType& type);
+	String TypeToColor(ObjectType& type);
 	String ClassToString(ObjectInfo* type, bool qual = true);
 	String ClassToString(const ObjectType& type);
 	

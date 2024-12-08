@@ -30,7 +30,7 @@ bool ZCompiler::Compile() {
 	if (!ScanSources())
 		return false;
 	
-	ZResolver resolver(ass);
+	ZResolver resolver(*this);
 	if (!resolver.Resolve())
 		return false;
 	
@@ -494,7 +494,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(ass, parser);
+		auto ti = ZExprParser::ParseType(*this, parser);
 		if (ti.Tt.Class == ass.CVoid)
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
 		v.I = ti;
@@ -586,7 +586,29 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
 }
 
 ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) {
-	return *ass.CVoid;
+	String fullName;
+	fullName << cc.Namespace().Name << cc.Name << "<" << sub.Namespace().Name << sub.Name << ">";
+	
+	int i = ass.Classes.Find(fullName);
+	if (i != -1) {
+		ZClass& tclass = ass.Classes[i];
+		return tclass;
+	}
+
+	ZClass& tclass = ass.Classes.Add(cc.Namespace().Name + cc.Name, ZClass(cc.Namespace()));
+	tclass.Name = cc.Name;
+	tclass.FromTemplate = true;
+	tclass.TBase = &cc;
+	tclass.T = &sub;
+	ObjectType* t = new ObjectType();
+	t->Class = &tclass;
+	t->Next = 0;
+	t->Param = 0;
+	cc.Temps.Add(t);
+	tclass.Tt = *t;
+	tclass.Pt = ass.GetPtr(&t->Class->Tt);
+		
+	return tclass;
 }
 
 void ZCompiler::TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur) {

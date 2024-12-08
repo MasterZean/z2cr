@@ -28,6 +28,7 @@ public:
 	void ScanToken();
 	bool ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool isStatic);
 	void ScanType();
+	void ScanSubType();
 	void ScanUsing(const ZSourcePos& p);
 	
 protected:

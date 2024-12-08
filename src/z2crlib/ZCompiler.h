@@ -45,8 +45,20 @@ public:
 		mainFile = aFile;
 	}
 	
+	Assembly& Ass() {
+		return ass;
+	}
+	
 	Assembly& Ass() const {
 		return ass;
+	}
+	
+	IR& IRG() {
+		return irg;
+	}
+	
+	const IR& IRG() const {
+		return irg;
 	}
 	
 	static String& GetName();

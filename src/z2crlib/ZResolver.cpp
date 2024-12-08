@@ -139,7 +139,7 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 }
 
 void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
-	f.GenerateSignatures();
+	f.GenerateSignatures(comp);
 	f.DefPos.Source->Functions.Add(&f);
 	
 	f.SetOwner(ns);

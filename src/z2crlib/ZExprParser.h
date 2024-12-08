@@ -30,7 +30,7 @@ public:
 	
 	static void Initialize();
 	
-	Node* Parse();
+	Node* Parse(bool secondOnlyAttempt = false);
 	
 	Node* ParseBin(int prec, Node* left, CParser::Pos& backupPoint);
 	Node* ParseAtom();
@@ -45,7 +45,7 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
-	static ObjectInfo ParseType(Assembly& ass, ZParser& parser);
+	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser);
 	static Node* Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>&/*, const Point& p*/);
 	
 private:

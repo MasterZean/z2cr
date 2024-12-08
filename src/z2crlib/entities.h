@@ -47,7 +47,6 @@ public:
 	
 	bool HasDefaultCons = false;
 	bool IsEnum = false;
-	bool IsTemplate = false;
 	bool HasVirtuals = false;
 	bool IsStatic = false;
 };
@@ -211,7 +210,14 @@ public:
 	ObjectType Pt;
 	ZClass* ParamType;
 	
+	ZClass* TBase = nullptr;
+	ZClass* T = nullptr;
+	WithDeepCopy<Vector<ObjectType*>> Temps;
+	
 	int RTTIIndex = 0;
+	
+	bool IsTemplate = false;
+	bool FromTemplate = false;
 	
 	ZClass(ZNamespace& aNmspace): ZNamespace(aNmspace.Ass(), aNmspace) {
 		Type = EntityType::Class;
@@ -289,6 +295,8 @@ public:
 	int Temps = 0;
 };
 
+class ZCompiler;
+
 class ZFunction: Moveable<ZFunction>, public ZEntity {
 public:
 	bool IsFunction = false;
@@ -316,7 +324,7 @@ public:
 	
 	ZFunction(const ZFunction& aEnitity) = default;
 	
-	void GenerateSignatures();
+	void GenerateSignatures(ZCompiler& comp);
 	
 	const String& FuncSig() const {
 		return fsig;

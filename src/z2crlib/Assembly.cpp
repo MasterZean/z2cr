@@ -165,16 +165,16 @@ void Assembly::AddBuiltInClasses() {
 	CStream   = AddCoreType(CoreNamespace(),      "Stream",   "Stream",   false, false, false);
 
 	CPtr = AddCoreType(LangNamespace(), "Ptr",      "Ptr");
-	CPtr->Scan.IsTemplate = true;
+	CPtr->IsTemplate = true;
 	CString  = AddCoreType(LangNamespace(), "String", "String", false, false, false);
 	CRaw = AddCoreType(LangNamespace(), "CArray", "", false, false, true);
-	CRaw->Scan.IsTemplate = true;
+	CRaw->IsTemplate = true;
 	CRaw->MIsRawVec = true;
 	
 	CVect     = AddCoreType(LangNamespace(), "Vector", "Vector", false, false, false);
 
 	CSlice    = AddCoreType(LangNamespace(), "Slice", "Slice", false, false, false);
-	CSlice->Scan.IsTemplate = true;
+	CSlice->IsTemplate = true;
 	
 	CIntrinsic = AddCoreType(LangNamespace(),      "Intrinsic",   "Intrinsic",   false, false, false);
 
@@ -258,6 +258,46 @@ String Assembly::ClassToString(ObjectInfo* type, bool qual) {
 	}*/
 	
 	s << type->Tt.Class->Name;
+	
+	return s;
+}
+
+String Assembly::TypeToString(ObjectType& type) {
+	String s;
+	
+	if (type.Next) {
+		s << type.Class->Name;
+		s << '<';
+		s << TypeToString(*type.Next);
+		s << '>';
+	}
+	else
+		s << type.Class->Name;
+	
+	return s;
+}
+
+String Assembly::TypeToColor(ObjectType& type) {
+	String s;
+	
+	if (type.Next) {
+		s << ER::Cyan << type.Class->Name << ER::White;
+		s << '<';
+		s << TypeToColor(*type.Next);
+		s << '>';
+	}
+	else if (type.Class->FromTemplate) {
+		s << ER::Cyan << type.Class->TBase->Name << ER::White;
+		s << '<';
+		s << TypeToColor(type.Class->T->Tt);
+		
+		if (type.Param != -1)
+			s << ", " << type.Param;
+		
+		s << '>';
+	}
+	else
+		s << ER::Cyan << type.Class->Name << ER::White;
 	
 	return s;
 }

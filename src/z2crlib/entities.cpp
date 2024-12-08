@@ -27,7 +27,7 @@ void ZClass::GenerateSignatures() {
 	osig = ER::ToColor(Owner());
 }
 
-void ZFunction::GenerateSignatures() {
+void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	ZParser parser(ParamPos);
 	
 	parser.Expect('(');
@@ -47,7 +47,7 @@ void ZFunction::GenerateSignatures() {
 			throw ER::Duplicate(name, pp, DefPos);
 		parser.Expect(':');
 		
-		auto ti = ZExprParser::ParseType(Ass(), parser);
+		auto ti = ZExprParser::ParseType(comp, parser);
 		
 		if (parser.Char(',')) {
 			if (parser.IsChar(')'))
@@ -66,7 +66,7 @@ void ZFunction::GenerateSignatures() {
 	parser.Expect(')');
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(Ass(), parser);
+		auto ti = ZExprParser::ParseType(comp, parser);
 		Return.Tt = ti.Tt;
 	}
 	else
@@ -131,8 +131,8 @@ void ZFunction::GenerateSignatures() {
 			psigc << ", ";
 		}
 		
-		psig << Ass().ClassToString(&var.I);
-		psigc << ER::Cyan << Ass().ClassToString(&var.I) << ER::White;
+		psig << Ass().TypeToString(var.I.Tt);
+		psigc << Ass().TypeToColor(var.I.Tt);
 	}
 	
 	psig << ")";
@@ -144,10 +144,10 @@ void ZFunction::GenerateSignatures() {
 	
 	if (Return.Tt.Class && Return.Tt.Class != Ass().CVoid) {
 		fsig << ": ";
-		fsig << Ass().ClassToString(Return.Tt);
+		fsig << Ass().TypeToString(Return.Tt);
 		
 		csig << ": ";
-		csig << ER::Cyan << Ass().ClassToString(Return.Tt);
+		csig << Ass().TypeToColor(Return.Tt);
 	}
 	
 	osig = ER::ToColor(Owner());
