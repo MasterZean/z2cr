@@ -212,7 +212,7 @@ public:
 	
 	ZClass* TBase = nullptr;
 	ZClass* T = nullptr;
-	WithDeepCopy<Vector<ObjectType*>> Temps;
+	WithDeepCopy<Array<ObjectType>> Temps;
 	
 	int RTTIIndex = 0;
 	

@@ -464,7 +464,9 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 bool ZCompiler::CompileVar(ZVariable& v) {
 	ZParser parser(v.DefPos);
 	parser.ExpectZId();
-
+	
+	if (v.Name == "p11")
+		v.Name == "p11";
 	Node* node = compileVarDec(v, parser, v.DefPos, nullptr);
 	parser.ExpectEndStat();
 	
@@ -491,13 +493,30 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	return compileVarDec(v, parser, vp, &f);
 }
 
+inline bool invalidClass(ZClass* cls, Assembly& ass) {
+	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
+}
+
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	if (parser.Char(':')) {
 		auto ti = ZExprParser::ParseType(*this, parser);
-		if (ti.Tt.Class == ass.CVoid)
-			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
+		if (invalidClass(ti.Tt.Class, ass))
+			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ti.Tt.Class));
+		if (ti.Tt.Class == ass.CPtr && ti.Tt.Next->Class == ass.CPtr)
+			parser.Error(vp.P, "pointers to pointer are currently not supported");
 		v.I = ti;
+		/*if (v.I.Tt.Class == ass.CPtr) {
+			ObjectType* tt = &v.I.Tt;
+			
+			while (tt) {
+				DUMP(tt->Class->Name);
+				tt = tt->Next;
+			}
+			DUMP("====");
+				
+		}*/
+		cls = ti.Tt.Class;
 	}
 	
 	bool assign = false;
@@ -515,15 +534,12 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		Node* node = ep.Parse();
 		
 		if (!cls) {
-			if (node->Tt.Class == ass.CVoid)
-				parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
-			if (node->Tt.Class == ass.CNull)
-				parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CNull));
+			if (invalidClass(node->Tt.Class, ass))
+				parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(node->Tt.Class));
+			if (node->Tt.Class == ass.CPtr && node->Tt.Next->Class == ass.CPtr)
+				parser.Error(vp.P, "pointers to pointer are currently not supported");
 			v.I.Tt = node->Tt;
 		}
-		
-		if (v.I.Tt.Class == ass.CClass)
-			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CClass));
 			
 		if (v.I.CanAssign(ass, node)) {
 			v.Value = node;
@@ -533,18 +549,13 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 			v.Value = nullptr;
 		}
 		else {
-			parser.Error(vp.P, "can't assign '\f" + ass.ClassToString(node) +
-					"\f' instance to '\f" + ass.ClassToString(&v.I) + "\f' instance without a cast");
+			parser.Error(vp.P, "can't assign " + ass.TypeToColor(node->Tt) +
+					" instance to " + ass.TypeToColor(v.I.Tt) + " instance without a cast");
 		}
 	}
 	else {
 		if (v.I.Tt.Class == NULL)
 			parser.Error(vp.P, "variable must have either an explicit type or be initialized");
-		
-		if (v.I.Tt.Class == ass.CClass)
-			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CClass));
-		if (v.I.Tt.Class == ass.CVoid)
-			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ass.CVoid));
 		
 		if (v.Value == nullptr) {
 			Vector<Node*> params;
@@ -564,7 +575,7 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
 	auto p = parser.GetPoint();
 	
 	if (f.IsConstructor)
-		parser.Error(p, "constructors can't have a 'return' statement");
+		parser.Error(p, "constructors can't have a '" + ER::Magenta + "return" + ER::White + "' statement");
 	
 	Node* retVal = nullptr;
 	
@@ -600,11 +611,10 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	tclass.FromTemplate = true;
 	tclass.TBase = &cc;
 	tclass.T = &sub;
-	ObjectType* t = new ObjectType();
+	ObjectType* t = &cc.Temps.Add();
 	t->Class = &tclass;
 	t->Next = 0;
 	t->Param = 0;
-	cc.Temps.Add(t);
 	tclass.Tt = *t;
 	tclass.Pt = ass.GetPtr(&t->Class->Tt);
 		

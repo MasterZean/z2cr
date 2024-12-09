@@ -637,6 +637,10 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
+inline bool invalidPtrClass(ZClass* cls, Assembly& ass) {
+	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
+}
+
 ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 	Assembly& ass = comp.Ass();
 	ObjectInfo ti;
@@ -677,12 +681,40 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 		
 		parser.Expect('>');
 
-		if (sub.Tt.Class == ass.CVoid || sub.Tt.Class == ass.CNull || sub.Tt.Class == ass.CClass)
-			parser.Error(tt.P, "can't have a pointer to " + ass.ToQtColor(&sub));
-		//if (ass.IsPtr(sub.Tt))
-		//	parser.Error(tt.P, ZCompiler::GetName() + " does not support nested pointer types");
+		if (invalidPtrClass(sub.Tt.Class, ass))
+			parser.Error(tt.P, "can't have a pointer to class " + ass.ToQtColor(&sub));
 				
 		ti.Tt = sub.Tt.Class->Pt;
+		
+		/*{
+			ObjectType* tt = &ti.Tt;
+			
+			while (tt) {
+				DUMP(tt->Class);
+				DUMP(tt->Class->Name);
+				tt = tt->Next;
+			}
+			DUMP("====");
+		}
+		
+		if (ti.Tt.Class == ass.CPtr && ti.Tt.Next->Class == ass.CPtr) {
+			auto t = ass.CPtr->Temps.Add();
+			t = sub.Tt;
+			ti.Tt = (ass.GetPtr(&t));
+		}
+		
+		{
+			ObjectType* tt = &ti.Tt;
+			
+			while (tt) {
+				DUMP(tt->Class);
+				DUMP(tt->Class->Name);
+				tt = tt->Next;
+			}
+			DUMP("====");
+		}*/
+		
+		
 		return ti;
 	}
 	
@@ -784,8 +816,10 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>&
 
 		if (params.GetCount() == 0)
 			return irg.const_null();
-		else
+		else if (params.GetCount() == 1)
 			return irg.mem_ptr(params[0]);
+		else
+			ASSERT(0);
 	}
 	else {
 		//return irg.mem_temp(cls, nullptr);

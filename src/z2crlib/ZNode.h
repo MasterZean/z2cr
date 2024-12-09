@@ -245,4 +245,16 @@ public:
 	}
 };
 
+class PtrNode: public Node {
+public:
+	//bool Ref = false;
+	//bool Move = false;
+	//bool Nop = false;
+	Node* Object = nullptr;
+
+	PtrNode() {
+		NT = NodeType::Ptr;
+	}
+};
+
 #endif

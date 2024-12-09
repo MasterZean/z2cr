@@ -78,6 +78,7 @@ public:
 	void Proc(LoopControlNode& node);
 	void Proc(TempNode& node);
 	void Proc(ListNode& node);
+	void Proc(PtrNode& node);
 	
 	void BeginNamespace(ZNamespace& ns) {
 		inNamespace = &ns;

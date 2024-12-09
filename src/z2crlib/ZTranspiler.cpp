@@ -223,6 +223,9 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 			if (v.IsConst)
 				cs << "const ";
 		}
+		
+		if (v.Name == "p11")
+			v.Name == "p11";
 
 		WriteType(&v.I.Tt);
 		cs << " " << v.Name;
@@ -520,10 +523,10 @@ void ZTranspiler::Walk(Node* node) {
 	else if (node->NT == NodeType::List)
 		Proc(*(ListNode*)node);
 	/*else if (node->NT == NodeType::Construct)
-		Proc((ConstructNode*)node);
+		Proc((ConstructNode*)node);*/
 	else if (node->NT == NodeType::Ptr)
-		Proc((PtrNode*)node);
-	else if (node->NT == NodeType::Index)
+		Proc(*(PtrNode*)node);
+	/*else if (node->NT == NodeType::Index)
 		Proc((IndexNode*)node);
 	else if (node->NT == NodeType::SizeOf)
 		Proc((SizeOfNode*)node);
@@ -1117,6 +1120,13 @@ void ZTranspiler::Proc(ListNode& node) {
 			cs << ", ";
 	}
 	
+	cs << ')';
+}
+
+void ZTranspiler::Proc(PtrNode& node) {
+	ASSERT(node.Object);
+	cs << "&(";
+	Walk(node.Object);
 	cs << ')';
 }
 

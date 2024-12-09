@@ -62,6 +62,7 @@ protected:
 	NodePool<LoopControlNode> loopControlNodes;
 	NodePool<TempNode> tempNodes;
 	NodePool<ListNode> listNodes;
+	NodePool<PtrNode> ptrNodes;
 		
 public:
 	public:
@@ -121,7 +122,7 @@ public:
 	
 	MemNode* mem_var(ZEntity& var, Node* object = nullptr);
 	TempNode *mem_temp(ZClass& cls, ZFunction *constructor);
-	Node* mem_ptr(Node* object);
+	PtrNode* mem_ptr(Node* object);
 	
 	BlockNode* block();
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);

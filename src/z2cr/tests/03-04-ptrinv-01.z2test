@@ -1,0 +1,114 @@
+// @test ptr
+// @file
+// @error test.z2(6, 5): can't create a variable of type 'Null'
+namespace testptr;
+
+val p1 = null;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Void'
+namespace testptr;
+
+val p1: Ptr<sys.core.Void>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Void'
+namespace testptr;
+
+val p1: Ptr<sys.core.Void> = null;
+
+// @test ptr
+// @file
+// @error test.z2(6, 13): can't have a pointer to class 'Void'
+namespace testptr;
+
+val p1: Ptr<Ptr<sys.core.Void>>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Null'
+namespace testptr;
+
+val p1: Ptr<sys.core.Null>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Null'
+namespace testptr;
+
+val p1: Ptr<sys.core.Null> = null;
+
+// @test ptr
+// @file
+// @error test.z2(6, 13): can't have a pointer to class 'Null'
+namespace testptr;
+
+val p1: Ptr<Ptr<sys.core.Null>>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Class'
+namespace testptr;
+
+val p1: Ptr<sys.core.Class>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Class'
+namespace testptr;
+
+val p1: Ptr<sys.core.Class> = null;
+
+// @test ptr
+// @file
+// @error test.z2(6, 13): can't have a pointer to class 'Class'
+namespace testptr;
+
+val p1: Ptr<Ptr<sys.core.Class>>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Def'
+namespace testptr;
+
+val p1: Ptr<sys.core.lang.Def>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 9): can't have a pointer to class 'Def'
+namespace testptr;
+
+val p1: Ptr<sys.core.lang.Def> = null;
+
+
+// @test ptr
+// @file
+// @error test.z2(6, 5): pointers to pointer are currently not supported
+namespace testptr;
+
+val p1: Ptr<Ptr<Float>>;
+
+// @test ptr
+// @file
+// @error test.z2(6, 5): pointers to pointer are currently not supported
+namespace testptr;
+
+val p1: Ptr<Ptr<Float>> = null;
+
+// @test ptr
+// @file
+// @error test.z2(7, 5): pointers to pointer are currently not supported
+namespace testptr;
+
+val v = 0;
+val p1: Ptr<Ptr<Float>> = Ptr{Ptr{v}};
+
+// @test ptr
+// @file
+// @error test.z2(7, 5): pointers to pointer are currently not supported
+namespace testptr;
+
+val v = 0;
+val p1 = Ptr{Ptr{v}};
