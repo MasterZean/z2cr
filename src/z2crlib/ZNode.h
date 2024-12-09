@@ -249,7 +249,7 @@ class PtrNode: public Node {
 public:
 	//bool Ref = false;
 	//bool Move = false;
-	//bool Nop = false;
+	bool Nop = false;
 	Node* Object = nullptr;
 
 	PtrNode() {

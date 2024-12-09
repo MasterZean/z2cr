@@ -1454,7 +1454,14 @@ TempNode* IR::mem_temp(ZClass& cls, ZFunction* constructor) {
 PtrNode *IR::mem_ptr(Node *object) {
 	PtrNode* node = ptrNodes.Get();
 	node->Object = object;
-	node->SetType(object->Tt.Class->Pt);
+	
+	if (object->Tt.Class == ass.CString) {
+		node->SetType(ass.CByte->Pt);
+		node->Nop = true;
+	}
+	else
+		node->SetType(object->Tt.Class->Pt);
+	
 	return node;
 }
 

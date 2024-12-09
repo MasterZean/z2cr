@@ -703,11 +703,6 @@ void ZTranspiler::Proc(ConstNode& node, Stream& stream) {
 		//stream << "S_[" << (int)node.IntVal << ']';
 		stream << AsCString(ass.StringConsts[(int)node.IntVal]);
 	}
-	else if (node.Tt.Class == ass.CPtr) {
-		// TODO: fix
-		//stream << "S_[" << (int)node.IntVal << ']';
-		stream << "(uint8*)(" << AsCString(ass.StringConsts[(int)node.IntVal]) << ")";
-	}
 }
 
 void ZTranspiler::Proc(OpNode& node) {
@@ -1125,8 +1120,16 @@ void ZTranspiler::Proc(ListNode& node) {
 
 void ZTranspiler::Proc(PtrNode& node) {
 	ASSERT(node.Object);
-	cs << "&(";
-	Walk(node.Object);
-	cs << ')';
+	if (node.Nop) {
+		// TODO: fix
+		cs << "(uint8*)(";
+		Walk(node.Object);
+		cs << ")";
+	}
+	else {
+		cs << "&(";
+		Walk(node.Object);
+		cs << ')';
+	}
 }
 

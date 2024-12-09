@@ -271,8 +271,9 @@ String Assembly::TypeToString(ObjectType& type) {
 		s << TypeToString(*type.Next);
 		s << '>';
 	}
-	else
+	else {
 		s << type.Class->Name;
+	}
 	
 	return s;
 }
@@ -296,8 +297,9 @@ String Assembly::TypeToColor(ObjectType& type) {
 		
 		s << '>';
 	}
-	else
+	else {
 		s << ER::Cyan << type.Class->Name << ER::White;
+	}
 	
 	return s;
 }

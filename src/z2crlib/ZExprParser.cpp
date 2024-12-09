@@ -190,6 +190,7 @@ Node* ZExprParser::ParseAtom() {
 	ASSERT(exp);
 	
 	while (OPCONT[parser.PeekChar()]) {
+		auto pp = parser.GetFullPos();
 		Point p = parser.GetPoint();
 		
 		if (parser.Char('(')) {
@@ -203,7 +204,7 @@ Node* ZExprParser::ParseAtom() {
 				Vector<Node*> params;
 				getParams(params, '}');
 				
-				Node* temp = Temporary(ass, irg, cobj, params/*, p*/);
+				Node* temp = Temporary(ass, irg, cobj, params, &pp);
 				exp = temp;
 			}
 		}
@@ -768,7 +769,7 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 	parser.Expect(end);
 }
 
-Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>& params/*, const Point& p*/) {
+Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
 	Node* dr = nullptr;
 	
 	if (&cls == ass.CFloat) {
@@ -813,13 +814,20 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>&
 		if (params.GetCount() != 1 || params[0]->NT != NodeType::Memory)
 			parser.Error(p, "local variable expected to take its address");
 		*/
+		
 
 		if (params.GetCount() == 0)
 			return irg.const_null();
-		else if (params.GetCount() == 1)
+		else if (params.GetCount() == 1) {
+			if (invalidPtrClass(params[0]->Tt.Class, ass)) {
+				if (pos)
+					ER::Error(*pos->Source, pos->P, "can't have a pointer to class " + ass.ToQtColor(&params[0]->Tt));
+				return nullptr;
+			}
 			return irg.mem_ptr(params[0]);
+		}
 		else
-			ASSERT(0);
+			return nullptr;
 	}
 	else {
 		//return irg.mem_temp(cls, nullptr);

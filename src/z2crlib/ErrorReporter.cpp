@@ -34,7 +34,7 @@ String ER::ToColor(const ZNamespace& ns, bool qt ) {
 void ER::Error(const ZSource& src, const Point& p, const String& text) {
 	//ASSERT(0);
 	if (PrintPath)
-		throw ZException(String().Cat() << src.Package().Path << src.Path << "(" << p.x << ", " << p.y << ")", text);
+		throw ZException(String().Cat() << src.Path << "(" << p.x << ", " << p.y << ")", text);
 	else
 		throw ZException(String().Cat() << GetFileName(src.Path) << "(" << p.x << ", " << p.y << ")", text);
 }

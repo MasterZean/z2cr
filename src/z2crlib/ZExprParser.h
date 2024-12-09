@@ -46,7 +46,7 @@ public:
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
 	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser);
-	static Node* Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>&/*, const Point& p*/);
+	static Node* Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>&, const ZSourcePos* pos = nullptr);
 	
 private:
 	Assembly& ass;
