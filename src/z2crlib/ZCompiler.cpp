@@ -46,9 +46,10 @@ bool ZCompiler::Compile() {
 		PreCompileVars(ns);
 		
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
-			auto& c = *ns.Classes[j];
-			PreCompileVars(c);
+			Class = ns.Classes[j];
+			PreCompileVars(*Class);
 		}
+		Class = nullptr;
 	}
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)

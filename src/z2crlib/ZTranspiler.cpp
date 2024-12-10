@@ -828,14 +828,20 @@ void ZTranspiler::Proc(MemNode& node) {
 			cs << node.Mem->Namespace().BackName << "::" << node.Mem->Owner().BackName << "::";
 		else
 			cs << node.Mem->Owner().BackName << "::";
+		cs << node.Mem->BackName;
 	}
-	
-	if (node.Object) {
+	else if (node.Mem->InClass == true && node.Mem->IsStatic) {
+		cs << node.Mem->Namespace().BackName << "::" << node.Mem->Owner().BackName << "::";
+		cs << node.Mem->BackName;
+	}
+	else if (node.Object) {
 		Walk(node.Object);
 		cs << ".";
+		cs << node.Mem->BackName;
 	}
-		
-	cs << node.Mem->BackName;
+	else
+		cs << node.Mem->BackName;
+	
 }
 
 void ZTranspiler::Proc(BlockNode& node) {

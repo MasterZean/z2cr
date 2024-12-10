@@ -319,6 +319,8 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst, bool isStatic) {
 	f.IsStatic = isStatic;
 	if (curClass == nullptr)
 		f.IsStatic = true;
+	if (curClass != nullptr && aConst)
+		f.IsStatic = true;
 		
 	if (parser.Char(':')) {
 		ScanType();

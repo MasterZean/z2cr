@@ -340,8 +340,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "CArray")
-//		s == "Int";
+	if (s == "CSIZE")
+		s == "Int";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -523,8 +523,10 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		
 		if (onlyStatic && !f->IsStatic)
 			parser.Error(opp, ER::Green + aName + ER::White + ": is not a static member");
-		if (!onlyStatic && f->IsStatic)
-			parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
+		if (!onlyStatic && f->IsStatic) {
+			if (Class && Class != &f->Owner())
+				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
+		}
 	 
 		ParamsNode* node = irg.callfunc(*f, object);
 		node->Params = std::move(params);
@@ -538,8 +540,11 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		TestAccess(f, opp);
 		if (onlyStatic && !f.IsStatic)
 			parser.Error(opp, ER::Green + aName + ER::White + ": is not a static member");
-		if (!onlyStatic && f.IsStatic)
-			parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
+		if (!onlyStatic && f.IsStatic) {
+			if (Class && Class != &f.Owner())
+				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
+		}
+	 
 		
 		return irg.mem_var(f, object);
 	}
