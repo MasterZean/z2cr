@@ -79,6 +79,7 @@ public:
 	void Proc(TempNode& node);
 	void Proc(ListNode& node);
 	void Proc(PtrNode& node);
+	void Proc(IndexNode& node);
 	
 	void BeginNamespace(ZNamespace& ns) {
 		inNamespace = &ns;
@@ -181,6 +182,7 @@ private:
 	void NsOutro(ZNamespace& ns);
 	
 	void WriteType(ObjectType* tt);
+	void WriteTypePost(ObjectType *tt);
 };
 
 #endif

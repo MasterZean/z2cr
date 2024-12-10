@@ -118,7 +118,7 @@ ZFunction* ZFunctionResolver::GatherParIndex(Vector<ZFunction*>& oo, Vector<Node
 		else
 			return o1;
 	}
-	else if (a.Tt.Class->MIsRawVec) {
+	else if (a.Tt.Class->TBase == ass.CRaw) {
 		GatherInfo gi;
 		gi.Rez = nullptr;
 		

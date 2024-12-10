@@ -177,11 +177,21 @@ void ZTranspiler::WriteType(ObjectType* tt) {
 		WriteType(tt->Next);
 		cs << "*";
 	}
+	else if (tt->Class->FromTemplate && tt->Class->TBase == ass.CRaw) {
+		WriteType(&tt->Class->T->Tt);
+	}
 	else if (tt->Class->CoreSimple)
 		cs << tt->Class->BackName;
 	else {
 		cs << tt->Class->Namespace().BackName << "::";
 		cs << tt->Class->BackName;
+	}
+}
+
+void ZTranspiler::WriteTypePost(ObjectType* tt) {
+	if (tt->Class->FromTemplate && tt->Class->TBase == ass.CRaw) {
+		cs << '[' << tt->Param << ']';
+		WriteTypePost(&tt->Class->T->Tt);
 	}
 }
 
@@ -223,16 +233,18 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 			if (v.IsConst)
 				cs << "const ";
 		}
-		
-		if (v.Name == "p11")
-			v.Name == "p11";
 
 		WriteType(&v.I.Tt);
 		cs << " " << v.Name;
+		WriteTypePost(&v.I.Tt);
 		
-		if (v.InClass && !v.IsStatic) {
-			cs << " = ";
-			Walk(v.Value);
+		if (v.I.Tt.Class->FromTemplate && v.I.Tt.Class->TBase == ass.CRaw) {
+		}
+		else {
+			if (v.InClass && !v.IsStatic) {
+				cs << " = ";
+				Walk(v.Value);
+			}
 		}
 		
 		ES();
@@ -347,12 +359,20 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		if (v.IsConst)
 			cs << "const ";
 		WriteType(&v.I.Tt);
+		
 		cs << " ";
 		if (!v.InClass)
-			cs << v.Owner().BackName << "::" << v.Name << " = ";
+			cs << v.Owner().BackName << "::" << v.Name;
 		else
-			cs << v.Namespace().BackName << "::" << v.Owner().BackName << "::" << v.Name << " = ";
-		Walk(v.Value);
+			cs << v.Namespace().BackName << "::" << v.Owner().BackName << "::" << v.Name;
+		WriteTypePost(&v.I.Tt);
+		
+		if (v.I.Tt.Class->FromTemplate && v.I.Tt.Class->TBase == ass.CRaw) {
+		}
+		else {
+			cs << " = ";
+			Walk(v.Value);
+		}
 		ES();
 	}
 				
@@ -526,9 +546,9 @@ void ZTranspiler::Walk(Node* node) {
 		Proc((ConstructNode*)node);*/
 	else if (node->NT == NodeType::Ptr)
 		Proc(*(PtrNode*)node);
-	/*else if (node->NT == NodeType::Index)
-		Proc((IndexNode*)node);
-	else if (node->NT == NodeType::SizeOf)
+	else if (node->NT == NodeType::Index)
+		Proc(*(IndexNode*)node);
+	/*else if (node->NT == NodeType::SizeOf)
 		Proc((SizeOfNode*)node);
 	else if (node->NT == NodeType::Property)
 		Proc((PropertyNode*)node);
@@ -1139,3 +1159,9 @@ void ZTranspiler::Proc(PtrNode& node) {
 	}
 }
 
+void ZTranspiler::Proc(IndexNode& node) {
+	Walk(node.Object);
+	cs << '[';
+	Walk(node.Index);
+	cs << ']';
+}

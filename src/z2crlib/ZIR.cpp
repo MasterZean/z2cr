@@ -1611,3 +1611,35 @@ ListNode* IR::list(Node* node) {
 	
 	return l;
 }
+
+IndexNode* IR::mem_array(Node* object, Node* index) {
+	IndexNode* node = indexNodes.Get();
+	
+	node->Object = object;
+	node->Index = index;
+
+	/*if (exp->Tt.Class == ass.CPtr) {
+		node->SetType(exp->Tt.Next);
+		node->LValue = true;
+	}
+	else if (exp->Tt.Class == ass.CString)
+		node->SetType(ass.CByte->Tt);
+	else*/ if (object->Tt.Class->TBase == ass.CRaw) {
+		object->IsIndirect = false;
+		node->SetType(object->Tt.Class->T->Tt);
+		node->IsAddressable = true;
+	}
+	/*else if (exp->Tt.Class->FromTemplate && exp->Tt.Class->TBase == ass.CSlice) {
+		node->SetType(exp->Tt.Class->T->Tt);
+		node->LValue = true;
+	}*/
+	else {
+		return NULL;
+	}
+	
+	//node->IsAddressable = true;
+	//node->IsIndirect = node->IsRef;
+	
+	ASSERT(node->Tt.Class);
+	return node;
+}

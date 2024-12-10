@@ -257,4 +257,14 @@ public:
 	}
 };
 
+class IndexNode: public Node {
+public:
+	Node* Object = nullptr;
+	Node* Index = nullptr;
+	
+	IndexNode() {
+		NT = NodeType::Index;
+	}
+};
+
 #endif

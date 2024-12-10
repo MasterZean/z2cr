@@ -214,6 +214,29 @@ Node* ZExprParser::ParseAtom() {
 		else if (parser.Char('.')) {
 			exp = ParseDot(exp);
 		}
+		else if (parser.Char('[')) {
+			if (exp->Tt.Class == ass.CClass) {
+				ZClass& vecClass = ass.Classes[(int)exp->IntVal];
+				ASSERT(0);
+			}
+			else {
+				Node* index = Parse();
+				parser.Expect(']');
+				
+				if (/*exp->Tt.Class == ass.CPtr || */exp->Tt.Class->TBase == ass.CRaw) {
+					Node* temp = irg.mem_array(exp, index);
+					if (temp == nullptr)
+						parser.Error(p, "expression of type '" + ass.TypeToColor(exp->Tt) + "' does not have a '["
+							+ ass.TypeToColor(index->Tt) + "]' operator defined");
+					
+					exp = temp;
+				}
+				else {
+					parser.Error(p, "expression of type '" + ass.TypeToColor(exp->Tt) + "' does not have a '["
+							+ ass.TypeToColor(index->Tt) + "]' operator defined");
+				}
+			}
+		}
 		else if (parser.Char2('+', '+')) {
 			if (!exp->IsLValue())
 				parser.Error(p, "expression is not a l-value, can't apply operator postfix '++'");
@@ -264,7 +287,7 @@ Node* ZExprParser::ParseAtomClassInst(Node* exp) {
 		
 	parser.Expect('>');
 	
-	if (mainClass.MIsRawVec) {
+	if (mainClass.TBase == ass.CRaw) {
 		if (nodes.GetCount() < 1 || nodes.GetCount() > 2)
 			ER::ErrCArrayWrongArgumentNo(parser.Source(), posPreTemp, mainClass, nodes.GetCount());
 	}
@@ -340,7 +363,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "CSIZE")
+	if (s == "v1")
 		s == "Int";
 	
 	if (Function) {

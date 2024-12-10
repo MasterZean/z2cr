@@ -169,7 +169,6 @@ void Assembly::AddBuiltInClasses() {
 	CString  = AddCoreType(LangNamespace(), "String", "String", false, false, false);
 	CRaw = AddCoreType(LangNamespace(), "CArray", "", false, false, true);
 	CRaw->IsTemplate = true;
-	CRaw->MIsRawVec = true;
 	
 	CVect     = AddCoreType(LangNamespace(), "Vector", "Vector", false, false, false);
 

@@ -230,7 +230,6 @@ public:
 	
 	bool MIsNumeric = false;
 	bool MIsInteger = false;
-	bool MIsRawVec = false;
 	
 	int Index = -1;
 		
