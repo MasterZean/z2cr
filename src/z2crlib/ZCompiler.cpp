@@ -475,13 +475,24 @@ bool ZCompiler::CompileVar(ZVariable& v) {
 	ZParser parser(v.DefPos);
 	parser.ExpectZId();
 	
-	if (v.Name == "p11")
-		v.Name == "p11";
 	Node* node = compileVarDec(v, parser, v.DefPos, nullptr);
 	parser.ExpectEndStat();
 	
 	if (v.InClass && !v.I.Tt.Class->CoreSimple) {
-		v.Owner().DependsOn.FindAdd(v.I.Tt.Class);
+		ObjectType* tt = &v.I.Tt;
+		while (tt != nullptr) {
+			if (tt->Class->FromTemplate) {
+				v.Owner().DependsOn.FindAdd(tt->Class->TBase);
+				v.Owner().DependsOn.FindAdd(tt->Class->T);
+				tt = &tt->Class->TBase->Tt;
+			}
+			else {
+				if (tt->Class == ass.CPtr)
+					break;
+				v.Owner().DependsOn.FindAdd(tt->Class);
+				tt = tt->Next;
+			}
+		}
 	}
 
 	return node;
@@ -670,6 +681,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.1.4 (pre-alpha)";
+	static String name = "Z2CR 0.2.0 (pre-alpha)";
 	return name;
 }
