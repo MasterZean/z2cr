@@ -425,13 +425,19 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 	Node* init = nullptr;
 	Node* iter = nullptr;
+	bool addedBlock = false;
 	
 	parser.Expect('(');
-	
+
 	ZExprParser ep(f, Class, &f, *this, parser, irg);
 	if (!parser.IsChar(';')) {
-		if (parser.Id("val"))
+		if (parser.Id("val")) {
+			f.Blocks.Add();
+			f.Blocks.Top().Temps = 0;
+			addedBlock = true;
+			
 			init = CompileLocalVar(f, parser, false);
+		}
 		else
 			init = CompileExpression(f, parser, con);
 	}
@@ -458,6 +464,9 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 	Node* bd = CompileStatement(f, parser, loopCon);
 	if (loopCon.Return)
 		con.Return = true;
+	
+	if (addedBlock)
+		f.Blocks.Drop();
 	
 	return irg.forloop(init, node, iter, bd);
 }
