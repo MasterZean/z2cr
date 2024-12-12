@@ -91,6 +91,7 @@ public:
 	
 	bool InClass = false;
 	bool IsStatic = false;
+	bool InUse = false;
 		
 	ZSourcePos DefPos;
 	
@@ -192,6 +193,8 @@ public:
 	}
 	
 	bool HasMember(const String& aName);
+	
+	void SetInUse();
 	
 private:
 	Assembly& ass;

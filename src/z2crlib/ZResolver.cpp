@@ -148,6 +148,16 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	if (d.Name.GetCount() == 0)
 		d.Name = f.Name;
 	d.Functions.Add(&f);
+	
+	if (f.InClass)
+		AssignClassRoles((ZClass&)f.Owner(), f);
+}
+
+void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
+	if (f.IsConstructor == 1) {
+		if (f.Params.GetCount() == 0)
+			cls.Meth.Default = &f;
+	}
 }
 
 void ZResolver::ResolveVariables() {

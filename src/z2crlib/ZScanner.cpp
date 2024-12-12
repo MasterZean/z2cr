@@ -184,6 +184,7 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	curClass->DefPos = dp;
 	curClass->IsClass = true;
 	curClass->LibLink = std::move(libLink);
+	//curClass->InUse = true;
 	
 	parser.Expect('{');
 	

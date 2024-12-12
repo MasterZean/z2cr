@@ -206,6 +206,8 @@ Node* ZExprParser::ParseAtom() {
 				
 				Node* temp = Temporary(ass, irg, cobj, params, &pp);
 				exp = temp;
+				
+				exp->Tt.Class->SetInUse();
 			}
 		}
 		else if (parser.IsChar('<') && !parser.IsChar2('<', '<') && exp->NT == NodeType::Const && exp->Tt.Class == ass.CClass && exp->IsLiteral) {
@@ -553,6 +555,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 	 
 		ParamsNode* node = irg.callfunc(*f, object);
 		node->Params = std::move(params);
+		f->InUse = true;
 		return node;
 	}
 	
@@ -666,10 +669,6 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-inline bool invalidPtrClass(ZClass* cls, Assembly& ass) {
-	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
-}
-
 ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 	Assembly& ass = comp.Ass();
 	ObjectInfo ti;
@@ -710,7 +709,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 		
 		parser.Expect('>');
 
-		if (invalidPtrClass(sub.Tt.Class, ass))
+		if (ass.InvalidPtrClass(sub.Tt.Class))
 			parser.Error(tt.P, "can't have a pointer to class " + ass.ToQtColor(&sub));
 				
 		ti.Tt = sub.Tt.Class->Pt;
@@ -847,7 +846,7 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>&
 		if (params.GetCount() == 0)
 			return irg.const_null();
 		else if (params.GetCount() == 1) {
-			if (invalidPtrClass(params[0]->Tt.Class, ass)) {
+			if (ass.InvalidPtrClass(params[0]->Tt.Class)) {
 				if (pos)
 					ER::Error(*pos->Source, pos->P, "can't have a pointer to class " + ass.ToQtColor(&params[0]->Tt));
 				return nullptr;

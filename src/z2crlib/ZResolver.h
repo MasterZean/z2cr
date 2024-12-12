@@ -32,6 +32,8 @@ private:
 	Vector<String> dupeOwner;
 	
 	String DupStr(const String& allErrors, const ZSourcePos& dp, const String& colorSig, const String& owner);
+	
+	void AssignClassRoles(ZClass& cls, ZFunction& f);
 };
 
 #endif

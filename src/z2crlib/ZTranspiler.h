@@ -59,8 +59,6 @@ public:
 	void WriteFunctionParams(ZFunction& f);
 	void WriteFunctionBody(ZFunction& f, bool wrap = true);
 	
-	void WriteCBinds(const Vector<ZFunction*>& CBinds);
-	
 	void Proc(ConstNode& node, Stream& stream);
 	void Proc(OpNode& node);
 	void Proc(UnaryOpNode& node);
@@ -156,9 +154,9 @@ public:
 	void TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes);
 	void TranspileNamespaceDecl(ZNamespace& ns, int accessFlags = 0, bool doBinds = false);
 	bool TranspileClassDeclMaster(ZNamespace& cls, int accessFlags);
-	void TranspileClassDecl(ZNamespace& ns, int accessFlags = 0);
+	int  TranspileClassDecl(ZNamespace& ns, int accessFlags = 0);
 	int  TranspileMemberDeclVar(ZNamespace& ns, int accessFlags);
-	int TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool doBinds, int vc);
+	int  TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool doBinds, int vc);
 
 	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);
 	void TranspileValDefintons(ZNamespace& ns, bool trail = true);

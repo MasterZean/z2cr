@@ -236,6 +236,25 @@ bool ZNamespace::HasMember(const String& aName) {
 	return false;
 }
 
+void ZNamespace::SetInUse() {
+	if (InUse)
+		return;
+	
+	InUse = true;
+	
+	if (IsClass == false)
+		return;
+	
+	for (int i = 0; i < Variables.GetCount(); i++) {
+		ZVariable& v = *Variables[i];
+		
+		if (!v.IsStatic) {
+			if (v.I.Tt.Class)
+				v.I.Tt.Class->SetInUse();
+		}
+	}
+}
+
 int tabAss[][14] = {
 	              /*    b,  s8, u8, s16, u16, s32, u32, s64, u64, f32, f64, f80, c,  p*/
 	/*  0: Bool    */ { 1,  0,  0,  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  0 },

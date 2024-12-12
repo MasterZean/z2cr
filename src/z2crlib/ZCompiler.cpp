@@ -55,6 +55,10 @@ bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
 	
+	MainFunction->InUse = true;
+	//if (MainFunction->InClass)
+		MainFunction->Owner().SetInUse();
+	
 	if (BuildMode) {
 		String cppCode = AppendFileName(BuildPath, "cppcode.h");
 		if (!FileExists(cppCode))
@@ -510,8 +514,10 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	v.DefPos = vp;
 	v.Section = f.Section;
 	v.IsConst = aConst;
-	
-	return compileVarDec(v, parser, vp, &f);
+
+	Node* node = compileVarDec(v, parser, vp, &f);
+	v.I.Tt.Class->SetInUse();
+	return node;
 }
 
 inline bool invalidClass(ZClass* cls, Assembly& ass) {
@@ -527,16 +533,6 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (ti.Tt.Class == ass.CPtr && ti.Tt.Next->Class == ass.CPtr)
 			parser.Error(vp.P, "pointers to pointer are currently not supported");
 		v.I = ti;
-		/*if (v.I.Tt.Class == ass.CPtr) {
-			ObjectType* tt = &v.I.Tt;
-			
-			while (tt) {
-				DUMP(tt->Class->Name);
-				tt = tt->Next;
-			}
-			DUMP("====");
-				
-		}*/
 		cls = ti.Tt.Class;
 	}
 	
@@ -549,7 +545,8 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (parser.Char('='))
 			assign = true;
 	//}
-	
+	if (v.Name == "Trees")
+		v.Name == "Trees";
 	if (assign) {
 		ZExprParser ep(v, Class, f, *this, parser, irg);
 		Node* node = ep.Parse();
@@ -580,7 +577,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		
 		if (v.Value == nullptr) {
 			Vector<Node*> params;
-			v.Value = ZExprParser::Temporary(ass, irg, *v.I.Tt.Class, params/*, Point(-1, -1)*/);
+			v.Value = ZExprParser::Temporary(ass, irg, *v.I.Tt.Class, params, &vp);
 		}
 	}
 		

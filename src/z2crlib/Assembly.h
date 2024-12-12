@@ -104,6 +104,10 @@ public:
 		return obj;
 	}
 	
+	inline bool InvalidPtrClass(ZClass* cls) {
+		return cls == CVoid || cls == CNull || cls == CClass || cls == CDef;
+	}
+	
 private:
 	void AddModule(int parent, const String& path, ZPackage& pak);
 	ZSource& AddModuleSource(ZPackage& aPackage, const String& aFile, bool aLoadFile);
