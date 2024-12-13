@@ -102,6 +102,15 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamesp
 
 	if (cons) {
 		s << ER::ToColor(owner) << ": does not have a constructor\n\t\t";
+		if (def) {
+			if (cons == 0)
+				s << ER::Green;
+			else
+				s << ER::Magenta;
+			s << def->Name << ER::White;
+		}
+		else
+			s << owner.Name;
 	}
 	else {
 		s << ER::ToColor(owner) << ": does not have an overload\n\t\t";

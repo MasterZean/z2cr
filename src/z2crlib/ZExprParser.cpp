@@ -4,6 +4,7 @@
 extern String opss[];
 
 String CLS_STR = "class";
+String THIS_STR = "this";
 
 Node* ZExprParser::Parse(bool secondOnlyAttempt) {
 	Point p = parser.GetPoint();
@@ -204,7 +205,9 @@ Node* ZExprParser::ParseAtom() {
 				Vector<Node*> params;
 				getParams(params, '}');
 				
-				Node* temp = Temporary(ass, irg, cobj, params, &pp);
+				if (cobj.Name.StartsWith("R"))
+					cobj.Name.StartsWith("R");
+				Node* temp = Temporary(cobj, params, &pp);
 				exp = temp;
 				
 				exp->Tt.Class->SetInUse();
@@ -365,8 +368,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "v1")
-		s == "Int";
+//	if (s == "v1")
+//		s == "Int";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -555,7 +558,8 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 	 
 		ParamsNode* node = irg.callfunc(*f, object);
 		node->Params = std::move(params);
-		f->InUse = true;
+		f->Owner().SetInUse();
+		f->SetInUse();
 		return node;
 	}
 	
@@ -571,6 +575,8 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
+		f.Owner().SetInUse();
+		f.InUse = true;
 		
 		return irg.mem_var(f, object);
 	}
@@ -796,7 +802,7 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 	parser.Expect(end);
 }
 
-Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
+Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
 	Node* dr = nullptr;
 	
 	if (&cls == ass.CFloat) {
@@ -858,6 +864,28 @@ Node* ZExprParser::Temporary(Assembly& ass, IR& irg, ZClass& cls, Vector<Node*>&
 	}
 	else {
 		//return irg.mem_temp(cls, nullptr);
+		//if (cls.Meth.Default) {
+		int index = cls.Methods.Find(THIS_STR);
+			
+		if (index != -1) {
+			bool ambig = false;
+			ZFunction* f = GetBase(&cls.Methods[index], nullptr, params, 1, false, ambig);
+			
+			if (!f) {
+				if (pos)
+					ER::CallError(parser.Source(), pos->P, ass, cls, &cls.Methods[index], params, 0, 1);
+				return nullptr;
+			}
+			
+			if (ambig) {
+				if (pos)
+					parser.Error(pos->P, ER::Green + cls.Name + ": ambigous symbol");
+				return nullptr;
+			}
+			
+			f->SetInUse();
+		}
+
 		TempNode* node = irg.mem_temp(cls, nullptr);
 		node->Params = std::move(params);
 		return node;

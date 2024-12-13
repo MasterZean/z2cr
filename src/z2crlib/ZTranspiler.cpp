@@ -450,7 +450,7 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	if (f.IsConstructor) {
-		//cs << f.Namespace().BackName << "::";
+		cs << f.Namespace().BackName << "::";
 		cs << f.Owner().Name << "::";
 		cs << f.Owner().Name;
 		WriteFunctionParams(f);

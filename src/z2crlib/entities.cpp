@@ -92,7 +92,9 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 		dsig << "func ";
 	}
 	else {
-		if (IsStatic) {
+		if (IsConstructor) {
+		}
+		else if (IsStatic) {
 			dsig << "static ";
 			dsig << "func ";
 			
@@ -118,10 +120,14 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	dsig << Name;
 	fsig << Name;
 
-	csig << ER::Green << Name;
+	if (IsConstructor)
+		csig << ER::Magenta << Name;
+	else
+		csig << ER::Green << Name;
+	csig << ER::White;
 	
-	String psig = "(";
-	String psigc = String(ER::White) + "(";
+	String psig = IsConstructor ? "{" : "(";
+	String psigc = IsConstructor ? "{" : "(";
 	
 	for (int i = 0; i < Params.GetCount(); i++) {
 		ZVariable& var = Params[i];
@@ -135,8 +141,8 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 		psigc << Ass().TypeToColor(var.I.Tt);
 	}
 	
-	psig << ")";
-	psigc << ")";
+	psig << (IsConstructor ? "}" : ")");
+	psigc << (IsConstructor ? "}" : ")");
 	
 	dsig << psig;
 	fsig << psig;
@@ -151,6 +157,16 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	}
 	
 	osig = ER::ToColor(Owner());
+}
+
+void ZFunction::SetInUse() {
+	if (InUse)
+		return;
+	
+	InUse = true;
+	
+	for (int i = 0; i < Params.GetCount(); i++)
+		Params[i].I.Tt.Class->SetInUse();
 }
 
 ZFunction& ZNamespace::PrepareConstructor(const String& aName) {

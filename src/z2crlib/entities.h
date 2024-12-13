@@ -348,6 +348,8 @@ public:
 		return (Trait.Flags & ZTrait::BINDC) || (Trait.Flags & ZTrait::BINDCPP);
 	}
 	
+	void SetInUse();
+	
 private:
 	String dsig;
 	String fsig;

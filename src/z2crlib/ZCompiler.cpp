@@ -234,12 +234,14 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 			target.AddChild(node);
 	}
 	
+	auto pp = parser.GetFullPos();
 	parser.Expect('}');
 	
 	// TODO: make smarter
 	if (!con.Return && f.Return.Tt.Class != ass.CVoid) {
+		ZExprParser ep(f, Class, &f, *this, parser, irg);
 		Vector<Node*> dummy;
-		Node* defRet = ZExprParser::Temporary(ass, irg, *f.Return.Tt.Class, dummy/*, Point(-1, -1)*/);
+		Node* defRet = ep.Temporary(*f.Return.Tt.Class, dummy, &pp);
 		target.AddChild(irg.ret(defRet));
 	}
 	
@@ -575,9 +577,21 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (v.I.Tt.Class == NULL)
 			parser.Error(vp.P, "variable must have either an explicit type or be initialized");
 		
+		if (cls->CoreSimple == false && cls->TBase == nullptr) {
+			if (cls->Meth.Default == nullptr)
+				parser.Error(vp.P,  "class "+ ass.ToQtColor(&cls->Tt) + " does not havea  default constructor");
+			else {
+				if (cls->Meth.Default && cls->Meth.Default->IsDeleted)
+					parser.Error(vp.P,  "class "+ ass.ToQtColor(&cls->Tt) + ": default constructor is deleted");
+		
+				cls->Meth.Default->SetInUse();
+			}
+		}
+		
 		if (v.Value == nullptr) {
+			ZExprParser ep(v, Class, f, *this, parser, irg);
 			Vector<Node*> params;
-			v.Value = ZExprParser::Temporary(ass, irg, *v.I.Tt.Class, params, &vp);
+			v.Value = ep.Temporary(*v.I.Tt.Class, params, &vp);
 		}
 	}
 		
