@@ -863,30 +863,22 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 			return nullptr;
 	}
 	else {
-		//return irg.mem_temp(cls, nullptr);
-		//if (cls.Meth.Default) {
-		int index = cls.Methods.Find(THIS_STR);
-			
-		if (index != -1) {
-			bool ambig = false;
-			ZFunction* f = GetBase(&cls.Methods[index], nullptr, params, 1, false, ambig);
-			
-			if (!f) {
-				if (pos)
-					ER::CallError(parser.Source(), pos->P, ass, cls, &cls.Methods[index], params, 0, 1);
-				return nullptr;
+		ZFunction* f = nullptr;
+		
+		if (!cls.CoreSimple) {
+			f = FindConstructor(cls, params, pos);
+			if (f == nullptr) {
+				if (cls.TBase == ass.CRaw)
+					f = FindConstructor(*cls.T, params, pos);
+				
+				if (f == nullptr) {
+					if (cls.T && cls.T->TBase == ass.CRaw)
+						f = FindConstructor(*cls.T->T, params, pos);
+				}
 			}
-			
-			if (ambig) {
-				if (pos)
-					parser.Error(pos->P, ER::Green + cls.Name + ": ambigous symbol");
-				return nullptr;
-			}
-			
-			f->SetInUse();
 		}
-
-		TempNode* node = irg.mem_temp(cls, nullptr);
+		
+		TempNode* node = irg.mem_temp(cls, f);
 		node->Params = std::move(params);
 		return node;
 	}
@@ -898,6 +890,33 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 		parser.Error(p, "'\fClass\f' class can't be instantiated");
 	else if (&cls == ass.CDef)
 		parser.Error(p, "'\fDef\f' class can't be instantiated");*/
+	
+	return nullptr;
+}
+
+ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
+	int index = cls.Methods.Find(THIS_STR);
+			
+	if (index != -1) {
+		bool ambig = false;
+		ZFunction* f = GetBase(&cls.Methods[index], nullptr, params, 1, false, ambig);
+		
+		if (!f) {
+			if (pos)
+				ER::CallError(parser.Source(), pos->P, ass, cls, &cls.Methods[index], params, 0, 1);
+			return nullptr;
+		}
+		
+		if (ambig) {
+			if (pos)
+				parser.Error(pos->P, ER::Green + cls.Name + ": ambigous symbol");
+			return nullptr;
+		}
+		
+		f->SetInUse();
+		
+		return f;
+	}
 	
 	return nullptr;
 }

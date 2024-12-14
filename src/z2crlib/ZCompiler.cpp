@@ -547,8 +547,8 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (parser.Char('='))
 			assign = true;
 	//}
-	if (v.Name == "Trees")
-		v.Name == "Trees";
+//	if (v.Name == "TreeColors")
+//		v.Name == "Trees";
 	if (assign) {
 		ZExprParser ep(v, Class, f, *this, parser, irg);
 		Node* node = ep.Parse();
@@ -638,8 +638,9 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 		return tclass;
 	}
 
-	ZClass& tclass = ass.Classes.Add(cc.Namespace().Name + cc.Name, ZClass(cc.Namespace()));
-	tclass.Name = cc.Name;
+	ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
+	tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
+	tclass.BackName = String().Cat() << cc.Name << "_" << sub.Name;
 	tclass.FromTemplate = true;
 	tclass.TBase = &cc;
 	tclass.T = &sub;

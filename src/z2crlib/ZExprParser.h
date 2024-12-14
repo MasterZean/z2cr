@@ -47,6 +47,7 @@ public:
 	
 	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser);
 	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos* pos = nullptr);
+	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos);
 	
 private:
 	Assembly& ass;
