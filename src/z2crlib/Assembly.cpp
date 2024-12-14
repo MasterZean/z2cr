@@ -217,6 +217,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	typeCls.Tt.Class = &typeCls;
 	typeCls.DefPos = cls.DefPos;
 	typeCls.IsClass = cls.IsClass;
+	typeCls.Pt = GetPtr(&typeCls.Tt);
 	//typeCls.InUse = cls.InUse;
 	
 	typeCls.RTTIIndex = type;

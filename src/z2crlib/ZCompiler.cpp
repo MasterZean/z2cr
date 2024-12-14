@@ -315,7 +315,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 			parser.Error(pp.P, "can't assign to readonly " + ass.ToQtColor(node) + " instance");
 		
 		if (!node->CanAssign(ass, rs)) {
-			parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to '" + ass.ToQtColor(node) + " instance without a cast");
+			parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to " + ass.ToQtColor(node) + " instance without a cast");
 		}
 		
 		return irg.attr(node, rs);

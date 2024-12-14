@@ -1063,18 +1063,18 @@ void ZTranspiler::Proc(LocalNode& node) {
 	
 	if (node.Var->IsConst)
 		cs << "const ";
-	if (node.Tt.Class->CoreSimple)
-		cs << node.Tt.Class->BackName;
-	else {
-		if (&node.Tt.Class->Namespace() != inNamespace)
-			cs << node.Tt.Class->Namespace().BackName << "::";
-		cs << node.Tt.Class->BackName;
-	}
+	
+	WriteType(&node.Var->I.Tt);
 	cs << " " << node.Var->Name;
+	WriteTypePost(&node.Var->I.Tt);
 	
 	if (node.Var->Value) {
-		cs << " = ";
-		Walk(node.Var->Value);
+		if (node.Var->I.Tt.Class->FromTemplate &&node.Var->I.Tt.Class->TBase == ass.CRaw) {
+		}
+		else {
+			cs << " = ";
+			Walk(node.Var->Value);
+		}
 	}
 }
 
