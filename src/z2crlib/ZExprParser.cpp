@@ -205,8 +205,6 @@ Node* ZExprParser::ParseAtom() {
 				Vector<Node*> params;
 				getParams(params, '}');
 				
-				if (cobj.Name.StartsWith("R"))
-					cobj.Name.StartsWith("R");
 				Node* temp = Temporary(cobj, params, &pp);
 				exp = temp;
 				
@@ -706,6 +704,9 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 			ER::Error(parser.Source(), tt.P, "unknown namespace reference: " + type);
 	}
 	
+		
+	//ti.Tt = cls->Tt;
+	
 	if (cls == ass.CPtr) {
 		parser.Expect('<');
 		
@@ -772,11 +773,15 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 		parser.Expect('>');
 		
 		cls = &comp.ResolveInstance(*cls, *sub.Tt.Class, tt.P, true);
-		if (node)
+		if (node) {
 			cls->Tt.Param = node->IntVal;
+			//ti.Tt = cls->Tt;
+			//ti.Tt.Param = node->IntVal;
+		}
 	}
-	
+
 	ti.Tt = cls->Tt;
+	
 	return ti;
 }
 

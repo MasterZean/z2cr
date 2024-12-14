@@ -638,9 +638,12 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 		return tclass;
 	}
 
-	ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
+	ZClass& tclass = ass.Classes.Add(cc.Namespace().Name + cc.Name/*fullName*/, ZClass(cc.Namespace()));
 	tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
 	tclass.BackName = String().Cat() << cc.Name << "_" << sub.Name;
+	//ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
+	//tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
+	//tclass.BackName = String().Cat() << cc.Name << "_" << sub.Name;
 	tclass.FromTemplate = true;
 	tclass.TBase = &cc;
 	tclass.T = &sub;
