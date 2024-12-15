@@ -55,9 +55,10 @@ bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
 	
-	MainFunction->InUse = true;
-	//if (MainFunction->InClass)
+	if (MainFunction) {
+		MainFunction->SetInUse();
 		MainFunction->Owner().SetInUse();
+	}
 	
 	if (BuildMode) {
 		String cppCode = AppendFileName(BuildPath, "cppcode.h");
