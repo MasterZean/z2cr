@@ -1,6 +1,16 @@
 #include <z2cr/CommandLine.h>
 #include <z2crlib/ZCompiler.h>
 
+CommandLine::CommandLine() {
+#ifdef PLATFORM_POSIX
+	ErrorColor = ErrorColorType::Ansi;
+#elif PLATFORM_WIN32
+	ErrorColor = ErrorColorType::Win32;
+#else
+	ErrorColor = ErrorColorType::None;
+#endif
+}
+
 bool CommandLine::Read() {
 	O = " -O2";
 	const Vector<String>& commands = Upp::CommandLine();
@@ -113,8 +123,31 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-ut") {
 			UT = true;
 		}
-		else if (commands[i] == "-nocolor") {
-			NoColor = true;
+		else if (commands[i] == "-color") {
+			i++;
+			if (i < commands.GetCount()) {
+				String color = ToLower(commands[i]);
+				
+				if (color == "none")
+					ErrorColor = ErrorColorType::None;
+				else if (color == "win32") {
+				#ifdef PLATFORM_POSIX
+					Cout() << "option: -color win32: not supported on POSIX systems" << '\n';
+					return false;
+				#endif
+					ErrorColor = ErrorColorType::Win32;
+				}
+				else if (color == "ansi")
+					ErrorColor = ErrorColorType::Ansi;
+				else {
+					Cout() << "option: -color: found invalid param: " << color << '\n';
+					return false;
+				}
+			}
+			else {
+				Cout() << name << " requires that '-color' parameter be followed by one of the following: 'none', 'win32', 'ansi'" << '\n';
+				return false;
+			}
 		}
 		else if (commands[i] == "-noconsoletest") {
 			NoConsoleTest = true;

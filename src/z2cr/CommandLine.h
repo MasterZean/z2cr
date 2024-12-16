@@ -1,9 +1,7 @@
 #ifndef __COMMAND_LINE_HPP__
 #define __COMMAND_LINE_HPP__
 
-#include <Core/Core.h>
-
-using namespace Upp;
+#include <z2crlib/common.h>
 
 class CommandLine {
 public:
@@ -26,12 +24,14 @@ public:
 	bool ARCH = false;
 	bool LAZY = false;
 	bool UT = false;
-	bool NoColor = false;
+	ErrorColorType ErrorColor;
 	bool NoConsoleTest = false;
 	
 	bool PP_NOPATH = false;
 	
 	Point ACP = Point(-1, -1);
+	
+	CommandLine();
 	
 	bool Read();
 	

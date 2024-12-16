@@ -32,7 +32,7 @@ bool ZTest::Run() {
 		compiler.SetMain("", "test.z2");
 		compiler.FoldConstants = true;
 		
-		ER::NoColor = true;
+		ER::ErrorColor = ErrorColorType::None;
 		
 		bool compResult = compiler.Compile();
 		if (compResult == false && compiler.MainFound == false)

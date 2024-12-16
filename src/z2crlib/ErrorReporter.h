@@ -11,7 +11,7 @@ class ER {
 public:
 	static bool PrintPath;
 	
-	static bool  NoColor;
+	static ErrorColorType ErrorColor;
 	
 	static String White;
 	static String DkGray;
@@ -49,11 +49,11 @@ public:
 		Error(src, p, "Can't apply operator '" + op + "' on types: \n\t\t'\f" + text + "\f' and \n\t\t'\f" + text2 + "\f'");
 	}
 	
-	static void PrettyPrint(const String& error, Stream& stream, bool color);
+	static void PrettyPrint(const String& error, Stream& stream, ErrorColorType color);
 	
 	static String StripColor(const String& error) {
 		StringStream ss;
-		PrettyPrint(error, ss, false);
+		PrettyPrint(error, ss, ErrorColorType::None);
 		return ss;
 	}
 	

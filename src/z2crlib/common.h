@@ -24,6 +24,12 @@ enum class EntityType {
 	Class,
 };
 
+enum class ErrorColorType {
+	None,
+	Win32,
+	Ansi,
+};
+
 class ObjectType {
 public:
 	ZClass* Class = nullptr;

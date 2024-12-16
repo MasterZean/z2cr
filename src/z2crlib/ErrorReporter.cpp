@@ -2,7 +2,7 @@
 
 bool ER::PrintPath;
 
-bool ER::NoColor = false;
+ErrorColorType ER::ErrorColor = ErrorColorType::None;
 String ER::White = "${white}";
 String ER::Gray = "${gray}";
 String ER::DkGray = "${dkgray}";
@@ -206,15 +206,15 @@ void ZException::PrettyPrint(Stream& stream) {
 #endif
 
 	if (Path.GetCount()) {
-		if (!ER::NoColor)
+		if (ER::ErrorColor == ErrorColorType::Win32)
 			SetConsoleTextAttribute(hConsole, cGray);
 		stream << Path << ": ";
 	}
 	
-	ER::PrettyPrint(Error, stream, !ER::NoColor);
+	ER::PrettyPrint(Error, stream, ER::ErrorColor);
 }
 
-void ER::PrettyPrint(const String& error, Stream& stream, bool color) {
+void ER::PrettyPrint(const String& error, Stream& stream, ErrorColorType color) {
 #ifdef PLATFORM_WIN32
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // Get handle to standard output
 	WORD                        m_currentConsoleAttr;
@@ -255,10 +255,10 @@ void ER::PrettyPrint(const String& error, Stream& stream, bool color) {
 	int index = input.Find("${");
 		
 	if (index == -1) {
-		if (color)
+		if (ER::ErrorColor == ErrorColorType::Win32)
 			SetConsoleTextAttribute(hConsole, cWhite);
 		stream << input;
-		if (color)
+		if (ER::ErrorColor == ErrorColorType::Win32)
 			SetConsoleTextAttribute(hConsole, m_currentConsoleAttr);
 		return;
 	}
@@ -266,7 +266,7 @@ void ER::PrettyPrint(const String& error, Stream& stream, bool color) {
 	const char* colstr[] = { "${white}", "${gray}", "${red}", "${cyan}", "${blue}", "${green}", "${yellow}", "${magenta}", "${dkgray}"};
 	int         colval[] = { cWhite,     cGray,     cRed,     cCyan,     cBlue,     cGreen,     cYellow,     cMagenta,     cDkGray };
 	
-	if (color)
+	if (ER::ErrorColor == ErrorColorType::Win32)
 		SetConsoleTextAttribute(hConsole, cWhite);
 	
 	while (index != -1) {
@@ -278,7 +278,7 @@ void ER::PrettyPrint(const String& error, Stream& stream, bool color) {
 			if (post.StartsWith(colstr[i])) {
 				post = post.Mid(strlen(colstr[i]));
 				
-				if (color)
+				if (ER::ErrorColor == ErrorColorType::Win32)
 					SetConsoleTextAttribute(hConsole, colval[i]);
 				
 				int index2 = post.Find("${");
@@ -298,6 +298,6 @@ void ER::PrettyPrint(const String& error, Stream& stream, bool color) {
 		}
 	}
 	
-	if (color)
+	if (ER::ErrorColor == ErrorColorType::Win32)
 		SetConsoleTextAttribute(hConsole, m_currentConsoleAttr);
 }
