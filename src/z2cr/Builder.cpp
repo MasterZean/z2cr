@@ -300,18 +300,22 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 	String d, t, tt;
 	
 	Cout() << "linking... ";
-	if (arch == "x64")
-		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" --static -o \"" + outPath + outTitle + ".exe\" -m";
+	if (arch == "x64") // --static
+		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -o \"" + outPath + outTitle + ".exe\" -m";
 	else
-		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" --static -o \"" + outPath + outTitle + ".exe\" -m";
+		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -o \"" + outPath + outTitle + ".exe\" -m";
 	
 	if (arch == "x64")
 		d << "64";
 	else
 		d << "32";
 	
-	for (int i = 0; i < libs.GetCount(); i++)
-		d << " -l" << libs[i];
+	//for (int i = 0; i < libs.GetCount(); i++)
+	//	d << " -l" << libs[i];
+	//d << " -lole32 -loleaut32 -limm32 -lversion -lgdi32 -lSetupAPI -lwinmm -lraylib -lSDL2 -lgdi32 -lwinmm -lSetupAPI";
+	//d << " -lraylib -lopengl32 -lgdi32 -lwinmm -luser32 -lSDL2 -limm32 -lSetupAPI";
+	
+	d << " -lraylib  -Wl,-Bdynamic -lSDL2 -Wl,-Bdynamic -lSDL2main -lole32 -lgdi32 -limm32 -lversion -lsetupapi -lOleAut32 -lwinmm";
 	//d << "";
 	//d << " -lmingw32";
 	//d << " -Wl,--subsystem,windows";

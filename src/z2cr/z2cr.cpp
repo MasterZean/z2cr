@@ -274,6 +274,7 @@ int testansi()
 CONSOLE_APP_MAIN {
 	bool noConsole = separate_console();
 	
+	
 	//testansi();
 	/*CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns, rows;
@@ -312,7 +313,13 @@ CONSOLE_APP_MAIN {
 		ER::PrintPath = false;
 	else
 		ER::PrintPath = true;
+	
 	ER::ErrorColor = K.ErrorColor;
+	if (ER::ErrorColor == ErrorColorType::Ansi) {
+		bool result = EnableVTMode();
+		LOG(result);
+	}
+	
 	if (K.NoConsoleTest)
 		noConsole = false;
 	

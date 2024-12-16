@@ -13,6 +13,8 @@ String ER::Green = "${green}";
 String ER::Yellow = "${yellow}";
 String ER::Magenta = "${magenta}";
 
+#define CSI "\x1b["
+
 String ER::ToColor(const ZNamespace& ns, bool qt ) {
 	StringStream ss;
 	
@@ -208,6 +210,8 @@ void ZException::PrettyPrint(Stream& stream) {
 	if (Path.GetCount()) {
 		if (ER::ErrorColor == ErrorColorType::Win32)
 			SetConsoleTextAttribute(hConsole, cGray);
+		else if (ER::ErrorColor == ErrorColorType::Ansi)
+			stream << CSI << "37m";
 		stream << Path << ": ";
 	}
 	
@@ -265,6 +269,7 @@ void ER::PrettyPrint(const String& error, Stream& stream, ErrorColorType color) 
 	
 	const char* colstr[] = { "${white}", "${gray}", "${red}", "${cyan}", "${blue}", "${green}", "${yellow}", "${magenta}", "${dkgray}"};
 	int         colval[] = { cWhite,     cGray,     cRed,     cCyan,     cBlue,     cGreen,     cYellow,     cMagenta,     cDkGray };
+	const char* ansist[] = { "97m",      "37m",     "91m",    "96m",     "94m",     "92m",      "93m",      "95m",         "37m" };
 	
 	if (ER::ErrorColor == ErrorColorType::Win32)
 		SetConsoleTextAttribute(hConsole, cWhite);
@@ -280,6 +285,8 @@ void ER::PrettyPrint(const String& error, Stream& stream, ErrorColorType color) 
 				
 				if (ER::ErrorColor == ErrorColorType::Win32)
 					SetConsoleTextAttribute(hConsole, colval[i]);
+				else if (ER::ErrorColor == ErrorColorType::Ansi)
+					stream << CSI << ansist[i];
 				
 				int index2 = post.Find("${");
 				
