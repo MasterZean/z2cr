@@ -50,3 +50,8 @@ LAYOUT(SetupHlLayout, 544, 288)
 	ITEM(Upp::ArrayCtrl, arcStyle, HSizePosZ(4, 4).VSizePosZ(28, 4))
 END_LAYOUT
 
+LAYOUT(WaitingLayout, 520, 44)
+	ITEM(Upp::ProgressIndicator, prgDetect, HSizePosZ(8, 8).BottomPosZ(8, 12))
+	ITEM(Upp::Label, dv___1, SetLabel(t_("Please wait while detecting platform tools...")).SetAlign(Upp::ALIGN_CENTER).HSizePosZ(8, 8).VSizePosZ(4, 21))
+END_LAYOUT
+

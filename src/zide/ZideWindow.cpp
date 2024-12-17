@@ -54,19 +54,6 @@ ZideWindow::ZideWindow() {
 	
 	tabs.ShowTabs(false);
 	
-	String curDir = GetFileDirectory(GetExeFilePath()); //NativePath(GetCurrentDirectory() + "\\");
-	LoadFromXMLFile(methods, curDir + "buildMethods.xml");
-	if (methods.GetCount() == 0) {
-		methods.Clear();
-		Cout() << "No cached build method found! Trying to auto-detect...\n";
-		BuildMethod::Get(methods);
-		if (methods.GetCount() == 0) {
-			PromptOK("Could not find any build methods. Building is dissabled!");
-			canBuild = false;
-		}
-		StoreAsXMLFile(methods, "methods", curDir + "buildMethods.xml");
-	}
-	
 	OrderColors();
 }
 
@@ -420,4 +407,48 @@ const char* ZideWindow::GetHlName(int i, CodeEditor& editor) {
 		return "Class name text";
 	else
 		return editor.GetHlName(i);
+}
+
+bool ZideWindow::LoadMethods() {
+	LoadFromXMLFile(methods, CurFolder + "buildMethods.xml");
+	return methods.GetCount() != 0;
+}
+
+void ZideWindow::DetectMehods() {
+	methods.Clear();
+	Cout() << "No cached build method found! Trying to auto-detect...\n";
+	BuildMethod::Get(methods);
+	if (methods.GetCount() == 0) {
+		PromptOK("Could not find any build methods. Building is dissabled!");
+		canBuild = false;
+	}
+	StoreAsXMLFile(methods, "methods", CurFolder + "buildMethods.xml");
+}
+
+bool runProg = false;
+
+void ProgThread(DetectWindow* detect) {
+	while (runProg) {
+		PostCallback(callback(detect, &DetectWindow::OnProgress));
+		Sleep(100);
+	}
+}
+
+void DetectThread(DetectWindow* detect, ZideWindow* zide) {
+	zide->DetectMehods();
+	PostCallback(callback(detect, &DetectWindow::OnDone));
+}
+
+void DetectWindow::Activate() {
+	TopWindow::Activate();
+	if (ZIDE) {
+		runProg = true;
+		prog.Run(callback1(ProgThread, this));
+		Thread().Run(callback2(DetectThread, this, ZIDE));
+	}
+}
+
+void DetectWindow::OnDone() {
+	runProg = false;
+	Close();
 }

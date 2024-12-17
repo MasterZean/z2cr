@@ -494,9 +494,9 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 						
 						{
 							String c;
-							c << "SET PATH=%PATH%;";
-							c << GetFileFolder(cppExe) << ";";
-							c << " & ";
+							c << "SET PATH=";
+							c << GetFileFolder(cppExe) << ";%PATH%;";
+							c << " && ";
 							c << cppExe + " " + pc + " -m";
 							if (gcc.Arch == "x86")
 								c << "32";

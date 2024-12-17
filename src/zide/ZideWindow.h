@@ -71,6 +71,9 @@ public:
 	
 	String Build(const String& file, bool scu, bool& res, Point p = Point(-1, -1));
 	
+	bool LoadMethods();
+	void DetectMehods();
+	
 private:
 	Vector<String> packages;
 	Vector<String> openNodes;
@@ -101,7 +104,7 @@ private:
 	void ReadHlStyles(ArrayCtrl& hlstyle);
 	void OrderColors();
 	const char *GetHlName(int i, CodeEditor& editor);
-
+	
 	void OnTabChange();
 	void OnSelectSource();
 	void OnEditorChange();
@@ -139,6 +142,28 @@ private:
 	
 	void DoMenuHelp(Bar& bar);
 	void OnMenuHelpAbout();
+};
+
+class DetectWindow: public WithWaitingLayout<TopWindow> {
+public:
+	ZideWindow* ZIDE = nullptr;
+	Thread prog;
+	
+	DetectWindow() {
+		CtrlLayout(*this, "Detecting build methods...");
+		Icon(ZImg::zide());
+		
+		prgDetect.SetTotal(0);
+		prgDetect.Set(0);
+	}
+	
+	void OnProgress() {
+		prgDetect.Set(prgDetect.Get() + 5, 0);
+	}
+	
+	void OnDone();
+	
+	virtual void Activate();
 };
 
 #endif

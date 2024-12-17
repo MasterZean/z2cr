@@ -61,7 +61,7 @@ void CreateZSyntax(One<EditorSyntax>& e, int kind) {
 GUI_APP_MAIN {
 	SetLanguage(LNG_ENGLISH);
 	SetDefaultCharset(CHARSET_UTF8);
-
+	
 	// register new syntax
 	CSyntax::InitKeywords();
 	ZideWindow::HIGHLIGHT_Z2 = CSyntax::RegisterNewHighlightType();
@@ -78,6 +78,12 @@ GUI_APP_MAIN {
 	FindFile ff(NativePath(zide.CurFolder + "/" + BuildMethod::ExeName("z2c")));
 	if (ff.IsExecutable())
 		zide.CompilerExe = ff.GetPath();
+	
+	if (zide.LoadMethods() == false) {
+		DetectWindow wait;
+		wait.ZIDE = &zide;
+		wait.RunAppModal();
+	}
 
 	if (!LoadFromFile(zide)) {
 		String pakPath = NativePath(zide.CurFolder + "source/ut/org.z2legacy.ut");
