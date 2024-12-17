@@ -310,12 +310,12 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 	else
 		d << "32";
 	
-	//for (int i = 0; i < libs.GetCount(); i++)
-	//	d << " -l" << libs[i];
+	for (int i = 0; i < libs.GetCount(); i++)
+		d << " -l" << libs[i];
 	//d << " -lole32 -loleaut32 -limm32 -lversion -lgdi32 -lSetupAPI -lwinmm -lraylib -lSDL2 -lgdi32 -lwinmm -lSetupAPI";
 	//d << " -lraylib -lopengl32 -lgdi32 -lwinmm -luser32 -lSDL2 -limm32 -lSetupAPI";
 	
-	d << " -lraylib  -Wl,-Bdynamic -lSDL2 -Wl,-Bdynamic -lSDL2main -lole32 -lgdi32 -limm32 -lversion -lsetupapi -lOleAut32 -lwinmm";
+	//d << " -lraylib  -Wl,-Bdynamic -lSDL2 -Wl,-Bdynamic -lSDL2main -lole32 -lgdi32 -limm32 -lversion -lsetupapi -lOleAut32 -lwinmm";
 	//d << "";
 	//d << " -lmingw32";
 	//d << " -Wl,--subsystem,windows";

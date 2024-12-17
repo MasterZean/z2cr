@@ -28,6 +28,7 @@ enum class ErrorColorType {
 	None,
 	Win32,
 	Ansi,
+	Qtf,
 };
 
 class ObjectType {

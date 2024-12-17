@@ -132,16 +132,16 @@ bool CommandLine::Read() {
 					ErrorColor = ErrorColorType::None;
 				else if (color == "win32") {
 				#ifdef PLATFORM_POSIX
-					Cout() << "option: -color win32: not supported on POSIX systems" << '\n';
-					return false;
+					Cout() << "option: -color win32: not supported on POSIX systems: ignoring" << '\n';
 				#endif
 					ErrorColor = ErrorColorType::Win32;
 				}
 				else if (color == "ansi")
 					ErrorColor = ErrorColorType::Ansi;
+				else if (color == "qtf")
+					ErrorColor = ErrorColorType::Qtf;
 				else {
-					Cout() << "option: -color: found invalid param: " << color << '\n';
-					return false;
+					Cout() << "option: -color: found invalid param: " << color << ": ingoring" << '\n';
 				}
 			}
 			else {

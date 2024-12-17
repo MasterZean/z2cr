@@ -266,6 +266,7 @@ String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
 		cmd << "c++ ";
 	
 	cmd << "-mainfile " << file << " ";
+	//cmd << "-color qtf";
 	/*cmd << "-pak " << lastPackage << " ";
 	if (optimize == 2)
 		cmd << " -O2";

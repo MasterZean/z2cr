@@ -2,28 +2,6 @@
 #include <z2crlib/ZTranspiler.h>
 #include <z2crlib/ZResolver.h>
 
-void printNode(Node* node, int level = 0) {
-	String s;
-	for (int i = 0; i < level; i++)
-		s << "\t";
-	s << "<" << (int)node->NT << ">\n";
-	DUMP(s);
-	
-	Node* child = node->First;
-	
-	while (child) {
-		printNode(child, level + 1);
-		
-		child = child->Next;
-	}
-	
-	s = "";
-	for (int i = 0; i < level; i++)
-		s << "\t";
-	s << "</" << (int)node->NT << ">\n";
-	DUMP(s);
-}
-
 bool ZCompiler::Compile() {
 	irg.FoldConstants = FoldConstants;
 	
@@ -110,7 +88,6 @@ bool ZCompiler::Transpile() {
 	FileOut out(CppPath);
 	ZTranspiler cpp(*this, out);
 	cpp.CppVersion = CppVersion;
-	//cpp.PrintDebug = true;
 	
 	cpp.WriteIntro();
 	cpp.WriteClassForward();
@@ -203,8 +180,6 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 			
 			if (f.IsExternBind() == false)
 				CompileFunc(f, f.Nodes);
-			
-			//printNode(&f.Nodes);
 		}
 	}
 	

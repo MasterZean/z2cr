@@ -173,6 +173,24 @@ void ER::CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamesp
 	Error(source, p, s);
 }
 
+String DeQtfLf(const char *s) {
+	StringBuffer r;
+	while(*s) {
+		if((byte)*s > ' ' && !IsDigit(*s) && !IsAlpha(*s) && (byte)*s < 128)
+			r.Cat('`');
+		if((byte)*s >= ' ')
+			r.Cat(*s);
+		else
+		if(*s == '\n')
+			r.Cat('&');
+		else
+		if(*s == '\t')
+			r.Cat("-|");
+		s++;
+	}
+	return String(r);
+}
+
 void ZException::PrettyPrint(Stream& stream) {
 #ifdef PLATFORM_WIN32
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // Get handle to standard output
@@ -212,7 +230,11 @@ void ZException::PrettyPrint(Stream& stream) {
 			SetConsoleTextAttribute(hConsole, cGray);
 		else if (ER::ErrorColor == ErrorColorType::Ansi)
 			stream << CSI << "37m";
-		stream << Path << ": ";
+		else if (ER::ErrorColor == ErrorColorType::Qtf)
+			stream << "\1[@1 ";
+		stream << DeQtfLf(Path) << ": ";
+		if (ER::ErrorColor == ErrorColorType::Qtf)
+			stream << "]";
 	}
 	
 	ER::PrettyPrint(Error, stream, ER::ErrorColor);
@@ -270,6 +292,7 @@ void ER::PrettyPrint(const String& error, Stream& stream, ErrorColorType color) 
 	const char* colstr[] = { "${white}", "${gray}", "${red}", "${cyan}", "${blue}", "${green}", "${yellow}", "${magenta}", "${dkgray}"};
 	int         colval[] = { cWhite,     cGray,     cRed,     cCyan,     cBlue,     cGreen,     cYellow,     cMagenta,     cDkGray };
 	const char* ansist[] = { "97m",      "37m",     "91m",    "96m",     "94m",     "92m",      "93m",      "95m",         "37m" };
+	const char* qtfpre[] = { "[@2",      "[@1",     "[@R",    "[@8",     "[@B",     "[@G",      "[@9",      "[@M",         "[@K" };
 	
 	if (ER::ErrorColor == ErrorColorType::Win32)
 		SetConsoleTextAttribute(hConsole, cWhite);
@@ -287,20 +310,31 @@ void ER::PrettyPrint(const String& error, Stream& stream, ErrorColorType color) 
 					SetConsoleTextAttribute(hConsole, colval[i]);
 				else if (ER::ErrorColor == ErrorColorType::Ansi)
 					stream << CSI << ansist[i];
+				else if (ER::ErrorColor == ErrorColorType::Qtf)
+					stream << qtfpre[i] << " ";
 				
 				int index2 = post.Find("${");
 				
 				if (index2 == -1) {
-					stream << post;
+					if (ER::ErrorColor == ErrorColorType::Qtf)
+						stream << DeQtfLf(post);
+					else
+						stream << post;
 					index = index2;
 				}
 				else {
 					String mid = post.Mid(0, index2);
-					stream << mid;
+					if (ER::ErrorColor == ErrorColorType::Qtf)
+						stream << DeQtfLf(mid);
+					else
+						stream << mid;
 					
 					input = post.Mid(index2);
 					index = input.Find("${");
 				}
+				
+				if (ER::ErrorColor == ErrorColorType::Qtf)
+					stream << "]";
 			}
 		}
 	}
