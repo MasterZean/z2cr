@@ -1,14 +1,18 @@
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	int32 a1 = 0;
+	int32 a2 = 0;
+	int32 a3 = 0;
+	int32 a4 = 0;
+	int32 a5 = 0;
+}
+*/
+
 namespace test;
 
-/* @dumpGlobalVarDef
-int32 test::a1 = 0;
-int32 test::a2 = 0;
-int32 test::a3 = 0;
-int32 test::a4 = 0;
-int32 test::a5 = 0;
-*/
 val a1 = 0;
 val a2 = 7 - 7;
 val a3: Int;
@@ -36,15 +40,19 @@ def @main() {
 
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	uint32 a1 = '\0';
+	uint32 a2 = '\0';
+	uint32 a3 = '\0';
+	uint32 a4 = '\0';
+	uint32 a5 = '\0';
+}
+*/
+
 namespace test;
 
-/* @dumpGlobalVarDef
-uint32 test::a1 = '\0';
-uint32 test::a2 = '\0';
-uint32 test::a3 = '\0';
-uint32 test::a4 = '\0';
-uint32 test::a5 = '\0';
-*/
 val a1 = '\0';
 val a2 = '7' - '7';
 val a3: Char;
@@ -53,6 +61,7 @@ val a5: Char = Char{};
 
 // @test var_dec
 // @file
+
 namespace test;
 
 /* @dumpBody
@@ -72,15 +81,19 @@ def @main() {
 
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	float a1 = 0.0f;
+	float a2 = 0.0f;
+	float a3 = 0.0f;
+	float a4 = 0.0f;
+	float a5 = 0.0f;
+}
+*/
+
 namespace test;
 
-/* @dumpGlobalVarDef
-float test::a1 = 0.0f;
-float test::a2 = 0.0f;
-float test::a3 = 0.0f;
-float test::a4 = 0.0f;
-float test::a5 = 0.0f;
-*/
 val a1 = 0.0f;
 val a2 = 7.0f - 7.0f;
 val a3: Float;
@@ -108,15 +121,19 @@ def @main() {
 
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	double a1 = 0.0;
+	double a2 = 0.0;
+	double a3 = 0.0;
+	double a4 = 0.0;
+	double a5 = 0.0;
+}
+*/
+
 namespace test;
 
-/* @dumpGlobalVarDef
-double test::a1 = 0.0;
-double test::a2 = 0.0;
-double test::a3 = 0.0;
-double test::a4 = 0.0;
-double test::a5 = 0.0;
-*/
 val a1 = 0.0;
 val a2 = 7.0 - 7.0;
 val a3: Double;

@@ -2,21 +2,24 @@
 // @file
 namespace test;
 
-/* @dumpGlobalVarDef
-int32 test::b1 = 0;
-int32 test::b2 = 0;
-int32 test::b3 = 0;
-int32 test::b4 = 0;
-int32 test::b5 = 0;
-int32 test::b6 = 0;
-int32 test::b7 = 0;
-int32 test::b8 = 0;
-int32 test::b9 = 0;
-int32 test::b10 = 0;
-int32 test::b11 = 0;
-int32 test::b12 = 0;
-int32 test::b13 = 0;
+/* @dump namespace: test def
+namespace test {
+	int32 b1 = 0;
+	int32 b2 = 0;
+	int32 b3 = 0;
+	int32 b4 = 0;
+	int32 b5 = 0;
+	int32 b6 = 0;
+	int32 b7 = 0;
+	int32 b8 = 0;
+	int32 b9 = 0;
+	int32 b10 = 0;
+	int32 b11 = 0;
+	int32 b12 = 0;
+	int32 b13 = 0;
+}
 */
+
 val b1 = Int{Bool{}};
 val b2 = Int{Small{}};
 val b3 = Int{Byte{}};
@@ -35,21 +38,24 @@ val b13 = Int{PtrSize{}};
 // @file
 namespace test;
 
-/* @dumpGlobalVarDef
-int32 test::b1 = 112;
-int32 test::b2 = 112;
-int32 test::b3 = 112;
-int32 test::b4 = 112;
-int32 test::b5 = 112;
-int32 test::b6 = 112;
-int32 test::b7 = 112;
-int32 test::b8 = 112;
-int32 test::b9 = 112;
-int32 test::b10 = 112;
-int32 test::b11 = 112;
-int32 test::b12 = 112;
-int32 test::b13 = 112;
+/* @dump namespace: test def
+namespace test {
+	int32 b1 = 112;
+	int32 b2 = 112;
+	int32 b3 = 112;
+	int32 b4 = 112;
+	int32 b5 = 112;
+	int32 b6 = 112;
+	int32 b7 = 112;
+	int32 b8 = 112;
+	int32 b9 = 112;
+	int32 b10 = 112;
+	int32 b11 = 112;
+	int32 b12 = 112;
+	int32 b13 = 112;
+}
 */
+
 val b1 = Int{Bool{112}};
 val b2 = Int{Small{112}};
 val b3 = Int{Byte{112}};
@@ -68,33 +74,35 @@ val b13 = Int{PtrSize{112}};
 // @file
 namespace test;
 
-/* @dumpGlobalVarDef
-bool test::a1 = false;
-int8 test::a2 = 0;
-uint8 test::a3 = 0u;
-int16 test::a4 = 0;
-uint16 test::a5 = 0u;
-int32 test::a6 = 0;
-uint32 test::a7 = 0u;
-int64 test::a8 = 0ll;
-uint64 test::a9 = 0ull;
-float test::a10 = 0.0f;
-double test::a11 = 0.0;
-uint32 test::a12 = '\0';
-size_t test::a13 = 0u;
-int32 test::b1 = (int32)(test::a1);
-int32 test::b2 = (int32)(test::a2);
-int32 test::b3 = (int32)(test::a3);
-int32 test::b4 = (int32)(test::a4);
-int32 test::b5 = (int32)(test::a5);
-int32 test::b6 = (int32)(test::a6);
-int32 test::b7 = (int32)(test::a7);
-int32 test::b8 = (int32)(test::a8);
-int32 test::b9 = (int32)(test::a9);
-int32 test::b10 = (int32)(test::a10);
-int32 test::b11 = (int32)(test::a11);
-int32 test::b12 = (int32)(test::a12);
-int32 test::b13 = (int32)(test::a13);
+/* @dump namespace: test def
+namespace test {
+	bool a1 = false;
+	int8 a2 = 0;
+	uint8 a3 = 0u;
+	int16 a4 = 0;
+	uint16 a5 = 0u;
+	int32 a6 = 0;
+	uint32 a7 = 0u;
+	int64 a8 = 0ll;
+	uint64 a9 = 0ull;
+	float a10 = 0.0f;
+	double a11 = 0.0;
+	uint32 a12 = '\0';
+	size_t a13 = 0u;
+	int32 b1 = (int32)(a1);
+	int32 b2 = (int32)(a2);
+	int32 b3 = (int32)(a3);
+	int32 b4 = (int32)(a4);
+	int32 b5 = (int32)(a5);
+	int32 b6 = (int32)(a6);
+	int32 b7 = (int32)(a7);
+	int32 b8 = (int32)(a8);
+	int32 b9 = (int32)(a9);
+	int32 b10 = (int32)(a10);
+	int32 b11 = (int32)(a11);
+	int32 b12 = (int32)(a12);
+	int32 b13 = (int32)(a13);
+}
 */
 val a1 = Bool{};
 val a2 = Small{};

@@ -11,7 +11,9 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-const int32 testcpp::v1 = 127;
+namespace testcpp {
+	const int32 v1 = 127;
+}
 */
 
 namespace testcpp;
@@ -33,9 +35,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-const int32 testcpp::v1 = 127;
-const int32 testcpp::v2 = 128;
-const int32 testcpp::v3 = 129;
+namespace testcpp {
+	const int32 v1 = 127;
+	const int32 v2 = 128;
+	const int32 v3 = 129;
+}
 */
 
 namespace testcpp;
@@ -59,9 +63,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-const int32 testcpp::v1 = 127;
-const int32 testcpp::v2 = 128;
-const int32 testcpp::v3 = 129;
+namespace testcpp {
+	const int32 v1 = 127;
+	const int32 v2 = 128;
+	const int32 v3 = 129;
+}
 */
 
 namespace testcpp;
@@ -85,9 +91,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-const int32 testcpp::v1 = 127;
-const int32 testcpp::v2 = 128;
-const int32 testcpp::v3 = 129;
+namespace testcpp {
+	const int32 v1 = 127;
+	const int32 v2 = 128;
+	const int32 v3 = 129;
+}
 */
 
 namespace testcpp;
@@ -116,9 +124,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-const int32 testcpp::v1 = 127;
-const int32 testcpp::v2 = 128;
-const int32 testcpp::v3 = 129;
+namespace testcpp {
+	const int32 v1 = 127;
+	const int32 v2 = 128;
+	const int32 v3 = 129;
+}
 */
 
 namespace testcpp;
@@ -144,9 +154,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-const int32 testcpp::v1 = 127;
-const int32 testcpp::v2 = 128;
-const int32 testcpp::v3 = 129;
+namespace testcpp {
+	const int32 v1 = 127;
+	const int32 v2 = 128;
+	const int32 v3 = 129;
+}
 */
 
 namespace testcpp;
@@ -173,9 +185,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-const int32 testcpp::v1 = 127;
-const int32 testcpp::v2 = 128;
-const int32 testcpp::v3 = 129;
+namespace testcpp {
+	const int32 v1 = 127;
+	const int32 v2 = 128;
+	const int32 v3 = 129;
+}
 */
 
 namespace testcpp;

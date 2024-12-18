@@ -11,7 +11,9 @@ namespace testptr {
 */
 
 /* @dump namespace: testptr def
-int32* testptr::p1 = nullptr;
+namespace testptr {
+	int32* p1 = nullptr;
+}
 */
 
 namespace testptr;
@@ -31,7 +33,9 @@ namespace testptr {
 */
 
 /* @dump namespace: testptr def
-int32* testptr::p1 = nullptr;
+namespace testptr {
+	int32* p1 = nullptr;
+}
 */
 
 namespace testptr;
@@ -52,8 +56,10 @@ namespace testptr {
 */
 
 /* @dump namespace: testptr def
-int32 testptr::v = 23;
-int32* testptr::p1 = &(testptr::v);
+namespace testptr {
+	int32 v = 23;
+	int32* p1 = &(v);
+}
 */
 
 namespace testptr;
@@ -75,12 +81,14 @@ namespace testptr {
 */
 
 /* @dump namespace: testptr def
-int32 testptr::v = 23;
-int32* testptr::p1 = &(testptr::v);
+namespace testptr {
+	int32 v = 23;
+	int32* p1 = &(v);
+}
 */
 
 namespace testptr;
 
 val v = 23;
-val p1: Ptr<Int> = Ptr{v};
+val p1 = Ptr{v};
 

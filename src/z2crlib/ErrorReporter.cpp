@@ -230,11 +230,13 @@ void ZException::PrettyPrint(Stream& stream) {
 			SetConsoleTextAttribute(hConsole, cGray);
 		else if (ER::ErrorColor == ErrorColorType::Ansi)
 			stream << CSI << "37m";
-		else if (ER::ErrorColor == ErrorColorType::Qtf)
+		else if (ER::ErrorColor == ErrorColorType::Qtf) {
 			stream << "\1[@1 ";
-		stream << DeQtfLf(Path) << ": ";
-		if (ER::ErrorColor == ErrorColorType::Qtf)
+			stream << DeQtfLf(Path) << ": ";
 			stream << "]";
+		}
+		else
+			stream << Path << ": ";
 	}
 	
 	ER::PrettyPrint(Error, stream, ER::ErrorColor);

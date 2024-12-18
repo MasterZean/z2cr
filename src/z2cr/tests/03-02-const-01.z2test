@@ -1,14 +1,17 @@
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	const int32 a1 = 0;
+	const int32 a2 = 0;
+	const int32 a3 = 0;
+	const int32 a4 = 0;
+	const int32 a5 = 0;
+}
+*/
 namespace test;
 
-/* @dumpGlobalVarDef
-const int32 test::a1 = 0;
-const int32 test::a2 = 0;
-const int32 test::a3 = 0;
-const int32 test::a4 = 0;
-const int32 test::a5 = 0;
-*/
 const a1 = 0;
 const a2 = 7 - 7;
 const a3: Int = 0;
@@ -36,15 +39,18 @@ def @main() {
 
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	const uint32 a1 = '\0';
+	const uint32 a2 = '\0';
+	const uint32 a3 = '\0';
+	const uint32 a4 = '\0';
+	const uint32 a5 = '\0';
+}
+*/
 namespace test;
 
-/* @dumpGlobalVarDef
-const uint32 test::a1 = '\0';
-const uint32 test::a2 = '\0';
-const uint32 test::a3 = '\0';
-const uint32 test::a4 = '\0';
-const uint32 test::a5 = '\0';
-*/
 const a1 = '\0';
 const a2 = '7' - '7';
 const a3: Char = '\0';
@@ -72,15 +78,19 @@ def @main() {
 
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	const float a1 = 0.0f;
+	const float a2 = 0.0f;
+	const float a3 = 0.0f;
+	const float a4 = 0.0f;
+	const float a5 = 0.0f;
+}
+*/
+
 namespace test;
 
-/* @dumpGlobalVarDef
-const float test::a1 = 0.0f;
-const float test::a2 = 0.0f;
-const float test::a3 = 0.0f;
-const float test::a4 = 0.0f;
-const float test::a5 = 0.0f;
-*/
 const a1 = 0.0f;
 const a2 = 7.0f - 7.0f;
 const a3: Float = 0.0f;
@@ -108,15 +118,19 @@ def @main() {
 
 // @test var_dec
 // @file
+
+/* @dump namespace: test def
+namespace test {
+	const double a1 = 0.0;
+	const double a2 = 0.0;
+	const double a3 = 0.0;
+	const double a4 = 0.0;
+	const double a5 = 0.0;
+}
+*/
+
 namespace test;
 
-/* @dumpGlobalVarDef
-const double test::a1 = 0.0;
-const double test::a2 = 0.0;
-const double test::a3 = 0.0;
-const double test::a4 = 0.0;
-const double test::a5 = 0.0;
-*/
 const a1 = 0.0;
 const a2 = 7.0 - 7.0;
 const a3: Double = 0.0;

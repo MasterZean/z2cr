@@ -16,8 +16,10 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::Test::b1 = 56;
-int64 testcpp::Test::b2 = 57;
+namespace testcpp {
+	int32 Test::b1 = 56;
+	int64 Test::b2 = 57;
+}
 */
 
 namespace testcpp;
@@ -48,9 +50,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::Test::b1 = 56;
-int64 testcpp::Test::b2 = 57;
-double testcpp::Test::b3 = 58;
+namespace testcpp {
+	int32 Test::b1 = 56;
+	int64 Test::b2 = 57;
+	double Test::b3 = 58;
+}
 */
 
 namespace testcpp;
@@ -80,8 +84,10 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::Test::b1 = 56;
-int64 testcpp::Test::b2 = 57;
+namespace testcpp {
+	int32 Test::b1 = 56;
+	int64 Test::b2 = 57;
+}
 */
 
 namespace testcpp;
@@ -112,9 +118,11 @@ namespace testcpp {
 */
 
 /* @dump namespace: testcpp def
-int32 testcpp::Test::b1 = 56;
-int64 testcpp::Test::b2 = 57;
-double testcpp::Test::b3 = 58;
+namespace testcpp {
+	int32 Test::b1 = 56;
+	int64 Test::b2 = 57;
+	double Test::b3 = 58;
+}
 */
 
 namespace testcpp;

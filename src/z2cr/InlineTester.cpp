@@ -64,6 +64,7 @@ bool ZTest::Run() {
 		for (int td = 0; td < Dumps.GetCount(); td++) {
 			StringStream ss;
 			ZTranspiler cpp(compiler, ss);
+			cpp.CheckUse = false;
 			
 			for (int n = 0; n < Ass.Namespaces.GetCount(); n++) {
 				ZNamespace& ns = Ass.Namespaces[n];
@@ -72,10 +73,11 @@ bool ZTest::Run() {
 					
 					for (int j = 0; j < d.Functions.GetCount(); j++) {
 						ZFunction& f = *d.Functions[j];
-						//DUMP(f.DefPos.P.x);
-						//DUMP(Dumps.GetKey(td));
-						if (f.DefPos.P.x == Dumps.GetKey(td))
+
+						if (f.DefPos.P.x == Dumps.GetKey(td)) {
+							f.SetInUse();
 							cpp.WriteFunctionBody(f, false);
+						}
 					}
 				}
 			}
@@ -100,10 +102,12 @@ bool ZTest::Run() {
 		if (!GlobalVarDef.IsVoid()) {
 			StringStream ss;
 			ZTranspiler cpp(compiler, ss);
+			cpp.CheckUse = false;
 			
-			int index = Ass.Namespaces.Find("test");
-			for (int i = 0; i < Ass.Namespaces.GetCount(); i++)
+			for (int i = 0; i < Ass.Namespaces.GetCount(); i++) {
+				Ass.Namespaces[i].InUse = true;
 				cpp.TranspileValDefintons(Ass.Namespaces[i], false);
+			}
 			
 			String dump = ss;
 			if (GlobalVarDef != ss) {
@@ -124,10 +128,6 @@ bool ZTest::Run() {
 		
 		if (!DumpNsPubName.IsVoid())
 			result = RunDumpNsPub(compiler);
-			
-		//if (result == false) {
-		//	Cout() << Name << "(" << Line << ")" << " test failled\n";
-		//}
 	}
 	catch (ZException& e) {
 		StringStream ss;
@@ -181,11 +181,14 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 	if (index == -1)
 		return false;
 	
+	Ass.Namespaces[index].InUse = true;
+	
 	bool result = true;
 	
 	if (!DumpNsPubCon.IsVoid())	{
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
+		cpp.CheckUse = false;
 		
 		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
 		
@@ -199,6 +202,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 	if (!DumpNsPrivCon.IsVoid())	{
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
+		cpp.CheckUse = false;
 		
 		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b100, false);
 		
@@ -212,6 +216,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 	if (!DumpNsDef.IsVoid()) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
+		cpp.CheckUse = false;
 		
 		cpp.TranspileDefinitions(Ass.Namespaces[index], 0b11);
 		
@@ -281,7 +286,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-//	if (!path.EndsWith("06-cpp-01-ns-04.z2test"))
+//	if (!path.EndsWith("03-03-cast-01.z2test"))
 //		return;
 	
 	FileIn file(path);
