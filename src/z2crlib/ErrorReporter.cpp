@@ -226,8 +226,10 @@ void ZException::PrettyPrint(Stream& stream) {
 #endif
 
 	if (Path.GetCount()) {
-		if (ER::ErrorColor == ErrorColorType::Win32)
+		if (ER::ErrorColor == ErrorColorType::Win32) {
 			SetConsoleTextAttribute(hConsole, cGray);
+			stream << Path << ": ";
+		}
 		else if (ER::ErrorColor == ErrorColorType::Ansi)
 			stream << CSI << "37m";
 		else if (ER::ErrorColor == ErrorColorType::Qtf) {

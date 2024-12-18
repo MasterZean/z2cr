@@ -455,9 +455,6 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		return;
 	}
 	
-	if (f.Name == "ff")
-		f.Name == "ff";
-	
 	WriteType(&f.Return.Tt);
 	
 	cs << " ";
