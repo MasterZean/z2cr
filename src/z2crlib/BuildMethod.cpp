@@ -50,7 +50,7 @@ DirFinder::DirFinder() {
 		}
 	}
 	
-	Array<FileSystemInfo::FileInfo> root = StdFileSystemInfo().Find(Null);
+	/*Array<FileSystemInfo::FileInfo> root = StdFileSystemInfo().Find(Null);
 	for(int i = 0; i < root.GetCount(); i++) {
 		if(root[i].root_style == FileSystemInfo::ROOT_FIXED) {
 			int drive = *root[i].filename;
@@ -60,7 +60,49 @@ DirFinder::DirFinder() {
 			if(DirectoryExists(pf))
 				GatherDirs(path, pf);
 		}
+	}*/
+	
+	String sInstall = "installationPath:";
+	String sName = "displayName:";
+	
+	Array<FileSystemInfo::FileInfo> root = StdFileSystemInfo().Find(Null);
+	for(int i = 0; i < root.GetCount(); i++) {
+		if(root[i].root_style == FileSystemInfo::ROOT_FIXED) {
+			int drive = *root[i].filename;
+			String pf = GetProgramsFolderX86();
+			pf.Set(0, drive);
+			pf = AppendFileName(pf, "Microsoft Visual Studio\\Installer");
+			if (DirectoryExists(pf)) {
+				//GatherDirs(path, pf);
+				pf = AppendFileName(pf, "vswhere.exe");
+				if (FileExists(pf)) {
+					String t, tt;
+					LocalProcess lp(pf);
+					while (lp.Read(t)) {
+						if (t.GetCount())
+							tt << t;
+					}
+					
+					Vector<String> lines = Split(tt, '\n', true);
+					
+					for (int j = 0; j < lines.GetCount(); j++) {
+						if (lines[j].StartsWith(sInstall)) {
+							String rest = TrimBoth(lines[j].Mid(sInstall.GetCount()));
+							if (DirectoryExists(rest))
+								GatherDirs(path, rest);
+							DUMP(rest);
+						}
+						else if (lines[j].StartsWith(sName)) {
+							String rest = TrimBoth(lines[j].Mid(sName.GetCount()));
+							DUMP(rest);
+						}
+					}
+				}
+			}
+		}
 	}
+	
+	//DUMP(path);
 
 	for(String s : path) {
 		s = ToLower(s);
@@ -223,6 +265,8 @@ void DeepVSSearch(Vector<BuildMethod>& methods) {
 					methods.Add(bm);
 					
 					Cout() << "Found BM: " << bm.Name << "\n";
+					//Cout().Flush();
+					//fflush(stdout);
 				}
 			}
 		}
@@ -518,6 +562,8 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 							if (res) {
 								methods.Add(gcc);
 								Cout() << "Found BM: " << gcc.Name << "." << gcc.Arch << "\n";
+								//Cout().Flush();
+								//fflush(stdout);
 								
 								continue;
 							}
@@ -554,6 +600,8 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 								gcc.CppVersion = 2011;
 								methods.Add(gcc);
 								Cout() << "Found BM: " << gcc.Name << "." << gcc.Arch << "\n";
+								//Cout().Flush();
+								//fflush(stdout);
 							}
 						}
 					}
@@ -616,6 +664,8 @@ bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
 			if (res) {
 				methods.Add(clang);
 				Cout() << "Found BM: " << clang.Name << "." << clang.Arch << "\n";
+				//Cout().Flush();
+				//fflush(stdout);
 			}
 		}
 	}
@@ -624,14 +674,22 @@ bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
 }
 #endif
 
+void BuildMethod::NewVs() {
+	DirFinder dir;
+	
+	Vector<BuildMethod> methods;
+	
+	DeepVSSearch(methods);
+}
+
 void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 	methods.Clear();
 	
 #ifdef PLATFORM_WIN32
 	// search for modern MSC
 	DetectClang(methods);
-	//DeepVSSearch(methods);
 	DetectGCC(methods);
+	DeepVSSearch(methods);
 #endif
 
 #ifdef PLATFORM_POSIX

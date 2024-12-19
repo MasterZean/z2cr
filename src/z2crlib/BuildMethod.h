@@ -103,6 +103,8 @@ struct BuildMethod: public Moveable<BuildMethod> {
 	
 	bool TestLib(Vector<BuildMethod>& methods, const String& arch);
 	
+	static void NewVs();
+	
 private:
 #ifdef PLATFORM_WIN32
 	static bool DetectGCC(Vector<BuildMethod>& methods);

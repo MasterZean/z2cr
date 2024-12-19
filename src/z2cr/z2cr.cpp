@@ -17,9 +17,11 @@ bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 	LoadFromXMLFile(methods, exeDir + "buildMethods.xml");
 	if (methods.GetCount() == 0) {
 		Cout() << "No cached build method found! Trying to auto-detect...\n";
+		Cout().Flush();
 		BuildMethod::Get(methods);
 		if (methods.GetCount() == 0) {
 			Cout() << ZCompiler::GetName() << " couldn't find a backend compiler. Skipping compilation step..." << '\n';
+			Cout().Flush();
 			//K.SCU = false;
 		}
 		else
@@ -62,6 +64,7 @@ bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 			Cout() << "Build method '" << ToUpper(bms) << "' can't be found. Exiting!" << '\n';
 		else
 			Cout() << "No build method can be found. Exiting!" << '\n';
+		Cout().Flush();
 		
 		return false;
 	}
@@ -274,17 +277,7 @@ int testansi()
 CONSOLE_APP_MAIN {
 	bool noConsole = separate_console();
 	
-	
-	//testansi();
-	/*CONSOLE_SCREEN_BUFFER_INFO csbi;
-    int columns, rows;
-
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-
-    printf("columns: %d\n", columns);
-    printf("rows: %d\n", rows);*/
+	//BuildMethod::NewVs();
 	
 	String curDir = NativePath(GetCurrentDirectory() + "/");
 	String exeDir = GetFileDirectory(GetExeFilePath());
