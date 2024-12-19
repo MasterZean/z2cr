@@ -4,8 +4,34 @@
 LocalProcess globalExecutor;
 void* globalProcesID;
 
-void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
+void ExecutableThreadBuild(BuildData* data) {
+	String command = data->cmd;
+	DUMP(command);
+	
+	String t, tt;
+	
+	globalExecutor.Kill();
+	globalExecutor.ConvertCharset(false);
+	globalExecutor.Start(command);
+	
+	while (globalExecutor.Read(t)) {
+		if (t.GetCount()) {
+			DUMP(t);
+			PostCallback(callback1(data->zide, &ZideWindow::AddOutputLine, t));
+			//Sleep(5);
+		}
+	}
+	
+	data->result = tt;
+	data->runOk = BuildMethod::IsSuccessCode(globalExecutor.GetExitCode());
+	
+	PostCallback(callback1(data->zide, &ZideWindow::OnFinishedBuild, data));
+}
+
+void ExecutableThreadRun(ZideWindow* zide, const String& file, bool newConsole) {
 	String command;
+	bool res = false;
+	
 #ifdef PLATFORM_WIN32
 	if (newConsole) {
 		command = "cmd.exe /C cd \"" + GetFileDirectory(file) + "\" && \"" + file + "\" && pause";
@@ -51,7 +77,7 @@ void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 		command = "cmd.exe /C cd \"" + GetFileDirectory(file) + "\" && \"" + file + "\"";
 		DUMP(command);
 		
-		String t, tt;
+		String t;
 		
 		globalExecutor.Kill();
 		globalExecutor.ConvertCharset(false);
@@ -59,16 +85,19 @@ void ExecutableThread(ZideWindow* zide, const String& file, bool newConsole) {
 		
 		while (globalExecutor.Read(t)) {
 			if (t.GetCount()) {
+				DUMP(t);
 				PostCallback(callback1(zide, &ZideWindow::AddOutputLine, t));
-				Sleep(5);
+				Sleep(1);
 			}
 		}
 		
+		res = BuildMethod::IsSuccessCode(globalExecutor.GetExitCode());
 #ifdef PLATFORM_WIN32
 	}
 #endif
 	
-	PostCallback(callback(zide, &ZideWindow::OutPutEnd));
+	PostCallback(callback1(zide, &ZideWindow::OutPutEnd, res));
+	//PostCallback(callback1(zide, onFinish., res));
 }
 
 struct FormatDlg: TabDlg {
@@ -462,6 +491,60 @@ void ZideWindow::OnMenuBuildMethods() {
 	bmw.Run(true);
 }
 
+String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
+	String cmd = CompilerExe;
+	if (cmd.GetCount() == 0)
+		cmd = BuildMethod::ExeName("z2c");
+	cmd << " -";
+	if (scu)
+		cmd << "scu ";
+	else
+		cmd << "c++ ";
+	
+	cmd << "-mainfile " << file << " ";
+	//cmd << "-color qtf";
+	/*cmd << "-pak " << lastPackage << " ";
+	if (optimize == 2)
+		cmd << " -O2";
+	else if (optimize == 1)
+		cmd << " -O1";
+	else if (optimize == 0)
+		cmd << " -Od";
+
+	if (libMode)
+		cmd << " -lib";
+	
+	if (popMethodList.GetCursor() != -1)
+		cmd << " -bm " << popMethodList.Get(popMethodList.GetCursor(), 0);
+	
+	cmd << " -arch " << arch;*/
+	
+	//if (p.x > 0)
+	//	cmd << " -acp " << p.x << " " << p.y;
+	
+	DUMP(cmd);
+	/*String t, tt;
+	LocalProcess lp(cmd);
+
+	while (lp.Read(t)) {
+		if (t.GetCount())
+			tt << t;
+	}
+	res = BuildMethod::IsSuccessCode(lp.GetExitCode());
+
+	if (res == false && tt.GetCount() == 0) {
+		DUMP(tt);
+		cmd = GetFileDirectory(GetExeFilePath()) + BuildMethod::ExeName("z2c");
+
+		if (!FileExists(cmd))
+			tt = "Could not find: " + cmd;
+	}
+	
+	return tt*/;
+	
+	return cmd;
+}
+
 void ZideWindow::OnMenuBuildRun(bool newConsole) {
 	auto temp = GetEditor();
 	if (!temp)
@@ -482,28 +565,39 @@ void ZideWindow::OnMenuBuildRun(bool newConsole) {
 	bool res = false;
 	String t, tt;
 	console.Set(String());
-	tt = Build(file, true, res);
+	String cmd = Build(file, true, res);
+	
+	BuildData* data = new BuildData();
+	data->zide = this;
+	data->file = file;
+	data->cmd = cmd;
+	data->editor = &editor;
+	data->newConsole = newConsole;
+	
+	Thread().Run(callback1(ExecutableThreadBuild, data));
+}
 
-	if (res) {
-		String ename = GetFileDirectory(file) + GetFileTitle(file) + BuildMethod::ExeName("");
+void ZideWindow::OnFinishedBuild(BuildData* data) {
+	if (data->runOk) {
+		String ename = GetFileDirectory(data->file) + GetFileTitle(data->file) + BuildMethod::ExeName("");
 		
-		if (!newConsole)
-			console.Set(tt + "Running " + ename + "\n");
+		if (!data->newConsole)
+			console.Append(data->result + "Running " + ename + "\n");
 		else
-			console.Set(tt);
+			console.Append(data->result);
 		Title("ZIDE - Executing: " + ename);
 		
 		sw.Reset();
 		running = true;
 		
-		Thread().Run(callback3(ExecutableThread, this, ename, newConsole));
+		Thread().Run(callback3(ExecutableThreadRun, this, ename, data->newConsole));
 	}
 	else {
-		console.Set(tt);
+		console.Set(data->result);
 		console.ScrollEnd();
 		
 		int errors = 0;
-		Vector<String> lines = Split(tt, '\n');
+		Vector<String> lines = Split(data->result, '\n');
 		Vector<Point> errorList;
 		for (int i = 0; i < lines.GetCount(); i++) {
 			String s = TrimBoth(lines[i]);
@@ -513,14 +607,14 @@ void ZideWindow::OnMenuBuildRun(bool newConsole) {
 				int jj = s.Find(')', ii);
 				if (ii < jj) {
 					String path = s.Mid(0, ii);
-					if (path == file) {
+					if (path == data->file) {
 						String ll = s.Mid(ii + 1, jj - ii - 1);
 						Vector<String> s2 = Split(ll, ',');
 						if (s2.GetCount() == 2) {
 							int line = StrInt(s2[0]) - 1;
 							int col = StrInt(s2[1]) - 1;
 							
-							String text = editor.GetUtf8Line(line);
+							String text = data->editor->GetUtf8Line(line);
 							col = AdjustForTabs(text, col, settings.TabSize);
 							
 							errorList.Add(Point(col, line));
@@ -534,9 +628,11 @@ void ZideWindow::OnMenuBuildRun(bool newConsole) {
 		if (errors) {
 			//editor.Errors(std::move(errorList));
 			//TODO:
-			editor.RefreshLayoutDeep();
+			data->editor->RefreshLayoutDeep();
 		}
 	}
+	
+	delete data;
 }
 
 void ZideWindow::OnMenuBuildShowLog() {

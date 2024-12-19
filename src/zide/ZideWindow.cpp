@@ -242,58 +242,6 @@ void ZideWindow::OnClose() {
 		Close();
 }
 
-String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
-	String cmd = CompilerExe;
-	if (cmd.GetCount() == 0)
-		cmd = BuildMethod::ExeName("z2c");
-	cmd << " -";
-	if (scu)
-		cmd << "scu ";
-	else
-		cmd << "c++ ";
-	
-	cmd << "-mainfile " << file << " ";
-	//cmd << "-color qtf";
-	/*cmd << "-pak " << lastPackage << " ";
-	if (optimize == 2)
-		cmd << " -O2";
-	else if (optimize == 1)
-		cmd << " -O1";
-	else if (optimize == 0)
-		cmd << " -Od";
-
-	if (libMode)
-		cmd << " -lib";
-	
-	if (popMethodList.GetCursor() != -1)
-		cmd << " -bm " << popMethodList.Get(popMethodList.GetCursor(), 0);
-	
-	cmd << " -arch " << arch;*/
-	
-	//if (p.x > 0)
-	//	cmd << " -acp " << p.x << " " << p.y;
-	
-	DUMP(cmd);
-	String t, tt;
-	LocalProcess lp(cmd);
-
-	while (lp.Read(t)) {
-		if (t.GetCount())
-			tt << t;
-	}
-	res = BuildMethod::IsSuccessCode(lp.GetExitCode());
-
-	if (res == false && tt.GetCount() == 0) {
-		DUMP(tt);
-		cmd = GetFileDirectory(GetExeFilePath()) + BuildMethod::ExeName("z2c");
-
-		if (!FileExists(cmd))
-			tt = "Could not find: " + cmd;
-	}
-	
-	return tt;
-}
-
 void ZideWindow::AddOutputLine(const String& str) {
 	console << str;
 	console.ScrollEnd();
@@ -314,7 +262,7 @@ void ZideWindow::PutVerbose(const char *s) {
 	}
 }
 
-void ZideWindow::OutPutEnd() {
+void ZideWindow::OutPutEnd(bool result) {
 	//console.ScrollEnd();
 	console.ScrollLineUp();
 	console.ScrollLineUp();

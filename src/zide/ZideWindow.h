@@ -38,6 +38,19 @@ public:
 	}
 };
 
+class ZideWindow;
+
+class BuildData {
+public:
+	ZideWindow* zide = nullptr;
+	CodeEditor* editor = nullptr;
+	String file;
+	String cmd;
+	String result;
+	bool newConsole = false;
+	bool runOk = false;
+};
+
 class ZideWindow : public WithZideLayout<TopWindow> {
 public:
 	typedef ZideWindow CLASSNAME;
@@ -67,9 +80,10 @@ public:
 	bool IsVerbose() const;
 	void PutConsole(const char *s);
 	void PutVerbose(const char *s);
-	void OutPutEnd();
+	void OutPutEnd(bool result);
 	
 	String Build(const String& file, bool scu, bool& res, Point p = Point(-1, -1));
+	void OnFinishedBuild(BuildData* data);
 	
 	bool LoadMethods();
 	void DetectMehods();
@@ -165,5 +179,8 @@ public:
 	
 	virtual void Activate();
 };
+
+void ExecutableThreadBuild(BuildData* data);
+void ExecutableThreadRun(ZideWindow* zide, const String& file, bool newConsole);
 
 #endif
