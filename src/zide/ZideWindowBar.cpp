@@ -489,7 +489,7 @@ void ZideWindow::OnMenuBuildMethods() {
 	bmw.Run(true);
 }
 
-String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
+String ZideWindow::BuildCmd(const String& file, bool scu, bool& res, Point p) {
 	String cmd = CompilerExe;
 	if (cmd.GetCount() == 0)
 		cmd = BuildMethod::ExeName("z2c");
@@ -501,7 +501,7 @@ String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
 	
 	cmd << "-mainfile " << file << " ";
 	//cmd << "-color qtf";
-	/*cmd << "-pak " << lastPackage << " ";
+	/*cmd << "-pak " << lastPackage << " ";*/
 	if (optimize == 2)
 		cmd << " -O2";
 	else if (optimize == 1)
@@ -509,36 +509,18 @@ String ZideWindow::Build(const String& file, bool scu, bool& res, Point p) {
 	else if (optimize == 0)
 		cmd << " -Od";
 
-	if (libMode)
-		cmd << " -lib";
+	/*if (libMode)
+		cmd << " -lib";*/
 	
-	if (popMethodList.GetCursor() != -1)
+	if (popMethodList.GetCursor() != -1) {
 		cmd << " -bm " << popMethodList.Get(popMethodList.GetCursor(), 0);
-	
-	cmd << " -arch " << arch;*/
+		cmd << " -arch " << arch;
+	}
 	
 	//if (p.x > 0)
 	//	cmd << " -acp " << p.x << " " << p.y;
 	
 	DUMP(cmd);
-	/*String t, tt;
-	LocalProcess lp(cmd);
-
-	while (lp.Read(t)) {
-		if (t.GetCount())
-			tt << t;
-	}
-	res = BuildMethod::IsSuccessCode(lp.GetExitCode());
-
-	if (res == false && tt.GetCount() == 0) {
-		DUMP(tt);
-		cmd = GetFileDirectory(GetExeFilePath()) + BuildMethod::ExeName("z2c");
-
-		if (!FileExists(cmd))
-			tt = "Could not find: " + cmd;
-	}
-	
-	return tt*/;
 	
 	return cmd;
 }
@@ -563,7 +545,7 @@ void ZideWindow::OnMenuBuildRun(bool newConsole) {
 	bool res = false;
 	String t, tt;
 	console.Set(String());
-	String cmd = Build(file, true, res);
+	String cmd = BuildCmd(file, true, res);
 	
 	BuildData* data = new BuildData();
 	data->zide = this;
@@ -580,9 +562,9 @@ void ZideWindow::OnFinishedBuild(BuildData* data) {
 		String ename = GetFileDirectory(data->file) + GetFileTitle(data->file) + BuildMethod::ExeName("");
 		
 		if (!data->newConsole)
-			console.Append(data->result + "Running " + ename + "\n");
-		else
-			console.Append(data->result);
+			console.Append(/*data->result + */"Running " + ename + "\n");
+		/*else
+			console.Append(data->result);*/
 		Title("ZIDE - Executing: " + ename);
 		
 		sw.Reset();
@@ -591,8 +573,8 @@ void ZideWindow::OnFinishedBuild(BuildData* data) {
 		Thread().Run(callback3(ExecutableThreadRun, this, ename, data->newConsole));
 	}
 	else {
-		console.Set(data->result);
-		console.ScrollEnd();
+		//console.Set(data->result);
+		//console.ScrollEnd();
 		
 		int errors = 0;
 		Vector<String> lines = Split(data->result, '\n');
@@ -648,3 +630,120 @@ void ZideWindow::OnMenuHelpAbout() {
 	PromptOK("zide!!!!!!!!!!!!!!!!!!!!!!");
 }
 
+void ZideWindow::MainToolbar(Bar& bar) {
+	if (settings.ToolbarInRow)
+		bar.Separator();
+	
+	bar.Add(mbtEntryPoint, HorzLayoutZoom(180));
+	bar.Gap(4);
+	bar.Add(lstBldConf, HorzLayoutZoom(120));
+	bar.Gap(4);
+	bar.Add(mbtBldMode, HorzLayoutZoom(180));
+	bar.Gap(4);
+	
+	bar.Add("Override: Debug Optimization", ZImg::Od(), THISBACK(OnToolO0))
+		.Check(optimize == 0);
+	bar.Add("Override: Low Optimization", ZImg::O1(),   THISBACK(OnToolO1))
+		.Check(optimize == 1);
+	bar.Add("Override: High Optimization", ZImg::O2(),  THISBACK(OnToolO2))
+		.Check(optimize == 2);
+}
+
+void ZideWindow::OnToolO0() {
+	optimize = 0;
+	tlbMain.Set(THISBACK(MainToolbar));
+}
+
+void ZideWindow::OnToolO1() {
+	optimize = 1;
+	tlbMain.Set(THISBACK(MainToolbar));
+}
+
+void ZideWindow::OnToolO2() {
+	optimize = 2;
+	tlbMain.Set(THISBACK(MainToolbar));
+}
+
+void ZideWindow::DropMethodList() {
+	popMethodList.PopUp(&mbtBldMode);
+}
+
+void ZideWindow::DropTypeList() {
+	popTypeList.PopUp(&mbtBldMode);
+}
+
+void ZideWindow::DropArchList() {
+	popArchList.PopUp(&mbtBldMode);
+}
+
+void ZideWindow::OnSelectMethod() {
+	String s;
+	
+	if (popMethodList.GetCursor() == -1)
+		for (int i = 0; i < popMethodList.GetCount(); i++)
+			if (popMethodList.Get(i, 0) == method) {
+				popMethodList.SetCursor(i);
+				break;
+			}
+	
+	if (popMethodList.GetCursor() == -1 && popMethodList.GetCount())
+		popMethodList.SetCursor(0);
+	
+	if (popMethodList.GetCursor() != -1) {
+		method = popMethodList.Get(popMethodList.GetCursor(), 0);
+		s << method;
+	}
+		
+	Index<String> archs;
+	int index = -1;
+	bool x86 = false, x64 = false;
+	for (int i = 0; i < methods.GetCount(); i++) {
+		if (methods[i].Name == method) {
+			archs.FindAdd(methods[i].Arch);
+			index = i;
+		}
+	}
+	
+	String oldArch;
+	if (popArchList.GetCursor() != -1)
+		oldArch = popArchList.Get(popArchList.GetCursor(), 0);
+	if (oldArch.GetCount() == 0)
+		oldArch = arch;
+		
+	popArchList.Clear();
+	
+	if (index!= -1) {
+		for (int i = 0; i < archs.GetCount(); i++) {
+			popArchList.Add(archs[i]);
+			if (oldArch.GetCount() && oldArch == archs[i])
+				popArchList.SetCursor(popArchList.GetCount() - 1);
+		}
+	}
+	
+	if (popArchList.GetCursor() == -1 && popArchList.GetCount())
+		popArchList.SetCursor(0);
+	
+	if (popArchList.GetCursor() != -1) {
+		if (!s.IsEmpty())
+			s << " ";
+		arch = popArchList.Get(popArchList.GetCursor(), 0);
+		s << arch;
+	}
+	else
+		arch = "";
+		
+	int c = popTypeList.GetCursor();
+	if (c != -1) {
+		if (!s.IsEmpty())
+			s << " ";
+		s << popTypeList.Get(c, 0);
+		if (c == 0)
+			OnToolO0();
+		else if (c == 2)
+			OnToolO1();
+		else if (c == 1)
+			OnToolO2();
+	}
+	
+	mbtBldMode.Set(s);
+}

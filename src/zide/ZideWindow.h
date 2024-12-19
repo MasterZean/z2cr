@@ -82,11 +82,12 @@ public:
 	void PutVerbose(const char *s);
 	void OutPutEnd(bool result);
 	
-	String Build(const String& file, bool scu, bool& res, Point p = Point(-1, -1));
+	String BuildCmd(const String& file, bool scu, bool& res, Point p = Point(-1, -1));
 	void OnFinishedBuild(BuildData* data);
 	
 	bool LoadMethods();
 	void DetectMehods();
+	void PopulateMehods();
 	
 private:
 	Vector<String> packages;
@@ -95,10 +96,13 @@ private:
 	String openDialogPreselect;
 	bool oShowPakPaths = true;
 	Vector<BuildMethod> methods;
+	String method;
+	String arch;
 	StopWatch sw;
 	
 	FrameTop<StaticBarArea> bararea;
 	MenuBar mnuMain;
+
 	Label lblLine;
 		
 	Splitter splAsbCanvas;
@@ -108,7 +112,17 @@ private:
 	SplitterFrame splBottom;
 	FrameBottom<Console> console;
 	
+	ToolBar tlbMain;
+	MultiButton mbtEntryPoint;
+	DropList lstBldConf;
+	MultiButton mbtBldMode;
+	
+	PopUpTable popMethodList;
+	PopUpTable popTypeList;
+	PopUpTable popArchList;
+	
 	Vector<int> colors;
+	int optimize = 0;
 	
 	bool running = false;
 	bool canBuild = true;
@@ -156,6 +170,18 @@ private:
 	
 	void DoMenuHelp(Bar& bar);
 	void OnMenuHelpAbout();
+	
+	void MainToolbar(Bar& bar);
+
+	void OnToolO0();
+	void OnToolO1();
+	void OnToolO2();
+	
+	void DropMethodList();
+	void DropTypeList();
+	void DropArchList();
+	
+	void OnSelectMethod();
 };
 
 class DetectWindow: public WithWaitingLayout<TopWindow> {

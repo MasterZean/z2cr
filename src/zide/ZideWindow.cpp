@@ -9,21 +9,24 @@ ZideWindow::ZideWindow() {
 	int r = HorzLayoutZoom(100);
 	int l = HorzLayoutZoom(250);
 	
-	bool toolbar_in_row = true;
 	mnuMain.Transparent();
 	
-	if (toolbar_in_row) {
-		int tcy = mnuMain.GetStdHeight() + 2 * Zy(2);
+	if (settings.ToolbarInRow) {
+		tlbMain.SetFrame(NullFrame());
+		int tcy = tlbMain.GetStdHeight() + 2 * Zy(2);
 		
 		bararea.Add(mnuMain.LeftPos(0, l).VCenterPos(mnuMain.GetStdHeight()));
+		bararea.Add(tlbMain.HSizePos(l, r).VCenterPos(tcy));
 		bararea.Add(lblLine.RightPos(4, r).VSizePos(2, 3));
 		lblLine.AddFrame(ThinInsetFrame());
-		bararea.Height(tcy);
-		
+		bararea.Height(max(mnuMain.GetStdHeight(), tcy));
 		AddFrame(bararea);
+		tlbMain.Transparent();
+		AddFrame(TopSeparatorFrame());
 	}
 	
 	mnuMain.Set(THISBACK(DoMainMenu));
+	tlbMain.Set(THISBACK(MainToolbar));
 		
 	Add(splAsbCanvas);
 	splAsbCanvas.Horz(asbAss, canvas);
@@ -53,6 +56,36 @@ ZideWindow::ZideWindow() {
 	lblLine.SetAlign(ALIGN_CENTER);
 	
 	tabs.ShowTabs(false);
+	
+	mbtEntryPoint.NoWantFocus();
+	mbtEntryPoint.Tip("Current entry point");
+	mbtEntryPoint.Set("* File in editor");
+	mbtEntryPoint.AddButton().Tip("Set entry point").SetImage(ZImg::dots) <<= Callback()/*THISBACK(DropTypeList)*/;
+	
+	lstBldConf.Add("Default");
+	lstBldConf.Tip("Select build configuration");
+	lstBldConf.SetIndex(0);
+	lstBldConf.NoDropFocus();
+	lstBldConf.NoWantFocus();
+	
+	mbtBldMode.NoWantFocus();
+	mbtBldMode.Tip("Build mode");
+	mbtBldMode.AddButton().Tip("Build method").Left() <<= THISBACK(DropMethodList);
+	mbtBldMode.AddButton().Tip("Build type") <<= THISBACK(DropTypeList);
+	mbtBldMode.AddButton().Tip("Build architecture") <<= THISBACK(DropArchList);
+	
+	popMethodList.Normal();
+	popMethodList.WhenSelect = THISBACK(OnSelectMethod);
+	
+	popTypeList.Normal();
+	popTypeList.WhenSelect = THISBACK(OnSelectMethod);
+	popTypeList.Add("Debug");
+	popTypeList.Add("Speed");
+	popTypeList.Add("Size");
+	popTypeList.SetCursor(1);
+	
+	popArchList.Normal();
+	popArchList.WhenSelect = THISBACK(OnSelectMethod);
 	
 	OrderColors();
 }
@@ -125,7 +158,7 @@ void ZideWindow::Serialize(Stream& s) {
 	}
 	
 	s % LastPackage % RecentPackages % openNodes % ActiveFile % openDialogPreselect;
-	s % settings % oShowPakPaths;
+	s % settings % method % arch % oShowPakPaths;
 }
 
 void ZideWindow::LoadPackage(const String& package) {
@@ -188,6 +221,12 @@ void ZideWindow::SetupLast() {
 	
 	tabs.ShowTabs(tabs.GetCount());
 	asbAss.SetShowPaths(oShowPakPaths);
+	
+	int ii = popMethodList.Find(method);
+	if (ii != -1) {
+		popMethodList.SetCursor(ii);
+		OnSelectMethod();
+	}
 }
 
 void ZideWindow::OnFileRemoved(const String& file) {
@@ -263,7 +302,6 @@ void ZideWindow::PutVerbose(const char *s) {
 }
 
 void ZideWindow::OutPutEnd(bool result) {
-	//console.ScrollEnd();
 	console.ScrollLineUp();
 	console.ScrollLineUp();
 	Title("ZIDE - Execution done in " + sw.ToString() + " sec.");
@@ -371,6 +409,16 @@ void ZideWindow::DetectMehods() {
 		canBuild = false;
 	}
 	StoreAsXMLFile(methods, "methods", CurFolder + "buildMethods.xml");
+}
+
+void ZideWindow::PopulateMehods() {
+	Index<String> met;
+	for (int i = 0; i < methods.GetCount(); i++)
+		met.FindAdd(methods[i].Name);
+	
+	popMethodList.Clear();
+	for (int i = 0; i < met.GetCount(); i++)
+		popMethodList.Add(met[i]);
 }
 
 bool runProg = false;

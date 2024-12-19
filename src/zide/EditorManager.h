@@ -22,12 +22,14 @@ public:
 	bool   Thousands = true;
 	int    Theme = 0;
 	
+	bool   ToolbarInRow = true;
+	
 	String Style;
 	
 	void Serialize(Stream& s) {
 		s % ShowTabs % ShowSpaces % ShowNewlines % WarnSpaces % TabSize % IndentSpaces
 		  % ShowLineNums % HighlightLine % TabPos % TabClose % LinePos % LineColor % Style
-		  % ScopeHighlight % Brackets % Thousands % Theme;
+		  % ScopeHighlight % Brackets % Thousands % Theme % ToolbarInRow;
 	}
 };
 
