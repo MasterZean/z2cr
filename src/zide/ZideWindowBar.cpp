@@ -18,6 +18,7 @@ void ExecutableThreadBuild(BuildData* data) {
 		if (t.GetCount()) {
 			DUMP(t);
 			PostCallback(callback1(data->zide, &ZideWindow::AddOutputLine, t));
+			tt << t;
 			//Sleep(5);
 		}
 	}
@@ -71,9 +72,7 @@ void ExecutableThreadRun(ZideWindow* zide, const String& file, bool newConsole) 
 			;//PutConsole("Unable to launch " + String(_cmdline));
 	}
 	else {
-		
 #endif
-
 		command = "cmd.exe /C cd \"" + GetFileDirectory(file) + "\" && \"" + file + "\"";
 		DUMP(command);
 		
@@ -97,7 +96,6 @@ void ExecutableThreadRun(ZideWindow* zide, const String& file, bool newConsole) 
 #endif
 	
 	PostCallback(callback1(zide, &ZideWindow::OutPutEnd, res));
-	//PostCallback(callback1(zide, onFinish., res));
 }
 
 struct FormatDlg: TabDlg {
