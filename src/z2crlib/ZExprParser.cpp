@@ -492,6 +492,7 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			return node;
 		}
 		else {
+			Point opp2 = parser.GetPoint();
 			name = parser.ExpectId();
 			
 			index = ns->Names.Find(name);
@@ -505,7 +506,9 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			}
 			else {
 				// a namespace child
-				ASSERT(ns->Namespace);
+				if (ns->Namespace == nullptr)
+					parser.Error(opp2, "namespace element '" + name + " 'is not part of parent namespace");
+				
 				int clsIndex = ns->Namespace->Classes.Find(name);
 				
 				if (clsIndex != -1) {

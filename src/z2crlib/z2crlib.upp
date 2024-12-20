@@ -33,5 +33,6 @@ file
 	ErrorReporter.h,
 	ErrorReporter.cpp,
 	BuildMethod.h,
-	BuildMethod.cpp;
+	BuildMethod.cpp,
+	BuildMethod_legacy.cpp;
 

@@ -154,9 +154,14 @@ bool Builder::BuildMSC(const String& path, const String& origPath, const Index<S
 	t = "";
 	tt = "";
 	
-	d << QT + linkPath + QT + " " + inPath + inTitle + ".obj \"" + leakObj + "\" user32.lib /nologo " +"/out:\"" + outPath + outTitle + ".exe\"";
+	String l;
+	for (int i = 0; i < libs.GetCount(); i++)
+		l << " " << libs[i];
+	
+	d << QT + linkPath + QT + " " + inPath + inTitle + ".obj \"" + leakObj + "\"" + l + " /nologo " +"/out:\"" + outPath + outTitle + ".exe\"";
 	if (arch == "x64")
 		d << " /MACHINE:x64 ";
+	d << " /SUBSYSTEM:WINDOWS";
 	{
 		LocalProcess lp(d, env);
 		while (lp.Read(t)) {

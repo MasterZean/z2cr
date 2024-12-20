@@ -5,6 +5,9 @@
 
 using namespace Upp;
 
+String NormalizePathNN(const String& path);
+bool ExistProgram(String& bin, const char *dir, const char *file);
+
 struct BuildMethod: public Moveable<BuildMethod> {
 	enum Type {
 		btMSC,

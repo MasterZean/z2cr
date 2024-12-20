@@ -14,8 +14,8 @@ bool ZCompiler::Compile() {
 	
 	LibLink = std::move(resolver.LibLink);
 	
-	LibLink.FindAdd("winmm");
-	LibLink.FindAdd("user32");
+	LibLink.FindAdd("winmm.lib");
+	LibLink.FindAdd("user32.lib");
 	
 	MainFound = FindMain();
 	
