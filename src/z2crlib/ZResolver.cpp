@@ -91,9 +91,6 @@ void ZResolver::ResolveClasses() {
 			ZClass& c = ns.PreClasses[j];
 			c.GenerateSignatures();
 			
-			for (int k = 0; k < c.LibLink.GetCount(); k++)
-				LibLink.FindAdd(c.LibLink[k]);
-			
 			ZClass& cls = ass.AddClass(c);
 			ns.Classes.Add(cls.Name, &cls);
 			

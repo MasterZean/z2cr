@@ -12,6 +12,7 @@ public:
 	ArrayMap<String, ZSource*> SourceLookup;
 	Index<String> StringConsts;
 	ZNamespaceItem NsLookup;
+	Index<String> LibLink;
 	
 	ZClass* CClass = nullptr;
 	ZClass* CDef = nullptr;

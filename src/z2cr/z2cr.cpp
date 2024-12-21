@@ -421,7 +421,7 @@ CONSOLE_APP_MAIN {
 		
 		Cout() << "Using '" << ToUpper(bm.Name) << "." << ToUpper(bm.Arch) << "' back end compiler.\n\n";
 		
-		bool buildOk = builder.Build(compiler.CppPath, compiler.OutPath, compiler.LibLink);
+		bool buildOk = builder.Build(compiler.CppPath, compiler.OutPath, ass.LibLink);
 		if (buildOk) {
 			Cout() << "\n";
 			Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";

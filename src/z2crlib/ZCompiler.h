@@ -23,7 +23,6 @@ public:
 	String OutPath;
 	String CppPath;
 	int CppVersion = 2017;
-	Index<String> LibLink;
 	
 	PlatformType Platform;
 	String PlatformString;

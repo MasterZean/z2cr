@@ -5,8 +5,6 @@
 
 class ZResolver {
 public:
-	Index<String> LibLink;
-	
 	ZResolver(ZCompiler& aComp): comp(aComp), ass(comp.Ass()) {
 	}
 	

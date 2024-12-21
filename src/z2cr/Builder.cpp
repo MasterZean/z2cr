@@ -155,8 +155,13 @@ bool Builder::BuildMSC(const String& path, const String& origPath, const Index<S
 	tt = "";
 	
 	String l;
-	for (int i = 0; i < libs.GetCount(); i++)
-		l << " " << libs[i];
+	for (int i = 0; i < libs.GetCount(); i++) {
+		String lib = libs[i];
+		String ext = GetFileExt(lib);
+		if (ext.GetCount() == 0)
+			lib << ".lib";
+		l << " " << lib;
+	}
 	
 	d << QT + linkPath + QT + " " + inPath + inTitle + ".obj \"" + leakObj + "\"" + l + " /nologo " +"/out:\"" + outPath + outTitle + ".exe\"";
 	if (arch == "x64")

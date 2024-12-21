@@ -12,11 +12,6 @@ bool ZCompiler::Compile() {
 	if (!resolver.Resolve())
 		return false;
 	
-	LibLink = std::move(resolver.LibLink);
-	
-	LibLink.FindAdd("winmm.lib");
-	LibLink.FindAdd("user32.lib");
-	
 	MainFound = FindMain();
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
@@ -48,6 +43,9 @@ bool ZCompiler::Compile() {
 				return false;
 		}
 	}
+	
+	ass.LibLink.FindAdd("winmm");
+	ass.LibLink.FindAdd("user32");
 	
 	return true;
 }

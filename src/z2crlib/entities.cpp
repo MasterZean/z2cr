@@ -261,6 +261,9 @@ void ZNamespace::SetInUse() {
 	if (IsClass == false)
 		return;
 	
+	for (int k = 0; k < LibLink.GetCount(); k++)
+		ass.LibLink.FindAdd(LibLink[k]);
+	
 	for (int i = 0; i < Variables.GetCount(); i++) {
 		ZVariable& v = *Variables[i];
 		
