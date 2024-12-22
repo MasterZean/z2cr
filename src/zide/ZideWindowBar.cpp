@@ -517,6 +517,10 @@ String ZideWindow::BuildCmd(const String& file, bool scu, bool& res, Point p) {
 		cmd << " -arch " << arch;
 	}
 	
+	if (lstBldConf.GetIndex() == 0)
+		cmd << " -subsystem console";
+	else if (lstBldConf.GetIndex() == 1)
+		cmd << " -subsystem windows";
 	//if (p.x > 0)
 	//	cmd << " -acp " << p.x << " " << p.y;
 	

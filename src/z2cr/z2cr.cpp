@@ -407,6 +407,7 @@ CONSOLE_APP_MAIN {
 		builder.TargetRoot(compiler.BuildPath);
 		builder.Arch(bm.Arch);
 		builder.Optimize(K.O);
+		builder.Subsystem(K.SUBSYSTEM);
 		
 		if (compiler.MainFound == false) {
 			if (compiler.MainFound == false) {

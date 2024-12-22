@@ -140,12 +140,32 @@ bool CommandLine::Read() {
 					ErrorColor = ErrorColorType::Ansi;
 				else if (color == "qtf")
 					ErrorColor = ErrorColorType::Qtf;
-				else {
-					Cout() << "option: -color: found invalid param: " << color << ": ingoring" << '\n';
-				}
+				else
+					Cout() << "option: -color: found invalid paramameter: " << color << ": ingoring" << '\n';
 			}
 			else {
 				Cout() << name << " requires that '-color' parameter be followed by one of the following: 'none', 'win32', 'ansi'" << '\n';
+				return false;
+			}
+		}
+		else if (commands[i] == "-subsystem") {
+			i++;
+			if (i < commands.GetCount()) {
+				if (i < commands.GetCount()) {
+					String ss = ToLower(commands[i]);
+					
+					if (ss == "console")
+						SUBSYSTEM = 0;
+					else if (ss == "windows")
+						SUBSYSTEM = 1;
+					else {
+						Cout() << "option: -color: found invalid paramameter: " << ss << ": exiting" << '\n';
+						return false;
+					}
+				}
+			}
+			else {
+				Cout() << name << " requires that '-subsystem' parameter be followed by one of the following: 'console', 'windows'" << '\n';
 				return false;
 			}
 		}

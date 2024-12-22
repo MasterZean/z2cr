@@ -62,7 +62,8 @@ ZideWindow::ZideWindow() {
 	mbtEntryPoint.Set("* File in editor");
 	mbtEntryPoint.AddButton().Tip("Set entry point").SetImage(ZImg::dots) <<= Callback()/*THISBACK(DropTypeList)*/;
 	
-	lstBldConf.Add("Default");
+	lstBldConf.Add("Console");
+	lstBldConf.Add("Windows");
 	lstBldConf.Tip("Select build configuration");
 	lstBldConf.SetIndex(0);
 	lstBldConf.NoDropFocus();

@@ -24,6 +24,7 @@ public:
 	bool ARCH = false;
 	bool LAZY = false;
 	bool UT = false;
+	int SUBSYSTEM = 0;
 	ErrorColorType ErrorColor;
 	bool NoConsoleTest = false;
 	

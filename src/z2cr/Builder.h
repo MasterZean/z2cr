@@ -27,7 +27,11 @@ public:
 	void Optimize(const String& ao) {
 		optimize = ao;
 	}
-		
+	
+	void Subsystem(int ss) {
+		subsystem = ss;
+	}
+			
 	bool Build(const String& path, const String& origPath, const Index<String>& libs);
 	
 private:
@@ -39,6 +43,7 @@ private:
 	String arch;
 	String env;
 	String optimize;
+	int subsystem;
 	
 	bool BuildMSC(const String& path, const String& origPath, const Index<String>& libs);
 	bool BuildGCC(const String& path, const String& origPath, const Index<String>& libs);

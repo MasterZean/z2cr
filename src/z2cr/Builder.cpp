@@ -166,7 +166,14 @@ bool Builder::BuildMSC(const String& path, const String& origPath, const Index<S
 	d << QT + linkPath + QT + " " + inPath + inTitle + ".obj \"" + leakObj + "\"" + l + " /nologo " +"/out:\"" + outPath + outTitle + ".exe\"";
 	if (arch == "x64")
 		d << " /MACHINE:x64 ";
-	d << " /SUBSYSTEM:WINDOWS";
+	
+	if (subsystem == 0)
+		d << " /SUBSYSTEM:CONSOLE";
+	else
+		d << " /SUBSYSTEM:WINDOWS";
+	
+	DUMP(d);
+	
 	{
 		LocalProcess lp(d, env);
 		while (lp.Read(t)) {
@@ -322,18 +329,21 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 	
 	for (int i = 0; i < libs.GetCount(); i++)
 		d << " -l" << libs[i];
+	
+	if (subsystem == 0)
+		d << " -mconsole";
+	else
+		d << " -mwindows";
 	//d << " -lole32 -loleaut32 -limm32 -lversion -lgdi32 -lSetupAPI -lwinmm -lraylib -lSDL2 -lgdi32 -lwinmm -lSetupAPI";
 	//d << " -lraylib -lopengl32 -lgdi32 -lwinmm -luser32 -lSDL2 -limm32 -lSetupAPI";
 	
 	//d << " -lraylib  -Wl,-Bdynamic -lSDL2 -Wl,-Bdynamic -lSDL2main -lole32 -lgdi32 -limm32 -lversion -lsetupapi -lOleAut32 -lwinmm";
-	//d << "";
-	//d << " -lmingw32";
 	//d << " -Wl,--subsystem,windows";
-	//d << "-mthreads -mconsole";
+	//d << "-mthreads";
 	//d << " /entry:mainCRTStartup";
-	/*if (arch == "x64")
-		d << " /MACHINE:x64 ";*/
+
 	DUMP(d);
+	
 	{
 		LocalProcess lp(d, env);
 		while (lp.Read(t)) {
