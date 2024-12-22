@@ -143,19 +143,27 @@ void ZideWindow::Serialize(Stream& s) {
 
 	if (s.IsLoading()) {
 		bool maximized = true;
-		int width = 800;
+		int width = 1000;
 		int height = 600;
 		s % maximized % width % height;
 		if (maximized)
 			Maximize(maximized);
 		else
 			HCenterPos(width, 0).VCenterPos(height, 0);
+		
+		int subs = 0;
+		s % subs;
+		
+		if (subs >= 0 & subs < lstBldConf.GetCount())
+			lstBldConf.SetIndex(subs);
 	}
 	else {
 		bool maximized = IsMaximized();
 		int width = GetSize().cx;
 		int height = GetSize().cy;
 		s % maximized % width % height;
+		int subs = lstBldConf.GetIndex();
+		s % subs;
 	}
 	
 	s % LastPackage % RecentPackages % openNodes % ActiveFile % openDialogPreselect;
