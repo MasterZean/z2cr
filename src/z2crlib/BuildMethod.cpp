@@ -17,9 +17,12 @@ bool ExistProgram(String& bin, const char *dir, const char *file) {
 
 struct DirFinder {
 	Vector<String> dir;
+	bool hasSdk = false;
 
 	String Get(const String& substring, const char *files);
 	void   GatherDirs(Index<String>& path, const String& dir);
+	
+	void   AddVs(Index<String>& path, const String& version, const String& vspath);
 	
 	DirFinder();
 };
@@ -37,7 +40,7 @@ void DirFinder::GatherDirs(Index<String>& path, const String& dir) {
 DirFinder::DirFinder() {
 	Index<String> path;
 
-	for(int i = 0; i < 3; i++) {
+	/*for(int i = 0; i < 3; i++) {
 		HKEY key = 0;
 		if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 		                "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\Folders", 0,
@@ -53,11 +56,11 @@ DirFinder::DirFinder() {
 					break;
 				
 				path.FindAdd(value);
-				DUMP(value);
+				//DUMP(value);
 			}
 			RegCloseKey(key);
 		}
-	}
+	}*/
 	
 	/*Array<FileSystemInfo::FileInfo> root = StdFileSystemInfo().Find(Null);
 	for(int i = 0; i < root.GetCount(); i++) {
@@ -74,38 +77,54 @@ DirFinder::DirFinder() {
 	String sInstall = "installationPath:";
 	String sName = "displayName:";
 	
+	String vsname;
+	String vspath;
+	
 	Array<FileSystemInfo::FileInfo> root = StdFileSystemInfo().Find(Null);
-	for(int i = 0; i < root.GetCount(); i++) {
+	for (int i = 0; i < root.GetCount(); i++) {
 		if(root[i].root_style == FileSystemInfo::ROOT_FIXED) {
 			int drive = *root[i].filename;
 			String pf = GetProgramsFolderX86();
 			pf.Set(0, drive);
 			pf = AppendFileName(pf, "Microsoft Visual Studio\\Installer");
-			if (DirectoryExists(pf)) {
-				//GatherDirs(path, pf);
-				pf = AppendFileName(pf, "vswhere.exe");
-				if (FileExists(pf)) {
-					String t, tt;
-					LocalProcess lp(pf);
-					while (lp.Read(t)) {
-						if (t.GetCount())
-							tt << t;
-					}
+			pf = AppendFileName(pf, "vswhere.exe");
+			if (FileExists(pf)) {
+				String t, tt;
+				LocalProcess lp(pf);
+				while (lp.Read(t)) {
+					if (t.GetCount())
+						tt << t;
+				}
+				
+				Vector<String> lines = Split(tt, '\n', false);
+				
+				for (int j = 0; j < lines.GetCount(); j++) {
+					String line = TrimBoth(lines[j]);
+					//DUMP(line);
 					
-					Vector<String> lines = Split(tt, '\n', true);
-					
-					for (int j = 0; j < lines.GetCount(); j++) {
-						if (lines[j].StartsWith(sInstall)) {
-							String rest = TrimBoth(lines[j].Mid(sInstall.GetCount()));
-							if (DirectoryExists(rest))
-								GatherDirs(path, rest);
-							DUMP(rest);
-						}
-						else if (lines[j].StartsWith(sName)) {
-							String rest = TrimBoth(lines[j].Mid(sName.GetCount()));
-							DUMP(rest);
+					if (line.StartsWith(sInstall)) {
+						String rest = TrimBoth(line.Mid(sInstall.GetCount()));
+						DUMP(rest);
+						vspath = rest;
+					}
+					else if (line.StartsWith(sName)) {
+						String rest = TrimBoth(line.Mid(sName.GetCount()));
+						DUMP(rest);
+						vsname = rest;
+					}
+					else if (line.GetCount() == 0) {
+						if (vsname.GetCount() && vspath.GetCount() && DirectoryExists(vspath)) {
+							AddVs(path, vsname, vspath);
+							vsname = "";
+							vspath = "";
 						}
 					}
+				}
+				
+				if (vsname.GetCount() && vspath.GetCount() && DirectoryExists(vspath)) {
+					AddVs(path, vsname, vspath);
+					vsname = "";
+					vspath = "";
 				}
 			}
 		}
@@ -118,6 +137,41 @@ DirFinder::DirFinder() {
 		s.Replace("\\", "/");
 		while(s.TrimEnd("/"));
 		dir.Add(s);
+	}
+}
+
+void DirFinder::AddVs(Index<String>& path, const String& version, const String& vspath) {
+	GatherDirs(path, vspath);
+	
+	if (hasSdk)
+		return;
+	
+	String sdk = AppendFileName(vspath, "Common7\\Tools\\vsdevcmd\\core\\winsdk.bat");
+	
+	if (FileExists(sdk)) {
+		String t, tt;
+		String cmd = String("cmd.exe /C \"") + "detect.bat" + "\"";
+		DUMP(cmd);
+		LocalProcess lp(cmd);
+		while (lp.Read(t)) {
+			if (t.GetCount())
+				tt << t;
+		}
+		
+		Vector<String> lines = Split(tt, '\n', false);
+		String sdkString = "WindowsSdkDir=";
+		
+		for (int j = 0; j < lines.GetCount(); j++) {
+			String line = TrimBoth(lines[j]);
+			
+			if (line.StartsWith(sdkString)) {
+				String rest = TrimBoth(line.Mid(sdkString.GetCount()));
+				if (DirectoryExists(rest)) {
+					GatherDirs(path, rest);
+					hasSdk = true;
+				}
+			}
+		}
 	}
 }
 
@@ -463,8 +517,8 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 	
 #ifdef PLATFORM_WIN32
 	// search for modern MSC
-	DetectClang(methods);
-	DetectGCC(methods);
+	//DetectClang(methods);
+	//DetectGCC(methods);
 	DeepVSSearch(methods);
 #endif
 
