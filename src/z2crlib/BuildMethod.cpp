@@ -517,8 +517,8 @@ void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 	
 #ifdef PLATFORM_WIN32
 	// search for modern MSC
-	//DetectClang(methods);
-	//DetectGCC(methods);
+	DetectClang(methods);
+	DetectGCC(methods);
 	DeepVSSearch(methods);
 #endif
 
