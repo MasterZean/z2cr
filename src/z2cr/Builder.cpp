@@ -98,6 +98,7 @@ bool Builder::CompileMSC(const String& src, const String& out) {
 	cmd << "/Fo" << QT << out << QT << " ";
 	cmd << optimize << " ";
 	cmd << "/c /nologo /MT /EHsc /std:c++17";
+	cmd << " /wd4190";
 	
 	DUMP(cmd);
 	

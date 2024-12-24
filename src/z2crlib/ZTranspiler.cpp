@@ -283,6 +283,9 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
 			ZFunction& f = *ns.Methods[i].Functions[j];
 			
+			if (CheckUse && !f.InUse)
+				continue;
+			
 			if (!CanAccess(f.Access, accessFlags))
 				continue;
 			
@@ -422,9 +425,6 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (CheckUse && !f.InUse)
-		return;
-		
 	if (f.IsConstructor) {
 		cs << f.Owner().BackName;
 		WriteFunctionParams(f);
@@ -955,7 +955,7 @@ void ZTranspiler::Proc(IfNode& node) {
 		cs << "else";
 		// dangling end statement
 
-		if (node.FalseBranch->NT != NodeType::Block) {
+		if (node.FalseBranch->NT != NodeType::Block && node.FalseBranch->NT != NodeType::If) {
 			EL();
 			
 			indent++;
