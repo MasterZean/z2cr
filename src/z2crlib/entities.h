@@ -89,6 +89,8 @@ public:
 	EntityType Type;
 	AccessType Access;
 	
+	bool IsEvaluated = false;
+	
 	bool InClass = false;
 	bool IsStatic = false;
 	bool InUse = false;

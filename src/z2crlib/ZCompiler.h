@@ -64,6 +64,8 @@ public:
 	
 	ZClass& ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval);
 	
+	bool CompileVar(ZVariable& v, ZFunction* f = nullptr);
+	
 private:
 	Assembly& ass;
 	String mainClass;
@@ -79,7 +81,6 @@ private:
 	
 	bool Compile(ZNamespace& ns);
 	bool CompileFunc(ZFunction& f, Node& target);
-	bool CompileVar(ZVariable& v);
 		
 	Node* CompileBlock(ZFunction& f, ZParser& parser, ZContext& con);
 	Node* CompileStatement(ZFunction& f, ZParser& parser, ZContext& con);

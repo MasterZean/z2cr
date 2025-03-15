@@ -219,8 +219,11 @@ void ZScanner::ScanType() {
 	if (parser.Char('<')) {
 		ScanSubType();
 		
-		while (parser.Char(','))
-			ScanSubType();
+		while (parser.Char(',')) {
+			while (!parser.IsChar(',') && !parser.IsChar('>')) {
+				ScanToken();//ScanSubType();
+			}
+		}
 		parser.Expect('>');
 	}
 }

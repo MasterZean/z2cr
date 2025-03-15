@@ -7,6 +7,8 @@ String CLS_STR = "class";
 String THIS_STR = "this";
 
 Node* ZExprParser::Parse(bool secondOnlyAttempt) {
+	lastValid = nullptr;
+	
 	Point p = parser.GetPoint();
 	Node* left = ParseAtom();
 	ASSERT(left->Tt.Class);
@@ -34,6 +36,8 @@ Node* ZExprParser::Parse(bool secondOnlyAttempt) {
 		return exp;
 	}
 	else {
+		lastValid = left;
+		
 		CParser::Pos backupPoint = parser.GetPos();
 		
 		try {
@@ -60,7 +64,7 @@ Node* ZExprParser::Parse(bool secondOnlyAttempt) {
 		catch (...) {
 			parser.SetPos(backupPoint);
 			
-			return left;
+			return lastValid;
 		}
 	}
 }
@@ -82,6 +86,9 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 			parser.GetChar();
 		parser.Spaces();
 	
+		//if (op == 9 && (parser.IsChar(',') || parser.IsChar(';')))
+		//	return left;
+			
 		right = ParseAtom();
 		
 		ASSERT(right->Tt.Class);
@@ -98,6 +105,10 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 		Node* r = irg.op(left, right, OpNode::Type(op), opp);
 		if (r == nullptr)
 			IncompatOp(parser.Source(), opp, opss[op], left, right);
+		
+		lastValid = r;
+		backupPoint = parser.GetPos();
+		
 		ASSERT(r->Tt.Class);
 		left = r;
 	}
@@ -366,8 +377,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "v1")
-//		s == "Int";
+	if (s == "W")
+		s == "Int";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -576,6 +587,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
+		if (!f.IsEvaluated)
+			comp.CompileVar(f, Function);
+		
 		f.Owner().SetInUse();
 		f.InUse = true;
 		
@@ -676,7 +690,7 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
+ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass) {
 	Assembly& ass = comp.Ass();
 	ObjectInfo ti;
 	ti.IsRef = false;
@@ -715,7 +729,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 		
 		if (parser.IsId("const"))
 			parser.ReadId();
-		ObjectInfo sub = ParseType(comp, parser);
+		ObjectInfo sub = ParseType(comp, parser, aclass);
 		
 		parser.Expect('>');
 
@@ -760,7 +774,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 		if (!cls->IsTemplate)
 			parser.Error(tt.P, " class " + ass.ToQtColor(cls) + " is not a template");
 		
-		ObjectInfo sub = ParseType(comp, parser);
+		ObjectInfo sub = ParseType(comp, parser, aclass);
 		
 		Node* node = nullptr;
 		if (parser.Char(',')) {
@@ -769,7 +783,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser) {
 			ns.Sections.Add();
 			ZVariable dummy(ns);
 			dummy.Section = &ns.Sections[0];
-			ZExprParser ep(dummy, nullptr, nullptr, comp, parser, comp.IRG());
+			ZExprParser ep(dummy, aclass, nullptr, comp, parser, comp.IRG());
 			node = ep.Parse(true);
 		}
 		

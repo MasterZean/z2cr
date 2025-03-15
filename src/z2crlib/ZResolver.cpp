@@ -37,9 +37,11 @@ void ZResolver::ResolveNamespaces() {
 void ZResolver::ResolveNamespace(ZNamespace& ns) {
 	// build namespace item hierarchy
 	ZNamespaceItem* nsp = &ass.NsLookup;
+	
 	String backName;
 	String backNameLegacy;
 	String legacySufix;
+	
 	for (int i = 0; i < ns.NameElements.GetCount(); i++) {
 		backName << ns.NameElements[i];
 		

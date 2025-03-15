@@ -163,6 +163,12 @@ Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
 bool ZCompiler::PreCompileVars(ZNamespace& ns) {
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		ZVariable* v = ns.Variables[i];
+		
+		if (v->IsEvaluated)
+			continue;
+		
+		if (v->Name == "TileVariant")
+			v->Name == "TileVariant";
 		CompileVar(*v);
 	}
 	
@@ -451,11 +457,13 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 	return irg.forloop(init, node, iter, bd);
 }
 
-bool ZCompiler::CompileVar(ZVariable& v) {
+bool ZCompiler::CompileVar(ZVariable& v, ZFunction* f) {
+	v.IsEvaluated = true;
+	
 	ZParser parser(v.DefPos);
 	parser.ExpectZId();
 	
-	Node* node = compileVarDec(v, parser, v.DefPos, nullptr);
+	Node* node = compileVarDec(v, parser, v.DefPos, f);
 	parser.ExpectEndStat();
 	
 	if (v.InClass && !v.I.Tt.Class->CoreSimple) {
@@ -502,12 +510,15 @@ inline bool invalidClass(ZClass* cls, Assembly& ass) {
 
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
+	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(*this, parser);
+		auto ti = ZExprParser::ParseType(*this, parser, &v.Owner());
+		
 		if (invalidClass(ti.Tt.Class, ass))
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ti.Tt.Class));
 		if (ti.Tt.Class == ass.CPtr && ti.Tt.Next->Class == ass.CPtr)
 			parser.Error(vp.P, "pointers to pointer are currently not supported");
+		
 		v.I = ti;
 		cls = ti.Tt.Class;
 	}

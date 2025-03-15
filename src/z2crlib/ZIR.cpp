@@ -1143,7 +1143,8 @@ Node* IR::minus(Node* node) {
 				node->IntVal = -node->IntVal;
 			else
 				node->DblVal = -node->DblVal;
-			return node;
+			// TODO: fix
+			//return node;
 		}
 		
 		UnaryOpNode* minus = unaryOpNodes.Get();
@@ -1424,6 +1425,13 @@ MemNode* IR::mem_var(ZEntity& mem, Node* object) {
 		node->SetType(v.I.Tt);
 		node->IsAddressable = true;
 		node->IsConst = v.IsConst;
+		
+		if (v.IsConst && v.Value) {
+			node->IntVal = v.Value->IntVal;
+			node->DblVal = v.Value->DblVal;
+			
+			node->IsCT = true;
+		}
 	}
 	else if (mem.Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);
@@ -1435,7 +1443,7 @@ MemNode* IR::mem_var(ZEntity& mem, Node* object) {
 	
 	if (node->LValue && node->IsConst)
 		node->LValue = false;*/
-	
+		
 	ASSERT(node->Tt.Class);
 	return node;
 }
