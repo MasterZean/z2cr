@@ -328,6 +328,7 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 	else
 		d << "32";
 	
+	d << " -static";
 	for (int i = 0; i < libs.GetCount(); i++)
 		d << " -l" << libs[i];
 	

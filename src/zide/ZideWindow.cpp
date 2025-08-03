@@ -1,6 +1,7 @@
 #include "ZideWindow.h"
 
 int ZideWindow::HIGHLIGHT_Z2;
+extern bool doCapture;
 
 ZideWindow::ZideWindow() {
 	CtrlLayout(*this, "ZIDE");
@@ -282,8 +283,16 @@ void ZideWindow::OnEditorCursor() {
 }
 
 void ZideWindow::OnClose() {
-	while (Thread::GetCount()) {
+	if (running) {
+		//GuiLock __;
+		OnMenuBuildKill();
+	}
+	
+	int count  = 0;
+	int threads = Thread::GetCount();
+	while (threads > 0 && count < 2000) {
 		Sleep(10);
+		count++;
 	}
 	
 	if (tabs.PromptSaves())
@@ -311,10 +320,11 @@ void ZideWindow::PutVerbose(const char *s) {
 }
 
 void ZideWindow::OutPutEnd(bool result) {
-	console.ScrollLineUp();
-	console.ScrollLineUp();
+	//console.ScrollLineUp();
+	//console.ScrollLineUp();
 	Title("ZIDE - Execution done in " + sw.ToString() + " sec.");
 	running = false;
+	doCapture = false;
 }
 
 void ZideWindow::OnOutputSel() {
@@ -356,22 +366,28 @@ bool ZideWindow::GetLineOfError(int ln) {
 		if (FileExists(file)) {
 			tabs.Open(file);
 			
+			temp = GetEditor();
+			if (!temp)
+				return false;
+			
+			CodeEditor& newEditor = *temp;
+			
 			String rest = line.Mid(s + 1, e - s - 1);
 			Vector<String> v = Split(rest, ",");
 			if (v.GetCount() == 2) {
 				int x = StrInt(TrimBoth(v[0])) - 1;
 				int y = StrInt(TrimBoth(v[1])) - 1;
 				
-				editor.SetCursor(editor.GetGPos(x, y));
-				editor.SetFocus();
+				newEditor.SetCursor(newEditor.GetGPos(x, y));
+				newEditor.SetFocus();
 				
 				return true;
 			}
 			else if (v.GetCount() == 1) {
 				int x = StrInt(TrimBoth(v[0])) - 1;
 				
-				editor.SetCursor(editor.GetGPos(x, 1));
-				editor.SetFocus();
+				newEditor.SetCursor(newEditor.GetGPos(x, 1));
+				newEditor.SetFocus();
 			
 				return true;
 			}

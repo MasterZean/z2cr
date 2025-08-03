@@ -3,6 +3,7 @@
 
 LocalProcess globalExecutor;
 void* globalProcesID;
+bool doCapture = false;
 
 void ExecutableThreadBuild(BuildData* data) {
 	String command = data->cmd;
@@ -82,20 +83,29 @@ void ExecutableThreadRun(ZideWindow* zide, const String& file, bool newConsole) 
 		globalExecutor.ConvertCharset(false);
 		globalExecutor.Start(command);
 		
-		while (globalExecutor.Read(t)) {
+		
+		StopWatch sw;
+		
+		while (doCapture && globalExecutor.Read(t)) {
 			if (t.GetCount()) {
-				DUMP(t);
-				PostCallback(callback1(zide, &ZideWindow::AddOutputLine, t));
-				Sleep(1);
+				//DUMP(t.GetCount());
+				GuiLock __;
+				//PostCallback(callback1(zide, &ZideWindow::AddOutputLine, t));
+				zide->AddOutputLine(t);
+				//Sleep(1000);
 			}
 		}
+		
+		//GuiLock __;
+		//zide->AddOutputLine(AsString(sw.Elapsed()));
 		
 		res = BuildMethod::IsSuccessCode(globalExecutor.GetExitCode());
 #ifdef PLATFORM_WIN32
 	}
 #endif
 	
-	PostCallback(callback1(zide, &ZideWindow::OutPutEnd, res));
+	if (doCapture)
+		PostCallback(callback1(zide, &ZideWindow::OutPutEnd, res));
 }
 
 struct FormatDlg: TabDlg {
@@ -472,7 +482,8 @@ void ZideWindow::OnMenuBuildKill() {
 		globalProcesID = nullptr;
 	}
 	else {
-		globalExecutor.Kill();
+		doCapture = false;
+		//globalExecutor.Kill();
 	}
 #else
 	globalExecutor.Kill();
@@ -573,6 +584,7 @@ void ZideWindow::OnFinishedBuild(BuildData* data) {
 		
 		sw.Reset();
 		running = true;
+		doCapture = true;
 		
 		Thread().Run(callback3(ExecutableThreadRun, this, ename, data->newConsole));
 	}
