@@ -146,6 +146,8 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZTrait& trait, b
 		return ScanVar(accessType, false, isStatic);
 	else if (parser.Id("const"))
 		return ScanVar(accessType, true, isStatic);
+	else if (parser.Id("property"))
+		return ScanPropertyMulti(accessType, trait, isStatic);
 	
 	return false;
 }
@@ -165,7 +167,41 @@ bool ZScanner::ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isC
 				throw ER::ErrMethodDeclarationExpected(dp);
 			}
 		}
-		ZFunction& f = ScanFunc(accessType, isCons, aFunc, isStatic);
+		
+		ZFunction& f = ScanFunc(accessType, isCons, aFunc, isStatic, false);
+		f.Trait = trait;
+		
+		funcs.Add(&f);
+		first = false;
+	} while (parser.Char(','));
+	
+	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP))
+		parser.ExpectEndStat();
+	else {
+		ZSourcePos bp = parser.GetFullPos();
+		ScanBlock();
+		
+		for (int i = 0; i < funcs.GetCount(); i++)
+			funcs[i]->BodyPos = bp;
+	}
+	
+	return true;
+}
+
+bool ZScanner::ScanPropertyMulti(AccessType accessType, const ZTrait& trait, bool isStatic) {
+	Vector<ZFunction*> funcs;
+		
+	bool first = true;
+	do {
+		if (!first) {
+			parser.ExpectId("property");
+		}
+		
+		bool aFunc = true;
+		if (parser.Id("def"))
+			aFunc = false;
+		
+		ZFunction& f = ScanFunc(accessType, false, aFunc, isStatic, true);
 		f.Trait = trait;
 		
 		funcs.Add(&f);
@@ -386,7 +422,7 @@ bool ZScanner::ScanVar(AccessType accessType, bool aConst, bool isStatic) {
 	return true;
 }
 
-ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, bool isStatic) {
+ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, bool isStatic, bool isProp) {
 	ASSERT(nameSpace);
 	
 	ZSourcePos dp = parser.GetFullPos();
@@ -414,29 +450,46 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	
 	if (isCons && curClass == nullptr)
 		parser.Error(dp.P, "constructor defintion found outside of class");
+	if (isProp && curClass == nullptr)
+		parser.Error(dp.P, "property defintion found outside of class");
 	
 	ZSourcePos pp = parser.GetFullPos();
-	parser.Expect('(');
 	
-	while (!parser.IsChar(')')) {
-		if (parser.IsId("val"))
-			parser.ReadId();
-		
-		parser.ExpectId();
-		parser.Expect(':');
-		
-		ScanType();
-		
-		if (parser.Char(',')) {
-			if (parser.IsChar(')'))
-				parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
-		}
+	bool paramList = isProp == false;
+	bool returnType = false;
+	if (isProp == false)
+		parser.Expect('(');
+	else {
+		if (parser.Char('('))
+			paramList = true;
 	}
 	
-	parser.Expect(')');
+	if (paramList) {
+		while (!parser.IsChar(')')) {
+			if (parser.IsId("val"))
+				parser.ReadId();
+			
+			parser.ExpectId();
+			parser.Expect(':');
+			
+			ScanType();
+			
+			if (parser.Char(',')) {
+				if (parser.IsChar(')'))
+					parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
+			}
+		}
 	
-	if (parser.Char(':'))
+		parser.Expect(')');
+	}
+	
+	if (parser.Char(':')) {
 		ScanType();
+		returnType = true;
+	}
+	
+	if (isProp && paramList && returnType)
+		parser.Error(dp.P, "property can't have both a return type (making it a getter) and parameter list (making it a setter) at the same time");
 	
 	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : (curClass ? curClass: nameSpace)->PrepareFunction(name));
 	f.IsFunction = aFunc;
@@ -448,6 +501,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	f.InClass = curClass != nullptr;
 	f.IsStatic = isStatic;
 	f.IsConstructor = isCons;
+	f.IsProperty = isProp;
 	if (curClass == nullptr)
 		f.IsStatic = true;
 	

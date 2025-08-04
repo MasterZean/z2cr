@@ -146,6 +146,8 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));
 	if (d.Name.GetCount() == 0)
 		d.Name = f.Name;
+	if (f.IsProperty)
+		d.IsProperty = true;
 	d.Functions.Add(&f);
 	
 	if (f.InClass)

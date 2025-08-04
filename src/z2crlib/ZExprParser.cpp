@@ -570,16 +570,19 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 	int index = ns.Methods.Find(aName);
 	
 	if (index != -1) {
-		parser.Expect('(');
-		
+		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
-		getParams(params);
+		
+		if (method.IsProperty == false) {
+			parser.Expect('(');
+			getParams(params);
+		}
 		
 		bool ambig = false;
-		ZFunction* f = GetBase(&ns.Methods[index], nullptr, params, 1, false, ambig);
+		ZFunction* f = GetBase(&method, nullptr, params, 1, false, ambig);
 		
 		if (!f)
-			ER::CallError(parser.Source(), opp, ass, ns, &ns.Methods[index], params, 0/*ol->IsCons*/);
+			ER::CallError(parser.Source(), opp, ass, ns, &method, params, 0/*ol->IsCons*/);
 		
 		if (ambig)
 			parser.Error(opp, ER::Green + aName + ": ambigous symbol");

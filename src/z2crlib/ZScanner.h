@@ -23,7 +23,8 @@ public:
 	void ScanNamespace(const ZSourcePos& p);
 	bool ScanVar(AccessType accessType, bool aConst, bool isStatic);
 	bool ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isCons, bool aFunc, bool isStatic);
-	ZFunction& ScanFunc(AccessType accessType, int isCons, bool aFunc, bool isStatic);
+	bool ScanPropertyMulti(AccessType accessType, const ZTrait& trait, bool isStatic);
+	ZFunction& ScanFunc(AccessType accessType, int isCons, bool aFunc, bool isStatic, bool isProp);
 	void ScanBlock();
 	void ScanToken();
 	bool ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool isStatic);

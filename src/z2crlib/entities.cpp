@@ -30,40 +30,47 @@ void ZClass::GenerateSignatures() {
 void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	ZParser parser(ParamPos);
 	
-	parser.Expect('(');
+	bool paramList = true;
 	
-	while (!parser.IsChar(')')) {
-		bool isVal = false;
+	if (IsProperty)
+		paramList = false;
+	
+	if (paramList) {
+		parser.Expect('(');
 		
-		if (parser.IsId("val")) {
-			parser.ReadId();
-			isVal = true;
+		while (!parser.IsChar(')')) {
+			bool isVal = false;
+			
+			if (parser.IsId("val")) {
+				parser.ReadId();
+				isVal = true;
+			}
+			
+			auto pp = parser.GetFullPos();
+			String name = parser.ExpectId();
+			
+			if (name == Name)
+				throw ER::Duplicate(name, pp, DefPos);
+			parser.Expect(':');
+			
+			auto ti = ZExprParser::ParseType(comp, parser);
+			
+			if (parser.Char(',')) {
+				if (parser.IsChar(')'))
+					parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
+			}
+			
+			ZVariable& var = Params.Add(ZVariable(Namespace()));
+			var.Name = name;
+			var.BackName = name;
+			var.I = ti;
+			var.DefPos = pp;
+			var.PType = ZVariable::ParamType::tyAuto;
+			var.IsConst = !isVal;
 		}
 		
-		auto pp = parser.GetFullPos();
-		String name = parser.ExpectId();
-		
-		if (name == Name)
-			throw ER::Duplicate(name, pp, DefPos);
-		parser.Expect(':');
-		
-		auto ti = ZExprParser::ParseType(comp, parser);
-		
-		if (parser.Char(',')) {
-			if (parser.IsChar(')'))
-				parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
-		}
-		
-		ZVariable& var = Params.Add(ZVariable(Namespace()));
-		var.Name = name;
-		var.BackName = name;
-		var.I = ti;
-		var.DefPos = pp;
-		var.PType = ZVariable::ParamType::tyAuto;
-		var.IsConst = !isVal;
+		parser.Expect(')');
 	}
-	
-	parser.Expect(')');
 	
 	if (parser.Char(':')) {
 		auto ti = ZExprParser::ParseType(comp, parser);

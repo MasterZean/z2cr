@@ -307,6 +307,7 @@ public:
 	int IsConstructor = 0;
 	bool IsValid = false;
 	bool IsDeleted = false;
+	bool IsProperty = false;
 	
 	ZTrait Trait;
 	ZSourcePos ParamPos;
@@ -365,6 +366,7 @@ public:
 	
 	//TODO:
 	bool IsTemplate = false;
+	bool IsProperty = false;
 	
 	ZMethodBundle(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::MethodBundle;
