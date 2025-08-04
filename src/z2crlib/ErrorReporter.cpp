@@ -15,7 +15,7 @@ String ER::Magenta = "${magenta}";
 
 #define CSI "\x1b["
 
-String ER::ToColor(const ZNamespace& ns, bool qt ) {
+String ER::ToColor(const ZNamespace& ns, bool qt) {
 	StringStream ss;
 	
 	ss << ER::White;
@@ -81,6 +81,10 @@ ZException ER::ErrCantBeStatic(const ZSourcePos& p, const String& type) {
 
 ZException ER::ErrNamespaceInClass(const ZSourcePos& p) {
 	return ZException(p.ToString(), "namespace declaration can't be part of a class");
+}
+
+ZException ER::ErrMethodDeclarationExpected(const ZSourcePos& p) {
+	return ZException(p.ToString(), "method declaration expected");
 }
 
 void ER::ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo) {

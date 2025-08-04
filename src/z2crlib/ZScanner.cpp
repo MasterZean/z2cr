@@ -153,11 +153,23 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZTrait& trait, b
 bool ZScanner::ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isCons, bool aFunc, bool isStatic) {
 	Vector<ZFunction*> funcs;
 		
+	bool first = true;
 	do {
+		if (!first) {
+			if (parser.Id("def"))
+				aFunc = false;
+			else if (parser.Id("func"))
+				aFunc = true;
+			else {
+				ZSourcePos dp = parser.GetFullPos();
+				throw ER::ErrMethodDeclarationExpected(dp);
+			}
+		}
 		ZFunction& f = ScanFunc(accessType, isCons, aFunc, isStatic);
 		f.Trait = trait;
 		
 		funcs.Add(&f);
+		first = false;
 	} while (parser.Char(','));
 	
 	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP))

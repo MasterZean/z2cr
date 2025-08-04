@@ -135,6 +135,31 @@ Node* ZExprParser::ParseAtom() {
 		exp = irg.const_void();
 	else if (parser.Id("null"))
 		exp = irg.const_null();
+	else if (parser.Id("def")) {
+		if (Function) {
+			parser.Expect('.');
+			Point p2 = parser.GetPoint();
+			String z = parser.ReadId();
+			if (z == "class")
+				return irg.const_class(*ass.CDef, nullptr);
+			else if (z == "Name")
+				return irg.const_str(ass.AddStringConst(Function->Name));
+			else if (z == "Params") {
+				parser.Expect('.');
+				Point p3 = parser.GetPoint();
+				String pp = parser.ReadId();
+				if (pp == "Length")
+					return irg.const_i(Function->Params.GetCount());
+				else
+					parser.Error(p3, "undefined member called '" + z + "'");
+			}
+			else
+				parser.Error(p2, ER::ToColor(*ass.CDef, false) + " does not have a meber called '" + z + "'");
+		}
+		else {
+			parser.Error(opp, "'def' encountered outside of method");
+		}
+	}
 	else if (parser.IsId()) {
 		exp = ParseId();
 	}
@@ -378,7 +403,7 @@ Node* ZExprParser::ParseId() {
 		s = parser.ExpectId();
 	
 	if (s == "W")
-		s == "Int";
+		s == "def";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {

@@ -38,6 +38,7 @@ public:
 	static ZException ErrDeclOutsideNamespace(const ZSourcePos& p);
 	static ZException ErrCantBeStatic(const ZSourcePos& p, const String& type);
 	static ZException ErrNamespaceInClass(const ZSourcePos& p);
+	static ZException ErrMethodDeclarationExpected(const ZSourcePos& p);
 	
 	static void ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo);
 	
