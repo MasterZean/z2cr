@@ -1123,7 +1123,7 @@ void ZTranspiler::Proc(IntrinsicNode& node) {
 		if (i > 0)
 			cs << ", ";
 		
-		cs << "::printf";
+		cs << "::zprintf";
 		if (node.Value[i]->Tt.Class == ass.CChar)
 			cs << "c";
 		cs << "(";

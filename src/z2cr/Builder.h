@@ -33,7 +33,7 @@ public:
 	}
 			
 	bool Build(const String& path, const String& origPath, const Index<String>& libs);
-	bool Compile(const String& src, const String& out);
+	bool Compile(const String& src, const String& out, const String& inc = "");
 	
 private:
 	BuildMethod bm;
@@ -53,8 +53,8 @@ private:
 	void DoEnvMSC();
 	void DoEnvGCC();
 	
-	bool CompileMSC(const String& src, const String& out);
-	bool CompileGCC(const String& src, const String& out);
+	bool CompileMSC(const String& src, const String& out, const String& inc = "");
+	bool CompileGCC(const String& src, const String& out, const String& inc = "");
 };
 
 #endif

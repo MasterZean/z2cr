@@ -437,7 +437,7 @@ CONSOLE_APP_MAIN {
 			String p = compiler.MCUPaths[i];
 			Cout() << "Building: " << p << ": ";
 			
-			buildOk = builder.Compile(p, GetFileFolder(p) + "/" + GetFileTitle(p) + ".o");
+			buildOk = builder.Compile(p, GetFileFolder(p) + "/" + GetFileTitle(p) + ".o", compiler.BuildPath);
 			//Cout() << "\n";
 		}
 	}

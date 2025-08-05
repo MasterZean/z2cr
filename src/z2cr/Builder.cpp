@@ -13,12 +13,12 @@ bool Builder::Build(const String& path, const String& origPath, const Index<Stri
 	return false;
 }
 
-bool Builder::Compile(const String& src, const String& out) {
+bool Builder::Compile(const String& src, const String& out, const String& inc) {
 	if (bm.Type == BuildMethod::btMSC)
-		return CompileMSC(src, out);
+		return CompileMSC(src, out, inc);
 	
 	if (bm.Type == BuildMethod::btGCC)
-		return CompileGCC(src, out);
+		return CompileGCC(src, out, inc);
 
 	return false;
 }
@@ -96,7 +96,7 @@ void Builder::DoEnvMSC() {
 	env = ss;
 }
 
-bool Builder::CompileMSC(const String& src, const String& out) {
+bool Builder::CompileMSC(const String& src, const String& out, const String& inc) {
 	StopWatch sw;
 	
 	Cout() << "building " << GetFileTitle(src) << "... ";
@@ -109,6 +109,9 @@ bool Builder::CompileMSC(const String& src, const String& out) {
 	cmd << optimize << " ";
 	cmd << "/c /nologo /MT /EHsc /std:c++17";
 	cmd << " /wd4190";
+	
+	if (inc.GetCount())
+		cmd << " /I \"" << inc << "\"";
 	
 	DUMP(cmd);
 	
@@ -156,6 +159,12 @@ bool Builder::BuildMSC(const String& path, const String& origPath, const Index<S
 		if (!CompileMSC(zPath + "codegen\\leakdetect.cpp", leakObj))
 			result = false;
 	
+	String bridgeObj = AppendFileName(target, "zbridge.obj");
+
+	if (!FileExists(bridgeObj))
+		if (!CompileMSC(zPath + "codegen\\zbridge.cpp", bridgeObj))
+			result = false;
+		
 	if (!CompileMSC(inPath + inTitle + ".cpp", inPath + inTitle + ".obj"))
 		result = false;
 	
@@ -174,7 +183,7 @@ bool Builder::BuildMSC(const String& path, const String& origPath, const Index<S
 		l << " " << lib;
 	}
 	
-	d << QT + linkPath + QT + " " + inPath + inTitle + ".obj \"" + leakObj + "\"" + l + " /nologo " +"/out:\"" + outPath + outTitle + ".exe\"";
+	d << QT + linkPath + QT + " " + inPath + inTitle + ".obj " + "\"" + leakObj + "\" \"" + bridgeObj +"\"" + l + " /nologo " +"/out:\"" + outPath + outTitle + ".exe\"";
 	if (arch == "x64")
 		d << " /MACHINE:x64 ";
 	
@@ -240,7 +249,7 @@ void Builder::DoEnvGCC() {
 	env = ss;
 }
 
-bool Builder::CompileGCC(const String& src, const String& out) {
+bool Builder::CompileGCC(const String& src, const String& out, const String& inc) {
 	StopWatch sw;
 	
 	Cout() << "building " << GetFileTitle(src) << "... ";
@@ -262,6 +271,9 @@ bool Builder::CompileGCC(const String& src, const String& out) {
 	cmd << " ";
 	cmd << QT << src << QT << " ";
 	cmd << "-o " << QT << out << QT << " ";
+	
+	if (inc.GetCount())
+		cmd << "-I\"" << inc << "\"";
 	
 	DUMP(cmd);
 	
@@ -315,6 +327,12 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 	if (!FileExists(leakObj))
 		if (!CompileGCC(zPath + "codegen\\leakdetect.cpp", leakObj))
 			result = false;
+		
+	String bridgeObj = AppendFileName(target, "zbridge.o");
+
+	if (!FileExists(bridgeObj))
+		if (!CompileGCC(zPath + "codegen\\zbridge.cpp", bridgeObj))
+			result = false;
 	
 	if (!CompileGCC(inPath + inTitle + ".cpp", inPath + inTitle + ".o"))
 		result = false;
@@ -329,10 +347,10 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 	
 	Cout() << "linking... ";
 	if (arch == "x64") // --static
-		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -o \"" + outPath + outTitle + ".exe\" -m";
+		d << QT + linkPath + QT + " " + inPath + inTitle + ".o " + "\"" + leakObj + "\" \"" + bridgeObj + "\" -o \"" + outPath + outTitle + ".exe\" -m";
 	else
-		d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -o \"" + outPath + outTitle + ".exe\" -m";
-	
+		d << QT + linkPath + QT + " " + inPath + inTitle + ".o " + "\"" + leakObj + "\" \"" + bridgeObj + "\" -o \"" + outPath + outTitle + ".exe\" -m";
+	 
 	if (arch == "x64")
 		d << "64";
 	else
