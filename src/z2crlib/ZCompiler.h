@@ -22,11 +22,14 @@ public:
 	bool   BuildMode = false;
 	String OutPath;
 	String CppPath;
+	String MCUPath;
 	int CppVersion = 2017;
 	
 	PlatformType Platform;
 	String PlatformString;
 	String PlatformSysLib;
+	
+	Vector<String> MCUPaths;
 	
 	ZFunction* MainFunction = nullptr;
 	bool MainFound = false;
@@ -65,6 +68,9 @@ public:
 	ZClass& ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval);
 	
 	bool CompileVar(ZVariable& v, ZFunction* f = nullptr);
+	
+	bool DoMCU();
+	void DoMCU(ZNamespace& ns);
 	
 private:
 	Assembly& ass;

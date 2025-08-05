@@ -8,13 +8,6 @@ public:
 	ZNodeWalker(ZCompiler& aComp, Stream& aStream): comp(aComp), ass(aComp.Ass()), cs(aStream) {
 	}
 	
-protected:
-	ZCompiler& comp;
-	Assembly& ass;
-	Stream& cs;
-	
-	int indent = 0;
-	
 	void NL() {
 		for (int i = 0; i < indent; i++)
 			cs << '\t';
@@ -27,6 +20,13 @@ protected:
 	void ES() {
 		cs << ";\n";
 	}
+	
+protected:
+	ZCompiler& comp;
+	Assembly& ass;
+	Stream& cs;
+	
+	int indent = 0;
 
 	virtual bool Traverse() {
 		return false;

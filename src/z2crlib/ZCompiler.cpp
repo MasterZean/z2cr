@@ -97,7 +97,80 @@ bool ZCompiler::Transpile() {
 		cpp.TranspileDefinitions(ass.Namespaces[i]);
 	cpp.WriteOutro();
 	
+	bool mcu = true;
+	if (mcu)
+		DoMCU();
+	
 	return true;
+}
+
+bool ZCompiler::DoMCU() {
+	MCUPath = AppendFileName(BuildPath, "out");
+	RealizeDirectory(MCUPath);
+	
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
+		DoMCU(ass.Namespaces[i]);
+	}
+	
+	return true;
+}
+
+void ZCompiler::DoMCU(ZNamespace& ns) {
+	bool first = true;
+	String nsPath;
+	int count = 0;
+	
+	for (int i = 0; i < ns.Methods.GetCount(); i++) {
+		ZMethodBundle& d = ns.Methods[i];
+		for (int j = 0; j < d.Functions.GetCount(); j++) {
+			ZFunction& f = *d.Functions[j];
+			
+			if (f.IsExternBind())
+				continue;
+			
+			/*NewMember();
+			NL();
+			
+			if (fDecl && (CheckUse == false || f.InUse)) {
+				WriteFunctionDecl(f);
+				WriteFunctionBody(f, wrap);
+			}*/
+			
+			Cout() << "MCU: " << f.FuncSig() << "\n";
+			
+			if (first) {
+				nsPath = AppendFileName(MCUPath, ns.Name);
+				RealizeDirectory(nsPath);
+				first = false;
+			}
+			
+			count++;
+			String op = AppendFileName(nsPath, f.Name + f.ParamSig() + ".cpp"/*f.Name + IntStr(count) + ".cpp"*/);
+			FileOut out(op);
+			
+			ZTranspiler cpp(*this, out);
+			cpp.CppVersion = CppVersion;
+			
+			cpp.WriteIntro();
+			
+			cpp.BeginNamespace(ns);
+			cpp.NewMember();
+			
+			cpp.NL();
+			cpp.WriteFunctionDef(f);
+			cpp.ES();
+			
+			cpp.EndNamespace();
+			
+			cpp.WriteFunctionDecl(f);
+			cpp.WriteFunctionBody(f, true);
+			
+			MCUPaths << op;
+		}
+	}
+	
+	if (count)
+		Cout() << "\n";
 }
 
 bool ZCompiler::ScanSources() {

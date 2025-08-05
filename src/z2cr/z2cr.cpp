@@ -432,6 +432,14 @@ CONSOLE_APP_MAIN {
 			Cout() << "\n";
 			Cout() << bm.Name << " code generation failed.\n";
 		}
+		
+		for (int i = 0; i < compiler.MCUPaths.GetCount(); i++) {
+			String p = compiler.MCUPaths[i];
+			Cout() << "Building: " << p << ": ";
+			
+			buildOk = builder.Compile(p, GetFileFolder(p) + "/" + GetFileTitle(p) + ".o");
+			//Cout() << "\n";
+		}
 	}
 	catch (ZException& e) {
 		e.PrettyPrint(Cout());

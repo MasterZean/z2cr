@@ -13,6 +13,16 @@ bool Builder::Build(const String& path, const String& origPath, const Index<Stri
 	return false;
 }
 
+bool Builder::Compile(const String& src, const String& out) {
+	if (bm.Type == BuildMethod::btMSC)
+		return CompileMSC(src, out);
+	
+	if (bm.Type == BuildMethod::btGCC)
+		return CompileGCC(src, out);
+
+	return false;
+}
+
 #ifdef PLATFORM_WIN32
 
 String GetWinPath() {

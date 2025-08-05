@@ -154,6 +154,7 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	dsig << psig;
 	fsig << psig;
 	csig << psigc;
+	this->psig = psig;
 	
 	if (Return.Tt.Class && Return.Tt.Class != Ass().CVoid) {
 		fsig << ": ";

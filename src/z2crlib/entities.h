@@ -347,6 +347,10 @@ public:
 		return osig;
 	}
 	
+	const String& ParamSig() const {
+		return psig;
+	}
+	
 	const bool IsExternBind() const {
 		return (Trait.Flags & ZTrait::BINDC) || (Trait.Flags & ZTrait::BINDCPP);
 	}
@@ -358,6 +362,7 @@ private:
 	String fsig;
 	String csig;
 	String osig;
+	String psig;
 };
 
 class ZMethodBundle: public ZEntity {

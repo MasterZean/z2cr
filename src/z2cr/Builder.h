@@ -33,6 +33,7 @@ public:
 	}
 			
 	bool Build(const String& path, const String& origPath, const Index<String>& libs);
+	bool Compile(const String& src, const String& out);
 	
 private:
 	BuildMethod bm;
