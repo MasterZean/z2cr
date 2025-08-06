@@ -491,7 +491,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	if (isProp && paramList && returnType)
 		parser.Error(dp.P, "property can't have both a return type (making it a getter) and parameter list (making it a setter) at the same time");
 	
-	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : (curClass ? curClass: nameSpace)->PrepareFunction(name));
+	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : /*(isProp ? curClass->PrepareProperty(name) :*/ (curClass ? curClass: nameSpace)->PrepareFunction(name));
 	f.IsFunction = aFunc;
 	f.DefPos = dp;
 	f.ParamPos = pp;
@@ -502,6 +502,10 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	f.IsStatic = isStatic;
 	f.IsConstructor = isCons;
 	f.IsProperty = isProp;
+	f.IsGetter = returnType;
+	if (f.IsProperty && f.IsGetter == false)
+		f.IsFunction = false;
+
 	if (curClass == nullptr)
 		f.IsStatic = true;
 	

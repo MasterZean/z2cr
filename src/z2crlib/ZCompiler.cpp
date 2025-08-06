@@ -139,7 +139,7 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 			Cout() << "MCU: " << f.FuncSig() << "\n";
 			
 			if (first) {
-				nsPath = AppendFileName(MCUPath, ns.Name);
+				nsPath = AppendFileName(MCUPath, ns.ProperName);
 				RealizeDirectory(nsPath);
 				first = false;
 			}
@@ -159,6 +159,12 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 			cpp.NL();
 			cpp.WriteFunctionDef(f);
 			cpp.ES();
+			
+			for (int i = 0; i < f.Dependencies.GetCount(); i++) {
+				cpp.NL();
+				cpp.WriteFunctionDef(*(ZFunction*)f.Dependencies[i]);
+				cpp.ES();
+			}
 			
 			cpp.EndNamespace();
 			
@@ -240,8 +246,6 @@ bool ZCompiler::PreCompileVars(ZNamespace& ns) {
 		if (v->IsEvaluated)
 			continue;
 		
-		if (v->Name == "TileVariant")
-			v->Name == "TileVariant";
 		CompileVar(*v);
 	}
 	
@@ -362,13 +366,24 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 	if (parser.Char('=')) {
 		Node* rs = ep.Parse();
 		
-		if (node->IsAddressable == false)
+		if (node->IsAddressable == false && node->IsEffLValue == false)
 			parser.Error(pp.P, "left side of assignment is not a L-value");
 		if (node->IsConst)
 			parser.Error(pp.P, "can't assign to readonly " + ass.ToQtColor(node) + " instance");
 		
 		if (!node->CanAssign(ass, rs)) {
 			parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to " + ass.ToQtColor(node) + " instance without a cast");
+		}
+		
+		if (node->NT == NodeType::Def) {
+			DefNode *p = (DefNode*)node;
+			if (p->Function->IsProperty && p->Function->Bundle->PropSetter) {
+				p->Function = p->Function->Bundle->PropSetter;
+				p->Function->InUse = true;
+				p->Params.Add(rs);
+				
+				return node;
+			}
 		}
 		
 		return irg.attr(node, rs);

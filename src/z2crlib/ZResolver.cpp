@@ -149,6 +149,14 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	if (f.IsProperty)
 		d.IsProperty = true;
 	d.Functions.Add(&f);
+	f.Bundle = &d;
+	
+	if (f.IsProperty) {
+		if (f.IsGetter)
+			d.PropGetter = &f;
+		else
+			d.PropSetter = &f;
+	}
 	
 	if (f.InClass)
 		AssignClassRoles((ZClass&)f.Owner(), f);

@@ -402,9 +402,6 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "W")
-		s == "def";
-	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
 			if (Function->Params[j].Name == s) {
@@ -600,6 +597,16 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		node->Params = std::move(params);
 		f->Owner().SetInUse();
 		f->SetInUse();
+		
+		if (Function)
+			Function->Dependencies.FindAdd(f);
+		
+		if (f->IsProperty) {
+			ASSERT(f->Bundle);
+			if(f->Bundle->PropSetter)
+				node->IsEffLValue = true;
+		}
+		
 		return node;
 	}
 	

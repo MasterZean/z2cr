@@ -32,7 +32,7 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	
 	bool paramList = true;
 	
-	if (IsProperty)
+	if (IsProperty && IsGetter)
 		paramList = false;
 	
 	if (paramList) {

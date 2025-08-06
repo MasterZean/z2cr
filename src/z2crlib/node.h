@@ -54,7 +54,7 @@ public:
 	bool IsSymbolic = false;
 	
 	bool HasSe = false;
-	//bool IsLValue = false;
+	bool IsEffLValue = false;
 	
 	bool IsRef = false;
 	bool IsAddressable = false;
@@ -103,7 +103,7 @@ public:
 	void PromoteToFloatValue(Assembly& ass);
 	
 	bool IsLValue() const {
-		return IsAddressable && IsConst == false;
+		return IsEffLValue || (IsAddressable && IsConst == false);
 	}
 };
 

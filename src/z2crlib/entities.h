@@ -308,6 +308,7 @@ public:
 	bool IsValid = false;
 	bool IsDeleted = false;
 	bool IsProperty = false;
+	bool IsGetter = false;
 	
 	ZTrait Trait;
 	ZSourcePos ParamPos;
@@ -320,6 +321,9 @@ public:
 	WithDeepCopy<Vector<ZClass*>> TParam;
 	WithDeepCopy<Vector<ZBlock>> Blocks;
 	WithDeepCopy<Array<ZVariable>> Locals;
+	WithDeepCopy<Index<ZEntity*>> Dependencies;
+	
+	ZMethodBundle* Bundle = nullptr;
 	
 	int Score = 0;
 	
@@ -372,6 +376,9 @@ public:
 	//TODO:
 	bool IsTemplate = false;
 	bool IsProperty = false;
+	
+	ZFunction* PropGetter = nullptr;
+	ZFunction* PropSetter = nullptr;
 	
 	ZMethodBundle(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::MethodBundle;
