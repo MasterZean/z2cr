@@ -874,6 +874,11 @@ void ZTranspiler::Proc(DefNode& node) {
 }
 
 void ZTranspiler::Proc(MemNode& node) {
+	if (node.IsThis) {
+		cs << "(*this)";
+		return;
+	}
+	
 	ASSERT(node.Mem);
 	
 	if (node.IsLocal == false && node.IsParam == false && node.Mem->InClass == false) {

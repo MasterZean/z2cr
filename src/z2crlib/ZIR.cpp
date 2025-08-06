@@ -1415,7 +1415,7 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 }
 
 MemNode* IR::mem_var(ZEntity& mem, Node* object) {
-	bool isThis = false;
+	//bool isThis = false;
 
 	MemNode* node = memNodes.Get();
 	node->Mem = &mem;
@@ -1444,6 +1444,16 @@ MemNode* IR::mem_var(ZEntity& mem, Node* object) {
 	if (node->LValue && node->IsConst)
 		node->LValue = false;*/
 		
+	ASSERT(node->Tt.Class);
+	return node;
+}
+
+MemNode *IR::mem_this(ZClass& cls) {
+	MemNode* node = memNodes.Get();
+	//node->Mem = &mem;
+	node->SetType(cls.Tt);
+	node->IsThis = true;
+	
 	ASSERT(node->Tt.Class);
 	return node;
 }

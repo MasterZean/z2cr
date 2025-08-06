@@ -160,6 +160,9 @@ Node* ZExprParser::ParseAtom() {
 			parser.Error(opp, "'def' encountered outside of method");
 		}
 	}
+	else if (parser.Id("this")) {
+		exp = irg.mem_this(*(ZClass*)Class);
+	}
 	else if (parser.IsId()) {
 		exp = ParseId();
 	}
@@ -627,6 +630,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		
 		f.Owner().SetInUse();
 		f.InUse = true;
+		
+		if (Function)
+			Function->Dependencies.FindAdd(&f);
 		
 		return irg.mem_var(f, object);
 	}

@@ -125,6 +125,7 @@ public:
 	TempNode*  mem_temp(ZClass& cls, ZFunction *constructor);
 	PtrNode*   mem_ptr(Node* object);
 	IndexNode* mem_array(Node *object, Node *index);
+	MemNode*   mem_this(ZClass& cls);
 	
 	BlockNode* block();
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);

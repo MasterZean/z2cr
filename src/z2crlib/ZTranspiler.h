@@ -163,6 +163,9 @@ public:
 	void TranspileValDefintons(ZNamespace& ns, bool trail = true);
 	
 	virtual void WalkNode(Node* node);
+		
+	void WriteType(ObjectType* tt);
+	void WriteTypePost(ObjectType *tt);
 	
 private:
 	void Walk(Node* node);
@@ -179,9 +182,6 @@ private:
 	
 	void NsIntro(ZNamespace& ns);
 	void NsOutro(ZNamespace& ns);
-	
-	void WriteType(ObjectType* tt);
-	void WriteTypePost(ObjectType *tt);
 };
 
 #endif

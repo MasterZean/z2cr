@@ -161,9 +161,22 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 			cpp.ES();
 			
 			for (int i = 0; i < f.Dependencies.GetCount(); i++) {
-				cpp.NL();
-				cpp.WriteFunctionDef(*(ZFunction*)f.Dependencies[i]);
-				cpp.ES();
+				ZEntity* entity = f.Dependencies[i];
+				
+				if (entity->Type == EntityType::Function) {
+					cpp.NL();
+					cpp.WriteFunctionDef(*(ZFunction*)f.Dependencies[i]);
+					cpp.ES();
+				}
+				else if (entity->Type == EntityType::Variable) {
+					cpp.NL();
+					
+					ZVariable& v = (ZVariable&)*entity;
+					cpp.WriteType(&v.I.Tt);
+					out << " " << v.Name;
+					cpp.WriteTypePost(&v.I.Tt);
+					cpp.ES();
+				}
 			}
 			
 			cpp.EndNamespace();
