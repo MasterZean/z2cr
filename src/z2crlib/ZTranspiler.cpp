@@ -286,6 +286,9 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 			if (CheckUse && !f.InUse)
 				continue;
 			
+			if (f.IsGenerated)
+				continue;
+			
 			if (!CanAccess(f.Access, accessFlags))
 				continue;
 			
@@ -373,7 +376,7 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 				
 				NL();
 				
-				if (fDecl && (CheckUse == false || f.InUse)) {
+				if (fDecl && (CheckUse == false || f.InUse) && f.IsGenerated == false) {
 					WriteFunctionDecl(f);
 					WriteFunctionBody(f, wrap);
 				}

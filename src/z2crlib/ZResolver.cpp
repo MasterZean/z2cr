@@ -135,6 +135,23 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 		ZVariable& f = ns.PreVariables[i];
 		f.GenerateSignatures();
 	}
+	
+	if (ns.IsClass) {
+		ZClass& cls = (ZClass&)ns;
+		if (cls.CoreSimple == false && cls.Meth.Default == nullptr) {
+			ZMethodBundle& d = cls.Methods.GetAdd("this", ZMethodBundle(cls));
+			//d.Functions << ZFunction(cls);
+			ZFunction& f = cls.PrepareConstructor("this");
+			d.Functions.Add(&f);
+			f.Bundle = &d;
+			f.InClass = true;
+			f.IsConstructor = 1;
+			f.IsGenerated = true;
+			f.Access = AccessType::Public;
+			
+			cls.Meth.Default = &f;
+		}
+	}
 }
 
 void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {

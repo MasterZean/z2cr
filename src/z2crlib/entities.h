@@ -309,6 +309,7 @@ public:
 	bool IsDeleted = false;
 	bool IsProperty = false;
 	bool IsGetter = false;
+	bool IsGenerated = false;
 	
 	ZTrait Trait;
 	ZSourcePos ParamPos;

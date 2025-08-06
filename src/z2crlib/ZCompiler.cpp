@@ -259,7 +259,7 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
 			
-			if (f.IsExternBind() == false)
+			if (f.IsExternBind() == false && f.IsGenerated == false)
 				CompileFunc(f, f.Nodes);
 		}
 	}
@@ -652,7 +652,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		
 		if (cls->CoreSimple == false && cls->TBase == nullptr) {
 			if (cls->Meth.Default == nullptr)
-				parser.Error(vp.P,  "class "+ ass.ToQtColor(&cls->Tt) + " does not havea  default constructor");
+				parser.Error(vp.P,  "class "+ ass.ToQtColor(&cls->Tt) + " does not have a default constructor");
 			else {
 				if (cls->Meth.Default && cls->Meth.Default->IsDeleted)
 					parser.Error(vp.P,  "class "+ ass.ToQtColor(&cls->Tt) + ": default constructor is deleted");
