@@ -27,6 +27,8 @@ file
 	ZResolver.cpp,
 	ZTranspiler.h,
 	ZTranspiler.cpp,
+	LLVMIR.h,
+	LLVMIR.cpp,
 	OverloadResolver.h,
 	OverloadResolver.cpp,
 	ZException.h,

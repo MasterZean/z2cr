@@ -9,6 +9,7 @@ using namespace Upp;
 #include <z2cr/Builder.h>
 #include <z2cr/InlineTester.h>
 #include <z2crlib/ErrorReporter.h>
+#include <z2crlib/LLVMIR.h>
 
 bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& bm) {
 	Vector<BuildMethod> methods;
@@ -440,6 +441,18 @@ CONSOLE_APP_MAIN {
 			buildOk = builder.Compile(p, GetFileFolder(p) + "/" + GetFileTitle(p) + ".o", compiler.BuildPath);
 			//Cout() << "\n";
 		}
+		
+		Cout() << "\n";
+		
+#ifdef _RELEASE
+		LLVMIR llvm;
+		
+		for (int i = 0; i < compiler.LLVMInput.GetCount(); i++) {
+			llvm.AddFunc(*compiler.LLVMInput[i]);
+		}
+		
+		llvm.Print();
+#endif
 	}
 	catch (ZException& e) {
 		e.PrettyPrint(Cout());

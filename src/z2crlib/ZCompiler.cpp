@@ -150,7 +150,8 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 			
 			ZTranspiler cpp(*this, out);
 			cpp.CppVersion = CppVersion;
-			
+			cpp.CheckUse = false;
+						
 			cpp.WriteIntro();
 			
 			cpp.BeginNamespace(ns);
@@ -183,6 +184,8 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 			
 			cpp.WriteFunctionDecl(f);
 			cpp.WriteFunctionBody(f, true);
+			
+			LLVMInput << &f;
 			
 			MCUPaths << op;
 		}

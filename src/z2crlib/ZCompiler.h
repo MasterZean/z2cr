@@ -30,6 +30,7 @@ public:
 	String PlatformSysLib;
 	
 	Vector<String> MCUPaths;
+	Vector<ZFunction*> LLVMInput;
 	
 	ZFunction* MainFunction = nullptr;
 	bool MainFound = false;

@@ -2,6 +2,22 @@ uses
 	Core,
 	z2crlib;
 
+library(!DEBUG) "LLVMCore.lib LLVMRemarks.lib LLVMBitstreamReader.lib LLVMBinaryFormat.lib LLVMTargetParser.lib LLVMSupport.lib LLVMDemangle.lib";
+
+library(!DEBUG) "LLVMBitstreamReader.lib LLVMBinaryFormat.lib LLVMTargetParser.lib LLVMDemangle.lib ";
+
+library(!DEBUG) "LLVMDebugInfoCodeView.lib LLVMDebugInfoMSF.lib LLVMDebugInfoBTF.lib LLVMFrontendHLSL.lib LLVMRemarks.lib";
+
+library(!DEBUG) "LLVMDebugInfoGSYM.lib LLVMDebugInfoDWARF.lib LLVMDebugInfoDWARFLowLevel.lib LLVMDebugInfoPDB.lib LLVMObject.lib LLVMIRReader.lib LLVMBitReader.lib LLVMAsmParser.lib LLVMMCParser.lib LLVMTextAPI.lib ";
+
+library(!DEBUG) "LLVMScalarOpts.lib LLVMAggressiveInstCombine.lib LLVMInstCombine.lib LLVMCGData.lib LLVMBitWriter.lib LLVMCodeGenTypes.lib LLVMTransformUtils.lib LLVMAnalysis.lib LLVMProfileData.lib LLVMSymbolize.lib";
+
+library(!DEBUG) "LLVMMCDisassembler.lib LLVMAsmPrinter.lib LLVMCFGuard.lib LLVMGlobalISel.lib LLVMIRPrinter.lib LLVMInstrumentation.lib LLVMSelectionDAG.lib LLVMCodeGen.lib LLVMTarget.lib LLVMObjCARCOpts.lib ";
+
+library(!DEBUG) "LLVMExecutionEngine.lib LLVMInterpreter.lib LLVMMC.lib LLVMMCJIT.lib LLVMSupport.lib LLVMX86CodeGen.lib LLVMX86Desc.lib LLVMX86Info.lib LLVMOrcTargetProcess.lib LLVMOrcShared.lib LLVMRuntimeDyld.lib ";
+
+library(!DEBUG) "psapi.lib shell32.lib ole32.lib uuid.lib advapi32.lib ws2_32.lib ntdll.lib delayimp.lib -delayload:shell32.dll -delayload:ole32.dll kernel32.lib user32.lib gdi32.lib winspool.lib oleaut32.lib comdlg32.lib ";
+
 file
 	z2cr.cpp,
 	InlineTester.h,
