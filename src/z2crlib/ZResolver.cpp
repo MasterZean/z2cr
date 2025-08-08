@@ -148,6 +148,7 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 			f.IsConstructor = 1;
 			f.IsGenerated = true;
 			f.Access = AccessType::Public;
+			d.IsConstructor = true;
 			
 			cls.Meth.Default = &f;
 		}
@@ -167,6 +168,7 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 		d.IsProperty = true;
 	d.Functions.Add(&f);
 	f.Bundle = &d;
+	d.IsConstructor = f.IsConstructor;
 	
 	if (f.IsProperty) {
 		if (f.IsGetter)

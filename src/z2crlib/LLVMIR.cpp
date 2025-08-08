@@ -1,9 +1,11 @@
 #include <z2crlib/LLVMIR.h>
 
-#ifdef _RELEASE
+#if defined(_RELEASE) && defined(flagLLVM) && defined(_MSC_VER)
 
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/STLExtras.h"
+
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
@@ -13,25 +15,18 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/ADT/STLExtras.h"
+#include "llvm/IR/Argument.h"
+#include "llvm/IR/Instructions.h"
+
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/ExecutionEngine/MCJIT.h"
-#include "llvm/IR/Argument.h"
-#include "llvm/IR/BasicBlock.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Type.h"
+
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ManagedStatic.h"
-#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
+
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -42,8 +37,6 @@ using namespace llvm;
 LLVMIR::LLVMIR() {
 	InitializeNativeTarget();
 	InitializeNativeTargetAsmPrinter();
-	
-	//LLVMInitializeNativeAsmPrinter();
 	
 	context = new llvm::LLVMContext();
 	
@@ -80,6 +73,7 @@ void LLVMIR::AddFunc(ZFunction& f) {
 			
 			return;
 		}
+		
 		n = n->Next;
 	}
 }

@@ -87,6 +87,10 @@ ZException ER::ErrMethodDeclarationExpected(const ZSourcePos& p) {
 	return ZException(p.ToString(), "method declaration expected");
 }
 
+ZException ER::ErrConstructorDeclarationExpected(const ZSourcePos& p) {
+	return ZException(p.ToString(), "constructor declaration expected");
+}
+
 void ER::ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo) {
 	String err = "template " + ToColor(cls, true) + " must be instanced with 1 or 2 arguments";
 				err << ", " << IntStr(argNo) << " provided.";

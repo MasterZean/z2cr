@@ -374,9 +374,9 @@ class ZMethodBundle: public ZEntity {
 public:
 	Array<ZFunction*> Functions;
 	
-	//TODO:
 	bool IsTemplate = false;
 	bool IsProperty = false;
+	bool IsConstructor = false;
 	
 	ZFunction* PropGetter = nullptr;
 	ZFunction* PropSetter = nullptr;
@@ -404,6 +404,5 @@ const ZNamespace& ZEntity::Namespace() const {
 ZNamespace& ZEntity::Owner() {
 	return *parent;
 }
-
 
 #endif

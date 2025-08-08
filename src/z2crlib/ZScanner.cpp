@@ -158,13 +158,23 @@ bool ZScanner::ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isC
 	bool first = true;
 	do {
 		if (!first) {
-			if (parser.Id("def"))
-				aFunc = false;
-			else if (parser.Id("func"))
-				aFunc = true;
+			if (isCons == false) {
+				if (parser.Id("def"))
+					aFunc = false;
+				else if (parser.Id("func"))
+					aFunc = true;
+				else {
+					ZSourcePos dp = parser.GetFullPos();
+					throw ER::ErrMethodDeclarationExpected(dp);
+				}
+			}
 			else {
-				ZSourcePos dp = parser.GetFullPos();
-				throw ER::ErrMethodDeclarationExpected(dp);
+				if (parser.Id("this")) {
+				}
+				else {
+					ZSourcePos dp = parser.GetFullPos();
+					throw ER::ErrConstructorDeclarationExpected(dp);
+				}
 			}
 		}
 		
@@ -443,8 +453,15 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 			bname = name;
 		}
 		else {
-			name = "this";
-			bname = name;
+			if (parser.IsId()) {
+				name = parser.ReadId();
+				bname = name;
+				isCons = 2;
+			}
+			else {
+				name = "this";
+				bname = name;
+			}
 		}
 	}
 	

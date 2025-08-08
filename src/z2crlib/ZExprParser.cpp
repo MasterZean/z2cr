@@ -405,6 +405,9 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
+	if (s == "Test")
+		s == "Test";
+	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
 			if (Function->Params[j].Name == s) {
@@ -574,8 +577,14 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		Vector<Node*> params;
 		
 		if (method.IsProperty == false) {
-			parser.Expect('(');
-			getParams(params);
+			if (!method.IsConstructor) {
+				parser.Expect('(');
+				getParams(params);
+			}
+			else {
+				parser.Expect('{');
+				getParams(params, '}');
+			}
 		}
 		
 		bool ambig = false;
@@ -589,17 +598,29 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		
 		TestAccess(*f, opp);
 		
-		if (onlyStatic && !f->IsStatic)
+		if (onlyStatic && !f->IsStatic && f->IsConstructor == 0)
 			parser.Error(opp, ER::Green + aName + ER::White + ": is not a static member");
 		if (!onlyStatic && f->IsStatic) {
 			if (Class && Class != &f->Owner())
 				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
-		ParamsNode* node = irg.callfunc(*f, object);
-		node->Params = std::move(params);
-		f->Owner().SetInUse();
-		f->SetInUse();
+		Node* node = nullptr;
+		
+		if (f->IsConstructor == 0) {
+			ParamsNode* call = irg.callfunc(*f, object);
+			call->Params = std::move(params);
+			f->Owner().SetInUse();
+			f->SetInUse();
+			
+			node = call;
+		}
+		else {
+			Node* temp = Temporary((ZClass&)f->Owner(), params);
+			temp->Tt.Class->SetInUse();
+			
+			node = temp;
+		}
 		
 		if (Function)
 			Function->Dependencies.FindAdd(f);
