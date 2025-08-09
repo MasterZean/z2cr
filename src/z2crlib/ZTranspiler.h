@@ -169,10 +169,11 @@ public:
 	
 private:
 	void Walk(Node* node);
-	void WalkChildren(Node* node);
+	int WalkChildren(Node* node);
 	
 	ZNamespace* inNamespace = nullptr;
 	ZNamespace* inClass = nullptr;
+	ZFunction* inFunction = nullptr;
 	bool firstInNamespace = true;
 	bool firstInClass = true;
 	int namespaceWrites = 0;

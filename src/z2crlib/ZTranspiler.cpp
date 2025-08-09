@@ -282,7 +282,7 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
 			ZFunction& f = *ns.Methods[i].Functions[j];
-			
+
 			if (CheckUse && !f.InUse)
 				continue;
 			
@@ -428,12 +428,19 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (f.IsConstructor) {
+	if (f.IsConstructor == 1) {
 		cs << f.Owner().BackName;
 		WriteFunctionParams(f);
 		return;
 	}
-	else if (f.Trait.Flags & ZTrait::BINDC)
+	else if (f.IsConstructor == 2) {
+		cs << "static ";
+		cs << f.Owner().BackName << " " << f.Name;
+		WriteFunctionParams(f);
+		return;
+	}
+	
+	if (f.Trait.Flags & ZTrait::BINDC)
 		;
 	else if (f.InClass == false && f.Access == AccessType::Private)
 		cs << "static ";
@@ -450,10 +457,19 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
-	if (f.IsConstructor) {
+	if (f.IsConstructor == 1) {
 		cs << f.Namespace().BackName << "::";
 		cs << f.Owner().Name << "::";
 		cs << f.Owner().Name;
+		WriteFunctionParams(f);
+		return;
+	}
+	else if (f.IsConstructor == 2) {
+		cs << f.Namespace().BackName << "::";
+		cs << f.Owner().Name << " ";
+		cs << f.Namespace().BackName << "::";
+		cs << f.Owner().Name << "::";
+		cs << f.Name;
 		WriteFunctionParams(f);
 		return;
 	}
@@ -505,17 +521,39 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 	if (CheckUse && !f.InUse)
 		return;
 	
+	inFunction = &f;
+	
 	if (wrap) {
 		cs << " {";
 		EL();
 	}
-	
+		
 	indent++;
 	
-	String params;
-	
-	WalkChildren(&f.Nodes);
+	if (f.IsConstructor == 2) {
+		NL();
+		cs << f.Namespace().BackName << "::";
+		cs << f.Owner().Name << " ";
+		cs << "_this";
+		ES();
 		
+		NL();
+		EL();
+	}
+	
+	int count = WalkChildren(&f.Nodes);
+	
+	if (f.IsConstructor == 2) {
+		if (count) {
+			NL();
+			EL();
+		}
+		
+		NL();
+		cs << "return _this";
+		ES();
+	}
+	
 	indent--;
 	
 	if (wrap) {
@@ -526,6 +564,8 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 		NL();
 		EL();
 	}
+	
+	inFunction = nullptr;
 }
 
 void ZTranspiler::WriteClassAccess(AccessType access) {
@@ -615,10 +655,12 @@ void ZTranspiler::Walk(Node* node) {
 		ASSERT_(0, "Invalid node");
 }
 
-void ZTranspiler::WalkChildren(Node* node) {
+int ZTranspiler::WalkChildren(Node* node) {
+	int count = 0;
 	Node* child = node->First;
 	
 	while (child) {
+		count++;
 		NL();
 		WalkNode(child);
 		if (child->NT != NodeType::Block && child->NT != NodeType::If && child->NT != NodeType::While && child->NT != NodeType::ForLoop)
@@ -626,6 +668,8 @@ void ZTranspiler::WalkChildren(Node* node) {
 		
 		child = child->Next;
 	}
+	
+	return count;
 }
 
 void ZTranspiler::Proc(ConstNode& node, Stream& stream) {
@@ -875,11 +919,17 @@ void ZTranspiler::Proc(DefNode& node) {
 
 void ZTranspiler::Proc(MemNode& node) {
 	if (node.IsThis) {
-		cs << "(*this)";
+		if (inFunction && inFunction->IsConstructor == 2)
+			cs << "_this";
+		else
+			cs << "(*this)";
 		return;
 	}
 	
 	ASSERT(node.Mem);
+	
+	if (node.Mem->BackName == "a")
+		node.Mem->BackName == "a";
 	
 	if (node.IsLocal == false && node.IsParam == false && node.Mem->InClass == false) {
 		if (node.Mem->InClass) {
@@ -904,9 +954,11 @@ void ZTranspiler::Proc(MemNode& node) {
 		cs << ".";
 		cs << node.Mem->BackName;
 	}
-	else
+	else {
+		if (inFunction && inFunction->IsConstructor == 2 && node.Mem->InClass)
+			cs << "_this.";
 		cs << node.Mem->BackName;
-	
+	}
 }
 
 void ZTranspiler::Proc(BlockNode& node) {
@@ -1151,6 +1203,8 @@ void ZTranspiler::Proc(LoopControlNode& node) {
 }
 
 void ZTranspiler::Proc(TempNode& node) {
+	ASSERT(node.Constructor);
+	
 	ZClass& cls = *node.Tt.Class;
 	
 	if (cls.CoreSimple) {
@@ -1161,7 +1215,14 @@ void ZTranspiler::Proc(TempNode& node) {
 	else {
 		if (&cls.Namespace() != inNamespace)
 			cs << cls.Namespace().BackName << "::";
-		cs << cls.Name;
+		if (node.Constructor->IsConstructor == 1)
+			cs << cls.Name;
+		else if (node.Constructor->IsConstructor == 2) {
+			cs << cls.Name;
+			cs << "::";
+			cs << node.Constructor->Name;
+		}
+			
 		cs << '(';
 	}
 	

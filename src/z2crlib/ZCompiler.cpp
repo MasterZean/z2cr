@@ -97,8 +97,7 @@ bool ZCompiler::Transpile() {
 		cpp.TranspileDefinitions(ass.Namespaces[i]);
 	cpp.WriteOutro();
 	
-	bool mcu = true;
-	if (mcu)
+	if (MCU)
 		DoMCU();
 	
 	return true;

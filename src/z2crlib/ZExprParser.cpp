@@ -618,6 +618,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		else {
 			Node* temp = Temporary((ZClass&)f->Owner(), params);
 			temp->Tt.Class->SetInUse();
+			f->Owner().SetInUse();
+			f->SetInUse();
+			((TempNode*)temp)->Constructor = f;
 			
 			node = temp;
 		}

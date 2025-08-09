@@ -24,6 +24,7 @@ public:
 	String CppPath;
 	String MCUPath;
 	int CppVersion = 2017;
+	bool MCU = false;
 	
 	PlatformType Platform;
 	String PlatformString;
