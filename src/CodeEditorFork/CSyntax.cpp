@@ -139,8 +139,16 @@ void CSyntax::ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size
 		case 6:
 			if(id[0] == 'd' && id[1] == 'e' && id[2] == 'f' && id[3] == 'i' && id[4] == 'n' && id[5] == 'e')
 				macro = CSyntax::MACRO_CONT;
+			
+			if(id[0] == 'r' && id[1] == 'e' && id[2] == 'g' && id[3] == 'i' && id[4] == 'o' && id[5] == 'n') {
+				macro = CSyntax::MACRO_CONT;
+				IfState& ifstate = ifstack.Add();
+				ifstate.state = IfState::IF;
+				ifstate.iftext = sReadLn(ln);
+				ifstate.ifline = line + 1;
+			}
+			
 			break;
-
 		case 4:
 			if(id[0] == 'e' && id[1] == 'l') {
 				if(id[2] == 'i' && id[3] == 'f') {
@@ -182,6 +190,19 @@ void CSyntax::ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size
 		case 5:
 			if(id[0] == 'e' && id[1] == 'n' && id[2] == 'd' && id[3] == 'i' && id[4] == 'f')
 			{
+				int itop = ifstack.GetCount() - 1;
+				if(itop < 0) {
+					IfState& ifstate = ifstack.Add();
+					ifstate.ifline = 0;
+					ifstate.state = IfState::ENDIF_ERROR;
+				}
+				else if(ifstack[itop].state != IfState::ENDIF_ERROR)
+					ifstack.Trim(itop);
+			}
+			break;
+			
+		case 9:
+			if(id[0] == 'e' && id[1] == 'n' && id[2] == 'd' && id[3] == 'r' && id[4] == 'e' && id[5] == 'g' && id[6] == 'i' && id[7] == 'o' && id[8] == 'n') {
 				int itop = ifstack.GetCount() - 1;
 				if(itop < 0) {
 					IfState& ifstate = ifstack.Add();

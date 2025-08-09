@@ -107,6 +107,17 @@ void ZScanner::ScanSingle(const ZSourcePos& p, bool isStatic) {
 	else if (ScanDeclaration(p, AccessType::Public, isStatic)) {
 		// ALL GOOD
 	}
+	else if (parser.Char('#')) {
+		if (parser.Id("region")) {
+			parser.ExpectId();
+			parser.EatNewlines();
+		}
+		else if (!parser.Id("endregion")) {
+			Point p2 = parser.GetPoint();
+			parser.Error(p2, "syntax error: # followed by invalid directive");
+			parser.EatNewlines();
+		}
+	}
 	else {
 		Point p = parser.GetPoint();
 		parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");

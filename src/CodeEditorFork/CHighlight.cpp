@@ -219,14 +219,14 @@ void CSyntax::Highlight(const wchar *ltext, const wchar *e, HighlightOutput& hls
 			p++;
 			hls.Put(hl_style[INK_NORMAL]);
 		}
-		if(*p == '#' && findarg(highlight, HIGHLIGHT_CPP, HIGHLIGHT_CS) >= 0) {
+		if(*p == '#' && findarg(highlight, HIGHLIGHT_CPP, HIGHLIGHT_CS, HIGHLIGHT_COUNT) >= 0) {
 			static Index<String> macro;
 			ONCELOCK {
 				static const char *pd[] = {
 					"include", "define", "error", "if", "elif", "else", "endif",
 					"ifdef", "ifndef", "line", "undef", "pragma",
 					// CLR
-					"using"
+					"using", "region", "endregion"
 				};
 				for(int i = 0; i < __countof(pd); i++)
 					macro.Add(pd[i]);
