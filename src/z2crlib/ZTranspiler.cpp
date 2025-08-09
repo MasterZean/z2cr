@@ -928,9 +928,6 @@ void ZTranspiler::Proc(MemNode& node) {
 	
 	ASSERT(node.Mem);
 	
-	if (node.Mem->BackName == "a")
-		node.Mem->BackName == "a";
-	
 	if (node.IsLocal == false && node.IsParam == false && node.Mem->InClass == false) {
 		if (node.Mem->InClass) {
 			if (&node.Mem->Namespace() != inNamespace)
