@@ -356,11 +356,15 @@ public:
 		return psig;
 	}
 	
-	const bool IsExternBind() const {
+	bool IsExternBind() const {
 		return (Trait.Flags & ZTrait::BINDC) || (Trait.Flags & ZTrait::BINDCPP);
 	}
 	
 	void SetInUse();
+	
+	bool ShouldEvaluate() const {
+		return IsEvaluated == false && IsExternBind() == false && IsGenerated == false;
+	}
 	
 private:
 	String dsig;

@@ -610,7 +610,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
-		if (!f->IsEvaluated && f->InClass)
+		if (f->InClass && f->ShouldEvaluate())
 			comp.CompileFunc(*f);
 
 		Node* node = nullptr;

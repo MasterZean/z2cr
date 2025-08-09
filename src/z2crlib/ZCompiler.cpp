@@ -38,7 +38,9 @@ bool ZCompiler::Compile() {
 				CompileFunc(*cls.Meth.Default);
 				
 		}
-		CompileFunc(*MainFunction);
+		
+		if (MainFunction->ShouldEvaluate())
+			CompileFunc(*MainFunction);
 	}
 	
 	if (BuildMode) {
@@ -282,7 +284,7 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 		for (int j = 0; j < d.Functions.GetCount(); j++) {
 			ZFunction& f = *d.Functions[j];
 			
-			if (f.IsExternBind() == false && f.IsGenerated == false)
+			if (f.ShouldEvaluate())
 				CompileFunc(f, f.Nodes);
 		}
 	}
@@ -410,7 +412,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 				p->Function->InUse = true;
 				p->Params.Add(rs);
 				
-				if (!p->Function->IsEvaluated)
+				if (p->Function->ShouldEvaluate())
 					CompileFunc(*p->Function);
 				
 				return node;
