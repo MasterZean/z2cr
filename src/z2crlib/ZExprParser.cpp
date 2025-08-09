@@ -405,7 +405,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Test")
+	if (s == "IsProp")
 		s == "Test";
 	
 	if (Function) {
@@ -528,6 +528,7 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			Node* node = ParseMember(*ns->Namespace, name, opp, true);
 			if (!node)
 				parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
+			
 			return node;
 		}
 		else {
@@ -558,6 +559,7 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 					
 					if (!node)
 						parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
+					
 					return node;
 				}
 			}
@@ -575,6 +577,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 	if (index != -1) {
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
+		
+		if (aName == "Clamped")
+			aName == "ToByte";
 		
 		if (method.IsProperty == false) {
 			if (!method.IsConstructor) {
@@ -605,6 +610,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
+		if (!f->IsEvaluated && f->InClass)
+			comp.CompileFunc(*f);
+
 		Node* node = nullptr;
 		
 		if (f->IsConstructor == 0) {
@@ -705,6 +713,7 @@ Node *ZExprParser::ParseDot(Node *exp) {
 			Node* node = ParseMember(cs, s, p, true);
 			if (!node)
 				parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
+			
 			return node;
 		}
 	}
@@ -712,8 +721,10 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	else {
 		ZClass& cs = *exp->Tt.Class;
 		Node* node = ParseMember(cs, s, p, false, exp);
+		
 		if (!node)
 			parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
+		
 		return node;
 	}
 	
@@ -1016,9 +1027,10 @@ void ZExprParser::TestAccess(ZEntity& f, const Point& opp) {
 			parser.Error(opp, "can't access private member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
 	}
 	else {
+		// TODO:fix ihneritence
 		if (f.Access == AccessType::Protected && &f.Owner() != Class)
 			parser.Error(opp, "can't access protected member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
-		if (f.Access == AccessType::Private)
+		if (f.Access == AccessType::Private && &f.Owner() != Class)
 			parser.Error(opp, "can't access private member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
 	}
 }

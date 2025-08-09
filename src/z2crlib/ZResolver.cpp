@@ -160,6 +160,9 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	f.DefPos.Source->Functions.Add(&f);
 	
 	f.SetOwner(ns);
+	
+	if (f.Name == "IsProp")
+		f.SetOwner(ns);
 
 	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));
 	if (d.Name.GetCount() == 0)

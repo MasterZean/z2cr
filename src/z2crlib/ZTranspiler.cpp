@@ -374,6 +374,9 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 				if (f.IsExternBind())
 					continue;
 				
+				if (f.Namespace().Name == "raylib.")
+					continue;
+				
 				NL();
 				
 				if (fDecl && (CheckUse == false || f.InUse) && f.IsGenerated == false) {

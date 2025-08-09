@@ -31,6 +31,14 @@ bool ZCompiler::Compile() {
 	if (MainFunction) {
 		MainFunction->SetInUse();
 		MainFunction->Owner().SetInUse();
+		
+		if (MainFunction->InClass) {
+			ZClass& cls = (ZClass&)MainFunction->Owner();
+			if (cls.Meth.Default && cls.Meth.Default->IsGenerated == false)
+				CompileFunc(*cls.Meth.Default);
+				
+		}
+		CompileFunc(*MainFunction);
 	}
 	
 	if (BuildMode) {
@@ -279,10 +287,10 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 		}
 	}
 	
-	for (int j = 0; j < ns.Classes.GetCount(); j++) {
+	/*for (int j = 0; j < ns.Classes.GetCount(); j++) {
 		Class = ns.Classes[j];
 		Compile(*Class);
-	}
+	}*/
 	
 	Class = nullptr;
 	
@@ -290,6 +298,11 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 }
 
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
+	f.IsEvaluated = true;
+	
+	if (f.InClass)
+		Class = &(ZClass&)f.Owner();
+	
 	ZParser parser(f.BodyPos);
 	
 	parser.Expect('{');
@@ -396,6 +409,9 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 				p->Function = p->Function->Bundle->PropSetter;
 				p->Function->InUse = true;
 				p->Params.Add(rs);
+				
+				if (!p->Function->IsEvaluated)
+					CompileFunc(*p->Function);
 				
 				return node;
 			}

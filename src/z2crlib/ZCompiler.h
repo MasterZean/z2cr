@@ -74,6 +74,10 @@ public:
 	bool DoMCU();
 	void DoMCU(ZNamespace& ns);
 	
+	bool CompileFunc(ZFunction& f) {
+		return CompileFunc(f, f.Nodes);
+	}
+	
 private:
 	Assembly& ass;
 	String mainClass;
