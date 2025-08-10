@@ -302,8 +302,10 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.IsEvaluated = true;
 	
-	if (f.InClass)
+	if (f.InClass) {
 		Class = &(ZClass&)f.Owner();
+		f.Dependencies.Add(Class);
+	}
 	
 	ZParser parser(f.BodyPos);
 	
@@ -333,6 +335,61 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	}
 	
 	f.Blocks.Drop();
+	
+	String deps;
+	
+	if (f.Owner().IsClass)
+		deps << f.Namespace().Name << f.Owner().Name;
+	else
+		deps << f.Owner().ProperName;
+	
+	deps <<  ": " << f.FuncSig() << ": dependencies:" << "\n";
+	
+	
+	for (int i = 0; i < f.Dependencies.GetCount(); i++) {
+		ZEntity* ent = f.Dependencies[i];
+		
+		if (ent->Type == EntityType::Function) {
+			ZFunction* ff = (ZFunction*)ent;
+			deps << "\t";
+			
+			if (ff->Owner().IsClass)
+				deps << ff->Namespace().Name << ff->Owner().Name;
+			else
+				deps << ff->Owner().ProperName;
+			
+			deps <<  ": " << ff->FuncSig() << "\n";
+		}
+		else if (ent->Type == EntityType::Variable) {
+			ZVariable* v = (ZVariable*)ent;
+			deps << "\t";
+			if (v->Owner().IsClass)
+				deps << v->Namespace().Name << v->Owner().Name;
+			else
+				deps << v->Owner().ProperName;
+			deps << ": ";
+			deps << v->Name;
+			deps << "\n";
+		}
+		else if (ent->Type == EntityType::Class) {
+			ZClass* c = (ZClass*)ent;
+			
+			deps << "\t";
+			
+			if (c->Owner().IsClass)
+				deps << c->Namespace().Name << c->Owner().Name;
+			else
+				deps << c->Owner().ProperName;
+			
+			deps << ": ";
+			deps << c->Name;
+			deps << "\n";
+		}
+		else
+			ASSERT(0);
+	}
+	
+	DUMP(deps);
 	
 	return true;
 }

@@ -636,6 +636,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		if (Function)
 			Function->Dependencies.FindAdd(f);
 		
+		if (Function && Function->ShouldEvaluate())
+			comp.CompileFunc(*Function);
+		
 		if (f->IsProperty) {
 			ASSERT(f->Bundle);
 			if(f->Bundle->PropSetter)
@@ -978,6 +981,10 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 		
 		TempNode* node = irg.mem_temp(cls, f);
 		node->Params = std::move(params);
+		
+		if (f && f->ShouldEvaluate())
+			comp.CompileFunc(*f);
+		
 		return node;
 	}
 	/*else if (&cls == ass.CVoid)
