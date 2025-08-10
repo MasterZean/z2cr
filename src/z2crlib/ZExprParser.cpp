@@ -405,7 +405,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "IsProp")
+	if (s == "Trees")
 		s == "Test";
 	
 	if (Function) {

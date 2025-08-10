@@ -302,6 +302,10 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.IsEvaluated = true;
 	
+	if (f.Name == "AddTrees")
+		f.Name == "AddTrees";
+	
+	ZClass* clsBack = Class;
 	if (f.InClass) {
 		Class = &(ZClass&)f.Owner();
 		f.Dependencies.Add(Class);
@@ -335,6 +339,8 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	}
 	
 	f.Blocks.Drop();
+	
+	Class = clsBack;
 	
 	String deps;
 	
