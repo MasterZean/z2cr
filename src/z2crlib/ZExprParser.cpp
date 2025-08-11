@@ -405,7 +405,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Trees")
+	if (s == "BlendMode")
 		s == "Test";
 	
 	if (Function) {
@@ -712,6 +712,11 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	if (exp->Tt.Class == ass.CClass) {
 		if (exp->IsLiteral) {
 			ZClass& cs = ass.Classes[(int)exp->IntVal];
+			
+			/*if (cs.IsEvaluated == false) {
+				cs.IsEvaluated = true;
+				comp.PreCompileVars(cs);
+			}*/
 			
 			Node* node = ParseMember(cs, s, p, true);
 			if (!node)

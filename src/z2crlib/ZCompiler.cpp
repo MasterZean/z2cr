@@ -41,6 +41,11 @@ bool ZCompiler::Compile() {
 		
 		if (MainFunction->ShouldEvaluate())
 			CompileFunc(*MainFunction);
+		
+		cuCounter = 1;
+		cuClasses.Clear();
+		
+		WriteDeps((ZClass&)MainFunction->Owner());
 	}
 	
 	if (BuildMode) {
@@ -58,6 +63,38 @@ bool ZCompiler::Compile() {
 	ass.LibLink.FindAdd("user32");
 	
 	return true;
+}
+
+void ZCompiler::WriteDeps(ZClass& cls) {
+	if (cls.CUCounter == cuCounter)
+		return;
+	
+	if (cls.IsClass == false)
+		return;
+	
+	writeDeps(cls);
+}
+
+void ZCompiler::writeDeps(ZClass& cls) {
+	//cls.SetInUse();
+	
+	/*ZClass * old = Class;
+	Class = &cls;
+	PreCompileVars(cls);
+	Class = old;*/
+	
+	cls.CUCounter = cuCounter;
+	
+	for (int i = 0; i < cls.Variables.GetCount(); i++) {
+		ZVariable& v = *cls.Variables[i];
+		ZClass& used = *v.I.Tt.Class;
+			
+		if (used.CUCounter < cuCounter)
+			writeDeps(used);
+	}
+	
+	DUMP(cls.Name);
+	cuClasses.Add(&cls);
 }
 
 bool ZCompiler::FindMain() {
@@ -99,6 +136,10 @@ bool ZCompiler::Transpile() {
 	
 	cpp.WriteIntro();
 	cpp.WriteClassForward();
+	
+	for (int i = 0; i < cuClasses.GetCount(); i++)
+		cpp.TranspileClassDeclMaster(*cuClasses[i], 0b11, false);
+	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		cpp.TranspileDeclarations(ass.Namespaces[i], 0b11, true);
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
@@ -271,7 +312,10 @@ bool ZCompiler::PreCompileVars(ZNamespace& ns) {
 		if (v->IsEvaluated)
 			continue;
 		
+		//DUMP("preocmpile " + ns.Name + ":" + v->Name);
 		CompileVar(*v);
+		
+		//v->InUse = true;
 	}
 	
 	return true;
@@ -302,13 +346,18 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.IsEvaluated = true;
 	
-	if (f.Name == "AddTrees")
-		f.Name == "AddTrees";
+	//if (f.Name == "AddTrees")
+	//	f.Name == "AddTrees";
 	
 	ZClass* clsBack = Class;
 	if (f.InClass) {
 		Class = &(ZClass&)f.Owner();
-		f.Dependencies.Add(Class);
+		f.Dependencies.FindAdd(Class);
+		
+		/*if (Class->IsEvaluated == false) {
+			PreCompileVars(*Class);
+			Class->IsEvaluated = true;
+		}*/
 	}
 	
 	ZParser parser(f.BodyPos);
@@ -360,7 +409,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 			deps << "\t";
 			
 			if (ff->Owner().IsClass)
-				deps << ff->Namespace().Name << ff->Owner().Name;
+				deps << "class " << ff->Namespace().ProperName << "::" << ff->Owner().Name;
 			else
 				deps << ff->Owner().ProperName;
 			
@@ -368,9 +417,12 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 		}
 		else if (ent->Type == EntityType::Variable) {
 			ZVariable* v = (ZVariable*)ent;
+			
+			if (v->InClass)
+				deps << "x -- ";
 			deps << "\t";
 			if (v->Owner().IsClass)
-				deps << v->Namespace().Name << v->Owner().Name;
+				deps << "class " << v->Namespace().ProperName << "::" << v->Owner().Name;
 			else
 				deps << v->Owner().ProperName;
 			deps << ": ";
@@ -381,13 +433,14 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 			ZClass* c = (ZClass*)ent;
 			
 			deps << "\t";
+			deps << "class ";
 			
 			if (c->Owner().IsClass)
-				deps << c->Namespace().Name << c->Owner().Name;
+				deps << c->Namespace().ProperName << "::" << c->Owner().Name;
 			else
 				deps << c->Owner().ProperName;
 			
-			deps << ": ";
+			deps << "::";
 			deps << c->Name;
 			deps << "\n";
 		}
@@ -477,6 +530,8 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 				
 				if (p->Function->ShouldEvaluate())
 					CompileFunc(*p->Function);
+				
+				f.Dependencies.FindAdd(p->Function);
 				
 				return node;
 			}
@@ -728,6 +783,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 			if (node->Tt.Class == ass.CPtr && node->Tt.Next->Class == ass.CPtr)
 				parser.Error(vp.P, "pointers to pointer are currently not supported");
 			v.I.Tt = node->Tt;
+			cls = node->Tt.Class;
 		}
 			
 		if (v.I.CanAssign(ass, node)) {
@@ -763,6 +819,11 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 			v.Value = ep.Temporary(*v.I.Tt.Class, params, &vp);
 		}
 	}
+	
+	/*if (cls && cls->IsEvaluated == false) {
+		cls->IsEvaluated = true;
+		PreCompileVars(*cls);
+	}*/
 		
 	if (f) {
 		ZBlock& b = f->Blocks[f->Blocks.GetCount() - 1];

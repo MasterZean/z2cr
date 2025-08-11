@@ -134,7 +134,7 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 	}
 }
 
-bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags) {
+bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, bool checkDepends) {
 	ZClass& acls = (ZClass&)cls;
 	
 	if (CheckUse && !acls.InUse)
@@ -148,8 +148,9 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags) {
 	
 	cls.IsDefined = true;
 	
-	for (int j = 0; j < cls.DependsOn.GetCount(); j++)
-		TranspileClassDeclMaster(*cls.DependsOn[j], accessFlags);
+	if (checkDepends)
+		for (int j = 0; j < cls.DependsOn.GetCount(); j++)
+			TranspileClassDeclMaster(*cls.DependsOn[j], accessFlags);
 	
 	BeginNamespace(cls.Namespace());
 	BeginClass(cls);
@@ -320,6 +321,8 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 				cs << "extern ";
 			WriteFunctionDef(f);
 			ES();
+			
+			f.WroteDeclaration = true;
 		}
 	}
 	
@@ -349,6 +352,9 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 			if (f.IsExternBind())
 				continue;
 			
+			if (!f.WroteDeclaration)
+				continue;
+			
 			NewMember();
 			NL();
 			
@@ -374,8 +380,8 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 				if (f.IsExternBind())
 					continue;
 				
-				//if (f.Namespace().Name == "raylib.")
-				//	continue;
+				if (!f.WroteDeclaration)
+					continue;
 				
 				NL();
 				

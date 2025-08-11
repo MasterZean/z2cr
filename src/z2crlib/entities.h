@@ -94,6 +94,10 @@ public:
 	bool InClass = false;
 	bool IsStatic = false;
 	bool InUse = false;
+	
+	int CUCounter = 0;
+	
+	bool WroteDeclaration = false;
 		
 	ZSourcePos DefPos;
 	

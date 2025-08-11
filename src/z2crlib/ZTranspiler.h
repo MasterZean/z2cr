@@ -154,7 +154,7 @@ public:
 	
 	void TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes);
 	void TranspileNamespaceDecl(ZNamespace& ns, int accessFlags = 0, bool doBinds = false);
-	bool TranspileClassDeclMaster(ZNamespace& cls, int accessFlags);
+	bool TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, bool checkDepends = true);
 	int  TranspileClassDecl(ZNamespace& ns, int accessFlags = 0);
 	int  TranspileMemberDeclVar(ZNamespace& ns, int accessFlags);
 	int  TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool doBinds, int vc);

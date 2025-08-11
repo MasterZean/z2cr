@@ -445,6 +445,11 @@ CONSOLE_APP_MAIN {
 		Cout() << "\n";
 		
 #if defined(_RELEASE) && defined(flagLLVM) && defined(_MSC_VER)
+		int main2();
+		
+		main2();
+		Cout() << "\n";
+			
 		LLVMIR llvm;
 		
 		for (int i = 0; i < compiler.LLVMInput.GetCount(); i++) {

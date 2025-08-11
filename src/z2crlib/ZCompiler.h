@@ -77,6 +77,8 @@ public:
 	bool CompileFunc(ZFunction& f) {
 		return CompileFunc(f, f.Nodes);
 	}
+			
+	bool PreCompileVars(ZNamespace& ns);
 	
 private:
 	Assembly& ass;
@@ -84,12 +86,13 @@ private:
 	String mainFile;
 	IR irg;
 	
+	int cuCounter = 0;
+	Vector<ZClass*> cuClasses;
+	
 	ZClass* Class = nullptr;
 	Vector<ZFunction*> CBinds;
 
 	Vector<ZFunction*> FindMain(ZSource& src);
-	
-	bool PreCompileVars(ZNamespace& ns);
 	
 	bool Compile(ZNamespace& ns);
 	bool CompileFunc(ZFunction& f, Node& target);
@@ -115,6 +118,9 @@ private:
 	void TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur);
 	
 	Node* compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f);
+	
+	void WriteDeps(ZClass& cls);
+	void writeDeps(ZClass& cls);
 };
 
 #endif
