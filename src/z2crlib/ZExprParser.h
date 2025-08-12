@@ -63,7 +63,7 @@ private:
 	int GetPriority(int& op, bool& opc);
 	
 	void IncompatOp(const ZSource& src, Point& p, const String& op, Node* left, Node* right) {
-		ER::ErrIncompatOp(src, p, op, ass.ClassToString(left), ass.ClassToString(right));
+		ER::ErrIncompatOp(src, p, op, ass.ToQtColor(&left->Tt), ass.ToQtColor(&right->Tt));
 	}
 	
 	void getParams(Vector<Node*>& params, char end = ')');
@@ -72,6 +72,9 @@ private:
 	static bool OPCONT[256];
 	
 	void TestAccess(ZEntity& f, const Point& opp);
+	
+	Node *GetOpOverload(Node *left, Node *right, int op, const Point& opp);
+	Node *GetOpOverloadStatic(Node *left, Node *right, int op, const Point& opp);
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include "OverloadResolver.h"
 
 extern String opss[];
+extern String strops[];
 
 String CLS_STR = "class";
 String THIS_STR = "this";
@@ -103,8 +104,18 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 			parser.Error(opp, "second operand of division is 0 or equivalent");
 		
 		Node* r = irg.op(left, right, OpNode::Type(op), opp);
-		if (r == nullptr)
-			IncompatOp(parser.Source(), opp, opss[op], left, right);
+		
+		if (r == nullptr) {
+			r = GetOpOverloadStatic(left, right, op, opp);
+			if (r == nullptr)
+				r = GetOpOverloadStatic(right, left, op, opp);
+			if (r == nullptr)
+				r = GetOpOverload(left, right, op, opp);
+			if (r == nullptr)
+				r = GetOpOverload(right, left, op, opp);
+			if (r == nullptr)
+				IncompatOp(parser.Source(), opp, opss[op], left, right);
+		}
 		
 		lastValid = r;
 		backupPoint = parser.GetPos();
@@ -112,6 +123,77 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 		ASSERT(r->Tt.Class);
 		left = r;
 	}
+}
+
+Node* ZExprParser::GetOpOverload(Node* left, Node* right, int op, const Point& opp) {
+	int index = left->Tt.Class->Methods.Find(strops[op]);
+	
+	if (index == -1)
+		return nullptr;
+	
+	ZMethodBundle& method = left->Tt.Class->Methods[index];
+	Vector<Node*> params;
+	params.Add(right);
+	
+	bool ambig = false;
+	ZFunction* f = GetBase(&method, nullptr, params, 1, false, ambig);
+	
+	if (!f)
+		return nullptr;//ER::CallError(parser.Source(), opp, ass, *left->Tt.Class, &method, params, 0/*ol->IsCons*/);
+	
+	if (ambig)
+		parser.Error(opp, ER::Green + strops[op] + ": ambigous symbol");
+
+	TestAccess(*f, opp);
+	
+	ParamsNode* call = irg.callfunc(*f, left);
+	call->Params = std::move(params);
+	f->Owner().SetInUse();
+	f->SetInUse();
+	
+	if (Function)
+		Function->Dependencies.FindAdd(f);
+	
+	if (f->InClass && f->ShouldEvaluate())
+		comp.CompileFunc(*f);
+	
+	return call;
+}
+
+Node* ZExprParser::GetOpOverloadStatic(Node* left, Node* right, int op, const Point& opp) {
+	int index = left->Tt.Class->Methods.Find(strops[op]);
+	
+	if (index == -1)
+		return nullptr;
+	
+	ZMethodBundle& method = left->Tt.Class->Methods[index];
+	Vector<Node*> params;
+	params.Add(left);
+	params.Add(right);
+	
+	bool ambig = false;
+	ZFunction* f = GetBase(&method, nullptr, params, 1, false, ambig);
+	
+	if (!f)
+		return nullptr;
+		
+	if (ambig)
+		parser.Error(opp, ER::Green + strops[op] + ": ambigous symbol");
+
+	TestAccess(*f, opp);
+	
+	ParamsNode* call = irg.callfunc(*f, left);
+	call->Params = std::move(params);
+	f->Owner().SetInUse();
+	f->SetInUse();
+	
+	if (Function)
+		Function->Dependencies.FindAdd(f);
+	
+	if (f->InClass && f->ShouldEvaluate())
+		comp.CompileFunc(*f);
+	
+	return call;
 }
 
 Node* ZExprParser::ParseAtom() {
@@ -1024,6 +1106,9 @@ ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, cons
 		}
 		
 		f->SetInUse();
+		
+		if (f->InClass && f->ShouldEvaluate())
+			comp.CompileFunc(*f);
 		
 		return f;
 	}

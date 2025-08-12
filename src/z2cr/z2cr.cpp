@@ -447,7 +447,7 @@ CONSOLE_APP_MAIN {
 #if defined(_RELEASE) && defined(flagLLVM) && defined(_MSC_VER)
 		int main2();
 		
-		main2();
+		//main2();
 		Cout() << "\n";
 			
 		LLVMIR llvm;

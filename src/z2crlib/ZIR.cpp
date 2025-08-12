@@ -58,7 +58,7 @@ int tabSft[][14] = {
 	/* 13: PtrSize */ { -1, 13, 13, 13,  13,  13,  13,  13,  13,  -1,  -1,  -1,  -1,  13 },
 };
 
- void IR::fillSignedTypeInfo(int64 l, Node* node, ZClass* cls) {
+void IR::fillSignedTypeInfo(int64 l, Node* node, ZClass* cls) {
 	node->Tt = ass.CInt->Tt;
 	if (l >= -128 && l <= 127) {
 		node->C1 = ass.CSmall;

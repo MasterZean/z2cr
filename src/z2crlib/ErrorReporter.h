@@ -48,7 +48,7 @@ public:
 	static void CallError(const ZSource& source, const Point& p, Assembly& ass, ZNamespace& owner, ZMethodBundle* def, Vector<Node*>& params, int limit, bool cons = false);
 	
 	static void ErrIncompatOp(const ZSource& src, const Point& p, const String& op, const String& text, const String& text2) {
-		Error(src, p, "Can't apply operator '" + op + "' on types: \n\t\t'\f" + text + "\f' and \n\t\t'\f" + text2 + "\f'");
+		Error(src, p, "Can't apply operator '" + op + "' on types: \n\t\t" + text + " and \n\t\t" + text2);
 	}
 	
 	static void PrettyPrint(const String& error, Stream& stream, ErrorColorType color);

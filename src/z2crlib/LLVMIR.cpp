@@ -61,29 +61,43 @@ void LLVMIR::AddFunc(ZFunction& f) {
 	
 	Node* n = f.Nodes.First;
 	
+	bool retadded = false;
 	while (n) {
 		if (n->NT == NodeType::Const) {
 			int val = ((ConstNode*)n)->IntVal;
 			
-			llvm::Value *One = builder.getInt32(val);
-			auto* A = builder.CreateAlloca(Type::getInt32Ty(C()), nullptr, "dummy");
+			llvm::Value *One = builder.getInt64(val);
+			auto* A = builder.CreateAlloca(Type::getInt32Ty(C()), nullptr, "dummy2");
 			builder.CreateStore(One, A);
 			
 			builder.CreateRetVoid();
+			retadded = true;
 			
 			return;
 		}
+		else if (n->NT == NodeType::Return) {
+			builder.CreateRetVoid();
+			retadded = true;
+		}
 		
 		n = n->Next;
+	}
+	
+	if (retadded == false)
+		builder.CreateRetVoid();
+	
+	if (llvm::verifyFunction(*Add1F, &outs())) {
+		errs() << f.BackName.ToStd() << ": Function verification failed!\n";
 	}
 }
 
 void LLVMIR::Print() {
 	ExecutionEngine* EE = EngineBuilder(std::move(moduleOwner)).create();
 	
-	if (!verifyModule(M())) {
-	  errs() << "Error constructing module!\n";
+	if (verifyModule(M(), &llvm::errs())) {
+	  //errs() << "Error constructing module!\n";
 	}
+	
 	outs() << "We just constructed this LLVM module:\n\n" << M();
 }
 
