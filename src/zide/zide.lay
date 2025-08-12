@@ -55,3 +55,8 @@ LAYOUT(WaitingLayout, 520, 44)
 	ITEM(Upp::Label, dv___1, SetLabel(t_("Please wait while detecting platform tools...")).SetAlign(Upp::ALIGN_CENTER).HSizePosZ(8, 8).VSizePosZ(4, 21))
 END_LAYOUT
 
+LAYOUT(ExploreLayout, 144, 412)
+	ITEM(Upp::Label, dv___0, SetLabel(t_("Navigation:")).LeftPosZ(4, 104).TopPosZ(0, 19))
+	ITEM(Upp::TreeCtrl, lstItems, HSizePosZ(0, 0).VSizePosZ(20, 0))
+END_LAYOUT
+

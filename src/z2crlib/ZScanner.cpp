@@ -266,6 +266,8 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	}
 	
 	parser.Expect('}');
+	
+	EntityContent.Add(curClass);
 
 	if (nameSpace == &ass.DefaultNamespace())
 		throw ER::ErrDeclOutsideNamespace(p);

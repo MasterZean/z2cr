@@ -12,6 +12,7 @@ enum class PlatformType {
 class ZScanner {
 public:
 	Array<ZException> Errors;
+	Vector<ZEntity*> EntityContent;
 	
 	ZScanner(ZSource& aSrc, PlatformType aType): parser(aSrc), source(aSrc), ass(aSrc.Package().Ass()), pt(aType) {
 		parser.Mode = ": scan";

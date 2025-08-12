@@ -1,6 +1,8 @@
 #ifndef _z2cr_ZSource_h_
 #define _z2cr_ZSource_h_
 
+#include <z2crlib/entities.h>
+
 class ZSource {
 public:
 	String Path;

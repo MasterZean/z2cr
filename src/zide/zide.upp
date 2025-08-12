@@ -14,6 +14,8 @@ file
 	ZideWindow.cpp,
 	ZideWindowBar.cpp,
 	main.cpp,
+	ItemDisplay.h,
+	ItemDisplay.cpp,
 	zide.h,
 	zide.lay,
 	zide.iml,

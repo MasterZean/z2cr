@@ -106,11 +106,13 @@ private:
 	Label lblLine;
 		
 	Splitter splAsbCanvas;
+	SplitterFrame splExplore;
 	AssemblyBrowser asbAss;
 	ParentCtrl canvas;
 	
 	SplitterFrame splBottom;
 	FrameBottom<Console> console;
+	WithExploreLayout<ParentCtrl> explore;
 	
 	ToolBar tlbMain;
 	MultiButton mbtEntryPoint;
@@ -126,6 +128,7 @@ private:
 	
 	bool running = false;
 	bool canBuild = true;
+	bool editThread = true;
 	
 	void OnOutputSel();
 	bool GetLineOfError(int ln);
@@ -182,6 +185,9 @@ private:
 	void DropArchList();
 	
 	void OnSelectMethod();
+	
+	void OnExplorerClick();
+	void OnExplorerMenu(Bar& bar);
 };
 
 class DetectWindow: public WithWaitingLayout<TopWindow> {

@@ -1,4 +1,9 @@
 #include "ZideWindow.h"
+#include "ItemDisplay.h"
+
+#include <z2crlib/Assembly.h>
+#include <z2crlib/ZSource.h>
+#include <z2crlib/ZScanner.h>
 
 int ZideWindow::HIGHLIGHT_Z2;
 extern bool doCapture;
@@ -42,6 +47,18 @@ ZideWindow::ZideWindow() {
 	console.WhenLeft = THISBACK(OnOutputSel);
 	
 	splBottom.Hide();
+	
+	CtrlLayout(explore);
+	explore.lstItems.SetDisplay(Single<ItemDisplay>());
+	explore.lstItems.RenderMultiRoot();
+	explore.lstItems.NoRoot();
+	explore.lstItems.WhenAction = THISBACK(OnExplorerClick);
+	//explore.lstItems.Set(0, "aa", RawToValue(ZItem()));
+	explore.lstItems.NoWantFocus();
+	//explore.lstItems.WhenBar = THISBACK(OnExplorerMenu);
+	explore.AddFrame(LeftSeparatorFrame());
+	
+	tabs.AddFrame(splExplore.Left(explore, Zx(200)));
 	
 	tabs.WhenTabChange = THISBACK(OnTabChange);
 	tabs.WhenEditorCursor = THISBACK(OnEditorCursor);
@@ -155,8 +172,13 @@ void ZideWindow::Serialize(Stream& s) {
 		int subs = 0;
 		s % subs;
 		
-		if (subs >= 0 & subs < lstBldConf.GetCount())
-			lstBldConf.SetIndex(subs);
+		int split;
+		s % split;
+		splAsbCanvas.SetPos(split);
+		s % split;
+		splExplore.SetSize(split);
+		s % split;
+		splBottom.SetSize(split);
 	}
 	else {
 		bool maximized = IsMaximized();
@@ -165,6 +187,16 @@ void ZideWindow::Serialize(Stream& s) {
 		s % maximized % width % height;
 		int subs = lstBldConf.GetIndex();
 		s % subs;
+		
+		int split = splAsbCanvas.GetPos();
+		s % split;
+		split = splExplore.GetSize();
+		s % split;
+		split = splBottom.GetSize();
+		s % split;
+		
+		if (subs >= 0 & subs < lstBldConf.GetCount())
+			lstBldConf.SetIndex(subs);
 	}
 	
 	s % LastPackage % RecentPackages % openNodes % ActiveFile % openDialogPreselect;
@@ -230,6 +262,7 @@ void ZideWindow::SetupLast() {
 	tabs.SetSettings(settings);
 	
 	tabs.ShowTabs(tabs.GetCount());
+	splExplore.Show(tabs.GetCount());
 	asbAss.SetShowPaths(oShowPakPaths);
 	
 	int ii = popMethodList.Find(method);
@@ -260,7 +293,7 @@ void ZideWindow::OnTabChange() {
 	asbAss.HighlightFile(ActiveFile);
 	
 	tabs.ShowTabs(tabs.GetCount());
-	//splExplore.Show(tabs.tabFiles.GetCount());
+	splExplore.Show(tabs.GetCount());
 }
 
 void ZideWindow::OnEditorChange() {
@@ -269,8 +302,79 @@ void ZideWindow::OnEditorChange() {
 		return;
 	
 	editor->Hash++;
-	//if (editThread)
+	if (!editThread)
+		return;
 	//	Thread().Run(callback3(OutlineThread, this, editor.Get(), info->Hash));
+	
+	Assembly ass;
+	ZPackage pak = ZPackage(ass, "temp", LastPackage);
+	ZSource source = ZSource(pak);
+	source.LoadVirtual(editor->Get());
+	
+#ifdef PLATFORM_WIN32
+	PlatformType platform = PlatformType::WINDOWS;
+#else
+	PlatformType platform = PlatformType::UNIX;
+#endif
+
+	ZScanner scaner = ZScanner(source, platform);
+	scaner.Scan();
+	
+	int cur = explore.lstItems.GetCursor();
+	Point pt = explore.lstItems.GetScroll();
+	
+	explore.lstItems.Clear();
+	explore.lstItems.Set(0, "aa");
+	//explore.lstItems.Set(0, "aa", RawToValue(ZItem()));
+	
+	for (int i = 0; i < scaner.EntityContent.GetCount(); i++) {
+		ZEntity& ent = *scaner.EntityContent[i];
+		
+		if (ent.Type == EntityType::Class) {
+			ZClass& cls = (ZClass&)ent;
+			
+			ZItem clsItem;
+			
+			clsItem.Kind = cls.Scan.IsEnum ? ZItem::itEnum : ZItem::itClass;
+			clsItem.Pos = cls.DefPos.P;
+			String s = cls.Name;
+			if (cls.Namespace().ProperName.GetLength())
+				s << " (" << cls.Namespace().ProperName << ")";
+			clsItem.Name = s;
+			clsItem.Namespace = cls.Namespace().Name + cls.Name;
+			
+			int node = explore.lstItems.Add(0, Image(), cls.Name, RawToValue(clsItem));
+			
+			for (int j = 0; j < cls.PreConstructors.GetCount(); j++) {
+				ZItem item;
+				
+				ZFunction& f = cls.PreConstructors[j];
+				
+				item.Name = f.Name;
+				if (f.IsConstructor == 2)
+					item.Kind = ZItem::itNamed;
+				else
+					item.Kind = ZItem::itThis;
+				
+				s = "{";
+				CParser::Pos pos = f.ParamPos.Pos;
+				const char *ch = pos.ptr;
+				if (*ch == '(')
+					ch++;
+				while ((*ch >= ' ') && (*ch != ')')) {
+					s << *ch;
+					ch++;
+				}
+				s << "}";
+				item.Sig = s;
+				item.Pos = f.DefPos.P;
+				item.Access = f.Access;
+				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
+			}
+			
+			explore.lstItems.Open(node);
+		}
+	}
 }
 
 void ZideWindow::OnEditorCursor() {
@@ -444,6 +548,37 @@ void ZideWindow::PopulateMehods() {
 	popMethodList.Clear();
 	for (int i = 0; i < met.GetCount(); i++)
 		popMethodList.Add(met[i]);
+}
+
+void ZideWindow::OnExplorerClick() {
+	//if (pauseExplorer)
+	//	return;
+	
+	int i = explore.lstItems.GetCursor();
+	if (i == -1)
+		return;
+	
+	auto temp = GetEditor();
+	if (!temp)
+		return;
+	
+	CodeEditor& editor = *temp;
+	
+	Point p = ValueTo<ZItem>(explore.lstItems.GetValue(i)).Pos;
+	editThread = false;
+	editor.SetCursor(editor.GetGPos(p.x - 1, p.y - 1));
+	editor.SetFocus();
+	editThread = true;
+}
+
+void ZideWindow::OnExplorerMenu(Bar& bar) {
+	/*int i = explore.lstItems.GetCursor();
+	if (i == -1)
+		return;
+
+	ZItem zi = ValueTo<ZItem>(explore.lstItems.GetValue(i));
+	if (zi.Kind == ZItem::itClass || zi.Kind == ZItem::itEnum)
+		bar.Add("Generate documentation template",  THISBACK(OnGenerateDocTemp));*/
 }
 
 bool runProg = false;
