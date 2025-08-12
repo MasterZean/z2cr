@@ -25,6 +25,7 @@ class ZItem: Moveable<ZItem> {
 public:
 	enum Type {
 		itClass,
+		itNamespace,
 		itEnum,
 		itAlias,
 		itFunc,

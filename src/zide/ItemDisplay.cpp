@@ -9,10 +9,10 @@ int ItemDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	
 	int x = r.left;
 	
-	Font font = StdFont();
+	Font font = StdFont()();
 	Font bold = StdFont().Bold();
 
-	Color opc = LtBlue();//HighlightSetup::hl_style[HighlightSetup::INK_OPERATOR].color;
+	Color opc = LtBlue();//DarkTheme(LtBlue());//HighlightSetup::hl_style[HighlightSetup::INK_OPERATOR].color;
 	
 	w.DrawRect(r, paper);
 	
@@ -32,9 +32,15 @@ int ItemDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	
 	if (m.Kind == ZItem::itClass) {
 		Image img = ZImg::cls;
-		x -= 4;
+		x -= Zx(4);
 		w.DrawImage(x, t, img);
-		x += img.GetWidth() + 2;
+		x += img.GetWidth() + Zx(2);
+	}
+	else if (m.Kind == ZItem::itNamespace) {
+		Image img = ZImg::nspace;
+		x -= Zx(4);
+		w.DrawImage(x, t, img);
+		x += img.GetWidth() + Zx(2);
 	}
 	else if (m.Kind == ZItem::itEnum) {
 		Image img = ZImg::enm;
@@ -142,6 +148,63 @@ int ItemDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 			x += GetTextSize(m.Sig, font).cx;
 		}
 	}
+		else {
+		i = m.Sig.Find('(');
+		
+		if (i != -1) {
+			String first = m.Sig.Mid(0, i);
+			w.DrawText(x, top, first, font, ink);
+			x += GetTextSize(first, font).cx;
+			x++;
+			w.DrawText(x, top, "(", bold, opc);
+			x += GetTextSize("(", bold).cx;
+			x++;
+			
+			String rest = m.Sig.Mid(i + 1);
+			i = rest.Find(')');
+			if (i != -1) {
+				String second = rest.Mid(0, i);
+				int j = second.Find(':');
+				if (j == -1) {
+					w.DrawText(x, top, second, font, ink);
+					x += GetTextSize(second, font).cx;
+				}
+				else {
+					String pn = second.Mid(0, j);
+					String pt = second.Mid(j + 1);
+					w.DrawText(x, top, pn, font, ink);
+					x += GetTextSize(pn, font).cx;
+					w.DrawText(x, top, ":", bold, opc);
+					x += GetTextSize(":", bold).cx;
+					w.DrawText(x, top, pt, font, ink);
+					x += GetTextSize(pt, font).cx;
+				}
+				
+				x++;
+				w.DrawText(x, top, ")", bold, opc);
+				x += GetTextSize(")", bold).cx;
+				
+				i = rest.Find(':', i);
+				if (i != -1) {
+					w.DrawText(x, top, ":", bold, opc);
+					x += GetTextSize(":", bold).cx;
+					rest = rest.Mid(i + 1);
+					w.DrawText(x, top, rest, font, ink);
+					x += GetTextSize(rest, font).cx;
+				}
+			}
+			else {
+				w.DrawText(x, top, rest, font, ink);
+				x += GetTextSize(rest, font).cx;
+			}
+		}
+		else {
+			w.DrawText(x, top, m.Sig, font, ink);
+			x += GetTextSize(m.Sig, font).cx;
+		}
+	}
+	
+	x += 3;
 	
 	return x;
 }

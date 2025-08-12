@@ -330,20 +330,52 @@ void ZideWindow::OnEditorChange() {
 	for (int i = 0; i < scaner.EntityContent.GetCount(); i++) {
 		ZEntity& ent = *scaner.EntityContent[i];
 		
-		if (ent.Type == EntityType::Class) {
-			ZClass& cls = (ZClass&)ent;
+		if (ent.Type == EntityType::Class || ent.Type == EntityType::Namespace) {
+			String s;
+			ZNamespace& cls = (ZNamespace&)ent;
 			
 			ZItem clsItem;
 			
-			clsItem.Kind = cls.Scan.IsEnum ? ZItem::itEnum : ZItem::itClass;
+			if (cls.IsClass) {
+				clsItem.Kind = ZItem::itClass;
+				s = cls.Name;
+				if (cls.Namespace().ProperName.GetLength())
+					s << " (" << cls.Namespace().ProperName << ")";
+				clsItem.Name = s;
+				clsItem.Namespace = cls.Namespace().Name + cls.Name;
+			}
+			else {
+				clsItem.Kind = ZItem::itNamespace;
+				clsItem.Name = cls.ProperName;
+			}
+			
+			//clsItem.Kind = /*cls.Scan.IsEnum ? ZItem::itEnum : */ZItem::itClass;
 			clsItem.Pos = cls.DefPos.P;
-			String s = cls.Name;
-			if (cls.Namespace().ProperName.GetLength())
-				s << " (" << cls.Namespace().ProperName << ")";
-			clsItem.Name = s;
-			clsItem.Namespace = cls.Namespace().Name + cls.Name;
 			
 			int node = explore.lstItems.Add(0, Image(), cls.Name, RawToValue(clsItem));
+			
+			for (int j = 0; j < cls.PreVariables.GetCount(); j++) {
+				ZVariable& f = cls.PreVariables[j];
+				
+				ZItem item;
+				item.Kind = f.IsConst ? ZItem::itConst: ZItem::itVar;
+				item.Name = f.Name;
+				item.Pos = f.DefPos.P;
+				item.Access = f.Access;
+				
+				CParser::Pos pos = f.DefPos.Pos;
+				const char *ch = pos.ptr + f.Name.GetCount();
+				s = "";
+								
+				while ((*ch >= ' ') && (*ch != '{' && *ch != ';'/* && *ch != '='*/)) {
+					s << *ch;
+					ch++;
+				}
+				item.Sig = s;
+				
+				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
+				//editor.words.Add(item);
+			}
 			
 			for (int j = 0; j < cls.PreConstructors.GetCount(); j++) {
 				ZItem item;
@@ -369,6 +401,43 @@ void ZideWindow::OnEditorChange() {
 				item.Sig = s;
 				item.Pos = f.DefPos.P;
 				item.Access = f.Access;
+				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
+			}
+			
+			for (int j = 0; j < cls.PreFunctions.GetCount(); j++) {
+				ZFunction& f = cls.PreFunctions[j];
+				//if (!over.IsGenerated) {
+				
+				ZItem item;
+				
+				item.Name = f.Name;
+				item.Access = f.Access;
+
+				CParser::Pos pos = f.ParamPos.Pos;
+				const char *ch = pos.ptr;
+				s = "";
+				if (*ch == '(') {
+					s = "(";
+					ch++;
+					while ((*ch >= ' ') && (*ch != ')')) {
+						s << *ch;
+						ch++;
+					}
+					s << ")";
+					ch++;
+				}
+				
+				while ((*ch >= ' ') && (*ch != '{' && *ch != ';' && *ch != '=')) {
+					s << *ch;
+					ch++;
+				}
+				item.Sig = TrimBoth(s);
+				item.Pos = f.DefPos.P;
+				if (f.IsProperty)
+					item.Kind = f.IsGetter ? ZItem::itGet : ZItem::itSet;
+				else
+					item.Kind = f.IsFunction ? ZItem::itFunc : ZItem::itDef;
+				item.Static = f.IsStatic;
 				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
 			}
 			

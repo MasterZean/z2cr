@@ -107,11 +107,11 @@ void EditorBar::Paint(Draw& w)
 						char n = (dif < nifl ? nextif[dif].state : 0);
 						int wd = min(2 * (dif + 1), sz.cx);
 						int x = sz.cx - wd;
-						Color cn = EditorSyntax::IfColor(n);
+						Color cn = /*DarkTheme(*/EditorSyntax::IfColor(n)/*)*/;
 						if(p == n)
 							w.DrawRect(x, y, 1, fy, cn);
 						else {
-							Color cp = EditorSyntax::IfColor(p);
+							Color cp = /*DarkTheme(*/EditorSyntax::IfColor(p)/*)*/;
 							w.DrawRect(x, y, 1, hy, cp);
 							w.DrawRect(x, y + hy, wd, 1, Nvl(cn, cp));
 							w.DrawRect(x, y + hy, 1, fy - hy, cn);
