@@ -20,7 +20,7 @@ int ItemDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	int t = r.top + (font.GetCy() - ZImg::prot().GetHeight()) / 2 + 1;
 	
 	if (m.Access == AccessType::Public)
-		x += ZImg::prot().GetWidth() + 2;
+		;//x += ZImg::prot().GetWidth() + 2;
 	else if (m.Access == AccessType::Protected) {
 		w.DrawImage(x, t, ZImg::prot());
 		x += ZImg::prot().GetWidth() + 2;
@@ -32,13 +32,13 @@ int ItemDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	
 	if (m.Kind == ZItem::itClass) {
 		Image img = ZImg::cls;
-		x -= Zx(4);
+		//x -= Zx(4);
 		w.DrawImage(x, t, img);
 		x += img.GetWidth() + Zx(2);
 	}
 	else if (m.Kind == ZItem::itNamespace) {
 		Image img = ZImg::nspace;
-		x -= Zx(4);
+		//x -= Zx(4);
 		w.DrawImage(x, t, img);
 		x += img.GetWidth() + Zx(2);
 	}
@@ -105,8 +105,24 @@ int ItemDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		x += img.GetWidth() + 2;
 	}
 	
-	w.DrawText(x, top, m.Name, font, ink);
-	x += GetTextSize(m.Name, font).cx;
+	if (m.Kind == ZItem::itNamespace) {
+		w.DrawText(x, top, "namespace ", bold, opc);
+		x += GetTextSize("namespace ", bold).cx;
+		
+		w.DrawText(x, top, m.Name, font, ink);
+		x += GetTextSize(m.Name, font).cx;
+	}
+	else if (m.Kind == ZItem::itClass) {
+		w.DrawText(x, top, "class ", bold, opc);
+		x += GetTextSize("class ", bold).cx;
+		
+		w.DrawText(x, top, m.Name, font, ink);
+		x += GetTextSize(m.Name, font).cx;
+	}
+	else {
+		w.DrawText(x, top, m.Name, font, ink);
+		x += GetTextSize(m.Name, font).cx;
+	}
 	
 	int i = m.Sig.Find('{');
 	

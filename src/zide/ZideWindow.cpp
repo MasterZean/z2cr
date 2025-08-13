@@ -265,10 +265,14 @@ void ZideWindow::SetupLast() {
 	splExplore.Show(tabs.GetCount());
 	asbAss.SetShowPaths(oShowPakPaths);
 	
-	int ii = popMethodList.Find(method);
-	if (ii != -1) {
-		popMethodList.SetCursor(ii);
+	if (method.GetCount() == 0)
 		OnSelectMethod();
+	else {
+		int ii = popMethodList.Find(method);
+		if (ii != -1) {
+			popMethodList.SetCursor(ii);
+			OnSelectMethod();
+		}
 	}
 }
 
@@ -327,6 +331,8 @@ void ZideWindow::OnEditorChange() {
 	explore.lstItems.Set(0, "aa");
 	//explore.lstItems.Set(0, "aa", RawToValue(ZItem()));
 	
+	int nsNode = 0;
+	
 	for (int i = 0; i < scaner.EntityContent.GetCount(); i++) {
 		ZEntity& ent = *scaner.EntityContent[i];
 		
@@ -339,8 +345,8 @@ void ZideWindow::OnEditorChange() {
 			if (cls.IsClass) {
 				clsItem.Kind = ZItem::itClass;
 				s = cls.Name;
-				if (cls.Namespace().ProperName.GetLength())
-					s << " (" << cls.Namespace().ProperName << ")";
+				//if (cls.Namespace().ProperName.GetLength())
+				//	s << " (" << cls.Namespace().ProperName << ")";
 				clsItem.Name = s;
 				clsItem.Namespace = cls.Namespace().Name + cls.Name;
 			}
@@ -352,7 +358,16 @@ void ZideWindow::OnEditorChange() {
 			//clsItem.Kind = /*cls.Scan.IsEnum ? ZItem::itEnum : */ZItem::itClass;
 			clsItem.Pos = cls.DefPos.P;
 			
-			int node = explore.lstItems.Add(0, Image(), cls.Name, RawToValue(clsItem));
+			int node = -1;
+			
+			if (!cls.IsClass) {
+				node = explore.lstItems.Add(0, Image(), cls.Name, RawToValue(clsItem));
+				if (nsNode > 0)
+					explore.lstItems.Open(nsNode);
+				nsNode = node;
+			}
+			else
+				node = explore.lstItems.Add(nsNode, Image(), cls.Name, RawToValue(clsItem));
 			
 			for (int j = 0; j < cls.PreVariables.GetCount(); j++) {
 				ZVariable& f = cls.PreVariables[j];
@@ -444,6 +459,8 @@ void ZideWindow::OnEditorChange() {
 			explore.lstItems.Open(node);
 		}
 	}
+	
+	explore.lstItems.Open(nsNode);
 }
 
 void ZideWindow::OnEditorCursor() {

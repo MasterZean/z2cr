@@ -373,6 +373,9 @@ void ZScanner::ScanNamespace(const ZSourcePos& p) {
 	nameSpace = &ass.FindAddNamespace(fullName);
 	nameSpace->Sources.Add(&source);
 	
+	if (nameSpace->DefPos.Pos.ptr == nullptr)
+		nameSpace->DefPos = np;
+	
 	EntityContent.Add(nameSpace);
 	
 	section = &nameSpace->Sections.Add();
