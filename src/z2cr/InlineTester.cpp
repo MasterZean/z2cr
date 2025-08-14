@@ -42,7 +42,7 @@ bool ZTest::Run() {
 			result = false;
 		
 		if (!Error.IsVoid()) {
-			LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed\n");
 			
 			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 				LOG("=================================================================================================================");
@@ -84,7 +84,7 @@ bool ZTest::Run() {
 			
 			String dump = ss;
 			if (Dumps[td] != ss) {
-				LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+				LOG(String().Cat() << Name << "(" << Line << ")" << " test failed\n");
 				
 				for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 					LOG("=================================================================================================================");
@@ -95,7 +95,7 @@ bool ZTest::Run() {
 				DUMP(dump);
 				DUMP(Dumps[td]);
 				result = false;
-				Cout() << Name << "(" << Line << ")" << " test failled because dumps\n";
+				Cout() << Name << "(" << Line << ")" << " test failed because dumps\n";
 			}
 		}
 		
@@ -111,7 +111,7 @@ bool ZTest::Run() {
 			
 			String dump = ss;
 			if (GlobalVarDef != ss) {
-				LOG(String().Cat() << Name << "(" << Line << ")" << " test failled\n");
+				LOG(String().Cat() << Name << "(" << Line << ")" << " test failed\n");
 				
 				for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 					LOG("=================================================================================================================");
@@ -122,7 +122,7 @@ bool ZTest::Run() {
 				DUMP(dump);
 				DUMP(GlobalVarDef);
 				result = false;
-				Cout() << Name << "(" << Line << ")" << " test failled because GlobalVarDef\n";
+				Cout() << Name << "(" << Line << ")" << " test failed because GlobalVarDef\n";
 			}
 		}
 		
@@ -136,7 +136,7 @@ bool ZTest::Run() {
 		aError = TrimRight(aError);
 		Error = TrimRight(Error);
 		if (Error != aError) {
-			LOG(String().Cat() << Name << "(" << Line << ")" << " test failled because found exception\n");
+			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed because found exception\n");
 			
 			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 				LOG("=================================================================================================================");
@@ -161,7 +161,7 @@ bool ZTest::Run() {
 			LOG("");
 			
 			
-			Cout() << Name << "(" << Line << ")" << " test failled because found exception\n";
+			Cout() << Name << "(" << Line << ")" << " test failed because found exception\n";
 			result = false;
 		}
 		else
@@ -232,7 +232,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 
 bool ZTest::DumpEqual(const String& have, const String& want, const String& desc) {
 	if (have != want) {
-		LOG(String().Cat() << Name << "(" << Line << ")" << " test failled: " << desc << "\n");
+		LOG(String().Cat() << Name << "(" << Line << ")" << " test failed: " << desc << "\n");
 			
 		for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 			LOG("=================================================================================================================");
@@ -257,7 +257,7 @@ bool ZTest::DumpEqual(const String& have, const String& want, const String& desc
 		LOG("");
 		
 		
-		Cout() << Name << "(" << Line << ")" << " test failled: " << desc << "\n";
+		Cout() << Name << "(" << Line << ")" << " test failed: " << desc << "\n";
 		return false;
 	}
 	

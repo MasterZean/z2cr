@@ -926,6 +926,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.2.0 (pre-alpha)";
+	static String name = "Z2CR 0.3.0 (pre-alpha)";
 	return name;
 }

@@ -122,7 +122,7 @@ bool Builder::CompileMSC(const String& src, const String& out, const String& inc
 	}
 	
 	if (tt != GetFileTitle(src) + ".cpp\r\n") {
-		Cout() << "FAILLED!\n";
+		Cout() << "FAILED!\n";
 		Cout() << tt << "\n";
 		return false;
 	}
@@ -201,7 +201,7 @@ bool Builder::BuildMSC(const String& path, const String& origPath, const Index<S
 				tt << t;
 		}
 		if (tt.GetLength()) {
-			Cout() << "FAILLED!\n";
+			Cout() << "FAILED!\n";
 			Cout() << tt << "\n";
 			result = false;
 		}
@@ -281,7 +281,7 @@ bool Builder::CompileGCC(const String& src, const String& out, const String& inc
 	
 	LocalProcess lp;
 	if (!lp.Start(cmd, env)) {
-		Cout() << "FAILLED!\n";
+		Cout() << "FAILED!\n";
 		Cout() << "Could not execute: " << cppPath << "\n";
 		return false;
 	}
@@ -293,7 +293,7 @@ bool Builder::CompileGCC(const String& src, const String& out, const String& inc
 	
 	//DUMP(lp.GetExitMessage());
 	if (!tt.IsEmpty()) {
-		Cout() << "FAILLED!\n";
+		Cout() << "FAILED!\n";
 		Cout() << tt << "\n";
 		return false;
 	}
@@ -338,7 +338,7 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 		result = false;
 	
 	if (result == false) {
-		Cout() << "BUILDING FAILLED!\n";
+		Cout() << "BUILDING FAILED!\n";
 		return result;
 	}
 	
@@ -381,7 +381,7 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 				tt << t;
 		}
 		if (tt.GetLength()) {
-			Cout() << "FAILLED!\n";
+			Cout() << "FAILED!\n";
 			Cout() << tt << "\n";
 			result = false;
 		}
@@ -439,7 +439,7 @@ bool Builder::CompileGCC(const String& src, const String& out) {
 	
 	//DUMP(lp.GetExitMessage());
 	if (!tt.IsEmpty()) {
-		Cout() << "FAILLED!\n";
+		Cout() << "FAILED!\n";
 		Cout() << tt << "\n";
 		return false;
 	}
@@ -495,7 +495,7 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 				tt << t;
 		}
 		if (tt.GetLength()) {
-			Cout() << "FAILLED!\n";
+			Cout() << "FAILED!\n";
 			Cout() << tt << "\n";
 			result = false;
 		}
