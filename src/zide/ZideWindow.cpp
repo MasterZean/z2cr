@@ -310,10 +310,16 @@ void ZideWindow::OnEditorChange() {
 		return;
 	//	Thread().Run(callback3(OutlineThread, this, editor.Get(), info->Hash));
 	
+	LoadNavigation(editor->Get());
+}
+
+void ZideWindow::LoadNavigation(const String& text) {
 	Assembly ass;
 	ZPackage pak = ZPackage(ass, "temp", LastPackage);
 	ZSource source = ZSource(pak);
-	source.LoadVirtual(editor->Get());
+	source.AddStdClassRefs();
+	source.AlignReferences();
+	source.LoadVirtual(text);
 	
 #ifdef PLATFORM_WIN32
 	PlatformType platform = PlatformType::WINDOWS;
@@ -322,14 +328,23 @@ void ZideWindow::OnEditorChange() {
 #endif
 
 	ZScanner scaner = ZScanner(source, platform);
-	scaner.Scan();
+	
+	try {
+		scaner.Scan();
+	}
+	catch (...) {
+	}
+	
+	Index<String> classes = std::move(scaner.UsingReferences);
+	for (int i = 0; i < source.ShortNameLookup.GetCount(); i++) {
+		classes.FindAdd(source.ShortNameLookup.GetKey(i));
+	}
 	
 	int cur = explore.lstItems.GetCursor();
 	Point pt = explore.lstItems.GetScroll();
 	
 	explore.lstItems.Clear();
 	explore.lstItems.Set(0, "aa");
-	//explore.lstItems.Set(0, "aa", RawToValue(ZItem()));
 	
 	int nsNode = 0;
 	
@@ -349,6 +364,8 @@ void ZideWindow::OnEditorChange() {
 				//	s << " (" << cls.Namespace().ProperName << ")";
 				clsItem.Name = s;
 				clsItem.Namespace = cls.Namespace().Name + cls.Name;
+				
+				classes.FindAdd(s);
 			}
 			else {
 				clsItem.Kind = ZItem::itNamespace;
@@ -389,7 +406,6 @@ void ZideWindow::OnEditorChange() {
 				item.Sig = s;
 				
 				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
-				//editor.words.Add(item);
 			}
 			
 			for (int j = 0; j < cls.PreConstructors.GetCount(); j++) {
@@ -421,7 +437,6 @@ void ZideWindow::OnEditorChange() {
 			
 			for (int j = 0; j < cls.PreFunctions.GetCount(); j++) {
 				ZFunction& f = cls.PreFunctions[j];
-				//if (!over.IsGenerated) {
 				
 				ZItem item;
 				
@@ -461,6 +476,12 @@ void ZideWindow::OnEditorChange() {
 	}
 	
 	explore.lstItems.Open(nsNode);
+	
+	if (cur < explore.lstItems.GetChildCount(0))
+		explore.lstItems.SetCursor(cur);
+	explore.lstItems.ScrollTo(pt);
+	
+	CSyntax::SetNames(ZideWindow::HIGHLIGHT_Z2, classes);
 }
 
 void ZideWindow::OnEditorCursor() {

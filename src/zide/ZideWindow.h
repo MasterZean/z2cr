@@ -148,6 +148,9 @@ private:
 		
 	void SetupLast();
 	
+	void LoadNavigation(const String& text);
+
+	
 	void DoMainMenu(Bar& bar);
 	
 	void DoMenuFile(Bar& bar);

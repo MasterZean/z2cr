@@ -318,6 +318,7 @@ void ZScanner::ScanUsing(const ZSourcePos& p) {
 	if (parser.Char('=')) {
 		alias = fullName;
 		fullName = parser.ExpectId();
+		UsingReferences << alias;
 	}
 	
 	fullName << ".";
@@ -325,6 +326,7 @@ void ZScanner::ScanUsing(const ZSourcePos& p) {
 	while (parser.Char('.')) {
 		name = parser.ExpectId();
 		fullName << name << ".";
+		UsingReferences << name;
 	}
 	
 	parser.ExpectEndStat();
