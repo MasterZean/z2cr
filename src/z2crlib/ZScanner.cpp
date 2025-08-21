@@ -196,7 +196,7 @@ bool ZScanner::ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isC
 		first = false;
 	} while (parser.Char(','));
 	
-	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP))
+	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP) || (funcs.GetCount() == 1 && funcs[0]->IsAlias))
 		parser.ExpectEndStat();
 	else {
 		ZSourcePos bp = parser.GetFullPos();
@@ -505,6 +505,8 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 		while (!parser.IsChar(')')) {
 			if (parser.IsId("val"))
 				parser.ReadId();
+			else if (parser.IsId("ref"))
+				parser.ReadId();
 			
 			parser.ExpectId();
 			parser.Expect(':');
@@ -529,6 +531,17 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 		parser.Error(dp.P, "property can't have both a return type (making it a getter) and parameter list (making it a setter) at the same time");
 	
 	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : /*(isProp ? curClass->PrepareProperty(name) :*/ (curClass ? curClass: nameSpace)->PrepareFunction(name));
+	
+	if (f.Name == "Clamp")
+		f.Name == "Clamp";
+	
+	if (isProp && returnType) {
+		if (parser.Char('=') || (parser.Id("get") && parser.Char('=')))
+			ScanDefAlias(f);
+	}
+	else if (isProp == false && parser.Char('='))
+		ScanDefAlias(f);
+	
 	f.IsFunction = aFunc;
 	f.DefPos = dp;
 	f.ParamPos = pp;
@@ -551,6 +564,35 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	}
 	
 	return f;
+}
+
+void ZScanner::ScanDefAlias(ZFunction& over) {
+	String alias = parser.ExpectId();
+	
+	if (alias == "null") {
+		over.IsDeleted = true;
+		return;
+	}
+	
+	String lastAlias;
+	
+	while (parser.Char('.')) {
+		if (over.AliasClass.GetCount())
+			over.AliasClass << ".";
+		over.AliasClass << lastAlias;
+		
+		lastAlias = alias;
+		alias = parser.ExpectId();
+	}
+	
+	if (over.AliasClass.GetCount())
+		over.AliasClass << ".";
+	over.AliasClass << lastAlias;
+	if (over.AliasClass.GetCount() == 0)
+		over.AliasClass = over.Bundle->Owner().Name;
+	over.AliasName = alias;
+	
+	over.IsAlias = true;
 }
 
 void ZScanner::ScanBlock() {
@@ -598,7 +640,7 @@ void ZScanner::ScanToken() {
 	}
 }
 
-int ZScanner::InterpretTrait(ZParser& parser, int flags, const String& trait) {
+int ZScanner::InterpretTrait(int flags, const String& trait) {
 	if (trait == "bindc") {
 		bindName = trait;
 		flags = flags | ZTrait::BINDC;
@@ -644,13 +686,13 @@ int ZScanner::TraitLoop() {
 	if (parser.Char2('@', '[')) {
 		
 		String trait = parser.ExpectId();
-		flags = InterpretTrait(parser, flags, trait);
+		flags = InterpretTrait(flags, trait);
 		
 		while (!parser.IsChar(']')) {
 			parser.Expect(',');
 			
 			trait = parser.ExpectId();
-			flags = InterpretTrait(parser, flags, trait);
+			flags = InterpretTrait(flags, trait);
 		}
 		
 		parser.Expect(']');

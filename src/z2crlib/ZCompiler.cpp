@@ -211,12 +211,12 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 			cpp.WriteFunctionDef(f);
 			cpp.ES();
 			
-			for (int i = 0; i < f.Dependencies.GetCount(); i++) {
-				ZEntity* entity = f.Dependencies[i];
+			for (int k = 0; k < f.Dependencies.GetCount(); k++) {
+				ZEntity* entity = f.Dependencies[k];
 				
 				if (entity->Type == EntityType::Function) {
 					cpp.NL();
-					cpp.WriteFunctionDef(*(ZFunction*)f.Dependencies[i]);
+					cpp.WriteFunctionDef(*(ZFunction*)f.Dependencies[k]);
 					cpp.ES();
 				}
 				else if (entity->Type == EntityType::Variable) {
@@ -519,6 +519,21 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 		
 		if (!node->CanAssign(ass, rs)) {
 			parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to " + ass.ToQtColor(node) + " instance without a cast");
+		}
+		
+		if (node && node->Chain) {
+			Node* child = node->Chain->First;
+			
+			StringStream ss;
+			while (child) {
+				ZTranspiler t(*this, ss);
+				t.WalkNode(child);
+				ss << " ";
+				
+				child = child->Next;
+			}
+						
+			DUMP(ss.GetResult());
 		}
 		
 		if (node->NT == NodeType::Def) {

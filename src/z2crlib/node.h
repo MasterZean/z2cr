@@ -36,8 +36,11 @@ public:
 		ForLoop,
 		Switch,
 		LoopControl,
+		Chain,
 	};
 };
+
+class ChainNode;
 
 class Node: public ObjectInfo {
 public:
@@ -45,6 +48,8 @@ public:
 	Node* Prev = nullptr;
 	Node* First = nullptr;
 	Node* Last = nullptr;
+	
+	ChainNode* Chain = nullptr;
 
 	NodeType::Type NT = NodeType::Invalid;
 	

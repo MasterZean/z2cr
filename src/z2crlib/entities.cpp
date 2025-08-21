@@ -40,8 +40,13 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 		
 		while (!parser.IsChar(')')) {
 			bool isVal = false;
+			bool isRef = false;
 			
 			if (parser.IsId("val")) {
+				parser.ReadId();
+				isVal = true;
+			}
+			else if (parser.IsId("ref")) {
 				parser.ReadId();
 				isVal = true;
 			}
@@ -133,7 +138,7 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 		csig << ER::Green << Name;
 	csig << ER::White;
 	
-	String psig = IsConstructor ? "{" : "(";
+	String lpsig = IsConstructor ? "{" : "(";
 	String psigc = IsConstructor ? "{" : "(";
 	
 	for (int i = 0; i < Params.GetCount(); i++) {
@@ -154,7 +159,7 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	dsig << psig;
 	fsig << psig;
 	csig << psigc;
-	this->psig = psig;
+	psig = lpsig;
 	
 	if (Return.Tt.Class && Return.Tt.Class != Ass().CVoid) {
 		fsig << ": ";

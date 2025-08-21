@@ -202,8 +202,8 @@ void ZResolver::ResolveVariables() {
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
 			ZClass& c = *ns.Classes[j];
 			
-			for (int j = 0; j < c.PreVariables.GetCount(); j++) {
-				ZVariable& f = c.PreVariables[j];
+			for (int k = 0; k < c.PreVariables.GetCount(); k++) {
+				ZVariable& f = c.PreVariables[k];
 				f.SetOwner(c);
 				f.Owner().Variables.Add(f.Name, &f);
 			}

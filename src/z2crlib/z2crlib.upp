@@ -1,6 +1,8 @@
 uses
 	Core;
 
+options(GCC | CLANG) -Wshadow;
+
 file
 	z2cr.h,
 	common.h,
@@ -36,5 +38,6 @@ file
 	ErrorReporter.cpp,
 	BuildMethod.h,
 	BuildMethod.cpp,
-	BuildMethod_legacy.cpp;
+	BuildMethod_legacy.cpp,
+	StopWatch.h;
 

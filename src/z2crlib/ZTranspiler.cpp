@@ -374,8 +374,8 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 		for (int j = 0; j < cls.Methods.GetCount(); j++) {
 			ZMethodBundle& d = cls.Methods[j];
 			
-			for (int j = 0; j < d.Functions.GetCount(); j++) {
-				ZFunction& f = *d.Functions[j];
+			for (int k = 0; k < d.Functions.GetCount(); k++) {
+				ZFunction& f = *d.Functions[k];
 				
 				if (f.IsExternBind())
 					continue;
@@ -730,9 +730,9 @@ void ZTranspiler::Proc(ConstNode& node, Stream& stream) {
 			if (IsNull(node.DblVal))
 				stream << "-1.79769e+308" << "\f";
 			else {
-				String s = FormatDouble(node.DblVal);
-				stream << s;
-				if (s.Find('.') == -1 && s.Find('e') == -1)
+				String z = FormatDouble(node.DblVal);
+				stream << z;
+				if (z.Find('.') == -1 && z.Find('e') == -1)
 				    stream << ".0";
 				stream << 'f';
 			}

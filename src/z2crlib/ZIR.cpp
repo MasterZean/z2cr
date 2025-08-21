@@ -1395,6 +1395,17 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	node->Function = &over;
 	node->Object = object;
 	
+	if (object) {
+		if (object->Chain == nullptr) {
+			object->Chain = chainNodes.Get();
+		}
+
+		object->Chain->AddChild(node);
+		object->Chain->Count++;
+		
+		node->Chain = object->Chain;
+	}
+	
 	node->SetType(over.Return.Tt);
 	//node->IsRef = over.Return.IsRef;
 	//node->IsEfRef = over.Return.IsEfRef;
@@ -1414,9 +1425,7 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	return node;
 }
 
-MemNode* IR::mem_var(ZEntity& mem, Node* object) {
-	//bool isThis = false;
-
+MemNode* IR::mem_var(ZEntity& mem, Node* object, bool isLocal) {
 	MemNode* node = memNodes.Get();
 	node->Mem = &mem;
 	
@@ -1436,16 +1445,29 @@ MemNode* IR::mem_var(ZEntity& mem, Node* object) {
 	else if (mem.Type == EntityType::MethodBundle) {
 		node->SetType(ass.CDef->Tt);
 	}
+	// TODO: fix
+	node->IsLocal = isLocal;
+	
+	ASSERT(node->Tt.Class);
+	
+	if (object) {
+		if (object->Chain == nullptr)
+			object->Chain = chainNodes.Get();
+		
+		object->Chain->AddChild(node);
+		object->Chain->Count++;
+		
+		node->Chain = object->Chain;
+	}
 	
 	node->Object = object;
+	
+	return node;
 	
 	/*node->LValue = n ? n->LValue : true;
 	
 	if (node->LValue && node->IsConst)
 		node->LValue = false;*/
-		
-	ASSERT(node->Tt.Class);
-	return node;
 }
 
 MemNode *IR::mem_this(ZClass& cls) {

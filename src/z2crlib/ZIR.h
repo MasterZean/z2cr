@@ -64,6 +64,7 @@ protected:
 	NodePool<ListNode> listNodes;
 	NodePool<PtrNode> ptrNodes;
 	NodePool<IndexNode> indexNodes;
+	NodePool<ChainNode> chainNodes;
 		
 public:
 	public:
@@ -121,7 +122,7 @@ public:
 	
 	ParamsNode* callfunc(ZFunction& over, Node* object);
 	
-	MemNode*   mem_var(ZEntity& var, Node* object = nullptr);
+	MemNode*   mem_var(ZEntity& var, Node* object, bool isLocal);
 	TempNode*  mem_temp(ZClass& cls, ZFunction *constructor);
 	PtrNode*   mem_ptr(Node* object);
 	IndexNode* mem_array(Node *object, Node *index);

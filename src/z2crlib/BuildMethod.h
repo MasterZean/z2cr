@@ -1,7 +1,10 @@
 #ifndef __BUILD_METHOD_HPP__
 #define __BUILD_METHOD_HPP__
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <Core/Core.h>
+#pragma GCC diagnostic pop
 
 using namespace Upp;
 

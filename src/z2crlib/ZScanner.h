@@ -59,11 +59,13 @@ protected:
 	int namespaceCount = 0;
 	ZSourcePos namespacePos;
 	
-	int InterpretTrait(ZParser& parser, int flags, const String& trait);
+	int InterpretTrait(int flags, const String& trait);
 	int TraitLoop();
 	
 	bool ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic);
 	bool ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);
+	
+	void ScanDefAlias(ZFunction& over);
 };
 
 #endif

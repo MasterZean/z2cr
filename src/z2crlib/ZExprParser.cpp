@@ -493,8 +493,7 @@ Node* ZExprParser::ParseId() {
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
 			if (Function->Params[j].Name == s) {
-				auto node = irg.mem_var(Function->Params[j]);
-				node->IsLocal = true;
+				auto node = irg.mem_var(Function->Params[j], nullptr, true);
 				return node;
 			}
 		}
@@ -503,8 +502,7 @@ Node* ZExprParser::ParseId() {
 			ZBlock& b = Function->Blocks[j];
 			for (int k = 0; k < b.Locals.GetCount(); k++)
 				if (b.Locals[k]->Name == s) {
-					auto node = irg.mem_var(*b.Locals[k]);
-					node->IsLocal = true;
+					auto node = irg.mem_var(*b.Locals[k], nullptr, true);
 					return node;
 				}
 		}
@@ -660,7 +658,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-		if (aName == "Clamped")
+		if (aName == "P1")
 			aName == "ToByte";
 		
 		if (method.IsProperty == false) {
@@ -751,7 +749,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		if (Function)
 			Function->Dependencies.FindAdd(&f);
 		
-		return irg.mem_var(f, object);
+		return irg.mem_var(f, object, false);
 	}
 	
 	return nullptr;

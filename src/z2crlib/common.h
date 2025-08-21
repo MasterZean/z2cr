@@ -1,7 +1,10 @@
 #ifndef _z2crlib_common_h_
 #define _z2crlib_common_h_
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <Core/Core.h>
+#pragma GCC diagnostic pop
 
 using namespace Upp;
 

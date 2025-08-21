@@ -1,7 +1,3 @@
-#include <Core/Core.h>
-
-using namespace Upp;
-
 #include <z2crlib/StopWatch.h>
 #include <z2crlib/ZCompiler.h>
 #include <z2cr/CommandLine.h>

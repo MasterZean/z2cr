@@ -27,9 +27,9 @@ struct DirFinder {
 	DirFinder();
 };
 
-void DirFinder::GatherDirs(Index<String>& path, const String& dir) {
-	path.FindAdd(dir);
-	FindFile ff(dir + "/*");
+void DirFinder::GatherDirs(Index<String>& path, const String& targetDir) {
+	path.FindAdd(targetDir);
+	FindFile ff(targetDir + "/*");
 	while(ff) {
 		if(ff.IsFolder())
 			GatherDirs(path, ff.GetPath());
@@ -360,9 +360,9 @@ bool BuildMethod::DetectGCC(Vector<BuildMethod>& methods) {
 						gcc.Arch = x64 == 1 ? "x64" : "x86";
 						gcc.CppVersion = 2017;
 						
-						String p = GetTempPath();
-						String pc = AppendFileName(p, "A42.cpp");
-						String po = AppendFileName(p, "A42.exe");
+						String temp = GetTempPath();
+						String pc = AppendFileName(temp, "A42.cpp");
+						String po = AppendFileName(temp, "A42.exe");
 						 
 						{
 							FileOut f(pc);

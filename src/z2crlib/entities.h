@@ -332,6 +332,11 @@ public:
 	
 	int Score = 0;
 	
+	bool IsAlias = false;
+	String AliasClass;
+	String AliasName;
+	ZFunction* Alias = nullptr;
+	
 	ZFunction(ZNamespace& aNmspace): ZEntity(aNmspace) {
 		Type = EntityType::Function;
 	}

@@ -1,6 +1,6 @@
 #include "z2cr.h"
 
-String s[] = {
+String standardClassRefs[] = {
 	"sys.core.lang.Def",
 	"sys.core.lang.Ptr",
 	"sys.core.lang.System",
@@ -34,8 +34,8 @@ String s[] = {
 };
 
 void ZSource::AddStdClassRefs() {
-	for (int i = 0; i < __countof(s); i++)
-		AddReference(s[i], Point(1, 1));
+	for (int i = 0; i < __countof(standardClassRefs); i++)
+		AddReference(standardClassRefs[i], Point(1, 1));
 }
 
 void ZSource::AddReference(const String& ns, Point pt) {

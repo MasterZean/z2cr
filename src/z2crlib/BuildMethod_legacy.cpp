@@ -222,8 +222,8 @@ bool BuildMethod::TestLib(Vector<BuildMethod>& methods, const String& arch) {
 	
 	Tools = AppendFileName(Compiler, "\\Common7\\IDE");
 	String tt = AppendFileName(Tools, "\\mspdb*.dll");
-	FindFile ff(tt);
-	if (!ff)
+	FindFile findTools(tt);
+	if (!findTools)
 		return false;
 	
 	Arch = arch;

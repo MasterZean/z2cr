@@ -39,12 +39,12 @@ bool ZParser::IsZId() {
 		return false;
 	else if (term[0] == 'g' && IsId0("goto"))
 		return false;
-	else if (term[0] == 'g' && IsId0("get"))
-		return false;
+	//else if (term[0] == 'g' && IsId0("get"))
+	//	return false;
 	else if (term[0] == 'i' && IsId0("if"))
 		return false;
-	else if (term[0] == 'i' && IsId0("in"))
-		return false;
+	//else if (term[0] == 'i' && IsId0("in"))
+	//	return false;
 	else if (term[0] == 'm' && IsId0("move"))
 		return false;
 	else if (term[0] == 'n' && IsId0("new"))
@@ -67,8 +67,8 @@ bool ZParser::IsZId() {
 		return false;
 	else if (term[0] == 's' && IsId0("static"))
 		return false;
-	else if (term[0] == 's' && IsId0("set"))
-		return false;
+	//else if (term[0] == 's' && IsId0("set"))
+	//	return false;
 	else if (term[0] == 's' && IsId0("switch"))
 		return false;
 	else if (term[0] == 't' && IsId0("this"))

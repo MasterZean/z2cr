@@ -267,4 +267,13 @@ public:
 	}
 };
 
+class ChainNode: public Node {
+public:
+	int Count = 0;
+	
+	ChainNode() {
+		NT = NodeType::Chain;
+	}
+};
+
 #endif
