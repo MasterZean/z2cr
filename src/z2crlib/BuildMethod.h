@@ -1,10 +1,16 @@
 #ifndef __BUILD_METHOD_HPP__
 #define __BUILD_METHOD_HPP__
 
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
+#endif
+
 #include <Core/Core.h>
+
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
+#endif
 
 using namespace Upp;
 

@@ -218,7 +218,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
 		
-		cpp.TranspileDefinitions(Ass.Namespaces[index], 0b11);
+		cpp.TranspileDefinitions(Ass.Namespaces[index], true);
 		
 		String dump = ss;
 		dump = TrimBoth(dump);

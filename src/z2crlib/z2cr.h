@@ -1,10 +1,16 @@
 #ifndef _z2cr_z2cr_h_
 #define _z2cr_z2cr_h_
 
+#ifndef _MSC_VER
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
+#endif
+
 #include <Core/Core.h>
+
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
+#endif
 
 using namespace Upp;
 
