@@ -521,22 +521,27 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 			parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to " + ass.ToQtColor(node) + " instance without a cast");
 		}
 		
-		if (node && node->Chain) {
+		if (node && node->Chain && node->Chain->PropCount) {
 			Node* child = node->Chain->First;
-			
-			StringStream ss;
+
 			while (child) {
-				ZTranspiler t(*this, ss);
-				t.WalkNode(child);
-				ss << " ";
-				
+				if (child->NT == NodeType::Def) {
+					DefNode *p = (DefNode*)child;
+					if (p->Function->IsProperty && p->Function->Bundle->PropSetter) {
+						p->Function = p->Function->Bundle->PropSetter;
+						p->Function->InUse = true;
+						
+						if (p->Function->ShouldEvaluate())
+							CompileFunc(*p->Function);
+						
+						f.Dependencies.FindAdd(p->Function);
+					}
+				}
 				child = child->Next;
 			}
-						
-			DUMP(ss.GetResult());
 		}
 		
-		if (node->NT == NodeType::Def) {
+		/*if (node->NT == NodeType::Def) {
 			DefNode *p = (DefNode*)node;
 			if (p->Function->IsProperty && p->Function->Bundle->PropSetter) {
 				p->Function = p->Function->Bundle->PropSetter;
@@ -550,7 +555,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 				
 				return node;
 			}
-		}
+		}*/
 		
 		return irg.attr(node, rs);
 	}

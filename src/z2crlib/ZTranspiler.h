@@ -80,6 +80,8 @@ public:
 	void Proc(PtrNode& node);
 	void Proc(IndexNode& node);
 	
+	void ProcLeftSet(Node* l, Node* r);
+	
 	void BeginNamespace(ZNamespace& ns) {
 		inNamespace = &ns;
 		firstInNamespace = true;
@@ -178,6 +180,9 @@ private:
 	bool firstInClass = true;
 	int namespaceWrites = 0;
 	int classWrites = 0;
+	
+	int tmpCount = 0;
+	int refCount = 0;
 	
 	void WriteClassAccess(AccessType access);
 	

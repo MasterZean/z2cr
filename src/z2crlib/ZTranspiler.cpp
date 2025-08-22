@@ -531,6 +531,8 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 		return;
 	
 	inFunction = &f;
+	tmpCount = 0;
+	refCount = 0;
 	
 	if (wrap) {
 		cs << " {";
@@ -837,19 +839,137 @@ void ZTranspiler::Proc(OpNode& node) {
 		cs << ')';
 	}
 	else {
-		//if (!node.Assign)
-		//	cs << "(";
-		Walk(l);
-		cs << ' ' << opss[node.Op];
-		//if (node.Assign)
-		//	cs << '=';
-		cs << ' ';
-		Walk(r);
-		//if (!node.Assign)
-		//	cs << ")";
+		if (node.Op == OpNode::opAssign && l->Chain && l->Chain->PropCount)
+			ProcLeftSet(l, r);
+		else {
+			Walk(l);
+			cs << ' ' << opss[node.Op];
+			cs << ' ';
+			Walk(r);
+		}
+
 	}
 }
 
+void ZTranspiler::ProcLeftSet(Node* l, Node* r) {
+	Node* child = l->Chain->First;
+	
+	bool state = 0;
+	DefNode* prop = nullptr;
+	int index = 0;
+	
+	String seq;
+	Vector<DefNode*> props;
+	
+	while (child) {
+		if (child->NT == NodeType::Def) {
+			DefNode *p = (DefNode*)child;
+			if (child->Next == nullptr) {
+				if (p->Function->IsProperty) {
+					if (prop == nullptr) {
+						cs << seq << "." << p->Function->BackName << "(";
+						Walk(r);
+						cs << ")";
+					}
+					else {
+						NL();
+						cs << "_tmp" << tmpCount << "." << p->Function->BackName << "(";
+						Walk(r);
+						cs << ")";
+						ES();
+						
+						NL();
+	
+						cs << "_ref" << refCount << ".";
+						cs << prop->Function->BackName;
+						cs << "(" <<  "_tmp" << tmpCount << ")";
+					}
+					
+					return;
+				}
+			}
+			else {
+				
+				if (prop)
+					NL();
+			
+				prop = p;
+				props << p;
+				
+				
+				WriteType(&p->Object->Tt);
+				refCount++;
+				cs << "& " << "_ref" << refCount;
+				cs << " = ";
+				//Walk(child->Prev);
+				if (seq.GetCount())
+					cs << seq;
+				else
+					cs << "_tmp" << tmpCount;
+				seq = "";
+				ES();
+				
+				NL();
+				
+				WriteType(&p->Tt);
+				tmpCount++;
+				cs << " " << "_tmp" << tmpCount;
+				cs << " = ";
+				cs << "_ref" << refCount << ".";
+				cs << p->Function->BackName << "()";
+					
+				ES();
+
+				state = 1;
+			}
+		}
+		else if (child->NT == NodeType::Memory) {
+			MemNode *m = (MemNode*)child;
+			if (index == 0) {
+				seq << ((MemNode*)m->Object)->Mem->BackName;
+			}
+			if (seq.GetCount())
+				seq << ".";
+			seq << m->Mem->Name;
+		}
+		else
+			ASSERT(0);
+			
+		child = child->Next;
+		index++;
+	}
+		
+	int startTmp = tmpCount;
+	int startRef = refCount;
+	
+	if (state == 1) {
+		for (int i = props.GetCount() - 1; i >= 0; i--) {
+			NL();
+			
+			if (seq.GetCount()) {
+				cs << "_tmp" << startTmp << ".";
+				cs << seq;
+				cs << " = ";
+				Walk(r);
+				ES();
+				
+				NL();
+				seq = "";
+			}
+			
+			cs << "_ref" << startRef << ".";
+			cs << props[i]->Function->BackName;
+			cs << "(" <<  "_tmp" << startTmp << ")";
+			
+			if (i > 0)
+				ES();
+			
+			startTmp--;
+			startRef--;
+		}
+	}
+}
+	
 void ZTranspiler::Proc(UnaryOpNode& node) {
 	Node *f = node.OpA;
 	ASSERT(f);

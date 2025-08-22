@@ -354,6 +354,11 @@ CONSOLE_APP_MAIN {
 		
 		String stdLibPath = exeDir + NativePath("source\\stdlib\\");
 		
+		if (!ass.LoadPackage(stdLibPath + "bind.c")) {
+			SetExitCode(BuildMethod::ErrorCode(-1));
+			return;
+		}
+		
 		if (!ass.LoadPackage(stdLibPath + "sys.core")) {
 			SetExitCode(BuildMethod::ErrorCode(-1));
 			return;

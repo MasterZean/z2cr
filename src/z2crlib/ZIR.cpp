@@ -1143,8 +1143,7 @@ Node* IR::minus(Node* node) {
 				node->IntVal = -node->IntVal;
 			else
 				node->DblVal = -node->DblVal;
-			// TODO: fix
-			//return node;
+			return node;
 		}
 		
 		UnaryOpNode* minus = unaryOpNodes.Get();
@@ -1160,6 +1159,7 @@ Node* IR::minus(Node* node) {
 	}
 	else
 		ASSERT(0);//return GetOp(Over, strops[13], node, ass, this, *Comp, Point(1, 1));
+	
 	return nullptr;
 }
 
@@ -1402,6 +1402,8 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 
 		object->Chain->AddChild(node);
 		object->Chain->Count++;
+		if (over.IsProperty)
+			object->Chain->PropCount++;
 		
 		node->Chain = object->Chain;
 	}
