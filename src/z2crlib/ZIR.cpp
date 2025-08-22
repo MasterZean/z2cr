@@ -1138,7 +1138,8 @@ Node* IR::minus(Node* node) {
 	if (ass.IsInteger(node->Tt) || ass.IsFloat(node->Tt)) {
 		if (node->NT == NodeType::UnaryOp && ((UnaryOpNode*)node)->Op == OpNode::opMinus)
 			return ((UnaryOpNode*)node)->OpA;
-		if (node->IsCT && node->NT != NodeType::List) {
+
+		if (!node->IsLiteral && node->IsCT && node->NT != NodeType::List) {
 			if (ass.IsSignedInt(node->Tt))
 				node->IntVal = -node->IntVal;
 			else
@@ -1436,6 +1437,7 @@ MemNode* IR::mem_var(ZEntity& mem, Node* object, bool isLocal) {
 		node->SetType(v.I.Tt);
 		node->IsAddressable = true;
 		node->IsConst = v.IsConst;
+		node->IsLiteral = v.IsConst;
 		
 		if (v.IsConst && v.Value) {
 			node->IntVal = v.Value->IntVal;

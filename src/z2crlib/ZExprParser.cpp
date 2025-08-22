@@ -487,7 +487,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "BlendMode")
+	if (s == "Offset")
 		s == "Test";
 	
 	if (Function) {

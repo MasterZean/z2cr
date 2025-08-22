@@ -2,6 +2,10 @@
 #include <z2crlib/ZTranspiler.h>
 #include <z2crlib/ZResolver.h>
 
+inline bool invalidClass(ZClass* cls, Assembly& ass) {
+	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
+}
+
 bool ZCompiler::Compile() {
 	irg.FoldConstants = FoldConstants;
 	
@@ -761,10 +765,6 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	Node* node = compileVarDec(v, parser, vp, &f);
 	v.I.Tt.Class->SetInUse();
 	return node;
-}
-
-inline bool invalidClass(ZClass* cls, Assembly& ass) {
-	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
 }
 
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
