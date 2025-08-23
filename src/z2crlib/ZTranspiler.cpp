@@ -867,7 +867,21 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r) {
 			if (child->Next == nullptr) {
 				if (p->Function->IsProperty) {
 					if (prop == nullptr) {
-						cs << seq << "." << p->Function->BackName << "(";
+						if (seq.GetCount() == 0 && p->Object) {
+							if (p->Object->NT == NodeType::Memory) {
+								auto ms = (MemNode*)p->Object;
+								if (ms->IsThis)
+									seq << "(*this)";
+								else
+									seq << ms->Mem->BackName;
+							}
+							else
+								ASSERT(0);
+						}
+						if (seq.GetCount())
+							cs << seq << ".";
+						
+						cs << p->Function->BackName << "(";
 						Walk(r);
 						cs << ")";
 					}
@@ -889,7 +903,6 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r) {
 				}
 			}
 			else {
-				
 				if (prop)
 					NL();
 			
@@ -926,7 +939,15 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r) {
 		else if (child->NT == NodeType::Memory) {
 			MemNode *m = (MemNode*)child;
 			if (index == 0) {
-				seq << ((MemNode*)m->Object)->Mem->BackName;
+				if (m->Object->NT == NodeType::Memory) {
+					auto ms = (MemNode*)m->Object;
+					if (ms->IsThis)
+						seq << "(*this)";
+					else
+						seq << ms->Mem->BackName;
+				}
+				else
+					ASSERT(0);
 			}
 			if (seq.GetCount())
 				seq << ".";

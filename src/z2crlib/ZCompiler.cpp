@@ -545,22 +545,6 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 			}
 		}
 		
-		/*if (node->NT == NodeType::Def) {
-			DefNode *p = (DefNode*)node;
-			if (p->Function->IsProperty && p->Function->Bundle->PropSetter) {
-				p->Function = p->Function->Bundle->PropSetter;
-				p->Function->InUse = true;
-				p->Params.Add(rs);
-				
-				if (p->Function->ShouldEvaluate())
-					CompileFunc(*p->Function);
-				
-				f.Dependencies.FindAdd(p->Function);
-				
-				return node;
-			}
-		}*/
-		
 		return irg.attr(node, rs);
 	}
 

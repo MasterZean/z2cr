@@ -487,7 +487,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Offset")
+	if (s == "IsProp")
 		s == "Test";
 	
 	if (Function) {
@@ -658,7 +658,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-		if (aName == "P1")
+		if (aName == "IsProp")
 			aName == "ToByte";
 		
 		if (method.IsProperty == false) {

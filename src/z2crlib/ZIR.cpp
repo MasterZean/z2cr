@@ -1397,9 +1397,8 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	node->Object = object;
 	
 	if (object) {
-		if (object->Chain == nullptr) {
+		if (object->Chain == nullptr)
 			object->Chain = chainNodes.Get();
-		}
 
 		object->Chain->AddChild(node);
 		object->Chain->Count++;
@@ -1407,6 +1406,13 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 			object->Chain->PropCount++;
 		
 		node->Chain = object->Chain;
+	}
+	else if (over.IsProperty) {
+		if (node->Chain == nullptr)
+			node->Chain = chainNodes.Get();
+		node->Chain->AddChild(node);
+		node->Chain->Count++;
+		node->Chain->PropCount++;
 	}
 	
 	node->SetType(over.Return.Tt);
