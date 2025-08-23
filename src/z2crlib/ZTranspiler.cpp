@@ -840,7 +840,7 @@ void ZTranspiler::Proc(OpNode& node) {
 	}
 	else {
 		if (node.Op == OpNode::opAssign && l->Chain && l->Chain->PropCount)
-			ProcLeftSet(l, r);
+			ProcLeftSet(l, r, node.ExtraOp);
 		else {
 			Walk(l);
 			cs << ' ' << opss[node.Op];
@@ -851,7 +851,7 @@ void ZTranspiler::Proc(OpNode& node) {
 	}
 }
 
-void ZTranspiler::ProcLeftSet(Node* l, Node* r) {
+void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp) {
 	Node* child = l->Chain->First;
 	
 	bool state = 0;
@@ -970,7 +970,10 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r) {
 			if (seq.GetCount()) {
 				cs << "_tmp" << startTmp << ".";
 				cs << seq;
-				cs << " = ";
+				cs << " ";
+				if (extraOp != OpNode::Type::opNotSet)
+					cs << opss[extraOp];
+				cs << "= ";
 				Walk(r);
 				ES();
 				
@@ -1080,18 +1083,18 @@ void ZTranspiler::Proc(MemNode& node) {
 	
 	if (node.IsLocal == false && node.IsParam == false && node.Mem->InClass == false) {
 		if (node.Mem->InClass) {
-			if (&node.Mem->Namespace() != inNamespace)
+			//if (&node.Mem->Namespace() != inNamespace)
 				cs << node.Mem->Namespace().BackName << "::";
 			cs << node.Mem->Owner().BackName << "::";
 		}
 		else {
-			if (&node.Mem->Namespace() != inNamespace)
+			//if (&node.Mem->Namespace() != inNamespace)
 				cs << node.Mem->Owner().BackName << "::";
 		}
 		cs << node.Mem->BackName;
 	}
 	else if (node.Mem->InClass == true && node.Mem->IsStatic) {
-		if (&node.Mem->Namespace() != inNamespace)
+		//if (&node.Mem->Namespace() != inNamespace)
 			cs << node.Mem->Namespace().BackName << "::";
 		cs << node.Mem->Owner().BackName << "::";
 		cs << node.Mem->BackName;
@@ -1355,12 +1358,12 @@ void ZTranspiler::Proc(TempNode& node) {
 	ZClass& cls = *node.Tt.Class;
 	
 	if (cls.CoreSimple) {
-		if (&cls.Namespace() != inNamespace)
+		//if (&cls.Namespace() != inNamespace)
 			cs << cls.Namespace().BackName << "::";
 		cs << cls.Name << "::" << node.Constructor->BackName << '(';
 	}
 	else {
-		if (&cls.Namespace() != inNamespace)
+		//if (&cls.Namespace() != inNamespace)
 			cs << cls.Namespace().BackName << "::";
 		if (node.Constructor->IsConstructor == 1)
 			cs << cls.Name;

@@ -56,6 +56,8 @@ public:
 	};
 	
 	Type Op = opNotSet;
+	Type ExtraOp = opNotSet;
+	
 	bool Construct = false;
 	int Move = 0;
 	bool Assign = false;

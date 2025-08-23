@@ -513,7 +513,26 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 	auto pp = parser.GetFullPos();
 	Node* node = ep.Parse();
 	
-	if (parser.Char('=')) {
+	bool assign = true;
+	bool useOp = true;
+	OpNode::Type op = OpNode::Type::opNotSet;
+	
+	if (parser.Char('='))
+		useOp = false;
+	else if (parser.Char2('+', '='))
+		op = OpNode::Type ::opAdd;
+	else if (parser.Char2('-', '='))
+		op = OpNode::Type ::opSub;
+	else if (parser.Char2('*', '='))
+		op = OpNode::Type ::opMul;
+	else if (parser.Char2('/', '='))
+		op = OpNode::Type ::opDiv;
+	else if (parser.Char2('%', '='))
+		op = OpNode::Type ::opMod;
+	else
+		assign = false;
+	
+	if (assign) {
 		Node* rs = ep.Parse();
 		
 		if (node->IsAddressable == false && node->IsEffLValue == false)
@@ -545,7 +564,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 			}
 		}
 		
-		return irg.attr(node, rs);
+		return irg.attr(node, rs, op);
 	}
 
 	return node;

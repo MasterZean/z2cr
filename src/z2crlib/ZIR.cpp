@@ -1572,7 +1572,7 @@ LocalNode* IR::local(ZVariable& v) {
 	return var;
 }
 
-Node* IR::attr(Node* left, Node* right) {
+Node* IR::attr(Node* left, Node* right, OpNode::Type extraOp) {
 	OpNode* node = opNodes.Get();
 	
 	if (left->IsRef)
@@ -1583,6 +1583,7 @@ Node* IR::attr(Node* left, Node* right) {
 	node->OpA = left;
 	node->OpB = right;
 	node->Op = OpNode::opAssign;
+	node->ExtraOp = extraOp;
 	node->SetType(left->Tt);
 	node->HasSe = true;
 	node->IsConst = left->IsConst;
