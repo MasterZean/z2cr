@@ -65,6 +65,8 @@ public:
 	Node* OpA = nullptr;
 	Node* OpB = nullptr;
 	Node* OpC = nullptr;
+	
+	Node* ExtraNode = nullptr;
 
 	OpNode() {
 		NT = NodeType::BinaryOp;

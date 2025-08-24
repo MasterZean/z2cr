@@ -50,6 +50,9 @@ public:
 	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos* pos = nullptr);
 	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos);
 	
+	Node *ResolveOpOverload(Node *left, Node *right, int op, const Point& opp);
+
+	
 private:
 	Assembly& ass;
 	ZParser& parser;
@@ -61,11 +64,7 @@ private:
 	static bool initialized;
 	
 	int GetPriority(int& op, bool& opc);
-	
-	void IncompatOp(const ZSource& src, Point& p, const String& op, Node* left, Node* right) {
-		ER::ErrIncompatOp(src, p, op, ass.ToQtColor(&left->Tt), ass.ToQtColor(&right->Tt));
-	}
-	
+
 	void getParams(Vector<Node*>& params, char end = ')');
 	
 	static Point OPS[256];

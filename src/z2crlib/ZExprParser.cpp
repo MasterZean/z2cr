@@ -86,9 +86,6 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 		if (opc == true)
 			parser.GetChar();
 		parser.Spaces();
-	
-		//if (op == 9 && (parser.IsChar(',') || parser.IsChar(';')))
-		//	return left;
 			
 		right = ParseAtom();
 		
@@ -105,17 +102,8 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 		
 		Node* r = irg.op(left, right, OpNode::Type(op), opp);
 		
-		if (r == nullptr) {
-			r = GetOpOverloadStatic(left, right, op, opp);
-			if (r == nullptr)
-				r = GetOpOverloadStatic(right, left, op, opp);
-			if (r == nullptr)
-				r = GetOpOverload(left, right, op, opp);
-			if (r == nullptr)
-				r = GetOpOverload(right, left, op, opp);
-			if (r == nullptr)
-				IncompatOp(parser.Source(), opp, opss[op], left, right);
-		}
+		if (r == nullptr)
+			r = ResolveOpOverload(left, right, op, opp);
 		
 		lastValid = r;
 		backupPoint = parser.GetPos();
@@ -123,6 +111,28 @@ Node* ZExprParser::ParseBin(int prec, Node* left, CParser::Pos& backupPoint) {
 		ASSERT(r->Tt.Class);
 		left = r;
 	}
+}
+
+Node* ZExprParser::ResolveOpOverload(Node* left, Node* right, int op, const Point& opp) {
+	Node* r = GetOpOverloadStatic(left, right, op, opp);
+	
+	if (r == nullptr)
+		r = GetOpOverloadStatic(right, left, op, opp);
+	else
+		return r;
+	if (r == nullptr)
+		r = GetOpOverload(left, right, op, opp);
+	else
+		return r;
+	if (r == nullptr)
+		r = GetOpOverload(right, left, op, opp);
+	else
+		return r;
+	
+	if (r == nullptr)
+		ER::ErrIncompatOp(parser.Source(), opp, opss[op], ass.ToQtColor(&left->Tt), ass.ToQtColor(&right->Tt));
+			
+	return r;
 }
 
 Node* ZExprParser::GetOpOverload(Node* left, Node* right, int op, const Point& opp) {

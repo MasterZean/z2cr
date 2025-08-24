@@ -80,7 +80,7 @@ public:
 	void Proc(PtrNode& node);
 	void Proc(IndexNode& node);
 	
-	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp);
+	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra);
 	
 	void BeginNamespace(ZNamespace& ns) {
 		inNamespace = &ns;

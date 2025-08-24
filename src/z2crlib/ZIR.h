@@ -141,7 +141,7 @@ public:
 	
 	LocalNode* local(ZVariable& v);
 	
-	Node* attr(Node* left, Node* right, OpNode::Type extraOp = OpNode::Type::opNotSet);
+	Node* attr(Node* left, Node* right, OpNode::Type extraOp = OpNode::Type::opNotSet, Node* extraNode = nullptr);
 	ListNode* list(Node *node);
 	
 	Node* op(Node* left, Node* right, OpNode::Type op, const Point& p) {

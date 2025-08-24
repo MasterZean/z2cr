@@ -2,6 +2,8 @@
 #include <z2crlib/ZTranspiler.h>
 #include <z2crlib/ZResolver.h>
 
+extern String opss[];
+
 inline bool invalidClass(ZClass* cls, Assembly& ass) {
 	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
 }
@@ -517,6 +519,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 	bool useOp = true;
 	OpNode::Type op = OpNode::Type::opNotSet;
 	
+	auto opp = parser.GetPoint();
 	if (parser.Char('='))
 		useOp = false;
 	else if (parser.Char2('+', '='))
@@ -534,6 +537,14 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 	
 	if (assign) {
 		Node* rs = ep.Parse();
+		Node* opAssignTemp = nullptr;
+		
+		if (op != OpNode::Type::opNotSet) {
+			opAssignTemp = irg.op(node, rs, OpNode::Type(op), opp);
+		
+			if (opAssignTemp == nullptr)
+				opAssignTemp = ep.ResolveOpOverload(node, rs, op, opp);
+		}
 		
 		if (node->IsAddressable == false && node->IsEffLValue == false)
 			parser.Error(pp.P, "left side of assignment is not a L-value");
@@ -564,7 +575,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 			}
 		}
 		
-		return irg.attr(node, rs, op);
+		return irg.attr(node, rs, op, opAssignTemp);
 	}
 
 	return node;

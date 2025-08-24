@@ -840,7 +840,7 @@ void ZTranspiler::Proc(OpNode& node) {
 	}
 	else {
 		if (node.Op == OpNode::opAssign && l->Chain && l->Chain->PropCount)
-			ProcLeftSet(l, r, node.ExtraOp);
+			ProcLeftSet(l, r, node.ExtraOp, node.ExtraNode);
 		else {
 			Walk(l);
 			cs << ' ' << opss[node.Op];
@@ -851,7 +851,7 @@ void ZTranspiler::Proc(OpNode& node) {
 	}
 }
 
-void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp) {
+void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra) {
 	Node* child = l->Chain->First;
 	
 	bool state = 0;
@@ -979,11 +979,62 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp) {
 				
 				NL();
 				seq = "";
+				extraOp = OpNode::Type::opNotSet;
 			}
+			/*else {
+				cs << "_tmp" << startTmp;
+				cs << " ";
+				//if (extraOp != OpNode::Type::opNotSet)
+				//	cs << opss[extraOp];
+				cs << "= ";
+				Walk(r);
+				ES();
+				
+				NL();
+			}*/
 			
 			cs << "_ref" << startRef << ".";
 			cs << props[i]->Function->BackName;
-			cs << "(" <<  "_tmp" << startTmp << ")";
+			cs << "(";
+			
+			if (i == props.GetCount() - 1 && extraOp != OpNode::Type::opNotSet) {
+				if (extraOp != OpNode::Type::opNotSet) {
+					if (extra && extra->NT == NodeType::Def) {
+						cs << "_tmp" << startTmp << ".";
+						
+						DefNode* def = (DefNode*)extra;
+						ZFunction& f = *def->Function;
+	
+						if (f.Trait.Flags & ZTrait::BINDC)
+							cs << "::";
+						else if (f.IsStatic) {
+							cs << f.Namespace().BackName << "::";
+							if (f.InClass)
+								cs << f.Owner().BackName << "::";
+						}
+						
+						cs << f.BackName;
+						cs << '(';
+						Walk(r);
+						cs << ")";
+					}
+					else {
+						cs << "_tmp" << startTmp;
+						cs << " ";
+						cs << opss[extraOp];
+					}
+				}
+				else {
+					cs << "_tmp" << startTmp;
+					cs << " ";
+					Walk(r);
+				}
+			}
+			else {
+				cs << "_tmp" << startTmp;
+			}
+				
+			cs << ")";
 			
 			if (i > 0)
 				ES();
