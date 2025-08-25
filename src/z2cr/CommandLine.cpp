@@ -99,6 +99,8 @@ bool CommandLine::Read() {
 				EntryFile = NormalizePath(commands[i]);
 				if (FileExists(EntryFile))
 					AddInputFile(EntryFile);
+				else
+					Cout() << "Could not open file: \n\t" << EntryFile << "\n";
 			}
 			else {
 				Cout() << name << " requires that '-mainfile' parameter be followed by a valid package path" << '\n';

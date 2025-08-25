@@ -497,7 +497,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "IsProp")
+	if (s == "value")
 		s == "Test";
 	
 	if (Function) {

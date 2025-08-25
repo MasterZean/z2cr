@@ -843,12 +843,28 @@ void ZTranspiler::Proc(OpNode& node) {
 			ProcLeftSet(l, r, node.ExtraOp, node.ExtraNode);
 		else {
 			Walk(l);
-			cs << ' ' << opss[node.Op];
+			cs << ' ';
+			if (node.ExtraOp != OpNode::Type::opNotSet)
+				cs << opss[node.ExtraOp];
+			cs << opss[node.Op];
 			cs << ' ';
 			Walk(r);
 		}
 
 	}
+}
+
+void ProcLeftSet(String& cs, Node* n) {
+	if (n->NT == NodeType::Memory) {
+		auto mn = (MemNode*)n;
+		
+		if (mn->IsThis)
+			cs << "(*this)";
+		else
+			cs << mn->Mem->BackName;
+	}
+	else
+		ASSERT(0);
 }
 
 void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra) {
@@ -869,11 +885,18 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 					if (prop == nullptr) {
 						if (seq.GetCount() == 0 && p->Object) {
 							if (p->Object->NT == NodeType::Memory) {
-								auto ms = (MemNode*)p->Object;
+								/*auto ms = (MemNode*)p->Object;
 								if (ms->IsThis)
 									seq << "(*this)";
 								else
-									seq << ms->Mem->BackName;
+									seq << ms->Mem->BackName;*/
+								::ProcLeftSet(seq, p->Object);
+							}
+							else if (p->Object->NT == NodeType::Index) {
+								auto as = (IndexNode*)p->Object;
+								seq << "[";
+								Walk(as->Index);
+								seq << "]";
 							}
 							else
 								ASSERT(0);
@@ -940,11 +963,16 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 			MemNode *m = (MemNode*)child;
 			if (index == 0) {
 				if (m->Object->NT == NodeType::Memory) {
-					auto ms = (MemNode*)m->Object;
+					/*auto ms = (MemNode*)m->Object;
 					if (ms->IsThis)
 						seq << "(*this)";
 					else
-						seq << ms->Mem->BackName;
+						seq << ms->Mem->BackName;*/
+					::ProcLeftSet(seq, m->Object);
+				}
+				else if (m->Object->NT == NodeType::Index) {
+					auto as = (IndexNode*)m->Object;
+					seq << "UW";
 				}
 				else
 					ASSERT(0);

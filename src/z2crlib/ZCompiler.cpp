@@ -546,8 +546,8 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 				opAssignTemp = ep.ResolveOpOverload(node, rs, op, opp);
 		}
 		
-		if (node->IsAddressable == false && node->IsEffLValue == false)
-			parser.Error(pp.P, "left side of assignment is not a L-value");
+		//if (node->IsAddressable == false && node->IsEffLValue == false)
+		//	parser.Error(pp.P, "left side of assignment is not a L-value");
 		if (node->IsConst)
 			parser.Error(pp.P, "can't assign to readonly " + ass.ToQtColor(node) + " instance");
 		
@@ -783,6 +783,9 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
+	
+	if (v.Name == "affixes")
+		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
 		auto ti = ZExprParser::ParseType(*this, parser, &v.Owner());
