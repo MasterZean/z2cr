@@ -81,6 +81,7 @@ public:
 	void Proc(IndexNode& node);
 	
 	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra);
+	void ProcLeftSet(String& cs, Node *n);
 	
 	void BeginNamespace(ZNamespace& ns) {
 		inNamespace = &ns;
@@ -114,6 +115,15 @@ public:
 				EL();
 				
 				indent++;
+				
+				// todo: fix
+				if (inClass == ass.CString) {
+					cs << "\tpublic:" << "\n";
+					cs << "\t\tString(): text((uint8*)\"\") {}" << "\n";
+					cs << "\t\tString(const char *aTxt): text((uint8*)aTxt) {}" << "\n";
+					cs << "\tpublic:" << "\n";
+					cs << "\t\tuint8 *text = nullptr;" << "\n";
+				}
 				
 				firstInClass = false;
 			}

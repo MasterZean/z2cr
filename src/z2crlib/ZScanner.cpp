@@ -248,6 +248,9 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	ZSourcePos dp = parser.GetFullPos();
 	String name = parser.ExpectId();
 	
+	if (name == "String")
+		name == "String";
+	
 	curClass = &nameSpace->PrepareClass(name);
 	curClass->BackName = name;
 	curClass->DefPos = dp;

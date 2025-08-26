@@ -185,6 +185,7 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	ASSERT(ns.Name.EndsWith("."));
 	
 	int type = Classes.GetCount();
+	LOG(String().Cat() << "Adding core class " << ns.Name << name << " Index " << type);
 	ZClass& typeCls = Classes.Add(ns.Name + name, ZClass(ns));
 		
 	//typeCls.Scan.Namespace = ns;
@@ -209,7 +210,34 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 
 ZClass& Assembly::AddClass(ZClass& cls) {
 	int type = Classes.GetCount();
-	ZClass& typeCls = Classes.Add(cls.Namespace().Name + cls.Name, cls);
+	String name = cls.Namespace().Name + cls.Name;
+	int index = Classes.Find(name);
+	if (index != -1 && name != "sys.core.lang.String") {
+		index = -1;
+	}
+	
+	if (index != -1) {
+		//cls.IsResolved = true;
+		name == "aaa";
+	}
+	else
+		LOG(String().Cat() << "Adding class " << name);
+	if (index != -1) {
+		ZClass& exCls = Classes[index];
+		
+		for (int i = 0; i < cls.PreVariables.GetCount(); i++)
+			exCls.PreVariables.Add(cls.PreVariables[i]);
+		for (int i = 0; i < exCls.PreVariables.GetCount(); i++)
+			exCls.PreVariables[i].SetOwner(exCls);
+		
+		return exCls;
+	}
+
+	ZClass& typeCls = (index != -1) ? Classes[index]: Classes.Add(cls.Namespace().Name + cls.Name, cls);
+	
+	if (name == "sys.core.lang.String")
+		if (Classes.GetCount() != type)
+			name == "sys.core.lang.String";
 	
 	typeCls.ParamType = &typeCls;
 	typeCls.Index = type;

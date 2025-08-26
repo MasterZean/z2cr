@@ -358,7 +358,7 @@ Node* ZExprParser::ParseAtom() {
 				parser.Expect(']');
 				
 				if (/*exp->Tt.Class == ass.CPtr || */exp->Tt.Class->TBase == ass.CRaw) {
-					Node* temp = irg.mem_array(exp, index);
+					Node* temp = irg.mem_index(exp, index);
 					if (temp == nullptr)
 						parser.Error(p, "expression of type '" + ass.TypeToColor(exp->Tt) + "' does not have a '["
 							+ ass.TypeToColor(index->Tt) + "]' operator defined");

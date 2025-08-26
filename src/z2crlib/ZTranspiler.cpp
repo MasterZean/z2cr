@@ -199,6 +199,7 @@ void ZTranspiler::WriteType(ObjectType* tt) {
 	else if (tt->Class->CoreSimple)
 		cs << tt->Class->BackName;
 	else {
+		cs << "/* auto */";
 		cs << tt->Class->Namespace().BackName << "::";
 		cs << tt->Class->BackName;
 	}
@@ -225,6 +226,11 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 		if (!CanAccess(v.Access, accessFlags))
 			continue;
 
+		// TODO: fix
+		if (&ns == ass.CString)
+			if (v.Name == "text")
+				continue;
+		
 		ASSERT(v.I.Tt.Class);
 		ASSERT(v.Value);
 		
@@ -854,7 +860,10 @@ void ZTranspiler::Proc(OpNode& node) {
 	}
 }
 
-void ProcLeftSet(String& cs, Node* n) {
+void ZTranspiler::ProcLeftSet(String& cs, Node* n) {
+	if (cs.GetCount())
+		cs << ".";
+	
 	if (n->NT == NodeType::Memory) {
 		auto mn = (MemNode*)n;
 		
@@ -863,6 +872,17 @@ void ProcLeftSet(String& cs, Node* n) {
 		else
 			cs << mn->Mem->BackName;
 	}
+	else if (n->NT == NodeType::Def) {
+		auto dn = (DefNode*)n;
+		cs << dn->Function->BackName;
+	}
+	/*else if (n->NT == NodeType::Index) {
+		auto in = (IndexNode*)n;
+		ProcLeftSet(cs, in->Object);
+		cs << "[";
+		Walk(in->Index);
+		cs << "]";
+	}*/
 	else
 		ASSERT(0);
 }
@@ -885,12 +905,7 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 					if (prop == nullptr) {
 						if (seq.GetCount() == 0 && p->Object) {
 							if (p->Object->NT == NodeType::Memory) {
-								/*auto ms = (MemNode*)p->Object;
-								if (ms->IsThis)
-									seq << "(*this)";
-								else
-									seq << ms->Mem->BackName;*/
-								::ProcLeftSet(seq, p->Object);
+								ProcLeftSet(seq, p->Object);
 							}
 							else if (p->Object->NT == NodeType::Index) {
 								auto as = (IndexNode*)p->Object;
@@ -901,10 +916,11 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 							else
 								ASSERT(0);
 						}
-						if (seq.GetCount())
-							cs << seq << ".";
+
+						ProcLeftSet(seq, p);
 						
-						cs << p->Function->BackName << "(";
+						cs << seq;
+						cs << "(";
 						Walk(r);
 						cs << ")";
 					}
@@ -960,26 +976,18 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 			}
 		}
 		else if (child->NT == NodeType::Memory) {
-			MemNode *m = (MemNode*)child;
-			if (index == 0) {
-				if (m->Object->NT == NodeType::Memory) {
-					/*auto ms = (MemNode*)m->Object;
-					if (ms->IsThis)
-						seq << "(*this)";
-					else
-						seq << ms->Mem->BackName;*/
-					::ProcLeftSet(seq, m->Object);
-				}
-				else if (m->Object->NT == NodeType::Index) {
-					auto as = (IndexNode*)m->Object;
-					seq << "UW";
-				}
-				else
-					ASSERT(0);
-			}
-			if (seq.GetCount())
-				seq << ".";
-			seq << m->Mem->Name;
+			ProcLeftSet(seq, child);
+		}
+		else if (child->NT == NodeType::Index) {
+			auto in = (IndexNode*)child;
+			//ProcLeftSet(seq, in->Object);
+			
+			StringStream ss;
+			ZTranspiler z(comp, ss);
+			seq << "[";
+			z.Walk(in->Index);
+			seq << ss.GetResult();
+			seq << "]";
 		}
 		else
 			ASSERT(0);
@@ -1009,17 +1017,6 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 				seq = "";
 				extraOp = OpNode::Type::opNotSet;
 			}
-			/*else {
-				cs << "_tmp" << startTmp;
-				cs << " ";
-				//if (extraOp != OpNode::Type::opNotSet)
-				//	cs << opss[extraOp];
-				cs << "= ";
-				Walk(r);
-				ES();
-				
-				NL();
-			}*/
 			
 			cs << "_ref" << startRef << ".";
 			cs << props[i]->Function->BackName;
@@ -1432,6 +1429,8 @@ void ZTranspiler::Proc(LoopControlNode& node) {
 }
 
 void ZTranspiler::Proc(TempNode& node) {
+	//if (node.Constructor == nullptr)
+	//	return;
 	ASSERT(node.Constructor);
 	
 	ZClass& cls = *node.Tt.Class;

@@ -20,7 +20,13 @@ String PadSp(int max) {
 
 bool ZResolver::Resolve() {
 	ResolveNamespaces();
+	
+	//ResolveClass(*ass.CString, ass.CString->Owner());
 	ResolveClasses();
+			
+	for (int i = 0; i < ass.SourceLookup.GetCount(); i++)
+		ass.SourceLookup[i]->AlignReferences();
+	
 	ResolveFunctions();
 	ResolveVariables();
 	
@@ -91,29 +97,58 @@ void ZResolver::ResolveClasses() {
 		
 		for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
 			ZClass& c = ns.PreClasses[j];
-			c.GenerateSignatures();
 			
-			ZClass& cls = ass.AddClass(c);
-			ns.Classes.Add(cls.Name, &cls);
+			LOG(String().Cat() << "NS PreClass :" << ns.Name << c.Name);
 			
-			for (int k = 0; k < ns.Sources.GetCount(); k++) {
-				ns.Sources[k]->AddReference(cls.Namespace().Name + cls.Name, Point(1, 1));
-			}
+			ResolveClass(c, ns);
 		}
 	}
+}
+
+void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
+	if (c.Name == "String")
+		c.Name == "String";
 	
-	for (int i = 0; i < ass.SourceLookup.GetCount(); i++)
-		ass.SourceLookup[i]->AlignReferences();
+	if (c.IsResolved)
+		return;
+
+	c.GenerateSignatures();
+	
+	if (c.Name == "String") {
+		DUMP(c.PreVariables.GetCount());
+		DUMP(ass.CString->PreVariables.GetCount());
+	}
+	
+	ZClass& cls = ass.AddClass(c);
+	
+	if (cls.IsResolved)
+		return;
+	
+	c.IsResolved = true;
+	
+	if (ns.Classes.Find(cls.Name) == -1)
+		ns.Classes.Add(cls.Name, &cls);
+	//LOG(String().Cat() << "Resolving :" << ns.Name << c.Name << " Index " << cls.Index);
+	LOG(String().Cat() << "Resolving :" << ns.Name << cls.Name << " Index " << cls.Index);
+	
+	for (int k = 0; k < ns.Sources.GetCount(); k++) {
+		ns.Sources[k]->AddReference(cls.Namespace().Name + cls.Name, Point(1, 1));
+	}
 }
 
 void ZResolver::ResolveFunctions() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
 		ZNamespace& ns = ass.Namespaces[i];
+		LOG(String().Cat() << "Resolving deep namespace: " << ns.ProperName);
 		ResolveNamespaceMembers(ns);
 				
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
 			ZClass& c = *ns.Classes[j];
-			ResolveNamespaceMembers(c);
+			LOG(String().Cat() << "Resolving deep class: " << ns.Name << c.Name);
+			if (c.IsResolved == false) {
+				
+				ResolveNamespaceMembers(c);
+			}
 		}
 	}
 }
@@ -161,8 +196,8 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	
 	f.SetOwner(ns);
 	
-	if (f.Name == "IsProp")
-		f.SetOwner(ns);
+	//if (f.Name == "IsProp")
+	//	f.SetOwner(ns);
 
 	ZMethodBundle& d = f.Owner().Methods.GetAdd(f.Name, ZMethodBundle(f.Owner()));
 	if (d.Name.GetCount() == 0)

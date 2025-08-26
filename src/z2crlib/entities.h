@@ -241,6 +241,7 @@ public:
 	bool MIsInteger = false;
 	
 	int Index = -1;
+	bool IsResolved = false;
 		
 	void GenerateSignatures();
 	

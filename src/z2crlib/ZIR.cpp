@@ -1397,8 +1397,11 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	node->Object = object;
 	
 	if (object) {
-		if (object->Chain == nullptr)
+		if (object->Chain == nullptr) {
 			object->Chain = chainNodes.Get();
+			object->Chain->AddChild(object);
+			object->Chain->Count++;
+		}
 
 		object->Chain->AddChild(node);
 		object->Chain->Count++;
@@ -1410,6 +1413,7 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	else if (over.IsProperty) {
 		if (node->Chain == nullptr)
 			node->Chain = chainNodes.Get();
+		
 		node->Chain->AddChild(node);
 		node->Chain->Count++;
 		node->Chain->PropCount++;
@@ -1461,8 +1465,11 @@ MemNode* IR::mem_var(ZEntity& mem, Node* object, bool isLocal) {
 	ASSERT(node->Tt.Class);
 	
 	if (object) {
-		if (object->Chain == nullptr)
+		if (object->Chain == nullptr) {
 			object->Chain = chainNodes.Get();
+			object->Chain->AddChild(object);
+			object->Chain->Count++;
+		}
 		
 		object->Chain->AddChild(node);
 		object->Chain->Count++;
@@ -1664,11 +1671,24 @@ ListNode* IR::list(Node* node) {
 	return l;
 }
 
-IndexNode* IR::mem_array(Node* object, Node* index) {
+IndexNode* IR::mem_index(Node* object, Node* index) {
 	IndexNode* node = indexNodes.Get();
 	
 	node->Object = object;
 	node->Index = index;
+	
+	if (object) {
+		if (object->Chain == nullptr) {
+			object->Chain = chainNodes.Get();
+			object->Chain->AddChild(object);
+			object->Chain->Count++;
+		}
+		
+		object->Chain->AddChild(node);
+		object->Chain->Count++;
+		
+		node->Chain = object->Chain;
+	}
 
 	/*if (exp->Tt.Class == ass.CPtr) {
 		node->SetType(exp->Tt.Next);
