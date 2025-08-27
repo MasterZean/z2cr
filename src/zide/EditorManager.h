@@ -52,6 +52,7 @@ public:
 	Callback WhenTabChange;
 	Callback WhenEditorChange;
 	Callback WhenEditorCursor;
+	Callback WhenAnnotation;
 		
 	EditorManager();
 	
@@ -120,6 +121,7 @@ private:
 	void OnTabChange();
 	void OnEditorChange();
 	void OnEditorCursor();
+	void OnAnnotation();
 	
 	void OnTabClose(Value val);
 	bool OnConfirmClose(Value val);

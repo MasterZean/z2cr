@@ -13,6 +13,7 @@ file
 	ZideWindow.h,
 	ZideWindow.cpp,
 	ZideWindowBar.cpp,
+	ZideWindowDocs.cpp,
 	main.cpp,
 	ItemDisplay.h,
 	ItemDisplay.cpp,

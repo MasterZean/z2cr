@@ -65,6 +65,7 @@ ZideWindow::ZideWindow() {
 	tabs.WhenTabChange = THISBACK(OnTabChange);
 	tabs.WhenEditorCursor = THISBACK(OnEditorCursor);
 	tabs.WhenEditorChange = THISBACK(OnEditorChange);
+	tabs.WhenAnnotation = THISBACK(OnAnnotation);
 	
 	asbAss.WhenSelectSource = THISBACK(OnSelectSource);
 	asbAss.WhenFileRemoved = THISBACK(OnFileRemoved);
@@ -107,6 +108,11 @@ ZideWindow::ZideWindow() {
 	
 	popArchList.Normal();
 	popArchList.WhenSelect = THISBACK(OnSelectMethod);
+	
+	annotation_popup.Background(White);
+	annotation_popup.SetFrame(BlackFrame());
+	annotation_popup.Margins(Zx(6));
+	annotation_popup.NoSb();
 	
 	OrderColors();
 }
@@ -358,6 +364,18 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 	int cur = explore.lstItems.GetCursor();
 	Point pt = explore.lstItems.GetScroll();
 	
+	Image annot;
+	if (settings.Theme == 0)
+		annot = ZImg::annot();
+	else
+		annot = ZImg::annotdark();
+	
+	Image annotm;
+	if (settings.Theme == 0)
+		annotm = ZImg::annotm();
+	else
+		annotm = ZImg::annotmdark();
+	
 	explore.lstItems.Clear();
 	explore.lstItems.Set(0, "aa");
 	
@@ -371,6 +389,12 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 			ZNamespace& cls = (ZNamespace&)ent;
 			
 			ZItem clsItem;
+			
+			String clsName = cls.Namespace().Name + cls.Name;
+			
+			int ii = asbAss.Docs.Find(clsName);
+			if (ii != -1)
+				editor.SetAnnotation(cls.DefPos.P.x - 1, TrimBoth(asbAss.Docs[ii].Brief).GetCount() ? annot : annotm, clsName);
 			
 			if (cls.IsClass) {
 				clsItem.Kind = ZItem::itClass;
@@ -422,6 +446,14 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 				item.Sig = s;
 				
 				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
+				
+				String key = clsName;
+				key << " ";
+				key << f.Name;
+			
+				int ii = asbAss.Docs.Find(key);
+				if (ii != -1)
+					editor.SetAnnotation(item.Pos.x - 1, TrimBoth(asbAss.Docs[ii].Brief).GetCount() ? annot : annotm, key + " const");
 			}
 			
 			for (int j = 0; j < cls.PreConstructors.GetCount(); j++) {
@@ -449,6 +481,15 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 				item.Pos = f.DefPos.P;
 				item.Access = f.Access;
 				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
+				
+				String key = clsName;
+				key << " ";
+				key << f.Name;
+				
+				int ii = asbAss.Docs.Find(key);
+				if (ii != -1)
+					editor.SetAnnotation(item.Pos.x - 1, TrimBoth(asbAss.Docs[ii].Brief).GetCount() ? annot : annotm, key + " this " + s);
+				
 			}
 			
 			for (int j = 0; j < cls.PreFunctions.GetCount(); j++) {
@@ -485,6 +526,41 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 					item.Kind = f.IsFunction ? ZItem::itFunc : ZItem::itDef;
 				item.Static = f.IsStatic;
 				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
+				
+				if (f.IsProperty) {
+					String key = clsName;
+					key << " ";
+					key << f.Name;
+					
+					int ii = asbAss.Docs.Find(key);
+					if (ii != -1) {
+						String v = key + " prop";
+						//if (def.HasPGetter && def.HasPGetter->IsStatic)
+						//	v << "s";
+						v << " " << s;
+						//DUMP(v);
+						editor.SetAnnotation(item.Pos.x - 1, TrimBoth(asbAss.Docs[ii].Brief).GetCount() ? annot : annotm, v);
+					}
+				}
+				else {
+					String key = clsName;
+					key << " ";
+					key << f.Name;
+					
+					int ii = asbAss.Docs.Find(key);
+					if (ii != -1) {
+						String v = key;
+						if (f.IsFunction)
+							v << " func";
+						else
+							v << " def";
+						if (f.IsStatic)
+							v << "s";
+						v << " " << s;
+						//DUMP(v);
+						editor.SetAnnotation(item.Pos.x - 1, TrimBoth(asbAss.Docs[ii].Brief).GetCount() ? annot : annotm, v);
+					}
+				}
 			}
 			
 			if (editor.openExploreNodes.Find(cls.Name) == -1)

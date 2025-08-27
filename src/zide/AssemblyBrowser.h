@@ -3,6 +3,17 @@
 
 #include "zide.h"
 
+class DocEntry {
+public:
+	String Brief;
+	WithDeepCopy<VectorMap<String, String>> Params;
+	String Returns;
+	String SeeAlso;
+	String Code;
+	String Key;
+	WithDeepCopy<Index<String>> Links;
+};
+
 class AssemblyBrowser: public ParentCtrl {
 public:
 	typedef AssemblyBrowser CLASSNAME;
@@ -11,6 +22,8 @@ public:
 	Callback1<const String&> WhenFileRemoved;
 	Callback1<const String&> WhenFileSaved;
 	Gate3<const Vector<String>&, const String&, const String&> WhenRenameFiles;
+	
+	ArrayMap<String, DocEntry> Docs;
 	
 	AssemblyBrowser();
 
@@ -44,15 +57,19 @@ public:
 	void OpenNodes(Vector<String>& openNodes);
 	void HighlightFile(String& file);
 	
+	void ReloadDocs();
+	
 private:
 	FrameTop<ParentCtrl> frame;
 	TreeCtrl treModules;
 	
 	Index<String> modules;
+	Vector<String> openDocs;
 	
 	bool showPaths = false;
 	
 	int AddModule(int parent, const String& path, const String& ppath, const Image& img);
+	void AddDocFile(const String& path);
 };
 
 #endif

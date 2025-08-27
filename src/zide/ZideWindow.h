@@ -124,6 +124,8 @@ private:
 	PopUpTable popTypeList;
 	PopUpTable popArchList;
 	
+	RichTextCtrl annotation_popup;
+	
 	Vector<int> colors;
 	int optimize = 0;
 	
@@ -193,6 +195,8 @@ private:
 	void OnExplorerClick();
 	void OnExplorerOpen(int index);
 	void OnExplorerMenu(Bar& bar);
+	
+	void OnAnnotation();
 };
 
 class DetectWindow: public WithWaitingLayout<TopWindow> {

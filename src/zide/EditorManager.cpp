@@ -125,7 +125,7 @@ void EditorManager::Open(const String& item, bool forceReload) {
 		WhenEditorChange();
 		
 		//f.editor.WhenAssistChange = THISBACK(OnAssistChange);
-		//f.editor.WhenAnnotationMove = THISBACK(OnAnnotation);
+		editor.WhenAnnotationMove = THISBACK(OnAnnotation);
 	}
 	else {
 		WString w = item.ToWString();
@@ -165,6 +165,10 @@ void EditorManager::OnEditorChange() {
 
 void EditorManager::OnEditorCursor() {
 	WhenEditorCursor();
+}
+
+void EditorManager::OnAnnotation() {
+	WhenAnnotation();
 }
 
 SmartEditor& EditorManager::GetInfo(int i) {

@@ -1,5 +1,34 @@
 #include "AssemblyBrowser.h"
 
+//extern void FindDocLinks(Index<String>& links, const String& str);
+
+void FindDocLinks(Index<String>& links, const String& str) {
+	int i = 0;
+	
+	while (i < str.GetCount()) {
+		int first = str.Find('[', i);
+		
+		if (first != -1) {
+			int last = str.Find(']', first + 1);
+			
+			if (last != -1) {
+				int first2 = str.Find('[', last + 1);
+				
+				if (first2 == last + 1) {
+					int last2 = str.Find(']', first2 + 1);
+					
+					if (last2 != -1) {
+						links.FindAdd(str.Mid(first2 + 1, last2 - first2 - 1));
+						i = last2;
+					}
+				}
+			}
+		}
+		
+		i++;
+	}
+}
+
 void GetAllChildren(const String& path, Vector<String>& sub) {
 	FindFile ff;
 	ff.Search(NativePath(path + "\\*"));
@@ -123,10 +152,10 @@ int AssemblyBrowser::AddModule(int parent, const String& path, const String& ppa
 			//Cache.FindAdd(files[i], LoadFile(files[i]));
 			treModules.Add(item, ZImg::zsrc, files[i], name);
 		}
-		/*else if (name.EndsWith(".api.md")) {
+		else if (name.EndsWith(".api.md")) {
 			openDocs << files[i];
 			AddDocFile(files[i]);
-		}*/
+		}
 	}
 
 	return item;
@@ -485,4 +514,137 @@ void AssemblyBrowser::SetShowPaths(bool show) {
 	}
 }
 
+void AssemblyBrowser::AddDocFile(const String& path) {
+	String sub = GetFileTitle(GetFileTitle(path));
+	
+	FileIn f(path);
+	
+	DocEntry doc;
+	
+	String line, lastLine;
+	String key;
+	bool briefMode = false;
+	bool paramMode = false;
+	bool returnMode = false;
+	bool seeAlso = false;
+	bool lastEmpty = false;
+	bool inBody = false;
+	bool inClass = false;
+	
+	String param;
+	
+	while (!f.IsEof()) {
+		lastLine = line;
+		line = f.GetLine();
+
+		if (inClass && line.StartsWith("#")) {
+			FindDocLinks(doc.Links, doc.Brief);
+			Docs.Add(sub, doc);
+			
+			inClass = false;
+			doc.Brief = "";
+		}
+		
+		if (line.StartsWith("### ")) {
+			key = line.Mid(4);
+		}
+		else if (TrimBoth(line) == "***") {
+			FindDocLinks(doc.Links, doc.Brief);
+
+			if (inClass)
+				Docs.Add(sub, doc);
+			else
+				Docs.Add(sub + " " + key, doc);
+			
+			// reset
+			briefMode = false;
+			paramMode = false;
+			returnMode = false;
+			lastEmpty = false;
+			seeAlso = false;
+			inClass = false;
+			inBody = false;
+			
+			doc.Brief = "";
+			doc.Params.Clear();
+			doc.Returns = "";
+			doc.SeeAlso = "";
+		}
+		else if (line == "#### Brief") {
+			briefMode = true;
+			inBody = true;
+		}
+		else if (line.StartsWith("# ")) {
+			inClass = true;
+		}
+		else if (line == "" && (inBody || inClass)) {
+			lastEmpty = true;
+		}
+		else if (line == "#### Parameters") {
+			briefMode = false;
+			paramMode = true;
+			returnMode = false;
+			lastEmpty = false;
+			seeAlso = false;
+			inClass = false;
+		}
+		else if (paramMode && line.StartsWith("> *")) {
+			param = line.Mid(3);
+			int iii = param.Find("* => ");
+			if (iii != -1) {
+				param = param.Mid(0, iii);
+				line = TrimBoth(line.Mid(iii + 5 + 3));
+				doc.Params.Add(param, line);
+			}
+		}
+		else if (line == "#### Returns") {
+			briefMode = false;
+			paramMode = false;
+			returnMode = true;
+			lastEmpty = false;
+			seeAlso = false;
+			inClass = false;
+		}
+		else if (line.StartsWith("###### seealso ")) {
+			briefMode = false;
+			paramMode = false;
+			returnMode = false;
+			lastEmpty = false;
+			seeAlso = true;
+			inClass = false;
+			doc.SeeAlso = TrimBoth(line.Mid(15));
+		}
+		else if (inBody) {
+			if (briefMode) {
+				if (lastEmpty) {
+					doc.Brief << "\n";
+					lastEmpty = false;
+				}
+				doc.Brief << line << "\n";
+			}
+			if (paramMode) {
+				doc.Params.Add(param, line);
+			}
+			if (returnMode) {
+				doc.Returns = line;
+				if (doc.Returns.StartsWith("> "))
+					doc.Returns = line.Mid(2);
+			}
+		}
+		else if (inClass) {
+			if (lastEmpty) {
+				if (doc.Brief.GetCount())
+					doc.Brief << "\n";
+				lastEmpty = false;
+			}
+			doc.Brief << line << "\n";
+		}
+	}
+}
+
+void AssemblyBrowser::ReloadDocs() {
+	Docs.Clear();
+	for (int i = 0; i < openDocs.GetCount(); i++)
+		AddDocFile(openDocs[i]);
+}
 
