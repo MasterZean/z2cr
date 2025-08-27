@@ -149,8 +149,10 @@ void EditorManager::OnTabChange() {
 		files[j].Hide();
 	
 	int i = files.Find(file);
-	if (i != -1)
+	if (i != -1) {
+		files[i].openExploreNodes = std::move(files[i].backupExploreNodes);
 		files[i].Show();
+	}
 	
 	WhenTabChange();
 	WhenEditorChange();

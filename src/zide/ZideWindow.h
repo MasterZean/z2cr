@@ -92,6 +92,7 @@ public:
 private:
 	Vector<String> packages;
 	Vector<String> openNodes;
+	
 	EditorManager tabs;
 	String openDialogPreselect;
 	bool oShowPakPaths = true;
@@ -129,6 +130,7 @@ private:
 	bool running = false;
 	bool canBuild = true;
 	bool editThread = true;
+	bool pauseExplorer = false;
 	
 	void OnOutputSel();
 	bool GetLineOfError(int ln);
@@ -148,8 +150,7 @@ private:
 		
 	void SetupLast();
 	
-	void LoadNavigation(const String& text);
-
+	void LoadNavigation(SmartEditor& editor, const String& text);
 	
 	void DoMainMenu(Bar& bar);
 	
@@ -190,6 +191,7 @@ private:
 	void OnSelectMethod();
 	
 	void OnExplorerClick();
+	void OnExplorerOpen(int index);
 	void OnExplorerMenu(Bar& bar);
 };
 

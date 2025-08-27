@@ -53,6 +53,8 @@ ZideWindow::ZideWindow() {
 	explore.lstItems.RenderMultiRoot();
 	explore.lstItems.NoRoot();
 	explore.lstItems.WhenAction = THISBACK(OnExplorerClick);
+	explore.lstItems.WhenOpen = THISBACK(OnExplorerOpen);
+	explore.lstItems.WhenClose = THISBACK(OnExplorerOpen);
 	//explore.lstItems.Set(0, "aa", RawToValue(ZItem()));
 	explore.lstItems.NoWantFocus();
 	//explore.lstItems.WhenBar = THISBACK(OnExplorerMenu);
@@ -310,10 +312,10 @@ void ZideWindow::OnEditorChange() {
 		return;
 	//	Thread().Run(callback3(OutlineThread, this, editor.Get(), info->Hash));
 	
-	LoadNavigation(editor->Get());
+	LoadNavigation(*editor, editor->Get());
 }
 
-void ZideWindow::LoadNavigation(const String& text) {
+void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 	Assembly ass;
 	ZPackage pak = ZPackage(ass, "temp", LastPackage);
 	ZSource source = ZSource(pak);
@@ -333,13 +335,26 @@ void ZideWindow::LoadNavigation(const String& text) {
 		scaner.Scan();
 	}
 	catch (...) {
+		return;
 	}
+	
+	pauseExplorer = true;
 	
 	Index<String> classes = std::move(scaner.UsingReferences);
 	for (int i = 0; i < source.ShortNameLookup.GetCount(); i++) {
 		classes.FindAdd(source.ShortNameLookup.GetKey(i));
 	}
 	
+	if (explore.lstItems.GetChildCount(0)) {
+		for (int i = 0; i < explore.lstItems.GetChildCount(1); i++) {
+			int child = explore.lstItems.GetChild(1, i);
+			if (explore.lstItems.IsOpen(child) == false) {
+				String text = explore.lstItems.Get(child);
+				editor.openExploreNodes << text;
+			}
+		}
+	}
+		
 	int cur = explore.lstItems.GetCursor();
 	Point pt = explore.lstItems.GetScroll();
 	
@@ -379,8 +394,9 @@ void ZideWindow::LoadNavigation(const String& text) {
 			
 			if (!cls.IsClass) {
 				node = explore.lstItems.Add(0, Image(), cls.Name, RawToValue(clsItem));
-				if (nsNode > 0)
+				if (nsNode > 0) {
 					explore.lstItems.Open(nsNode);
+				}
 				nsNode = node;
 			}
 			else
@@ -471,7 +487,8 @@ void ZideWindow::LoadNavigation(const String& text) {
 				explore.lstItems.Add(node, Image(), item.Name, RawToValue(item));
 			}
 			
-			explore.lstItems.Open(node);
+			if (editor.openExploreNodes.Find(cls.Name) == -1)
+				explore.lstItems.Open(node);
 		}
 	}
 	
@@ -482,6 +499,10 @@ void ZideWindow::LoadNavigation(const String& text) {
 	explore.lstItems.ScrollTo(pt);
 	
 	CSyntax::SetNames(ZideWindow::HIGHLIGHT_Z2, classes);
+	
+	editor.backupExploreNodes = std::move(editor.openExploreNodes);
+	
+	pauseExplorer = false;
 }
 
 void ZideWindow::OnEditorCursor() {
@@ -678,6 +699,29 @@ void ZideWindow::OnExplorerClick() {
 	editThread = true;
 }
 
+void ZideWindow::OnExplorerOpen(int index) {
+	if (pauseExplorer)
+		return;
+	
+	auto temp = GetEditor();
+	if (!temp)
+		return;
+	
+	SmartEditor& editor = *temp;
+	
+	editor.backupExploreNodes.Clear();
+	
+	if (explore.lstItems.GetChildCount(0)) {
+		for (int i = 0; i < explore.lstItems.GetChildCount(1); i++) {
+			int child = explore.lstItems.GetChild(1, i);
+			if (explore.lstItems.IsOpen(child) == false) {
+				String text = explore.lstItems.Get(child);
+				editor.backupExploreNodes << text;
+			}
+		}
+	}
+}
+		
 void ZideWindow::OnExplorerMenu(Bar& bar) {
 	/*int i = explore.lstItems.GetCursor();
 	if (i == -1)

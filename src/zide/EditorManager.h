@@ -39,6 +39,8 @@ public:
 	
 	int ID = 0;
 	Index<String> classes;
+	Index<String> openExploreNodes;
+	Index<String> backupExploreNodes;
 	bool IsChanged = false;
 	uint64 Hash = 0;
 };
