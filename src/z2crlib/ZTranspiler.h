@@ -111,7 +111,9 @@ public:
 					NL();
 				
 				NL();
-				cs << "class " << inClass->BackName << " {";
+				cs << "class ";
+				WriteClassName(*inClass);
+				cs << " {";
 				EL();
 				
 				indent++;
@@ -132,6 +134,13 @@ public:
 		}
 	}
 	
+	void WriteClassName(ZClass& cls) {
+		if (!cls.CoreSimple)
+			cs << cls.BackName;
+		else
+			cs << cls.Name;
+	}
+	
 	void EndNamespace() {
 		if (inNamespace && namespaceWrites) {
 			indent--;
@@ -146,7 +155,7 @@ public:
 	}
 	
 	void BeginClass(ZNamespace& cls) {
-		inClass = &cls;
+		inClass = (ZClass*)&cls;
 		firstInClass = true;
 		classWrites = 0;
 	}
@@ -184,7 +193,7 @@ private:
 	int WalkChildren(Node* node);
 	
 	ZNamespace* inNamespace = nullptr;
-	ZNamespace* inClass = nullptr;
+	ZClass* inClass = nullptr;
 	ZFunction* inFunction = nullptr;
 	bool firstInNamespace = true;
 	bool firstInClass = true;

@@ -212,9 +212,9 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	int type = Classes.GetCount();
 	String name = cls.Namespace().Name + cls.Name;
 	int index = Classes.Find(name);
-	if (index != -1 && name != "sys.core.lang.String") {
-		index = -1;
-	}
+	//if (index != -1/* && name != "sys.core.lang.String"*/) {
+	//	index = -1;
+	//}
 	
 	if (index != -1) {
 		//cls.IsResolved = true;
@@ -229,6 +229,11 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 			exCls.PreVariables.Add(cls.PreVariables[i]);
 		for (int i = 0; i < exCls.PreVariables.GetCount(); i++)
 			exCls.PreVariables[i].SetOwner(exCls);
+		
+		for (int i = 0; i < cls.PreFunctions.GetCount(); i++)
+			exCls.PreFunctions.Add(cls.PreFunctions[i]);
+		for (int i = 0; i < exCls.PreFunctions.GetCount(); i++)
+			exCls.PreFunctions[i].SetOwner(exCls);
 		
 		return exCls;
 	}

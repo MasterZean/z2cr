@@ -106,7 +106,7 @@ void ZResolver::ResolveClasses() {
 }
 
 void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
-	if (c.Name == "String")
+	if (c.Name == "Int")
 		c.Name == "String";
 	
 	if (c.IsResolved)
@@ -114,10 +114,10 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 
 	c.GenerateSignatures();
 	
-	if (c.Name == "String") {
+	/*if (c.Name == "String") {
 		DUMP(c.PreVariables.GetCount());
 		DUMP(ass.CString->PreVariables.GetCount());
-	}
+	}*/
 	
 	ZClass& cls = ass.AddClass(c);
 	

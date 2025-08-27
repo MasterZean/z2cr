@@ -225,7 +225,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 		
 		if (!CanAccess(v.Access, accessFlags))
 			continue;
-
+		
 		// TODO: fix
 		if (&ns == ass.CString)
 			if (v.Name == "text")
@@ -258,6 +258,9 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 			if (v.IsConst)
 				cs << "const ";
 		}
+
+		//if (v.Name == "Zero")
+		//	cs << "yYy";
 
 		WriteType(&v.I.Tt);
 		cs << " " << v.Name;
@@ -422,11 +425,15 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 			cs << "const ";
 		WriteType(&v.I.Tt);
 		
+
 		cs << " ";
 		if (!v.InClass)
 			cs << v.Name;//cs << v.Owner().BackName << "::" << v.Name;
-		else
-			cs /*<< v.Namespace().BackName << "::"*/ << v.Owner().BackName << "::" << v.Name;
+		else {
+			WriteClassName((ZClass&)v.Owner());
+			cs << "::" << v.Name;
+			//cs /*<< v.Namespace().BackName << "::"*/ << v.Owner().BackName << "::" << v.Name;
+		}
 		WriteTypePost(&v.I.Tt);
 		
 		if (v.I.Tt.Class->FromTemplate && v.I.Tt.Class->TBase == ass.CRaw) {
@@ -461,13 +468,17 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 		cs << "static ";
 	else if (f.InClass == true && f.IsStatic)
 		cs << "static ";
+	else if (f.InClass && ((ZClass&)f.Owner()).CoreSimple)
+		cs << "static ";
 	
 	WriteType(&f.Return.Tt);
 	
 	cs << " " << f.BackName;
 	WriteFunctionParams(f);
 	
-	if (f.InClass == true && f.IsFunction && !f.IsStatic)
+	if (f.InClass && ((ZClass&)f.Owner()).CoreSimple)
+		;
+	else if (f.InClass == true && f.IsFunction && !f.IsStatic)
 		cs << " const";
 }
 
@@ -501,12 +512,20 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	cs << f.BackName;
 	WriteFunctionParams(f);
 	
-	if (f.InClass && f.IsFunction && !f.IsStatic)
+	if (f.InClass && ((ZClass&)f.Owner()).CoreSimple)
+		;
+	else if (f.InClass && f.IsFunction && !f.IsStatic)
 		cs << " const";
 }
 
 void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 	cs << "(";
+	
+	if (f.InClass) {
+		 ZClass& cls = (ZClass&)f.Owner();
+		 if (cls.CoreSimple)
+		     cs << cls.BackName << " _this";
+	}
 	
 	for (int i = 0; i < f.Params.GetCount(); i++) {
 		ZVariable& var = f.Params[i];
@@ -1123,6 +1142,16 @@ void ZTranspiler::Proc(DefNode& node) {
 		if (f.InClass)
 			cs << f.Owner().BackName << "::";
 	}
+	else if (f.InClass && ((ZClass&)f.Owner()).CoreSimple) {
+		cs << f.Namespace().BackName << "::";
+		WriteClassName(*node.Tt.Class);
+		cs << "::";
+		cs << f.BackName;
+		cs << "(";
+		Walk(node.Object);
+		cs << ")";
+		return;
+	}
 	else {
 		//ASSERT(node.Object);
 		if (node.Object) {
@@ -1148,7 +1177,9 @@ void ZTranspiler::Proc(DefNode& node) {
 
 void ZTranspiler::Proc(MemNode& node) {
 	if (node.IsThis) {
-		if (inFunction && inFunction->IsConstructor == 2)
+		if (node.Tt.Class->CoreSimple)
+			cs << "_this";
+		else if (inFunction && inFunction->IsConstructor == 2)
 			cs << "_this";
 		else
 			cs << "(*this)";
@@ -1161,7 +1192,8 @@ void ZTranspiler::Proc(MemNode& node) {
 		if (node.Mem->InClass) {
 			//if (&node.Mem->Namespace() != inNamespace)
 				cs << node.Mem->Namespace().BackName << "::";
-			cs << node.Mem->Owner().BackName << "::";
+			//cs << node.Mem->Owner().BackName << "::";
+			WriteClassName((ZClass&)node.Mem->Owner());
 		}
 		else {
 			//if (&node.Mem->Namespace() != inNamespace)
@@ -1172,7 +1204,9 @@ void ZTranspiler::Proc(MemNode& node) {
 	else if (node.Mem->InClass == true && node.Mem->IsStatic) {
 		//if (&node.Mem->Namespace() != inNamespace)
 			cs << node.Mem->Namespace().BackName << "::";
-		cs << node.Mem->Owner().BackName << "::";
+		//cs << node.Mem->Owner().BackName << "::";
+		WriteClassName((ZClass&)node.Mem->Owner());
+		cs << "::";
 		cs << node.Mem->BackName;
 	}
 	else if (node.Object) {
