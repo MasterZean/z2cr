@@ -497,7 +497,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "value")
+	if (s == "Length")
 		s == "Test";
 	
 	if (Function) {
@@ -668,7 +668,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-		if (aName == "IsProp")
+		if (aName == "Length")
 			aName == "ToByte";
 		
 		if (method.IsProperty == false) {
@@ -774,6 +774,9 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	else
 		s = parser.ExpectId();
 	
+	if (s == "Length")
+		s == "Length";
+	
 	// case .class
 	if (s == CLS_STR ) {
 		if (exp->Tt.Class == ass.CClass) {
@@ -820,8 +823,13 @@ Node *ZExprParser::ParseDot(Node *exp) {
 		ZClass& cs = *exp->Tt.Class;
 		Node* node = ParseMember(cs, s, p, false, exp);
 		
-		if (!node)
+		if (!node) {
+			if (cs.TBase == ass.CRaw) {
+				if (s == "Length" || s == "Capacity")
+					return irg.const_i(exp->Tt.Param, ass.CPtrSize);
+			}
 			parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
+		}
 		
 		return node;
 	}
