@@ -145,6 +145,9 @@ private:
 	void OnEditorChange();
 	void OnEditorCursor();
 	
+	void OnMainSelected();
+	void OnMainCleared();
+	
 	void OnFileRemoved(const String& file);
 	void OnFileSaved(const String& file);
 	

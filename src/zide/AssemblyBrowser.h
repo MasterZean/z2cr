@@ -22,8 +22,10 @@ public:
 	Callback1<const String&> WhenFileRemoved;
 	Callback1<const String&> WhenFileSaved;
 	Gate3<const Vector<String>&, const String&, const String&> WhenRenameFiles;
+	Callback WhenMainSelected;
 	
 	ArrayMap<String, DocEntry> Docs;
+	String MainFile;
 	
 	AssemblyBrowser();
 
@@ -43,6 +45,7 @@ public:
 	void OnRenameFolder();
 	void OnDeleteFile();
 	void OnDeleteFolder();
+	void OnSetAsMainFile();
 	
 	void OnDrag();
 	void OnDrop(int ii, PasteClip& pc);

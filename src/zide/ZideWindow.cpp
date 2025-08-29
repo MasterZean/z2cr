@@ -71,6 +71,7 @@ ZideWindow::ZideWindow() {
 	asbAss.WhenFileRemoved = THISBACK(OnFileRemoved);
 	asbAss.WhenFileSaved = THISBACK(OnFileSaved);
 	asbAss.WhenRenameFiles = callback(&tabs, &EditorManager::OnRenameFiles);
+	asbAss.WhenMainSelected = THISBACK(OnMainSelected);
 	
 	WhenClose = THISBACK(OnClose);
 	
@@ -81,7 +82,7 @@ ZideWindow::ZideWindow() {
 	mbtEntryPoint.NoWantFocus();
 	mbtEntryPoint.Tip("Current entry point");
 	mbtEntryPoint.Set("* File in editor");
-	mbtEntryPoint.AddButton().Tip("Set entry point").SetImage(ZImg::dots) <<= Callback()/*THISBACK(DropTypeList)*/;
+	mbtEntryPoint.AddButton().Tip("Remove entry point").SetImage(CtrlImg::remove()) <<= THISBACK(OnMainCleared);
 	
 	lstBldConf.Add("Console");
 	lstBldConf.Add("Windows");
@@ -115,6 +116,15 @@ ZideWindow::ZideWindow() {
 	annotation_popup.NoSb();
 	
 	OrderColors();
+}
+
+void ZideWindow::OnMainSelected() {
+	mbtEntryPoint.Set(asbAss.MainFile);
+}
+
+void ZideWindow::OnMainCleared() {
+	asbAss.MainFile = "";
+	mbtEntryPoint.Set("* File in editor");
 }
 
 void ZideWindow::OrderColors() {

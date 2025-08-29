@@ -547,7 +547,7 @@ void ZideWindow::OnMenuBuildRun(bool newConsole) {
 	
 	CodeEditor& editor = *temp;
 	
-	String file = NativePath(tabs.ActiveFile());
+	String file = asbAss.MainFile.GetCount() ? asbAss.MainFile : NativePath(tabs.ActiveFile());
 	tabs.SaveAllIfNeeded();
 	
 	// TODO:

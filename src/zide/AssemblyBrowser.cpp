@@ -206,6 +206,10 @@ void AssemblyBrowser::OnTreModuleRmbMenu(Bar& bar) {
 		bar.Add("Copy folder path name", CtrlImg::copy(), THISBACK(OnFileNameCopy));
 	}
 	else {
+		bar.Add("Set as main file", CtrlImg::write(), THISBACK(OnSetAsMainFile));
+		
+		bar.Separator();
+		
 		bar.Add("Rename file", CtrlImg::write(), THISBACK(OnRenameFile));
 		bar.Add("Delete file", CtrlImg::remove(), THISBACK(OnDeleteFile));
 		
@@ -401,6 +405,15 @@ void AssemblyBrowser::OnDeleteFile() {
 			WhenFileRemoved(path);
 		}
 	}
+}
+
+void AssemblyBrowser::OnSetAsMainFile() {
+	int index = treModules.GetCursor();
+	if (index == -1)
+		return;
+	
+	MainFile = treModules[index];
+	WhenMainSelected();
 }
 
 void AssemblyBrowser::OnDrag() {
