@@ -512,7 +512,8 @@ String ZideWindow::BuildCmd(const String& file, bool scu, bool& res, Point p) {
 	
 	cmd << "-mainfile " << file << " ";
 	//cmd << "-color qtf";
-	/*cmd << "-pak " << lastPackage << " ";*/
+	if (optPackMode.Get() == true)
+		cmd << "-pak " << LastPackage << " ";
 	if (optimize == 2)
 		cmd << " -O2";
 	else if (optimize == 1)
@@ -650,7 +651,9 @@ void ZideWindow::MainToolbar(Bar& bar) {
 	if (settings.ToolbarInRow)
 		bar.Separator();
 	
-	bar.Add(mbtEntryPoint, HorzLayoutZoom(180));
+	bar.Add(optPackMode, HorzLayoutZoom(100));
+	bar.Gap(4);
+	bar.Add(mbtEntryPoint, HorzLayoutZoom(220));
 	bar.Gap(4);
 	bar.Add(lstBldConf, HorzLayoutZoom(120));
 	bar.Gap(4);

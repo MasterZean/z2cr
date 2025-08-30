@@ -120,6 +120,7 @@ private:
 	DropList lstBldConf;
 	MultiButton mbtBldMode;
 	
+	Option optPackMode;
 	PopUpTable popMethodList;
 	PopUpTable popTypeList;
 	PopUpTable popArchList;

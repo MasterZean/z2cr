@@ -110,6 +110,11 @@ public:
 			
 	bool OnRenameFiles(const Vector<String>& fileListToRename, const String& oldPath, const String& newPath);
 	
+	void ClearTabs() {
+		tabFiles.Clear();
+		files.Clear();
+	}
+	
 private:
 	FileTabs tabFiles;
 	ParentCtrl canvas;

@@ -348,7 +348,12 @@ void EditorManager::RemoveFile(const String& item) {
 }
 
 void EditorManager::Save(const String& item) {
-	files.RemoveKey(item.ToWString());
-	int ki = tabFiles.FindKey(item);
-	tabFiles.CloseForce(ki);
+	int i = tabFiles.FindKey(item);
+	
+	int j = files.Find(item.ToWString());
+	if (j == -1)
+		return;
+
+	SaveFile(files.GetKey(j).ToString(), files[j].Get());
+	SetChanged(i, false);
 }

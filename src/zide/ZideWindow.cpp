@@ -115,6 +115,8 @@ ZideWindow::ZideWindow() {
 	annotation_popup.Margins(Zx(6));
 	annotation_popup.NoSb();
 	
+	optPackMode.SetLabel("Package mode");
+	
 	OrderColors();
 }
 
@@ -237,6 +239,7 @@ void ZideWindow::LoadPackage(const String& package) {
 #endif
 
 	LastPackage = package;
+	tabs.ClearTabs();
 	asbAss.ClearModules();
 	packages << LastPackage;
 	LoadModule(LastPackage, 0);
