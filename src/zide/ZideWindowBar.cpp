@@ -116,22 +116,6 @@ void HlPusherFactory(One<Ctrl>& ctrl) {
 	ctrl.Create<ColorPusher>().NotNull().Track();
 }
 
-int AdjustForTabs(const String& text, int col, int tabSize) {
-	int pos = 1;
-	
-	for (int i = 0; i < text.GetLength(); i++) {
-		if (text[i] == '\t') {
-			int newpos = (pos + tabSize - 1) / tabSize * tabSize + 1;
-			col -= newpos - pos - 1;
-			pos = newpos;
-		}
-		else
-			pos++;
-	}
-	
-	return col;
-}
-
 void ZideWindow::DoMainMenu(Bar& bar) {
 	int i = tabs.GetCursor();
 	bool tab = i != -1;
@@ -551,10 +535,8 @@ void ZideWindow::OnMenuBuildRun(bool newConsole) {
 	String file = asbAss.MainFile.GetCount() ? asbAss.MainFile : NativePath(tabs.ActiveFile());
 	tabs.SaveAllIfNeeded();
 	
-	// TODO:
-	//editor.ClearErrors();
-	//editor.RefreshLayoutDeep();
-	editor.Errors(Vector<Point>());
+	tabs.ClearErrors();
+	editor.RefreshLayoutDeep();
 		
 	splBottom.Show();
 
@@ -590,43 +572,7 @@ void ZideWindow::OnFinishedBuild(BuildData* data) {
 		Thread().Run(callback3(ExecutableThreadRun, this, ename, data->newConsole));
 	}
 	else {
-		//console.Set(data->result);
-		//console.ScrollEnd();
-		
-		int errors = 0;
-		Vector<String> lines = Split(data->result, '\n');
-		Vector<Point> errorList;
-		for (int i = 0; i < lines.GetCount(); i++) {
-			String s = TrimBoth(lines[i]);
-			
-			int ii = s.Find('(');
-			if (ii != -1) {
-				int jj = s.Find(')', ii);
-				if (ii < jj) {
-					String path = s.Mid(0, ii);
-					if (path == data->file) {
-						String ll = s.Mid(ii + 1, jj - ii - 1);
-						Vector<String> s2 = Split(ll, ',');
-						if (s2.GetCount() == 2) {
-							int line = StrInt(s2[0]) - 1;
-							int col = StrInt(s2[1]) - 1;
-							
-							String text = data->editor->GetUtf8Line(line);
-							col = AdjustForTabs(text, col, settings.TabSize);
-							
-							errorList.Add(Point(col, line));
-							errors++;
-						}
-					}
-				}
-			}
-		}
-		
-		if (errors) {
-			//editor.Errors(std::move(errorList));
-			//TODO:
-			data->editor->RefreshLayoutDeep();
-		}
+		tabs.SetErrors(data->result);
 	}
 	
 	delete data;

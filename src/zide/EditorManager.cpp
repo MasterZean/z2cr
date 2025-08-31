@@ -60,6 +60,22 @@ void DarkTheme() {
 	HighlightSetup::SetHlStyle(HighlightSetup::WARN_WHITESPACE, Color(191, 126, 126));
 }
 
+int AdjustForTabs(const String& text, int col, int tabSize) {
+	int pos = 1;
+	
+	for (int i = 0; i < text.GetLength(); i++) {
+		if (text[i] == '\t') {
+			int newpos = (pos + tabSize - 1) / tabSize * tabSize + 1;
+			col -= newpos - pos - 1;
+			pos = newpos;
+		}
+		else
+			pos++;
+	}
+	
+	return col;
+}
+
 EditorManager::EditorManager() {
 	AddFrame(tabFiles);
 	Add(canvas);
@@ -357,3 +373,55 @@ void EditorManager::Save(const String& item) {
 	SaveFile(files.GetKey(j).ToString(), files[j].Get());
 	SetChanged(i, false);
 }
+
+void EditorManager::SetErrors(const String errText) {
+	for (int i = 0; i < files.GetCount(); i++) {
+		files[i].errorList.Clear();
+		files[i].Errors(Vector<Point>());
+	}
+	
+	//int errors = 0;
+	Vector<String> lines = Split(errText, '\n');
+	//Vector<Point> errorList;
+	for (int i = 0; i < lines.GetCount(); i++) {
+		String s = TrimBoth(lines[i]);
+		
+		int ii = s.Find('(');
+		if (ii != -1) {
+			int jj = s.Find(')', ii);
+			if (ii < jj) {
+				String path = s.Mid(0, ii);
+				
+				int fi = files.Find(path.ToWString());
+				
+				if (fi != -1) {
+					String ll = s.Mid(ii + 1, jj - ii - 1);
+					Vector<String> s2 = Split(ll, ',');
+					if (s2.GetCount() == 2) {
+						int line = StrInt(s2[0]) - 1;
+						int col = StrInt(s2[1]) - 1;
+						
+						String text = files[fi].GetUtf8Line(line);
+						col = AdjustForTabs(text, col, settings.TabSize);
+						
+						files[fi].errorList.Add(Point(col, line));
+						//errors++;
+					}
+				}
+			}
+		}
+	}
+	
+	for (int i = 0; i < files.GetCount(); i++)
+		if (files[i].errorList.GetCount()) {
+			files[i].Errors(std::move(files[i].errorList));
+			files[i].RefreshLayoutDeep();
+		}
+}
+
+void EditorManager::ClearErrors() {
+	for (int i = 0; i < files.GetCount(); i++)
+		files[i].Errors(Vector<Point>());
+}
+
+

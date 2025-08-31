@@ -43,6 +43,7 @@ public:
 	Index<String> backupExploreNodes;
 	bool IsChanged = false;
 	uint64 Hash = 0;
+	Vector<Point> errorList;
 };
 
 class EditorManager: public ParentCtrl {
@@ -114,6 +115,9 @@ public:
 		tabFiles.Clear();
 		files.Clear();
 	}
+	
+	void SetErrors(const String errText);
+	void ClearErrors();
 	
 private:
 	FileTabs tabFiles;
