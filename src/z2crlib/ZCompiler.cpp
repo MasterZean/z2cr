@@ -386,12 +386,14 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	parser.Expect('}');
 	
 	// TODO: make smarter
-	if (!con.Return && f.Return.Tt.Class != ass.CVoid) {
+	/*if (!con.Return && f.Return.Tt.Class != ass.CVoid) {
 		ZExprParser ep(f, Class, &f, *this, parser, irg);
 		Vector<Node*> dummy;
 		Node* defRet = ep.Temporary(*f.Return.Tt.Class, dummy, &pp);
 		target.AddChild(irg.ret(defRet));
-	}
+	}*/
+	if (!con.Return && f.IsConstructor == 0 && f.Return.Tt.Class != ass.CVoid)
+		parser.Error(pp.P, "function expected to have return statement");
 	
 	f.Blocks.Drop();
 	
@@ -853,7 +855,8 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (v.Value == nullptr) {
 			ZExprParser ep(v, Class, f, *this, parser, irg);
 			Vector<Node*> params;
-			v.Value = ep.Temporary(*v.I.Tt.Class, params, &vp);
+			if (v.I.Tt.Class->TBase && v.I.Tt.Class->TBase != ass.CRaw)
+				v.Value = ep.Temporary(*v.I.Tt.Class, params, &vp);
 		}
 	}
 	
@@ -963,6 +966,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.3.0 (pre-alpha)";
+	static String name = "Z2CR 0.3.1 (pre-alpha)";
 	return name;
 }

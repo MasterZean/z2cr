@@ -497,7 +497,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Length")
+	if (s == "Saturated")
 		s == "Test";
 	
 	if (Function) {
@@ -713,6 +713,15 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 			
 			node = call;
 		}
+		else if (f->IsConstructor == 2) {
+			TempNode* temp = irg.mem_temp(((ZClass&)f->Owner()), f);
+			temp->Params = std::move(params);
+		
+			f->Owner().SetInUse();
+			f->SetInUse();
+			
+			node = temp;
+		}
 		else {
 			Node* temp = Temporary((ZClass&)f->Owner(), params);
 			temp->Tt.Class->SetInUse();
@@ -774,7 +783,7 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Length")
+	if (s == "Saturated")
 		s == "Length";
 	
 	// case .class
@@ -1069,7 +1078,7 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	else {
 		ZFunction* f = nullptr;
 		
-		if (!cls.CoreSimple) {
+		if (!cls.CoreSimple/* && cls.T && cls.T->CoreSimple == false*/) {
 			f = FindConstructor(cls, params, pos);
 			if (f == nullptr) {
 				if (cls.TBase == ass.CRaw)

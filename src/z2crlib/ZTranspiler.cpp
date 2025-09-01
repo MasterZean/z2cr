@@ -199,7 +199,7 @@ void ZTranspiler::WriteType(ObjectType* tt) {
 	else if (tt->Class->CoreSimple)
 		cs << tt->Class->BackName;
 	else {
-		cs << "/* auto */";
+		//cs << "/* auto */";
 		cs << tt->Class->Namespace().BackName << "::";
 		cs << tt->Class->BackName;
 	}
@@ -232,7 +232,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 				continue;
 		
 		ASSERT(v.I.Tt.Class);
-		ASSERT(v.Value);
+		//ASSERT(v.Value);
 		
 		NewMember();
 				
@@ -268,7 +268,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 		
 		if (v.I.Tt.Class->FromTemplate && v.I.Tt.Class->TBase == ass.CRaw) {
 		}
-		else {
+		else if (v.Value) {
 			if (v.InClass && !v.IsStatic) {
 				cs << " = ";
 				Walk(v.Value);
@@ -412,7 +412,7 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
 		ASSERT(v.I.Tt.Class);
-		ASSERT(v.Value);
+		//ASSERT(v.Value);
 		
 		if (v.InClass && !v.IsStatic)
 			continue;
@@ -438,7 +438,7 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		
 		if (v.I.Tt.Class->FromTemplate && v.I.Tt.Class->TBase == ass.CRaw) {
 		}
-		else {
+		else if (v.Value){
 			cs << " = ";
 			Walk(v.Value);
 		}
@@ -491,8 +491,13 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		return;
 	}
 	else if (f.IsConstructor == 2) {
-		cs << f.Namespace().BackName << "::";
-		cs << f.Owner().Name << " ";
+		if (f.Owner().IsClass && ((ZClass&)f.Owner()).CoreSimple) {
+			cs << f.Owner().BackName << " ";
+		}
+		else {
+			cs << f.Namespace().BackName << "::";
+			cs << f.Owner().Name << " ";
+		}
 		cs << f.Namespace().BackName << "::";
 		cs << f.Owner().Name << "::";
 		cs << f.Name;
@@ -521,10 +526,14 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 	cs << "(";
 	
-	if (f.InClass) {
+	if (f.IsConstructor == 0 && f.InClass) {
 		 ZClass& cls = (ZClass&)f.Owner();
-		 if (cls.CoreSimple)
+		 if (cls.CoreSimple) {
 		     cs << cls.BackName << " _this";
+		 
+			 if (f.Params.GetCount())
+			     cs << ", ";
+		 }
 	}
 	
 	for (int i = 0; i < f.Params.GetCount(); i++) {
@@ -568,8 +577,14 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 	
 	if (f.IsConstructor == 2) {
 		NL();
-		cs << f.Namespace().BackName << "::";
-		cs << f.Owner().Name << " ";
+		if (f.Owner().IsClass && ((ZClass&)f.Owner()).CoreSimple) {
+			cs << f.Owner().BackName << " ";
+		}
+		else {
+			cs << f.Namespace().BackName << "::";
+			cs << f.Owner().Name << " ";
+		}
+		
 		cs << "_this";
 		ES();
 		

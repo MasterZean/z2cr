@@ -210,18 +210,11 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 
 ZClass& Assembly::AddClass(ZClass& cls) {
 	int type = Classes.GetCount();
-	String name = cls.Namespace().Name + cls.Name;
-	int index = Classes.Find(name);
-	//if (index != -1/* && name != "sys.core.lang.String"*/) {
-	//	index = -1;
-	//}
 	
-	if (index != -1) {
-		//cls.IsResolved = true;
-		name == "aaa";
-	}
-	else
-		LOG(String().Cat() << "Adding class " << name);
+	String name = cls.Namespace().Name + cls.Name;
+	
+	int index = Classes.Find(name);
+
 	if (index != -1) {
 		ZClass& exCls = Classes[index];
 		
@@ -235,14 +228,17 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 		for (int i = 0; i < exCls.PreFunctions.GetCount(); i++)
 			exCls.PreFunctions[i].SetOwner(exCls);
 		
+		for (int i = 0; i < cls.PreConstructors.GetCount(); i++)
+			exCls.PreConstructors.Add(cls.PreConstructors[i]);
+		for (int i = 0; i < exCls.PreConstructors.GetCount(); i++)
+			exCls.PreConstructors[i].SetOwner(exCls);
+		
 		return exCls;
 	}
+	else
+		LOG(String().Cat() << "Adding class " << name);
 
 	ZClass& typeCls = (index != -1) ? Classes[index]: Classes.Add(cls.Namespace().Name + cls.Name, cls);
-	
-	if (name == "sys.core.lang.String")
-		if (Classes.GetCount() != type)
-			name == "sys.core.lang.String";
 	
 	typeCls.ParamType = &typeCls;
 	typeCls.Index = type;
