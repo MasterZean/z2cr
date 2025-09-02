@@ -89,19 +89,19 @@ namespace test {
 	double a11 = 0.0;
 	uint32 a12 = '\0';
 	size_t a13 = 0u;
-	int32 b1 = (int32)(a1);
-	int32 b2 = (int32)(a2);
-	int32 b3 = (int32)(a3);
-	int32 b4 = (int32)(a4);
-	int32 b5 = (int32)(a5);
-	int32 b6 = (int32)(a6);
-	int32 b7 = (int32)(a7);
-	int32 b8 = (int32)(a8);
-	int32 b9 = (int32)(a9);
-	int32 b10 = (int32)(a10);
-	int32 b11 = (int32)(a11);
-	int32 b12 = (int32)(a12);
-	int32 b13 = (int32)(a13);
+	int32 b1 = (int32)(test::a1);
+	int32 b2 = (int32)(test::a2);
+	int32 b3 = (int32)(test::a3);
+	int32 b4 = (int32)(test::a4);
+	int32 b5 = (int32)(test::a5);
+	int32 b6 = (int32)(test::a6);
+	int32 b7 = (int32)(test::a7);
+	int32 b8 = (int32)(test::a8);
+	int32 b9 = (int32)(test::a9);
+	int32 b10 = (int32)(test::a10);
+	int32 b11 = (int32)(test::a11);
+	int32 b12 = (int32)(test::a12);
+	int32 b13 = (int32)(test::a13);
 }
 */
 val a1 = Bool{};

@@ -58,7 +58,7 @@ namespace testptr {
 /* @dump namespace: testptr def
 namespace testptr {
 	int32 v = 23;
-	int32* p1 = &(v);
+	int32* p1 = &(testptr::v);
 }
 */
 
@@ -83,7 +83,7 @@ namespace testptr {
 /* @dump namespace: testptr def
 namespace testptr {
 	int32 v = 23;
-	int32* p1 = &(v);
+	int32* p1 = &(testptr::v);
 }
 */
 

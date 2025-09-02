@@ -399,7 +399,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	
 	Class = clsBack;
 	
-	String deps;
+	/*String deps;
 	
 	if (f.Owner().IsClass)
 		deps << f.Namespace().Name << f.Owner().Name;
@@ -457,6 +457,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	}
 	
 	DUMP(deps);
+	*/
 	
 	return true;
 }
@@ -786,7 +787,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	
-	if (v.Name == "affixes")
+	if (v.Name == "a333")
 		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
@@ -855,7 +856,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		if (v.Value == nullptr) {
 			ZExprParser ep(v, Class, f, *this, parser, irg);
 			Vector<Node*> params;
-			if (v.I.Tt.Class->TBase && v.I.Tt.Class->TBase != ass.CRaw)
+			if (v.I.Tt.Class->TBase == nullptr || v.I.Tt.Class->TBase != ass.CRaw)
 				v.Value = ep.Temporary(*v.I.Tt.Class, params, &vp);
 		}
 	}

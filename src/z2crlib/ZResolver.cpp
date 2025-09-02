@@ -98,26 +98,16 @@ void ZResolver::ResolveClasses() {
 		for (int j = 0; j < ns.PreClasses.GetCount(); j++) {
 			ZClass& c = ns.PreClasses[j];
 			
-			LOG(String().Cat() << "NS PreClass :" << ns.Name << c.Name);
-			
 			ResolveClass(c, ns);
 		}
 	}
 }
 
 void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
-	if (c.Name == "Int")
-		c.Name == "String";
-	
 	if (c.IsResolved)
 		return;
 
 	c.GenerateSignatures();
-	
-	/*if (c.Name == "String") {
-		DUMP(c.PreVariables.GetCount());
-		DUMP(ass.CString->PreVariables.GetCount());
-	}*/
 	
 	ZClass& cls = ass.AddClass(c);
 	
@@ -128,8 +118,8 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 	
 	if (ns.Classes.Find(cls.Name) == -1)
 		ns.Classes.Add(cls.Name, &cls);
-	//LOG(String().Cat() << "Resolving :" << ns.Name << c.Name << " Index " << cls.Index);
-	LOG(String().Cat() << "Resolving :" << ns.Name << cls.Name << " Index " << cls.Index);
+	//TODO: option?
+	//LOG(String().Cat() << "Resolving :" << ns.Name << cls.Name << " Index " << cls.Index);
 	
 	for (int k = 0; k < ns.Sources.GetCount(); k++) {
 		ns.Sources[k]->AddReference(cls.Namespace().Name + cls.Name, Point(1, 1));
@@ -139,12 +129,14 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 void ZResolver::ResolveFunctions() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
 		ZNamespace& ns = ass.Namespaces[i];
-		LOG(String().Cat() << "Resolving deep namespace: " << ns.ProperName);
+		
+		//TODO: option?
+		//LOG(String().Cat() << "Resolving deep namespace: " << ns.ProperName);
 		ResolveNamespaceMembers(ns);
 				
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
 			ZClass& c = *ns.Classes[j];
-			LOG(String().Cat() << "Resolving deep class: " << ns.Name << c.Name);
+			//LOG(String().Cat() << "Resolving deep class: " << ns.Name << c.Name);
 			if (c.IsResolved == false) {
 				
 				ResolveNamespaceMembers(c);

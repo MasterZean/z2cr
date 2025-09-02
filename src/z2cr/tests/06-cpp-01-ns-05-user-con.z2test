@@ -1,0 +1,248 @@
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		Test();
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+testcpp::Test::Test() {
+}
+*/
+
+namespace testcpp;
+
+class Test {
+	this() {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(15, 9): error: declaration in: class testcpp.Test
+                        this{}
+    clashes with the following declarations:
+        test.z2(18, 9): this{}
+*/
+
+namespace testcpp;
+
+class Test {
+	this() {
+	}
+
+	this() {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		Test(int32 x);
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+testcpp::Test::Test(int32 x) {
+}
+*/
+
+namespace testcpp;
+
+class Test {
+	this(x: Int) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		Test(const foo::Foo& x);
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+testcpp::Test::Test(const foo::Foo& x) {
+}
+*/
+
+namespace testcpp;
+
+class Test {
+	this(x: Foo) {
+	}
+}
+
+namespace foo;
+
+class Foo {
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static Test Init();
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+testcpp::Test testcpp::Test::Init() {
+	testcpp::Test _this;
+	
+	return _this;
+}
+*/
+
+namespace testcpp;
+
+class Test {
+	this Init() {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static Test Init();
+		static Test Redo();
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+testcpp::Test testcpp::Test::Init() {
+	testcpp::Test _this;
+	
+	return _this;
+}
+
+testcpp::Test testcpp::Test::Redo() {
+	testcpp::Test _this;
+	
+	return _this;
+}
+*/
+
+namespace testcpp;
+
+class Test {
+	this Init() {
+	}
+
+	this Redo() {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static Test Init(double x, uint8* y);
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+testcpp::Test testcpp::Test::Init(double x, uint8* y) {
+	testcpp::Test _this;
+	
+	return _this;
+}
+*/
+
+namespace testcpp;
+
+class Test {
+	this Init(x: Double, y: Ptr<Byte>) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: testcpp pubint
+namespace testcpp {
+	class Test {
+	public:
+		static Test Init(const foo::Foo& x);
+	};
+}
+*/
+
+/* @dump namespace: testcpp privint
+*/
+
+/* @dump namespace: testcpp def
+testcpp::Test testcpp::Test::Init(const foo::Foo& x) {
+	testcpp::Test _this;
+	
+	return _this;
+}
+*/
+
+namespace testcpp;
+
+class Test {
+	this Init(x: Foo) {
+	}
+}
+
+namespace foo;
+
+class Foo {
+}

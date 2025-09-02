@@ -185,7 +185,9 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	ASSERT(ns.Name.EndsWith("."));
 	
 	int type = Classes.GetCount();
-	LOG(String().Cat() << "Adding core class " << ns.Name << name << " Index " << type);
+	
+	// TODO: option?
+	//LOG(String().Cat() << "Adding core class " << ns.Name << name << " Index " << type);
 	ZClass& typeCls = Classes.Add(ns.Name + name, ZClass(ns));
 		
 	//typeCls.Scan.Namespace = ns;
@@ -235,8 +237,10 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 		
 		return exCls;
 	}
-	else
-		LOG(String().Cat() << "Adding class " << name);
+	else {
+		// TODO: option?
+		//LOG(String().Cat() << "Adding class " << name);
+	}
 
 	ZClass& typeCls = (index != -1) ? Classes[index]: Classes.Add(cls.Namespace().Name + cls.Name, cls);
 	

@@ -92,8 +92,10 @@ bool ZTest::Run() {
 					LOG("=================================================================================================================");
 				}
 			
-				DUMP(dump);
-				DUMP(Dumps[td]);
+				LOG("Found dump:");
+				LOG(dump);
+				LOG("Expected dump:");
+				LOG(Dumps[td]);
 				result = false;
 				Cout() << Name << "(" << Line << ")" << " test failed because dumps\n";
 			}
@@ -119,8 +121,10 @@ bool ZTest::Run() {
 					LOG("=================================================================================================================");
 				}
 			
-				DUMP(dump);
-				DUMP(GlobalVarDef);
+				LOG("Found dump:");
+				LOG(dump);
+				LOG("Expected dump:");
+				LOG(GlobalVarDef);
 				result = false;
 				Cout() << Name << "(" << Line << ")" << " test failed because GlobalVarDef\n";
 			}

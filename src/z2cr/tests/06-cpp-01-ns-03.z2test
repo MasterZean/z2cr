@@ -88,18 +88,20 @@ namespace testcpp {
 
 /* @dump namespace: testcpp def
 int64 testcpp::f(int32 a, double b) {
-	return 0ll;
+	return 0;
 }
 
 uint64 testcpp::g(int32 a, double b) {
-	return 0ull;
+	return 0;
 }
 */
 
 namespace testcpp;
 
 def f(a: Int, b: Double): Long {
+	return 0;
 }
 
 private def g(a: Int, b: Double): QWord {
+	return 0;
 }

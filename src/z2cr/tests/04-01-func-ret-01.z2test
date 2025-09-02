@@ -6,6 +6,7 @@ namespace test;
 	return 0;
 */
 func f(): Int {	
+	return 0;
 }
 
 // @test func_ret
@@ -33,6 +34,7 @@ val a = 0;
 func f(): Int {	
 	if (a > 7)
 		return 0;
+	return 0;
 }
 
 // @test func_ret
@@ -53,6 +55,7 @@ func f(): Int {
 		;
 	else
 		return 0;
+	return 0;
 }
 
 // @test func_ret
@@ -73,6 +76,7 @@ func f(): Int {
 	}
 	else
 		return 0;
+	return 0;
 }
 
 // @test func_ret
@@ -109,6 +113,7 @@ val b: Float;
 func f(): Int {	
 	while (a - b >= 0.00001)
 		return 23;
+	return 0;
 }
 
 // @test func_ret
