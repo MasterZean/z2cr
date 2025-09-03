@@ -1,0 +1,129 @@
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: sys.core.lang pubint
+namespace sys::core::lang {
+	class Int {
+	public:
+		static _(const sys::core::lang::String& x);
+	};
+}
+*/
+
+/* @dump namespace: sys.core.lang privint
+*/
+
+/* @dump namespace: sys.core.lang def
+sys::core::lang::Int::_(const sys::core::lang::String& x) {
+	int32 _this;
+	
+	return _this;
+}
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: String) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: sys.core.lang pubint
+namespace sys::core::lang {
+	class Int {
+	public:
+		static _(const sys::core::lang::Foo& x);
+	};
+}
+*/
+
+/* @dump namespace: sys.core.lang privint
+*/
+
+/* @dump namespace: sys.core.lang def
+sys::core::lang::Int::_(const sys::core::lang::Foo& x) {
+	int32 _this;
+	
+	return _this;
+}
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Foo) {
+	}
+}
+
+class Foo {
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: sys.core.lang pubint
+namespace sys::core::lang {
+	class Int {
+	public:
+		static _(int32 x, const sys::core::lang::String& y);
+	};
+}
+*/
+
+/* @dump namespace: sys.core.lang privint
+*/
+
+/* @dump namespace: sys.core.lang def
+sys::core::lang::Int::_(int32 x, const sys::core::lang::String& y) {
+	int32 _this;
+	
+	return _this;
+}
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Int, y: String) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: sys.core.lang pubint
+namespace sys::core::lang {
+	class Int {
+	public:
+		static _(float x, const sys::core::lang::Foo& y);
+	};
+}
+*/
+
+/* @dump namespace: sys.core.lang privint
+*/
+
+/* @dump namespace: sys.core.lang def
+sys::core::lang::Int::_(float x, const sys::core::lang::Foo& y) {
+	int32 _this;
+	
+	return _this;
+}
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Float, y: Foo) {
+	}
+}
+
+class Foo {
+}

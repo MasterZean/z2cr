@@ -115,6 +115,8 @@ public:
 	
 	inline ZNamespace& Owner();
 	
+	inline ZClass& Class();
+	
 	void SetOwner(ZNamespace& aNmspace) {
 		parent = &aNmspace;
 	}
@@ -418,5 +420,12 @@ const ZNamespace& ZEntity::Namespace() const {
 ZNamespace& ZEntity::Owner() {
 	return *parent;
 }
+
+ZClass& ZEntity::Class() {
+	ASSERT(parent->IsClass);
+	return (ZClass&)*parent;
+}
+
+
 
 #endif

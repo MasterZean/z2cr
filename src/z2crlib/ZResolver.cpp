@@ -186,6 +186,18 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	f.GenerateSignatures(comp);
 	f.DefPos.Source->Functions.Add(&f);
 	
+	if (f.InClass && f.IsConstructor == 1) {
+		ZClass& cls = (ZClass&)f.Owner();
+		if (cls.CoreSimple) {
+			if (f.Params.GetCount() == 0) {
+				throw ER::ErrCantOverrideDefaultBehavior(f.DefPos);
+			}
+			else if (f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class->CoreSimple) {
+				throw ER::ErrCantOverrideDefaultBehavior(f.DefPos);
+			}
+		}
+	}
+	
 	f.SetOwner(ns);
 	
 	//if (f.Name == "IsProp")

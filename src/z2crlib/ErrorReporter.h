@@ -40,6 +40,7 @@ public:
 	static ZException ErrNamespaceInClass(const ZSourcePos& p);
 	static ZException ErrMethodDeclarationExpected(const ZSourcePos& p);
 	static ZException ErrConstructorDeclarationExpected(const ZSourcePos& p);
+	static ZException ErrCantOverrideDefaultBehavior(const ZSourcePos& p);
 	
 	static void ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo);
 	

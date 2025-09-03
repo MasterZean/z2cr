@@ -1,0 +1,209 @@
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this() {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Byte) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Small) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Word) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Short) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: DWord) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Int) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: QWord) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Long) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Float) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Double) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Bool) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: Char) {
+	}
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(12, 9): can't override default behaviour for build-in system types
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this(x: PtrSize) {
+	}
+}

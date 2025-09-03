@@ -451,7 +451,10 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 
 void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	if (f.IsConstructor == 1) {
-		cs << f.Owner().BackName;
+		if (f.InClass && f.Class().CoreSimple)
+			cs << "static " << "_";
+		else
+			cs << f.Owner().BackName;
 		WriteFunctionParams(f);
 		return;
 	}
@@ -476,7 +479,7 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	cs << " " << f.BackName;
 	WriteFunctionParams(f);
 	
-	if (f.InClass && ((ZClass&)f.Owner()).CoreSimple)
+	if (f.InClass && f.Class().CoreSimple)
 		;
 	else if (f.InClass == true && f.IsFunction && !f.IsStatic)
 		cs << " const";
@@ -485,13 +488,17 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	if (f.IsConstructor == 1) {
 		cs << f.Namespace().BackName << "::";
-		cs << f.Owner().Name << "::";
-		cs << f.Owner().Name;
+		if (f.InClass && f.Class().CoreSimple)
+			cs << f.Owner().Name << "::" << "_";
+		else {
+			cs << f.Owner().Name << "::";
+			cs << f.Owner().Name;
+		}
 		WriteFunctionParams(f);
 		return;
 	}
 	else if (f.IsConstructor == 2) {
-		if (f.Owner().IsClass && ((ZClass&)f.Owner()).CoreSimple) {
+		if (f.InClass && f.Class().CoreSimple) {
 			cs << f.Owner().BackName << " ";
 		}
 		else {
@@ -517,7 +524,7 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	cs << f.BackName;
 	WriteFunctionParams(f);
 	
-	if (f.InClass && ((ZClass&)f.Owner()).CoreSimple)
+	if (f.InClass && f.Class().CoreSimple)
 		;
 	else if (f.InClass && f.IsFunction && !f.IsStatic)
 		cs << " const";
@@ -575,9 +582,10 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 		
 	indent++;
 	
-	if (f.IsConstructor == 2) {
+	bool special = f.IsConstructor == 2 || (f.IsConstructor == 1 && f.InClass && f.Class().CoreSimple);
+	if (special) {
 		NL();
-		if (f.Owner().IsClass && ((ZClass&)f.Owner()).CoreSimple) {
+		if (f.InClass && f.Class().CoreSimple) {
 			cs << f.Owner().BackName << " ";
 		}
 		else {
@@ -594,7 +602,7 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 	
 	int count = WalkChildren(&f.Nodes);
 	
-	if (f.IsConstructor == 2) {
+	if (special) {
 		if (count) {
 			NL();
 			EL();
