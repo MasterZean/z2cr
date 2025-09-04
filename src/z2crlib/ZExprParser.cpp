@@ -1018,6 +1018,19 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
 	Node* dr = nullptr;
 	
+	ZFunction* f = FindConstructor(cls, params, nullptr);
+		
+	if (f != nullptr) {
+		f = FindConstructor(cls, params, nullptr);
+		TempNode* node = irg.mem_temp(cls, f);
+		node->Params = std::move(params);
+		
+		if (f && f->ShouldEvaluate())
+			comp.CompileFunc(*f);
+		
+		return node;
+	}
+	else
 	if (&cls == ass.CFloat) {
 		if (params.GetCount() == 0)
 			return irg.const_r32(0);

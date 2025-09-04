@@ -1495,7 +1495,11 @@ void ZTranspiler::Proc(TempNode& node) {
 	if (cls.CoreSimple) {
 		//if (&cls.Namespace() != inNamespace)
 			cs << cls.Namespace().BackName << "::";
-		cs << cls.Name << "::" << node.Constructor->BackName << '(';
+		cs << cls.Name << "::";
+		if (node.Constructor->IsConstructor == 1)
+			cs << "_(";
+		else
+			cs << node.Constructor->BackName << '(';
 	}
 	else {
 		//if (&cls.Namespace() != inNamespace)

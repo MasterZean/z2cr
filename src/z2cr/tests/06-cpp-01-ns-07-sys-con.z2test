@@ -35,9 +35,18 @@ class Int {
 
 /* @dump namespace: sys.core.lang pubint
 namespace sys::core::lang {
+	void _main();
+}
+
+namespace sys::core::lang {
 	class Int {
 	public:
 		static _(const sys::core::lang::Foo& x);
+	};
+}
+
+namespace sys::core::lang {
+	class Foo {
 	};
 }
 */
@@ -46,6 +55,10 @@ namespace sys::core::lang {
 */
 
 /* @dump namespace: sys.core.lang def
+void sys::core::lang::_main() {
+	sys::core::lang::Int::_(sys::core::lang::Foo());
+}
+
 sys::core::lang::Int::_(const sys::core::lang::Foo& x) {
 	int32 _this;
 	
@@ -61,6 +74,10 @@ class Int {
 }
 
 class Foo {
+}
+
+def @main() {
+	Int{Foo{}};
 }
 
 // @test namespace
@@ -126,4 +143,99 @@ class Int {
 }
 
 class Foo {
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: sys.core.lang pubint
+namespace sys::core::lang {
+	void _main();
+}
+
+namespace sys::core::lang {
+	class Int {
+	public:
+		static int32 Init(int32 x);
+	};
+}
+*/
+
+/* @dump namespace: sys.core.lang privint
+*/
+
+/* @dump namespace: sys.core.lang def
+void sys::core::lang::_main() {
+	sys::core::lang::Int::Init(50);
+	int32 a = sys::core::lang::Int::Init(60);
+}
+
+int32 sys::core::lang::Int::Init(int32 x) {
+	int32 _this;
+	
+	return _this;
+}
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this Init(x: Int) {
+	}
+}
+
+def @main() {
+	Int.Init{50};
+	val a = Int.Init{60};
+}
+
+// @test namespace
+// =================================================================================================================
+// @file
+
+/* @dump namespace: sys.core.lang pubint
+namespace sys::core::lang {
+	void _main();
+}
+
+namespace sys::core::lang {
+	class Int {
+	public:
+		static int32 Init(const sys::core::lang::Foo& x);
+	};
+}
+*/
+
+/* @dump namespace: sys.core.lang privint
+*/
+
+/* @dump namespace: sys.core.lang def
+void sys::core::lang::_main() {
+	sys::core::lang::Int::Init(sys::core::lang::Foo());
+	sys::core::lang::Foo f = sys::core::lang::Foo();
+	int32 a = sys::core::lang::Int::Init(f);
+}
+
+int32 sys::core::lang::Int::Init(const sys::core::lang::Foo& x) {
+	int32 _this;
+	
+	return _this;
+}
+*/
+
+namespace sys.core.lang;
+
+class Int {
+	this Init(x: Foo) {
+	}
+}
+
+class Foo {
+}
+
+def @main() {
+	Int.Init{Foo{}};
+	val f: Foo;
+	val a = Int.Init{f};
 }
