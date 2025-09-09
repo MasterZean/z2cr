@@ -290,7 +290,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-//	if (!path.EndsWith("06-cpp-01-ns-07-sys-con.z2test"))
+//	if (!path.EndsWith("03-04-ptrval-02.z2test"))
 //		return;
 	
 	FileIn file(path);

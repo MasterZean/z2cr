@@ -226,7 +226,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 		if (!CanAccess(v.Access, accessFlags))
 			continue;
 		
-		if (v.IsStatic && !v.InUse)
+		if (CheckUse && v.IsStatic && !v.InUse)
 			continue;
 		
 		// TODO: fix
@@ -420,7 +420,7 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		if (v.InClass && !v.IsStatic)
 			continue;
 		
-		if (v.IsStatic && !v.InUse)
+		if (CheckUse && v.IsStatic && !v.InUse)
 			continue;
 		
 		NewMember();
