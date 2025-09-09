@@ -886,6 +886,7 @@ Node* ZExprParser::ParseNumeric() {
 
 ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass) {
 	Assembly& ass = comp.Ass();
+	
 	ObjectInfo ti;
 	ti.IsRef = false;
 	ti.IsConst = false;
@@ -984,13 +985,17 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* 
 		parser.Expect('>');
 		
 		cls = &comp.ResolveInstance(*cls, *sub.Tt.Class, tt.P, true);
+		ti.Tt = cls->Tt;
 		if (node) {
-			cls->Tt.Param = node->IntVal;
-			//ti.Tt = cls->Tt;
-			//ti.Tt.Param = node->IntVal;
+			ti.Tt.Param = node->IntVal;
 		}
+		auto temp = new ObjectType(sub.Tt);
+		cls->Temps.Add(temp);
+		ti.Tt.Next = temp;
+		
+		return ti;
 	}
-
+	
 	ti.Tt = cls->Tt;
 	
 	return ti;

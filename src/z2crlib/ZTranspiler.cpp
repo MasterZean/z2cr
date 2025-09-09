@@ -208,7 +208,8 @@ void ZTranspiler::WriteType(ObjectType* tt) {
 void ZTranspiler::WriteTypePost(ObjectType* tt) {
 	if (tt->Class->FromTemplate && tt->Class->TBase == ass.CRaw) {
 		cs << '[' << tt->Param << ']';
-		WriteTypePost(&tt->Class->T->Tt);
+		ASSERT(tt->Next);
+		WriteTypePost(tt->Next);
 	}
 }
 
@@ -262,8 +263,8 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 				cs << "const ";
 		}
 
-		//if (v.Name == "Zero")
-		//	cs << "yYy";
+//		if (v.Name == "TileVariant")
+//			v.Name == "TileVariant"
 
 		WriteType(&v.I.Tt);
 		cs << " " << v.Name;

@@ -321,7 +321,10 @@ bool ZCompiler::PreCompileVars(ZNamespace& ns) {
 		if (v->IsEvaluated)
 			continue;
 		
-		//DUMP("preocmpile " + ns.Name + ":" + v->Name);
+//		DUMP("preocmpile " + ns.Name + ":" + v->Name);
+		
+//		if (v->Name == "TileVariant")
+//			v->Name == "TileVariant";
 		CompileVar(*v);
 		
 		//v->InUse = true;

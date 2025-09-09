@@ -51,6 +51,8 @@ public:
 	
 	ObjectType(ZClass& cls): Class(&cls) {
 	}
+	
+	ObjectType(const ObjectType&) = default;
 };
 
 class ObjectInfo: Moveable<ObjectInfo> {
