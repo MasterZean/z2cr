@@ -246,17 +246,24 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	ASSERT(nameSpace);
 
 	ZSourcePos dp = parser.GetFullPos();
+	
 	String name = parser.ExpectId();
 	
-	if (name == "String")
-		name == "String";
-	
 	curClass = &nameSpace->PrepareClass(name);
+	
+	if (parser.Char('<')) {
+		curClass->Scan.TName << parser.ExpectZId();
+		parser.Expect(':');
+		parser.ExpectId("Class");
+		parser.Expect('>');
+		
+		curClass->IsTemplate = true;
+	}
+	
 	curClass->BackName = name;
 	curClass->DefPos = dp;
 	curClass->IsClass = true;
 	curClass->LibLink = std::move(libLink);
-	//curClass->InUse = true;
 	
 	parser.Expect('{');
 	

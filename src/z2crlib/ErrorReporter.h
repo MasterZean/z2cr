@@ -42,6 +42,8 @@ public:
 	static ZException ErrConstructorDeclarationExpected(const ZSourcePos& p);
 	static ZException ErrCantOverrideDefaultBehavior(const ZSourcePos& p);
 	
+	static ZException CantInstantiateTemplate(const ZSourcePos& p, ZClass& cls);
+	
 	static void ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo);
 	
 	static void ErrClassTemplateWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int target, int argNo);

@@ -220,20 +220,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	if (index != -1) {
 		ZClass& exCls = Classes[index];
 		
-		for (int i = 0; i < cls.PreVariables.GetCount(); i++)
-			exCls.PreVariables.Add(cls.PreVariables[i]);
-		for (int i = 0; i < exCls.PreVariables.GetCount(); i++)
-			exCls.PreVariables[i].SetOwner(exCls);
-		
-		for (int i = 0; i < cls.PreFunctions.GetCount(); i++)
-			exCls.PreFunctions.Add(cls.PreFunctions[i]);
-		for (int i = 0; i < exCls.PreFunctions.GetCount(); i++)
-			exCls.PreFunctions[i].SetOwner(exCls);
-		
-		for (int i = 0; i < cls.PreConstructors.GetCount(); i++)
-			exCls.PreConstructors.Add(cls.PreConstructors[i]);
-		for (int i = 0; i < exCls.PreConstructors.GetCount(); i++)
-			exCls.PreConstructors[i].SetOwner(exCls);
+		exCls.CopyPreSection(cls);
 		
 		return exCls;
 	}

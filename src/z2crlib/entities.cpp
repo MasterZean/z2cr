@@ -27,6 +27,23 @@ void ZClass::GenerateSignatures() {
 	osig = ER::ToColor(Owner());
 }
 
+void ZClass::CopyPreSection(ZClass& cls) {
+	for (int i = 0; i < cls.PreVariables.GetCount(); i++)
+		PreVariables.Add(cls.PreVariables[i]);
+	for (int i = 0; i < PreVariables.GetCount(); i++)
+		PreVariables[i].SetOwner(*this);
+	
+	for (int i = 0; i < cls.PreFunctions.GetCount(); i++)
+		PreFunctions.Add(cls.PreFunctions[i]);
+	for (int i = 0; i < PreFunctions.GetCount(); i++)
+		PreFunctions[i].SetOwner(*this);
+	
+	for (int i = 0; i < cls.PreConstructors.GetCount(); i++)
+		PreConstructors.Add(cls.PreConstructors[i]);
+	for (int i = 0; i < PreConstructors.GetCount(); i++)
+		PreConstructors[i].SetOwner(*this);
+}
+
 void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	ZParser parser(ParamPos);
 	

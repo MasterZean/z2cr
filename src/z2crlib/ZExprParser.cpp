@@ -333,6 +333,9 @@ Node* ZExprParser::ParseAtom() {
 			if (exp->IsLiteral && exp->Tt.Class == ass.CClass) {
 				ZClass& cobj = ass.Classes[(int)exp->IntVal];
 				
+				if (&cobj != ass.CPtr && cobj.IsTemplate)
+					throw ER::CantInstantiateTemplate(pp, cobj);
+				
 				Vector<Node*> params;
 				getParams(params, '}');
 				

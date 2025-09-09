@@ -102,6 +102,12 @@ void ER::ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const Z
 	Error(source, p, err);
 }
 
+ZException ER::CantInstantiateTemplate(const ZSourcePos& p, ZClass& cls) {
+	String err = "generic " + ToColor(cls, true) + " can't be instantiated without specialization";
+	Error(*p.Source, p.P, err);
+}
+
+
 void ER::ErrClassTemplateWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int target, int argNo) {
 	String err = "template " + ToColor(cls, true) + "' must be instanced with " + IntStr(target) + " argument";
 	if (target != 1)

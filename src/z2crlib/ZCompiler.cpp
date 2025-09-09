@@ -15,6 +15,7 @@ bool ZCompiler::Compile() {
 		return false;
 	
 	ZResolver resolver(*this);
+	resPtr = &resolver;
 	if (!resolver.Resolve())
 		return false;
 	
@@ -49,7 +50,7 @@ bool ZCompiler::Compile() {
 			CompileFunc(*MainFunction);
 		
 		cuCounter = 1;
-		cuClasses.Clear();
+		//cuClasses.Clear();
 		
 		WriteDeps((ZClass&)MainFunction->Owner());
 	}
@@ -152,6 +153,8 @@ bool ZCompiler::Transpile() {
 		cpp.TranspileDeclarations(ass.Namespaces[i], 0b100, false);
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		cpp.TranspileDefinitions(ass.Namespaces[i]);
+	for (int i = 0; i < tempInstances.GetCount(); i++)
+		cpp.TranspileDefinitions(*tempInstances[i]);
 	cpp.WriteOutro();
 	
 	if (MCU)
@@ -909,22 +912,32 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 		return tclass;
 	}
 
-	ZClass& tclass = ass.Classes.Add(cc.Namespace().Name + cc.Name/*fullName*/, ZClass(cc.Namespace()));
+	i = ass.Classes.GetCount();
+	
+	ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
 	tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
 	tclass.BackName = String().Cat() << cc.Name << "_" << sub.Name;
-	//ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
-	//tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
-	//tclass.BackName = String().Cat() << cc.Name << "_" << sub.Name;
+	tclass.Index = i;
+	tclass.IsClass = true;
 	tclass.FromTemplate = true;
 	tclass.TBase = &cc;
 	tclass.T = &sub;
+	tclass.InUse = true;
+	tclass.Access = cc.Access;
+	
 	ObjectType* t = &cc.Temps.Add();
 	t->Class = &tclass;
 	t->Next = 0;
 	t->Param = 0;
 	tclass.Tt = *t;
 	tclass.Pt = ass.GetPtr(&t->Class->Tt);
-		
+	
+	tclass.CopyPreSection(cc);
+	resPtr->ResolveNamespaceMembers(tclass);
+	cuClasses.Add(&tclass);
+	
+	tempInstances.Add(&tclass);
+	
 	return tclass;
 }
 

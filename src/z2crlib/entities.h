@@ -247,6 +247,8 @@ public:
 		
 	void GenerateSignatures();
 	
+	void CopyPreSection(ZClass& cls);
+	
 	const String& ColorSig() const {
 		return csig;
 	}

@@ -8,6 +8,7 @@
 #include <z2crlib/ZExprParser.h>
 
 class ZTranspiler;
+class ZResolver;
 
 class ZContext {
 public:
@@ -85,12 +86,14 @@ private:
 	String mainClass;
 	String mainFile;
 	IR irg;
+	ZResolver* resPtr = nullptr;
 	
 	int cuCounter = 0;
 	Vector<ZClass*> cuClasses;
 	
 	ZClass* Class = nullptr;
 	Vector<ZFunction*> CBinds;
+	Vector<ZClass*> tempInstances;
 
 	Vector<ZFunction*> FindMain(ZSource& src);
 	

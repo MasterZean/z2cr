@@ -497,8 +497,8 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		if (f.InClass && f.Class().CoreSimple)
 			cs << f.Owner().Name << "::" << "_";
 		else {
-			cs << f.Owner().Name << "::";
-			cs << f.Owner().Name;
+			cs << f.Owner().BackName << "::";
+			cs << f.Owner().BackName;
 		}
 		WriteFunctionParams(f);
 		return;
@@ -1511,7 +1511,7 @@ void ZTranspiler::Proc(TempNode& node) {
 		//if (&cls.Namespace() != inNamespace)
 			cs << cls.Namespace().BackName << "::";
 		if (node.Constructor->IsConstructor == 1)
-			cs << cls.Name;
+			cs << cls.BackName;
 		else if (node.Constructor->IsConstructor == 2) {
 			cs << cls.Name;
 			cs << "::";
