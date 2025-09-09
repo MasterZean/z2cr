@@ -49,7 +49,7 @@ bool ZCompiler::Compile() {
 		if (MainFunction->ShouldEvaluate())
 			CompileFunc(*MainFunction);
 		
-		cuCounter = 1;
+		cuCounter = cuClasses.GetCount() + 1;
 		//cuClasses.Clear();
 		
 		WriteDeps((ZClass&)MainFunction->Owner());
