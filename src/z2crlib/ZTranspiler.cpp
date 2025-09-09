@@ -457,7 +457,7 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (f.IsSimpleGetter) {
+	if (f.IsSimpleGetter && f.IsGetter) {
 		WriteType(&f.Return.Tt);
 	
 		cs << " " << f.BackName;
@@ -480,6 +480,28 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 		WriteType(&f.Return.Tt);
 	
 		cs << " _" << ToLower(f.Name) << " = 0";
+		
+		return false;
+	}
+	
+	if (f.IsSimpleGetter && f.IsGetter == false) {
+		WriteType(&ass.CVoid->Tt);
+	
+		cs << " " << f.BackName;
+		WriteFunctionParams(f);
+		
+		cs << " {";
+		EL();
+		
+		indent++;
+		NL();
+		cs << "_" << ToLower(f.Name) << " = " << "__value";
+		ES();
+		indent--;
+		
+		NL();
+		cs << "}";
+		EL();
 		
 		return false;
 	}

@@ -230,6 +230,23 @@ bool ZScanner::ScanPropertyMulti(AccessType accessType, const ZTrait& trait, boo
 		
 		if (parser.IsChar(';')) {
 			f.IsSimpleGetter = true;
+			
+			ZFunction& f2 = curClass->PrepareFunction(f.Name);
+			f2.IsFunction = f.IsFunction;
+			f2.DefPos = f.DefPos;
+			f2.ParamPos = f.ParamPos;
+			f2.BackName = f.BackName;
+			f2.Section = f.Section;
+			f2.Access = f.Access;
+			f2.InClass = f.InClass;
+			f2.IsStatic = f.IsStatic;
+			f2.IsConstructor = f.IsConstructor;
+			f2.IsProperty = f.IsProperty;
+			f2.IsSimpleGetter = f.IsSimpleGetter;
+			
+			f2.IsGetter = false;
+		
+			funcs.Add(&f2);
 		}
 	} while (parser.Char(','));
 	
@@ -544,7 +561,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	if (isProp && paramList && returnType)
 		parser.Error(dp.P, "property can't have both a return type (making it a getter) and parameter list (making it a setter) at the same time");
 	
-	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : /*(isProp ? curClass->PrepareProperty(name) :*/ (curClass ? curClass: nameSpace)->PrepareFunction(name));
+	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : (curClass ? curClass: nameSpace)->PrepareFunction(name));
 	
 //	if (isProp)
 //		f.Name == "Clamp";
@@ -555,6 +572,13 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	}
 	else if (isProp == false && parser.Char('='))
 		ScanDefAlias(f);
+	
+	if (isProp) {
+		if (parser.Id("private")) {
+			parser.ExpectId("set");
+			f.IsSetterPrivate = true;
+		}
+	}
 	
 	f.IsFunction = aFunc;
 	f.DefPos = dp;

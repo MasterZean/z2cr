@@ -319,6 +319,7 @@ public:
 	bool IsProperty = false;
 	bool IsGetter = false;
 	bool IsSimpleGetter = false;
+	bool IsSetterPrivate = false;
 	bool IsGenerated = false;
 	
 	ZTrait Trait;
@@ -347,8 +348,9 @@ public:
 		Type = EntityType::Function;
 	}
 	
-	ZFunction(const ZFunction& aEnitity) = default;
+	ZFunction(const ZFunction& aEntity) = default;
 	
+	void ParseSignatures(ZCompiler& comp);
 	void GenerateSignatures(ZCompiler& comp);
 	
 	const String& FuncSig() const {

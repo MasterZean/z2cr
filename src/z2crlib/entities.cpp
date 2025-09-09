@@ -44,12 +44,12 @@ void ZClass::CopyPreSection(ZClass& cls) {
 		PreConstructors[i].SetOwner(*this);
 }
 
-void ZFunction::GenerateSignatures(ZCompiler& comp) {
+void ZFunction::ParseSignatures(ZCompiler& comp) {
 	ZParser parser(ParamPos);
 	
 	bool paramList = true;
 	
-	if (IsProperty && IsGetter)
+	if (IsProperty && (IsGetter || IsSimpleGetter))
 		paramList = false;
 	
 	if (paramList) {
@@ -107,7 +107,9 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	}
 	else
 		Return.Tt = Ass().CVoid->Tt;
-	
+}
+
+void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	fsig = "";
 	dsig = "";
 	csig = "";

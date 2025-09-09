@@ -51,7 +51,8 @@ public:
 	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos);
 	
 	Node *ResolveOpOverload(Node *left, Node *right, int op, const Point& opp);
-
+		
+	void TestAccess(ZEntity& f, const Point& opp);
 	
 private:
 	Assembly& ass;
@@ -69,8 +70,7 @@ private:
 	
 	static Point OPS[256];
 	static bool OPCONT[256];
-	
-	void TestAccess(ZEntity& f, const Point& opp);
+
 	
 	Node *GetOpOverload(Node *left, Node *right, int op, const Point& opp);
 	Node *GetOpOverloadStatic(Node *left, Node *right, int op, const Point& opp);

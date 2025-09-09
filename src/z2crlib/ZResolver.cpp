@@ -155,7 +155,16 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 	
 	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
 		ZFunction& f = ns.PreFunctions[i];
-		ResolveFunction(ns, f);
+		if (f.IsSimpleGetter && f.IsGetter)
+			ResolveFunction(ns, f);
+		else if (!f.IsSimpleGetter)
+			ResolveFunction(ns, f);
+	}
+	
+	for (int i = 0; i < ns.PreFunctions.GetCount(); i++) {
+		ZFunction& f = ns.PreFunctions[i];
+		if (f.IsSimpleGetter && f.IsGetter == false)
+			ResolveFunction(ns, f);
 	}
 	
 	for (int i = 0; i < ns.PreVariables.GetCount(); i++) {
@@ -183,6 +192,7 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 }
 
 void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
+	f.ParseSignatures(comp);
 	f.GenerateSignatures(comp);
 	f.DefPos.Source->Functions.Add(&f);
 	
@@ -199,6 +209,37 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	}
 	
 	f.SetOwner(ns);
+	
+	if (f.Name == "Length")
+		f.Name == "Length";
+	if (f.IsSimpleGetter && f.IsGetter == false) {
+		int index = f.Owner().Methods.Find(f.Name);
+		ASSERT(index != -1);
+		ZMethodBundle& d2 = f.Owner().Methods[index];
+		if (d2.Functions[0]->IsSetterPrivate)
+			f.Access = AccessType::Private;
+		
+		bool found = false;
+		for (int i = 0; i < f.Params.GetCount(); i++)
+			if (f.Params[i].Name == "__value")
+				found = true;
+		
+		if (found == false) {
+			ZVariable& var = f.Params.Add(ZVariable(f.Namespace()));
+			var.Name = "__value";
+			var.BackName = "__value";
+			var.I = d2.Functions[0]->Return;
+			//var.DefPos = pp;
+			var.PType = ZVariable::ParamType::tyAuto;
+			//var.IsConst = !isVal;
+			
+			f.Return.Tt = ass.CVoid->Tt;
+			
+			f.GenerateSignatures(comp);
+			
+			DUMP(&f);
+		}
+	}
 	
 	//if (f.Name == "IsProp")
 	//	f.SetOwner(ns);

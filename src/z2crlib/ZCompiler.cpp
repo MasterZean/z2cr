@@ -571,6 +571,8 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 				if (child->NT == NodeType::Def) {
 					DefNode *p = (DefNode*)child;
 					if (p->Function->IsProperty && p->Function->Bundle->PropSetter) {
+						DUMP(p->Function->Bundle->PropSetter);
+						ep.TestAccess(*p->Function->Bundle->PropSetter, pp.P);
 						p->Function = p->Function->Bundle->PropSetter;
 						p->Function->InUse = true;
 						

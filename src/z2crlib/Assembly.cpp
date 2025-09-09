@@ -161,7 +161,8 @@ void Assembly::AddBuiltInClasses() {
 	CChar     = AddCoreType(LangNamespace(), "Char",     "uint32" ,  true, false);
 	CChar->ParamType = CDWord;
 	CPtrSize  = AddCoreType(LangNamespace(), "PtrSize",  "size_t",   true, true);
-	CPtrSize->ParamType = CDWord;
+	// TODO: why?
+	//CPtrSize->ParamType = CDWord;
 	CStream   = AddCoreType(CoreNamespace(),      "Stream",   "Stream",   false, false, false);
 
 	CPtr = AddCoreType(LangNamespace(), "Ptr",      "Ptr");
