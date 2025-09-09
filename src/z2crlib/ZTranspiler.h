@@ -55,7 +55,7 @@ public:
 	void WriteClassForward();
 	void WriteOutro();
 	
-	void WriteFunctionDef(ZFunction& f);
+	bool WriteFunctionDef(ZFunction& f);
 	void WriteFunctionDecl(ZFunction& f);
 	void WriteFunctionParams(ZFunction& f);
 	void WriteFunctionBody(ZFunction& f, bool wrap = true);

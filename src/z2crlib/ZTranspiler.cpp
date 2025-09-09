@@ -332,8 +332,8 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 				cs << "extern \"C\" ";
 			else if (f.Trait.Flags & ZTrait::BINDCPP)
 				cs << "extern ";
-			WriteFunctionDef(f);
-			ES();
+			if (WriteFunctionDef(f) == false)
+				ES();
 			
 			f.WroteDeclaration = true;
 		}
@@ -371,7 +371,7 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 			NewMember();
 			NL();
 			
-			if (fDecl && (CheckUse == false || f.InUse)) {
+			if (fDecl && (CheckUse == false || f.InUse) && !f.IsSimpleGetter) {
 				WriteFunctionDecl(f);
 				WriteFunctionBody(f, wrap);
 			}
@@ -456,20 +456,47 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 	//	EL();
 }
 
-void ZTranspiler::WriteFunctionDef(ZFunction& f) {
+bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
+	if (f.IsSimpleGetter) {
+		WriteType(&f.Return.Tt);
+	
+		cs << " " << f.BackName;
+		WriteFunctionParams(f);
+		
+		cs << " const {";
+		EL();
+		
+		indent++;
+		NL();
+		cs << "return _" << ToLower(f.Name);
+		ES();
+		indent--;
+		
+		NL();
+		cs << "}";
+		EL();
+		
+		NL();
+		WriteType(&f.Return.Tt);
+	
+		cs << " _" << ToLower(f.Name) << " = 0";
+		
+		return false;
+	}
+	
 	if (f.IsConstructor == 1) {
 		if (f.InClass && f.Class().CoreSimple)
 			cs << "static " << "_";
 		else
 			cs << f.Owner().BackName;
 		WriteFunctionParams(f);
-		return;
+		return false;
 	}
 	else if (f.IsConstructor == 2) {
 		cs << "static ";
 		cs << f.Owner().BackName << " " << f.Name;
 		WriteFunctionParams(f);
-		return;
+		return false;
 	}
 	
 	if (f.Trait.Flags & ZTrait::BINDC)
@@ -490,6 +517,8 @@ void ZTranspiler::WriteFunctionDef(ZFunction& f) {
 		;
 	else if (f.InClass == true && f.IsFunction && !f.IsStatic)
 		cs << " const";
+	
+	return false;
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
@@ -524,7 +553,7 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	cs << " ";
 	if (f.InClass) {
 		cs << f.Namespace().BackName << "::";
-		cs << f.Owner().Name << "::";
+		cs << f.Owner().BackName << "::";
 	}
 	else
 		cs << f.Namespace().BackName << "::";

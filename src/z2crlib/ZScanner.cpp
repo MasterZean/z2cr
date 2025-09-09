@@ -227,9 +227,13 @@ bool ZScanner::ScanPropertyMulti(AccessType accessType, const ZTrait& trait, boo
 		
 		funcs.Add(&f);
 		first = false;
+		
+		if (parser.IsChar(';')) {
+			f.IsSimpleGetter = true;
+		}
 	} while (parser.Char(','));
 	
-	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP))
+	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP) || (funcs.GetCount() && funcs[0]->IsSimpleGetter))
 		parser.ExpectEndStat();
 	else {
 		ZSourcePos bp = parser.GetFullPos();
@@ -542,8 +546,8 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	
 	ZFunction& f = (isCons ? curClass->PrepareConstructor(name) : /*(isProp ? curClass->PrepareProperty(name) :*/ (curClass ? curClass: nameSpace)->PrepareFunction(name));
 	
-	if (f.Name == "Clamp")
-		f.Name == "Clamp";
+//	if (isProp)
+//		f.Name == "Clamp";
 	
 	if (isProp && returnType) {
 		if (parser.Char('=') || (parser.Id("get") && parser.Char('=')))

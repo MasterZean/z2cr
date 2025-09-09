@@ -82,13 +82,20 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 					parser.Error(parser.GetPoint(), "identifier expected, " + parser.Identify() + " found");
 			}
 			
-			ZVariable& var = Params.Add(ZVariable(Namespace()));
-			var.Name = name;
-			var.BackName = name;
-			var.I = ti;
-			var.DefPos = pp;
-			var.PType = ZVariable::ParamType::tyAuto;
-			var.IsConst = !isVal;
+			bool found = false;
+			for (int i = 0; i < Params.GetCount(); i++)
+				if (Params[i].Name == name)
+					found = true;
+				
+			if (!found) {
+				ZVariable& var = Params.Add(ZVariable(Namespace()));
+				var.Name = name;
+				var.BackName = name;
+				var.I = ti;
+				var.DefPos = pp;
+				var.PType = ZVariable::ParamType::tyAuto;
+				var.IsConst = !isVal;
+			}
 		}
 		
 		parser.Expect(')');
