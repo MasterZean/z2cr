@@ -508,6 +508,9 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 			for (int j = 0; j < cls.PreFunctions.GetCount(); j++) {
 				ZFunction& f = cls.PreFunctions[j];
 				
+				if (f.IsProperty && f.IsSimpleGetter && f.IsGetter == false)
+					continue;
+				
 				ZItem item;
 				
 				item.Name = f.Name;
@@ -533,8 +536,11 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 				}
 				item.Sig = TrimBoth(s);
 				item.Pos = f.DefPos.P;
-				if (f.IsProperty)
+				if (f.IsProperty) {
 					item.Kind = f.IsGetter ? ZItem::itGet : ZItem::itSet;
+					if (f.IsSimpleGetter && f.IsGetter)
+						item.Kind = ZItem::itGetSet;
+				}
 				else
 					item.Kind = f.IsFunction ? ZItem::itFunc : ZItem::itDef;
 				item.Static = f.IsStatic;
