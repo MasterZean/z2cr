@@ -137,10 +137,12 @@ void ZResolver::ResolveFunctions() {
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
 			ZClass& c = *ns.Classes[j];
 			//LOG(String().Cat() << "Resolving deep class: " << ns.Name << c.Name);
-			if (c.IsResolved == false) {
-				
-				ResolveNamespaceMembers(c);
+			if (c.IsTemplate == false) {
+				if (c.IsResolved == false)
+					ResolveNamespaceMembers(c);
 			}
+			else
+				LOG("Resolve: Skipping template class: " + c.Name);
 		}
 	}
 }
@@ -282,13 +284,16 @@ void ZResolver::ResolveVariables() {
 		
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
 			ZClass& c = *ns.Classes[j];
-			
-			for (int k = 0; k < c.PreVariables.GetCount(); k++) {
-				ZVariable& f = c.PreVariables[k];
-				f.SetOwner(c);
-				f.Owner().Variables.Add(f.Name, &f);
-			}
+			ResolveVariables(c);
 		}
+	}
+}
+
+void ZResolver::ResolveVariables(ZClass& cls) {
+	for (int k = 0; k < cls.PreVariables.GetCount(); k++) {
+		ZVariable& f = cls.PreVariables[k];
+		f.SetOwner(cls);
+		f.Owner().Variables.Add(f.Name, &f);
 	}
 }
 

@@ -27,7 +27,9 @@ bool ZCompiler::Compile() {
 		
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
 			Class = ns.Classes[j];
-			PreCompileVars(*Class);
+			
+			if (Class->IsTemplate == false)
+				PreCompileVars(*Class);
 		}
 		Class = nullptr;
 	}
@@ -795,11 +797,11 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	
-//	if (v.Name == "a333")
-//		v.Name == "affixes";
+	if (v.Name == "ptr")
+		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(*this, parser, &v.Owner());
+		auto ti = ZExprParser::ParseType(*this, parser, &v.Owner(), Class);
 		
 		if (invalidClass(ti.Tt.Class, ass))
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ti.Tt.Class));
@@ -939,6 +941,8 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	
 	tclass.CopyPreSection(cc);
 	resPtr->ResolveNamespaceMembers(tclass);
+	resPtr->ResolveVariables(tclass);
+	//PreCompileVars(tclass);
 	cuClasses.Add(&tclass);
 	
 	tempInstances.Add(&tclass);

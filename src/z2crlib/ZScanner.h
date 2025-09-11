@@ -53,6 +53,7 @@ protected:
 	bool isNoDoc = false;
 	bool isForce = false;
 	bool isCDecl = false;
+	bool isUnsafe = false;
 	Vector<String> libLink;
 	
 	PlatformType pt;

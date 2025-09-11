@@ -23,6 +23,8 @@ void ZTranspiler::WriteIntro() {
 	
 	NL();
 	EL();
+	
+	cs << "struct IndexOutOfBoundsException {};\n";
 }
 
 void ZTranspiler::NsIntro(ZNamespace& ns) {
@@ -79,6 +81,11 @@ void ZTranspiler::WriteOutro() {
 	
 	indent++;
 	
+	NL();
+	cs << "try {";
+	EL();
+	indent++;
+	
 	if (comp.MainFunction->InClass == false) {
 		NL();
 		cs << comp.MainFunction->Namespace().BackName << "::" << comp.MainFunction->BackName << "();";
@@ -97,6 +104,26 @@ void ZTranspiler::WriteOutro() {
 		cs << "delete temp";
 		ES();
 	}
+	
+	indent--;
+	
+	NL();
+	cs << "}";
+	EL();
+	
+	NL();
+	cs << "catch (const IndexOutOfBoundsException& e) {";
+	EL();
+	
+	indent++;
+	NL();
+	cs << "::zprintf(\"IndexOutOfBoundsException found\\n\");";
+	EL();
+	indent--;
+	
+	NL();
+	cs << "}";
+	EL();
 	
 	NL();
 	cs << "return 0;";
@@ -156,7 +183,7 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, boo
 	BeginClass(cls);
 	if (TranspileClassDecl(cls, -1) == 0) {
 		// empty user classes still need declarations
-		if (acls.InUse && !acls.CoreSimple && &acls != ass.CClass && &acls != ass.CRaw && !(acls.FromTemplate/* && acls.TBase != ass.CRaw*/))
+		if (acls.InUse && !acls.CoreSimple && &acls != ass.CClass && &acls != ass.CRaw /*&& !(acls.FromTemplate*//* && acls.TBase != ass.CRaw*/)
 			NewMember();
 	}
 	EndClass();
@@ -306,6 +333,9 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 			if (!CanAccess(f.Access, accessFlags))
 				continue;
 			
+			if (f.Name == "Fill")
+				f.Name == "Fill";
+			
 			bool bindc = f.Trait.Flags & ZTrait::BINDC;
 			
 			if (doBinds == false && bindc == true)
@@ -332,6 +362,7 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 				cs << "extern \"C\" ";
 			else if (f.Trait.Flags & ZTrait::BINDCPP)
 				cs << "extern ";
+			
 			if (WriteFunctionDef(f) == false)
 				ES();
 			
@@ -528,6 +559,8 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	else if (f.InClass == true && f.IsStatic)
 		cs << "static ";
 	else if (f.InClass && ((ZClass&)f.Owner()).CoreSimple)
+		cs << "static ";
+	else if (f.InClass && ((ZClass&)f.Owner()).TBase == ass.CRaw)
 		cs << "static ";
 	
 	WriteType(&f.Return.Tt);

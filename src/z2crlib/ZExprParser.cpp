@@ -360,7 +360,7 @@ Node* ZExprParser::ParseAtom() {
 				Node* index = Parse();
 				parser.Expect(']');
 				
-				if (/*exp->Tt.Class == ass.CPtr || */exp->Tt.Class->TBase == ass.CRaw) {
+				if (/*exp->Tt.Class == ass.CPtr || */exp->Tt.Class->TBase == ass.CRaw || exp->Tt.Class->TBase == ass.CSlice) {
 					Node* temp = irg.mem_index(exp, index);
 					if (temp == nullptr)
 						parser.Error(p, "expression of type '" + ass.TypeToColor(exp->Tt) + "' does not have a '["
@@ -500,8 +500,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "Saturated")
-//		s == "Test";
+	if (s == "Slice")
+		s == "Test";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -671,11 +671,12 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-//		if (aName == "Length")
+//		if (aName == "sum")
 //			aName == "ToByte";
 		
 		if (method.IsProperty == false) {
 			if (!method.IsConstructor) {
+				// TODO: unsafe
 				parser.Expect('(');
 				getParams(params);
 			}
@@ -702,6 +703,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 			if (Class && Class != &f->Owner())
 				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		}
+		// TODO: fix unsafe
+		if (allowUnsafe == false && f->IsUnsafe)
+			parser.Error(opp, ER::Green + aName + ER::White + ": is unsafe, can only be called in unsafe context");
 	 
 		if (f->InClass && f->ShouldEvaluate())
 			comp.CompileFunc(*f);
@@ -884,7 +888,7 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass) {
+ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass, ZNamespace* context) {
 	Assembly& ass = comp.Ass();
 	
 	ObjectInfo ti;
@@ -894,19 +898,29 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* 
 	auto tt = parser.GetFullPos();
 	String shtype = parser.ExpectId();
 	String type = shtype;
+	if (type == "T")
+		type == "T";
 	
 	while (parser.Char('.'))
 		type << "." << parser.ExpectId();
 	
 	ZClass* cls = nullptr;
 	if (type.GetCount() == shtype.GetCount()) {
-		// short name
-		auto search = parser.Source().ShortNameLookup.FindPtr(shtype);
-		if (search)
-			cls = *search;
+		if (context && context->IsClass) {
+			ZClass& acls = (ZClass&)*context;
+			if (acls.FromTemplate && acls.TBase && acls.TBase->Scan.TName[0] == type)
+				cls = acls.T;
+		}
 		
-		if (cls == nullptr)
-			ER::Error(parser.Source(), tt.P, "unknown identifier: " + type);
+		if (cls == nullptr) {
+			// short name
+			auto search = parser.Source().ShortNameLookup.FindPtr(shtype);
+			if (search)
+				cls = *search;
+			
+			if (cls == nullptr)
+				ER::Error(parser.Source(), tt.P, "unknown identifier: " + type);
+		}
 	}
 	else {
 		// full namespace
@@ -924,7 +938,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* 
 		
 		if (parser.IsId("const"))
 			parser.ReadId();
-		ObjectInfo sub = ParseType(comp, parser, aclass);
+		ObjectInfo sub = ParseType(comp, parser, aclass, context);
 		
 		parser.Expect('>');
 
@@ -969,7 +983,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* 
 		if (!cls->IsTemplate)
 			parser.Error(tt.P, " class " + ass.ToQtColor(cls) + " is not a template");
 		
-		ObjectInfo sub = ParseType(comp, parser, aclass);
+		ObjectInfo sub = ParseType(comp, parser, aclass, context);
 		
 		Node* node = nullptr;
 		if (parser.Char(',')) {

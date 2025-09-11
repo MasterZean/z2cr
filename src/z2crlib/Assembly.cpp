@@ -299,12 +299,16 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	
 	String name = cls.Namespace().Name + cls.Name;
 	
+	if (cls.Name == "Slice")
+		cls.Name == "Slice";
+	
 	int index = Classes.Find(name);
 
 	if (index != -1) {
 		ZClass& exCls = Classes[index];
 		
 		exCls.CopyPreSection(cls);
+		exCls.Scan = cls.Scan;
 		
 		return exCls;
 	}
@@ -315,6 +319,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 
 	ZClass& typeCls = (index != -1) ? Classes[index]: Classes.Add(cls.Namespace().Name + cls.Name, cls);
 	
+	typeCls.Scan = cls.Scan;
 	typeCls.ParamType = &typeCls;
 	typeCls.Index = type;
 	typeCls.ParamType = &typeCls;

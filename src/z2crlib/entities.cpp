@@ -75,7 +75,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp) {
 				throw ER::Duplicate(name, pp, DefPos);
 			parser.Expect(':');
 			
-			auto ti = ZExprParser::ParseType(comp, parser);
+			auto ti = ZExprParser::ParseType(comp, parser, nullptr, &Owner());
 			
 			if (parser.Char(',')) {
 				if (parser.IsChar(')'))
@@ -144,7 +144,17 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 			}
 		}
 		else {
-			if (IsFunction) {
+			if (IsProperty) {
+				if (IsFunction) {
+					dsig << "func ";
+					csig << ER::Magenta << "property ";
+				}
+				else {
+					dsig << "def ";
+					csig << ER::Magenta << "property def ";
+				}
+			}
+			else if (IsFunction) {
 				dsig << "func ";
 				csig << ER::Magenta << "func ";
 			}

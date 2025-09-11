@@ -1696,7 +1696,7 @@ IndexNode* IR::mem_index(Node* object, Node* index) {
 	}
 	else if (exp->Tt.Class == ass.CString)
 		node->SetType(ass.CByte->Tt);
-	else*/ if (object->Tt.Class->TBase == ass.CRaw) {
+	else*/ if (object->Tt.Class->TBase == ass.CRaw || object->Tt.Class->TBase == ass.CSlice) {
 		object->IsIndirect = false;
 		node->SetType(object->Tt.Class->T->Tt);
 		node->IsAddressable = true;

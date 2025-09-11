@@ -45,7 +45,7 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
-	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass = nullptr);
+	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass = nullptr, ZNamespace* context = nullptr);
 	
 	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos* pos = nullptr);
 	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos);
@@ -59,6 +59,7 @@ private:
 	ZParser& parser;
 	IR& irg;
 	ZCompiler& comp;
+	bool allowUnsafe = false;
 	
 	Node* lastValid = nullptr;
 	

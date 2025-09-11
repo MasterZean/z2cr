@@ -94,6 +94,7 @@ public:
 	bool InClass = false;
 	bool IsStatic = false;
 	bool InUse = false;
+	bool IsUnsafe = false;
 	
 	int CUCounter = 0;
 	

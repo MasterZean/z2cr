@@ -591,6 +591,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	f.IsConstructor = isCons;
 	f.IsProperty = isProp;
 	f.IsGetter = returnType;
+	f.IsUnsafe = isUnsafe;
 	if (f.IsProperty && f.IsGetter == false)
 		f.IsFunction = false;
 
@@ -693,6 +694,8 @@ int ZScanner::InterpretTrait(int flags, const String& trait) {
 			parser.Error(parser.GetPoint(), "string literal expected");
 		libLink << parser.ReadString();
 	}
+	else if (trait == "unsafe")
+		isUnsafe = true;
 	else if (trait == "intrinsic")
 		isIntrinsic = true;
 	else if (trait == "dllimport")
@@ -719,6 +722,7 @@ int ZScanner::TraitLoop() {
 	isCDecl = false;
 	isNoDoc = false;
 	isForce = false;
+	isUnsafe = false;
 	libLink.Clear();
 	
 	if (parser.Char2('@', '[')) {

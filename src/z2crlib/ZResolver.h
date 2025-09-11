@@ -16,6 +16,7 @@ public:
 	void ResolveFunctions();
 	void ResolveFunction(ZNamespace& ns, ZFunction& f);
 	void ResolveVariables();
+	void ResolveVariables(ZClass& cls);
 	void ResolveClass(ZClass& c, ZNamespace& ns);
 	
 	bool CheckForDuplicates();

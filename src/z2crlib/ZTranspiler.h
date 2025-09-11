@@ -127,6 +127,15 @@ public:
 					cs << "\t\tuint8 *text = nullptr;" << "\n";
 				}
 				
+				if (inClass && inClass->TBase == ass.CSlice) {
+					cs << "\tpublic:" << "\n";
+					
+					cs << "\t\t";
+					//WriteClassName(*inClass->T);
+					cs << inClass->T->BackName;
+					cs << "& operator[](size_t idx)       { if (idx >= length) throw IndexOutOfBoundsException(); return ptr[idx]; }\n";
+				}
+				
 				firstInClass = false;
 			}
 			
