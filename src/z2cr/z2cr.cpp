@@ -336,6 +336,15 @@ CONSOLE_APP_MAIN {
 	Assembly ass;
 	
 	try {
+		ZCompiler compiler(ass);
+		compiler.BuildMode = true;
+		compiler.CppVersion = bm.CppVersion;
+		compiler.BuildProfile = compiler.PlatformString + ToUpper(bm.Arch) + "." + ToUpper(bm.Name) + K.O;
+		compiler.BuildPath = exeDir + NativePath("builds/") + compiler.PlatformString + "." + ToUpper(bm.Arch) + "." + ToUpper(bm.Name);
+		RealizeDirectory(compiler.BuildPath);
+		
+		ass.BuildPath = compiler.BuildPath;
+		
 		String prjPath;
 		if (IsFullPath(K.EntryFile))
 			prjPath = GetFileFolder(K.EntryFile);
@@ -369,19 +378,13 @@ CONSOLE_APP_MAIN {
 			for (int i = 0; i < K.Files.GetCount(); i++)
 				ZSource& source = mainPak.AddSource(K.Files[i], true);
 		}
-			
-		ZCompiler compiler(ass);
-		compiler.BuildMode = true;
-		compiler.CppVersion = bm.CppVersion;
 		
+		ass.WriteCache();
+				
 		if (IsFullPath(K.OutPath))
 			compiler.OutPath = K.OutPath;
 		else
 			compiler.OutPath = curDir + K.OutPath;
-		
-		compiler.BuildProfile = compiler.PlatformString + ToUpper(bm.Arch) + "." + ToUpper(bm.Name) + K.O;
-		compiler.BuildPath = exeDir + NativePath("builds/") + compiler.PlatformString + "." + ToUpper(bm.Arch) + "." + ToUpper(bm.Name);
-		RealizeDirectory(compiler.BuildPath);
 			
 		compiler.SetMain(K.EntryClass, K.EntryFile);
 		

@@ -56,25 +56,25 @@ void ZSource::AddReference(const String& ns, Point pt) {
 	}
 }
 
-void ZSource::AlignReferences() {
+void ZSource::AlignReferences(Assembly& ass) {
 	for (int k = 0; k < References.GetCount(); k++) {
 		const String& ns = References[k];
 		int dotPos = ns.ReverseFind('.');
 		
-		int i = pak.Ass().Classes.Find(ns);
+		int i = ass.Classes.Find(ns);
 		if (i != -1) {
 			auto shortName = ns.Mid(dotPos + 1);
 			
-			ShortNameLookup.FindAdd(shortName, &pak.Ass().Classes[i]);
+			ShortNameLookup.FindAdd(shortName, &ass.Classes[i]);
 		}
 	}
 	
 	for (int k = 0; k < AliasMap.GetCount(); k++) {
 		const String& key = AliasMap.GetKey(k);
 		
-		int i = pak.Ass().Classes.Find(AliasMap[k]);
+		int i = ass.Classes.Find(AliasMap[k]);
 		if (i != -1) {
-			ShortNameLookup.FindAdd(key, &pak.Ass().Classes[i]);
+			ShortNameLookup.FindAdd(key, &ass.Classes[i]);
 		}
 	}
 }
@@ -106,10 +106,10 @@ ZSource& ZPackage::AddSource(const String& aPath, bool aLoadFile) {
 	
 	ASSERT(index == -1);
 	
-	ZSource& source = Sources.Add(aPath, ZSource(*this));
+	ZSource& source = Sources.Add(aPath);
 	source.Path = aPath;
 	
-	ass.SourceLookup.FindAdd(aPath, &source);
+	ass->SourceLookup.FindAdd(aPath, &source);
 	
 	if (aLoadFile) {
 		//Cout() << "Loaded source file: " << source.Path << "\n";

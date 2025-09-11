@@ -292,7 +292,7 @@ bool ZCompiler::ScanSources() {
 void ZCompiler::ScanSource(ZSource& src, Array<ZScanner>& scanners) {
 	src.AddStdClassRefs();
 			
-	auto& scanner = scanners.Add(ZScanner(src, Platform));
+	auto& scanner = scanners.Add(ZScanner(ass, src, Platform));
 	scanner.Scan();
 	src.IsScaned = true;
 }
@@ -795,8 +795,8 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	
-	if (v.Name == "a333")
-		v.Name == "affixes";
+//	if (v.Name == "a333")
+//		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
 		auto ti = ZExprParser::ParseType(*this, parser, &v.Owner());

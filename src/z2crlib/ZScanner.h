@@ -15,7 +15,7 @@ public:
 	Vector<ZEntity*> EntityContent;
 	Index<String> UsingReferences;
 	
-	ZScanner(ZSource& aSrc, PlatformType aType): parser(aSrc), source(aSrc), ass(aSrc.Package().Ass()), pt(aType) {
+	ZScanner(Assembly& aAss, ZSource& aSrc, PlatformType aType): parser(aSrc), source(aSrc), ass(aAss), pt(aType) {
 		parser.Mode = ": scan";
 	}
 

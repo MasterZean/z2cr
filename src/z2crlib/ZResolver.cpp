@@ -25,7 +25,7 @@ bool ZResolver::Resolve() {
 	ResolveClasses();
 			
 	for (int i = 0; i < ass.SourceLookup.GetCount(); i++)
-		ass.SourceLookup[i]->AlignReferences();
+		ass.SourceLookup[i]->AlignReferences(ass);
 	
 	ResolveFunctions();
 	ResolveVariables();
@@ -210,8 +210,9 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	
 	f.SetOwner(ns);
 	
-	if (f.Name == "Length")
-		f.Name == "Length";
+//	if (f.Name == "Length")
+//		f.Name == "Length";
+
 	if (f.IsSimpleGetter && f.IsGetter == false) {
 		int index = f.Owner().Methods.Find(f.Name);
 		ASSERT(index != -1);

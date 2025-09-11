@@ -19,8 +19,10 @@ public:
 	bool IsScanError = false;
 	bool IsLoaded = false;
 	
-	ZSource(ZPackage& aPak): pak(aPak) {
-	}
+	//ZSource() {
+	//}
+	//ZSource(ZPackage& aPak): pak(aPak) {
+	//}
 	
 	bool LoadFile(const String& aPath);
 	
@@ -32,13 +34,13 @@ public:
 		return content;
 	}
 	
-	ZPackage& Package() {
+	/*ZPackage& Package() {
 		return pak;
 	}
 	
 	const ZPackage& Package() const {
 		return pak;
-	}
+	}*/
 		
 	bool LoadFile();
 	bool LoadVirtual(const String& aContent);
@@ -46,11 +48,15 @@ public:
 	void AddStdClassRefs();
 	
 	void AddReference(const String& ns, Point pt);
-	void AlignReferences();
+	void AlignReferences(Assembly& ass);
 	void AddAlias(const String& alias, const String& ref);
 	
+	void Serialize(Stream& s) {
+		s % Path % Modified;
+	}
+	
 private:
-	ZPackage& pak;
+	//ZPackage& pak;
 	
 	String content;
 };
@@ -63,17 +69,27 @@ public:
 	
 	ArrayMap<String, ZSource> Sources;
 	
-	ZPackage(Assembly& aAss, const String& aName, const String& aPath): ass(aAss), Name(aName), Path(aPath) {
+	ZPackage() = default;
+	
+	ZPackage(Assembly& aAss, const String& aName, const String& aPath): ass(&aAss), Name(aName), Path(aPath) {
 	}
 	
 	ZSource& AddSource(const String& aPath, bool aLoadFile);
 	
-	Assembly& Ass() {
+	/*Assembly& Ass() {
 		return ass;
+	}*/
+	
+	void Serialize(Stream& s) {
+		s % Name % Path % Sources;
+	}
+	
+	void SetAssembly(Assembly& aAss) {
+		ass = &aAss;
 	}
 	
 private:
-	Assembly& ass;
+	Assembly* ass = nullptr;
 };
 
 #endif

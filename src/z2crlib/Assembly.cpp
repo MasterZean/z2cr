@@ -47,7 +47,6 @@ bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
 	if (pakName.GetCount() == 0)
 		pakName = GetFileName(GetFileFolder(aPath));
 	
-	
 	FindFile ff(aPath);
 	
 	if (!ff.IsFolder()) {
@@ -84,7 +83,15 @@ bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
 		AddModule(0, package.Path, package, temp);
 	}
 	else*/
-		AddModule(0, package.Path, package);
+	{
+		package.CachePath = NativePath(BuildPath + "\\" + package.Name);
+		DirectoryCreate(package.CachePath);
+		
+		ZPackage temp(*this, "temp", "");
+		LoadFromFile(temp, NativePath(package.CachePath + "\\cache.dat"));
+		
+		AddModule(0, package.Path, package, temp);
+	}
 	
 	return true;
 }
@@ -108,6 +115,25 @@ void Assembly::AddModule(int parent, const String& path, ZPackage& pak) {
 	}
 }
 
+void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp) {
+	FindFile ff;
+	ff.Search(path + "/*");
+
+	while (ff) {
+		if (ff.IsFile()) {
+			String name = ff.GetName();
+			if (GetFileExt(name) == ".z2") {
+				String fp = ff.GetPath();
+				ZSource& zs = AddModuleSource(pak, fp, temp, true);
+			}
+		}
+		else if (ff.IsFolder())
+			AddModule(parent + 1, ff.GetPath(), pak, temp);
+
+		ff.Next();
+	}
+}
+
 ZSource& Assembly::AddModuleSource(ZPackage& aPackage, const String& aFile, bool aLoadFile) {
 	String relPath = aFile.Mid(aPackage.Path.GetLength());
 
@@ -117,6 +143,55 @@ ZSource& Assembly::AddModuleSource(ZPackage& aPackage, const String& aFile, bool
 	source.Modified = FileGetTime(aFile);
 	
 	return source;//LoadSource(source, populate);
+}
+
+ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile) {
+	//String fileName = aFile.Mid(pak.Path.GetLength());
+	int i = temp.Sources.Find(aFile);
+	
+	if (i != -1) {
+		Time t = FileGetTime(aFile);
+
+		if (t.Compare(temp.Sources[i].Modified) > 0) {
+			// "Overwriting file
+			//ZSource& zs = AddSource(pak, filePath);
+			Cout() << "Adding changed file: " << aFile << "\n";
+			
+			ZSource& source = pak.AddSource(aFile, aLoadFile);
+			source.Modified = FileGetTime(aFile);
+			return source;
+		}
+		else {
+			// Skipping file
+			/*ZSource& srcIn = temp.Sources[i];
+			ZSource& srcSkip = pak.Sources.Add(fileName);
+			srcSkip.Path = fileName;
+			srcSkip.Modified = srcIn.Modified;*/
+			//srcSkip.Package = &pak;
+			//srcSkip.ClassNameList = clone(srcIn.ClassNameList);
+			
+			/*for (int i = 0; i < srcSkip.ClassNameList.GetCount(); i++) {
+				LookUp.Add(srcSkip.ClassNameList[i], filePath);
+				
+				int dd = srcSkip.ClassNameList[i].ReverseFind('.');
+				String name = srcSkip.ClassNameList[i].Mid(dd + 1);
+				ass.AddClassCount(name);
+			}*/
+			Cout() << "Adding unchanged file: " << aFile << "\n";
+			
+			ZSource& source = pak.AddSource(aFile, aLoadFile);
+			source.Modified = FileGetTime(aFile);
+			return source;
+		}
+	}
+	else {
+		// "Adding file
+		//ZSource& zs = AddSource(pak, filePath);
+		Cout() << "Adding new file: " << aFile << "\n";
+		ZSource& source = pak.AddSource(aFile, aLoadFile);
+		source.Modified = FileGetTime(aFile);
+		return source;
+	}
 }
 
 ZPackage* Assembly::FindPackage(const String& aName) {
@@ -138,6 +213,14 @@ ZSource* Assembly::FindSource(const String& aName) {
 	}
 	
 	return nullptr;
+}
+
+void Assembly::WriteCache() {
+	for (int i = 0; i < Packages.GetCount(); i++) {
+		ZPackage& pak = Packages[i];
+		
+		StoreToFile(pak, NativePath(pak.CachePath + "\\cache.dat"));
+	}
 }
 
 void Assembly::AddBuiltInClasses() {

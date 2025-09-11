@@ -334,7 +334,7 @@ Node* ZExprParser::ParseAtom() {
 				ZClass& cobj = ass.Classes[(int)exp->IntVal];
 				
 				if (&cobj != ass.CPtr && cobj.IsTemplate)
-					throw ER::CantInstantiateTemplate(pp, cobj);
+					ER::CantInstantiateTemplate(pp, cobj);
 				
 				Vector<Node*> params;
 				getParams(params, '}');
@@ -500,8 +500,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Saturated")
-		s == "Test";
+//	if (s == "Saturated")
+//		s == "Test";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -671,8 +671,8 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-		if (aName == "Length")
-			aName == "ToByte";
+//		if (aName == "Length")
+//			aName == "ToByte";
 		
 		if (method.IsProperty == false) {
 			if (!method.IsConstructor) {
@@ -786,8 +786,8 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Saturated")
-		s == "Length";
+//	if (s == "Saturated")
+//		s == "Length";
 	
 	// case .class
 	if (s == CLS_STR ) {
@@ -1097,25 +1097,25 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 			return nullptr;
 	}
 	else {
-		ZFunction* f = nullptr;
+		ZFunction* fc = nullptr;
 		
 		if (!cls.CoreSimple/* && cls.T && cls.T->CoreSimple == false*/) {
-			f = FindConstructor(cls, params, pos);
+			fc = FindConstructor(cls, params, pos);
 			if (f == nullptr) {
 				if (cls.TBase == ass.CRaw)
-					f = FindConstructor(*cls.T, params, pos);
+					fc = FindConstructor(*cls.T, params, pos);
 				
-				if (f == nullptr) {
+				if (fc == nullptr) {
 					if (cls.T && cls.T->TBase == ass.CRaw)
-						f = FindConstructor(*cls.T->T, params, pos);
+						fc = FindConstructor(*cls.T->T, params, pos);
 				}
 			}
 		}
 		
-		TempNode* node = irg.mem_temp(cls, f);
+		TempNode* node = irg.mem_temp(cls, fc);
 		node->Params = std::move(params);
 		
-		if (f && f->ShouldEvaluate())
+		if (fc && fc->ShouldEvaluate())
 			comp.CompileFunc(*f);
 		
 		return node;
