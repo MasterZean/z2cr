@@ -33,8 +33,9 @@ public:
 class ZTrait {
 public:
 	enum {
-		BINDC =   0b01,
-		BINDCPP = 0b10
+		BINDC     = 0b001,
+		BINDCPP   = 0b010,
+		DLLIMPORT = 0b100,
 	};
 	
 	const ZSourcePos* TP = nullptr;
@@ -375,7 +376,7 @@ public:
 	}
 	
 	bool IsExternBind() const {
-		return (Trait.Flags & ZTrait::BINDC) || (Trait.Flags & ZTrait::BINDCPP);
+		return (Trait.Flags & ZTrait::BINDC) || (Trait.Flags & ZTrait::BINDCPP) || (Trait.Flags & ZTrait::DLLIMPORT);
 	}
 	
 	void SetInUse();

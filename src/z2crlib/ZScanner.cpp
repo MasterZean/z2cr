@@ -19,7 +19,7 @@ void ZScanner::Scan() {
 				inNamespaceBlock = true;
 				
 				while (!parser.IsChar('}')) {
-					auto p = parser.GetFullPos();
+					p = parser.GetFullPos();
 					ScanSingle(p, false);
 				}
 				
@@ -36,9 +36,9 @@ void ZScanner::Scan() {
 	}
 }
 
-void ZScanner::ScanSingle(const ZSourcePos& p, bool isStatic) {
+void ZScanner::ScanSingle(const ZSourcePos& sp, bool isStatic, bool cond) {
 	if (parser.Id("using"))
-		ScanUsing(p);
+		ScanUsing(sp);
 	else if (parser.Id("private")) {
 		if (parser.Char('{')) {
 			while (!parser.IsChar('}')) {
@@ -47,19 +47,19 @@ void ZScanner::ScanSingle(const ZSourcePos& p, bool isStatic) {
 					// ALL GOOD
 				}
 				else {
-					Point p = parser.GetPoint();
-					parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+					auto ep = parser.GetPoint();
+					parser.Error(ep, "syntax error: declaration expected: " + parser.Identify() + " found");
 				}
 			}
 		
 			parser.Expect('}');
 		}
-		else if (ScanDeclaration(p, AccessType::Private, isStatic)) {
+		else if (ScanDeclaration(sp, AccessType::Private, isStatic)) {
 			// ALL GOOD
 		}
 		else {
-			Point p = parser.GetPoint();
-			parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+			Point ep = parser.GetPoint();
+			parser.Error(ep, "syntax error: declaration expected: " + parser.Identify() + " found");
 		}
 	}
 	else if (parser.Id("protected")) {
@@ -70,23 +70,23 @@ void ZScanner::ScanSingle(const ZSourcePos& p, bool isStatic) {
 					// ALL GOOD
 				}
 				else {
-					Point p = parser.GetPoint();
-					parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+					Point ep = parser.GetPoint();
+					parser.Error(ep, "syntax error: declaration expected: " + parser.Identify() + " found");
 				}
 			}
 			
 			parser.Expect('}');
 		}
-		else if (ScanDeclaration(p, AccessType::Protected, isStatic)) {
+		else if (ScanDeclaration(sp, AccessType::Protected, isStatic)) {
 			// ALL GOOD
 		}
 		else {
-			Point p = parser.GetPoint();
-			parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+			Point ep = parser.GetPoint();
+			parser.Error(ep, "syntax error: declaration expected: " + parser.Identify() + " found");
 		}
 	}
 	else if (parser.Id("namespace")) {
-		ScanNamespace(p);
+		ScanNamespace(sp);
 		
 		if (parser.Char('{')) {
 			bool back = inNamespaceBlock;
@@ -104,9 +104,13 @@ void ZScanner::ScanSingle(const ZSourcePos& p, bool isStatic) {
 		else
 			parser.ExpectEndStat();
 	}
-	else if (ScanDeclaration(p, AccessType::Public, isStatic)) {
+	else if (ScanDeclaration(sp, AccessType::Public, isStatic)) {
 		// ALL GOOD
 	}
+	else if (cond && parser.EatIf())
+		ScanIf();
+	else if (!cond && (parser.IsElse() || parser.IsEndIf()))
+		return;
 	else if (parser.Char('#')) {
 		if (parser.Id("region")) {
 			parser.ExpectId();
@@ -119,8 +123,8 @@ void ZScanner::ScanSingle(const ZSourcePos& p, bool isStatic) {
 		}
 	}
 	else {
-		Point p = parser.GetPoint();
-		parser.Error(p, "syntax error: declaration expected: " + parser.Identify() + " found");
+		Point ep = parser.GetPoint();
+		parser.Error(ep, "syntax error: declaration expected: " + parser.Identify() + " found");
 	}
 }
 
@@ -196,7 +200,7 @@ bool ZScanner::ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isC
 		first = false;
 	} while (parser.Char(','));
 	
-	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP) || (funcs.GetCount() == 1 && funcs[0]->IsAlias))
+	if ((trait.Flags & ZTrait::BINDC) || (trait.Flags & ZTrait::BINDCPP) || (funcs.GetCount() == 1 && funcs[0]->IsAlias) || (trait.Flags & ZTrait::DLLIMPORT))
 		parser.ExpectEndStat();
 	else {
 		ZSourcePos bp = parser.GetFullPos();
@@ -292,8 +296,8 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	inClass = true;
 	
 	while (!parser.IsChar('}')) {
-		auto p = parser.GetFullPos();
-		ScanSingle(p, isStatic);
+		auto sp = parser.GetFullPos();
+		ScanSingle(sp, isStatic);
 	}
 	
 	parser.Expect('}');
@@ -698,8 +702,10 @@ int ZScanner::InterpretTrait(int flags, const String& trait) {
 		isUnsafe = true;
 	else if (trait == "intrinsic")
 		isIntrinsic = true;
-	else if (trait == "dllimport")
+	else if (trait == "dllimport") {
 		isDllImport = true;
+		flags = flags | ZTrait::DLLIMPORT;
+	}
 	else if (trait == "stdcall")
 		isStdCall = true;
 	else if (trait == "cdecl")
@@ -741,4 +747,45 @@ int ZScanner::TraitLoop() {
 	}
 	
 	return flags;
+}
+
+void ZScanner::ScanIf() {
+	String id1 = parser.ExpectId();
+	parser.Expect('.');
+	String id2 = parser.ExpectId();
+	parser.Expect('=');
+	parser.Expect('=');
+	String id3 = parser.ReadString();
+	if (id3 == "WIN32") {
+		if (pt == PlatformType::WINDOWS) {
+			while (!parser.IsEof() && !parser.IsChar('#')) {
+				auto p = parser.GetFullPos();
+				ScanSingle(p, false, false);
+			}
+				
+			if (parser.EatElse()) {
+				parser.SkipBlock();
+				parser.EatEndIf();
+			}
+			else {
+				parser.EatEndIf();
+			}
+		}
+		else {
+			parser.SkipBlock();
+			if (parser.EatElse()) {
+				while (!parser.IsEof() && !parser.IsChar('#')) {
+					auto p = parser.GetFullPos();
+					ScanSingle(p, false, false);
+				}
+				parser.EatEndIf();
+			}
+			else {
+				parser.EatEndIf();
+			}
+		}
+	}
+	else {
+		
+	}
 }

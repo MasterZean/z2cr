@@ -72,6 +72,13 @@ public:
 		return source;
 	}
 	
+	bool EatIf();
+	bool EatElse();
+	bool EatEndIf();
+	bool IsElse();
+	bool IsEndIf();
+	void SkipBlock();
+	
 private:
 	ZSource& source;
 	

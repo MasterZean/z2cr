@@ -362,6 +362,8 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 				cs << "extern \"C\" ";
 			else if (f.Trait.Flags & ZTrait::BINDCPP)
 				cs << "extern ";
+			if (f.Trait.Flags & ZTrait::DLLIMPORT)
+				cs << "__declspec(dllimport) ";
 			
 			if (WriteFunctionDef(f) == false)
 				ES();

@@ -43,14 +43,15 @@ ZPackage& Assembly::AddPackage(const String& aName, const String& aPath) {
 }
 
 bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
-	String pakName = GetFileName(NativePath(NormalizePath(aPath)));
+	String pakPath = NativePath(NormalizePath(aPath));
+	String pakName = GetFileName(pakPath);
 	if (pakName.GetCount() == 0)
-		pakName = GetFileName(GetFileFolder(aPath));
+		pakName = GetFileName(GetFileFolder(pakPath));
 	
-	FindFile ff(aPath);
+	FindFile ff(pakPath);
 	
 	if (!ff.IsFolder()) {
-		Cout() << "Could not find package '" << pakName << "' in folder '" << aPath << "'.\n";
+		Cout() << "Could not find package '" << pakName << "' in folder '" << pakPath << "'.\n";
 		Cout() << "Exiting!\n";
 		return false;
 	}
@@ -59,19 +60,19 @@ bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
 	if (pakIndex != -1) {
 		ZPackage& existingPak = Packages[pakIndex];
 		
-		if (existingPak.Path != aPath) {
-			Cout() << "When attempting to load package: '" << aPath << "':\n";
+		if (existingPak.Path != pakPath) {
+			Cout() << "When attempting to load package: '" << pakPath << "':\n";
 			Cout() << "\ta package with the same name is already referenced at '" << existingPak.Path << "'.\n";
 			Cout() << "Exiting!\n";
 			return false;
 		}
 	}
 	else
-		pakIndex = Packages.FindAdd(pakName, ZPackage(*this, pakName, aPath));
+		pakIndex = Packages.FindAdd(pakName, ZPackage(*this, pakName, pakPath));
 	
 	ZPackage& package = Packages[pakIndex];
 	package.Name = pakName;
-	package.Path = AppendFileName(aPath, "");
+	package.Path = pakPath;//AppendFileName(pakPath, "");
 
 	/*if (fullBuild) {
 		package.CachePath = NativePath(BuildPath + "\\" + package.Name);

@@ -21,7 +21,7 @@ public:
 
 	void Scan();
 	
-	void ScanSingle(const ZSourcePos& p, bool isStatic);
+	void ScanSingle(const ZSourcePos& p, bool isStatic, bool cond = true);
 	void ScanNamespace(const ZSourcePos& p);
 	bool ScanVar(AccessType accessType, bool aConst, bool isStatic);
 	bool ScanFuncMulti(AccessType accessType, const ZTrait& trait, int isCons, bool aFunc, bool isStatic);
@@ -67,6 +67,8 @@ protected:
 	bool ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);
 	
 	void ScanDefAlias(ZFunction& over);
+	
+	void ScanIf();
 };
 
 #endif

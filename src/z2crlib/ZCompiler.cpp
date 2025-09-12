@@ -923,7 +923,11 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	
 	ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
 	tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
-	tclass.BackName = String().Cat() << cc.Name << "_" << sub.Name;
+	tclass.BackName = String().Cat() << cc.Name << "_";
+	if (sub.FromTemplate)
+		tclass.BackName << sub.BackName;
+	else
+		tclass.BackName << sub.Name;
 	tclass.Index = i;
 	tclass.IsClass = true;
 	tclass.FromTemplate = true;

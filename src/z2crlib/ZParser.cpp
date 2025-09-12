@@ -510,3 +510,63 @@ uint32 ZParser::ReadChar() {
 		return c;
 	}
 }
+
+bool ZParser::EatIf() {
+	if (term[0] == '#' && term[1] == 'i' && term[2] == 'f') {
+		term += 3;
+		Spaces();
+		return true;
+	}
+	return false;
+}
+
+bool ZParser::EatElse() {
+	if (term[0] == '#' && term[1] == 'e' && term[2] == 'l' && term[3] == 's' && term[4] == 'e') {
+		term += 5;
+		Spaces();
+		return true;
+	}
+	return false;
+}
+
+bool ZParser::EatEndIf() {
+	if (term[0] == '#' && term[1] == 'e' && term[2] == 'n' && term[3] == 'd' && term[4] == 'i'  && term[5] == 'f') {
+		term += 6;
+		Spaces();
+		return true;
+	}
+	return false;
+}
+
+bool ZParser::IsElse() {
+	if (term[0] == '#' && term[1] == 'e' && term[2] == 'l' && term[3] == 's' && term[4] == 'e')
+		return true;
+	
+	return false;
+}
+
+bool ZParser::IsEndIf() {
+	if (term[0] == '#' && term[1] == 'e' && term[2] == 'n' && term[3] == 'd' && term[4] == 'i'  && term[5] == 'f')
+		return true;
+
+	return false;
+}
+
+void ZParser::SkipBlock() {
+	while (true) {
+		if (term[0] == '#' && term[1] == 'e' && term[2] == 'l' && term[3] == 's' && term[4] == 'e')
+			return;
+		else if (term[0] == '#' && term[1] == 'e' && term[2] == 'n' && term[3] == 'd' && term[4] == 'i'  && term[5] == 'f')
+			return;
+		else if (term[0] == 0)
+			return;
+		else if (term[0] == '\n') {
+			line++;
+			term++;
+		}
+		else
+			term++;
+	}
+	
+	Spaces();
+}

@@ -337,9 +337,9 @@ void ZideWindow::OnEditorChange() {
 void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 	Assembly ass;
 	ZPackage pak = ZPackage(ass, "temp", LastPackage);
-	ZSource source = ZSource(pak);
+	ZSource source = ZSource();
 	source.AddStdClassRefs();
-	source.AlignReferences();
+	source.AlignReferences(ass);
 	source.LoadVirtual(text);
 	
 #ifdef PLATFORM_WIN32
@@ -348,7 +348,7 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 	PlatformType platform = PlatformType::UNIX;
 #endif
 
-	ZScanner scaner = ZScanner(source, platform);
+	ZScanner scaner = ZScanner(ass, source, platform);
 	
 	try {
 		scaner.Scan();
