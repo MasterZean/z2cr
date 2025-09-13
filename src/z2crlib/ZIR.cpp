@@ -1508,7 +1508,7 @@ TempNode* IR::mem_temp(ZClass& cls, ZFunction* constructor) {
 	return node;
 }
 
-PtrNode *IR::mem_ptr(Node *object) {
+PtrNode *IR::mem_ptr(Node *object, bool cast) {
 	PtrNode* node = ptrNodes.Get();
 	node->Object = object;
 	
@@ -1518,6 +1518,8 @@ PtrNode *IR::mem_ptr(Node *object) {
 	}
 	else
 		node->SetType(object->Tt.Class->Pt);
+	
+	node->Cast = cast;
 	
 	return node;
 }
@@ -1696,7 +1698,8 @@ IndexNode* IR::mem_index(Node* object, Node* index) {
 	}
 	else if (exp->Tt.Class == ass.CString)
 		node->SetType(ass.CByte->Tt);
-	else*/ if (object->Tt.Class->TBase == ass.CRaw || object->Tt.Class->TBase == ass.CSlice) {
+	else*/ if (object->Tt.Class->TBase == ass.CRaw || object->Tt.Class->TBase == ass.CSlice
+				|| (object->Tt.Class->Super && object->Tt.Class->Super->TBase == ass.CSlice)) {
 		object->IsIndirect = false;
 		node->SetType(object->Tt.Class->T->Tt);
 		node->IsAddressable = true;

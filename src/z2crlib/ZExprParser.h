@@ -13,18 +13,18 @@ public:
 	ZNamespaceSection* Section = nullptr;
 	ZNamespace* Namespace = nullptr;
 	ZFunction* Function = nullptr;
-	ZNamespace* Class = nullptr;
+	ZClass* Class = nullptr;
 	
 	//ZExprParser(ZParser& aPos, IR& aIrg): parser(aPos), irg(aIrg), ass(aIrg.Ass()) {
 	//}
 	
 	ZExprParser(ZEntity& entity, ZNamespace* ns, ZFunction* f, ZCompiler& aComp, ZParser& aPos, IR& aIrg): parser(aPos), comp(aComp), irg(aIrg), ass(aIrg.Ass()) {
-		ASSERT(entity.Section);
+		//ASSERT(entity.Section);
 		Section = entity.Section;
 		Namespace = &entity.Namespace();
 		Function = f;
 		if (ns && ns->IsClass)
-			Class = ns;
+			Class = (ZClass*)ns;
 
 	}
 	
@@ -45,7 +45,7 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
-	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass = nullptr, ZNamespace* context = nullptr);
+	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, ZNamespace* aclass = nullptr, ZNamespace* context = nullptr);
 	
 	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos* pos = nullptr);
 	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos);
@@ -59,7 +59,7 @@ private:
 	ZParser& parser;
 	IR& irg;
 	ZCompiler& comp;
-	bool allowUnsafe = false;
+	bool allowUnsafe = true;
 	
 	Node* lastValid = nullptr;
 	

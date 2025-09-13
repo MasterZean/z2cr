@@ -397,12 +397,16 @@ CONSOLE_APP_MAIN {
 		
 		ass.WriteCache();
 				
+		Cout() << "Done loading packages, " << ass.FilesNew << " new files, " << ass.FilesChanged << " changed files, " << ass.FilesUnchanged << " unchanged files (" << tm.ToString() << "s)\n\n";
+		
 		if (IsFullPath(K.OutPath))
 			compiler.OutPath = K.OutPath;
 		else
 			compiler.OutPath = curDir + K.OutPath;
 			
 		compiler.SetMain(K.EntryClass, K.EntryFile);
+		
+		StopWatch tmComp;
 		
 		if (!compiler.Compile()) {
 			if (compiler.MainFound == false) {
@@ -422,6 +426,8 @@ CONSOLE_APP_MAIN {
 			SetExitCode(-1);
 			return;
 		}
+		
+		Cout() << "Compilation finished in " << tmComp.ToString() << " seconds.\n\n";
 		
 		Builder builder(bm);
 		builder.ZCompilerPath(exeDir);

@@ -360,7 +360,8 @@ Node* ZExprParser::ParseAtom() {
 				Node* index = Parse();
 				parser.Expect(']');
 				
-				if (/*exp->Tt.Class == ass.CPtr || */exp->Tt.Class->TBase == ass.CRaw || exp->Tt.Class->TBase == ass.CSlice) {
+				if (/*exp->Tt.Class == ass.CPtr || */exp->Tt.Class->TBase == ass.CRaw || exp->Tt.Class->TBase == ass.CSlice
+						|| (exp->Tt.Class->Super && exp->Tt.Class->Super->TBase == ass.CSlice)) {
 					Node* temp = irg.mem_index(exp, index);
 					if (temp == nullptr)
 						parser.Error(p, "expression of type '" + ass.TypeToColor(exp->Tt) + "' does not have a '["
@@ -495,12 +496,17 @@ Node* ZExprParser::ParseSpec(ZClass& mainClass, Node* exp, Vector<Node*>& nodes,
 Node* ZExprParser::ParseId() {
 	Point opp = parser.GetPoint();
 	String s;
-	if (parser.Char('@'))
-		s = "@" + parser.ExpectId();
+	if (parser.Char('@')) {
+		String sub = parser.ExpectId();
+		// TODO: fix
+		if (sub == "size")
+			return irg.const_i(4);
+		s = "@" + sub;
+	}
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Slice")
+	if (s == "malloc")
 		s == "Test";
 	
 	if (Function) {
@@ -522,10 +528,19 @@ Node* ZExprParser::ParseId() {
 	}
 	
 	if (Class != nullptr) {
+		if (Class->FromTemplate && Class->TBase && Class->TBase->Scan.TName[0] == s)
+			return irg.const_class(*Class->T);
+		
 		Node* node = ParseMember(*Class, s, opp, false);
 		
 		if (node)
 			return node;
+		else if (Class->Super) {
+			node = ParseMember(*Class->Super, s, opp, false);
+			
+			if (node)
+				return node;
+		}
 	}
 	
 	if (Section != nullptr && Namespace != nullptr && Section->Using.GetCount() == 0) {
@@ -671,8 +686,8 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-//		if (aName == "sum")
-//			aName == "ToByte";
+		if (aName == "Length")
+			aName == "ToByte";
 		
 		if (method.IsProperty == false) {
 			if (!method.IsConstructor) {
@@ -785,13 +800,17 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	Point p = parser.GetPoint();
 	String s;
 	
-	if (parser.Char('@'))
-		s = "@" + parser.ExpectId();
+	if (parser.Char('@')) {
+		String sub = parser.ExpectId();
+		if (sub == "size")
+			return irg.const_i(4);
+		s = "@" + sub;
+	}
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "Saturated")
-//		s == "Length";
+	if (s == "Length")
+		s == "Length";
 	
 	// case .class
 	if (s == CLS_STR ) {
@@ -838,6 +857,9 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	else {
 		ZClass& cs = *exp->Tt.Class;
 		Node* node = ParseMember(cs, s, p, false, exp);
+		
+		if (!node && cs.Super)
+			node = ParseMember(*cs.Super, s, p, false, exp);
 		
 		if (!node) {
 			if (cs.TBase == ass.CRaw) {
@@ -888,7 +910,7 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* aclass, ZNamespace* context) {
+ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, ZNamespace* aclass, ZNamespace* context) {
 	Assembly& ass = comp.Ass();
 	
 	ObjectInfo ti;
@@ -938,7 +960,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* 
 		
 		if (parser.IsId("const"))
 			parser.ReadId();
-		ObjectInfo sub = ParseType(comp, parser, aclass, context);
+		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, aclass, context);
 		
 		parser.Expect('>');
 
@@ -983,9 +1005,13 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, ZNamespace* 
 		if (!cls->IsTemplate)
 			parser.Error(tt.P, " class " + ass.ToQtColor(cls) + " is not a template");
 		
-		ObjectInfo sub = ParseType(comp, parser, aclass, context);
+		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, aclass, context);
 		
 		Node* node = nullptr;
+		
+		if (cls == ass.CRaw && reqArrayQual && !parser.IsChar(','))
+			parser.Expect(',');
+		
 		if (parser.Char(',')) {
 			// TODO: fix
 			ZNamespace ns(ass);
@@ -1038,6 +1064,37 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 }
 
 Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
+	if (&cls == ass.CPtr) {
+		/*if (InVarMode)
+			parser.Error(p, "inline member initialization can't take addresses");
+		if (InConstMode)
+			parser.Error(p, "addresses are not constants");
+
+		if (params.GetCount() != 1 || params[0]->NT != NodeType::Memory)
+			parser.Error(p, "local variable expected to take its address");
+		*/
+		
+
+		if (params.GetCount() == 0)
+			return irg.const_null();
+		else if (params.GetCount() == 1) {
+			if (ass.InvalidPtrClass(params[0]->Tt.Class)) {
+				if (pos)
+					ER::Error(*pos->Source, pos->P, "can't have a pointer to class " + ass.ToQtColor(&params[0]->Tt));
+				return nullptr;
+			}
+			return irg.mem_ptr(params[0], false);
+		}
+		else
+			return nullptr;
+	}
+	
+	if (cls.TBase == ass.CPtr) {
+		Node* ptr = irg.mem_ptr(params[0], true);
+		ptr->SetType(cls.T->Pt);
+		return ptr;
+	}
+	
 	Node* dr = nullptr;
 	
 	ZFunction* f = FindConstructor(cls, params, nullptr);
@@ -1085,30 +1142,6 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 				dr = irg.deref(dr);
 			return irg.cast(dr, &cls.Tt);
 		}
-	}
-	else if (&cls == ass.CPtr) {
-		/*if (InVarMode)
-			parser.Error(p, "inline member initialization can't take addresses");
-		if (InConstMode)
-			parser.Error(p, "addresses are not constants");
-
-		if (params.GetCount() != 1 || params[0]->NT != NodeType::Memory)
-			parser.Error(p, "local variable expected to take its address");
-		*/
-		
-
-		if (params.GetCount() == 0)
-			return irg.const_null();
-		else if (params.GetCount() == 1) {
-			if (ass.InvalidPtrClass(params[0]->Tt.Class)) {
-				if (pos)
-					ER::Error(*pos->Source, pos->P, "can't have a pointer to class " + ass.ToQtColor(&params[0]->Tt));
-				return nullptr;
-			}
-			return irg.mem_ptr(params[0]);
-		}
-		else
-			return nullptr;
 	}
 	else {
 		ZFunction* fc = nullptr;
@@ -1185,7 +1218,7 @@ void ZExprParser::TestAccess(ZEntity& f, const Point& opp) {
 	}
 	else {
 		// TODO:fix ihneritence
-		if (f.Access == AccessType::Protected && &f.Owner() != Class)
+		if (f.Access == AccessType::Protected && (&f.Owner() != Class && &f.Owner() != Class->Super))
 			parser.Error(opp, "can't access protected member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
 		if (f.Access == AccessType::Private && &f.Owner() != Class)
 			parser.Error(opp, "can't access private member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");

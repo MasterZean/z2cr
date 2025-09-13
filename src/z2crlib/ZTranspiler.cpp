@@ -323,7 +323,10 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
 			ZFunction& f = *ns.Methods[i].Functions[j];
-
+			
+			if (f.Name == "malloc")
+				f.Name == "Fill";
+			
 			if (CheckUse && !f.InUse)
 				continue;
 			
@@ -332,15 +335,18 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 			
 			if (!CanAccess(f.Access, accessFlags))
 				continue;
-			
-			if (f.Name == "Fill")
-				f.Name == "Fill";
-			
+						
 			bool bindc = f.Trait.Flags & ZTrait::BINDC;
 			
 			if (doBinds == false && bindc == true)
 				continue;
 			if (doBinds == true && bindc == false)
+				continue;
+			
+			if (f.Name == "malloc")
+				f.Name == "Fill";
+						
+			if (doBinds == true && (f.Trait.Flags & ZTrait::INTRINSIC))
 				continue;
 			
 			NewMember();
@@ -1637,7 +1643,14 @@ void ZTranspiler::Proc(ListNode& node) {
 
 void ZTranspiler::Proc(PtrNode& node) {
 	ASSERT(node.Object);
-	if (node.Nop) {
+	if (node.Cast) {
+		cs << "(";
+		cs << node.Tt.Next->Class->BackName;
+		cs << "*)(";
+		Walk(node.Object);
+		cs << ")";
+	}
+	else if (node.Nop) {
 		// TODO: fix
 		cs << "(uint8*)(";
 		Walk(node.Object);

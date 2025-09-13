@@ -33,9 +33,10 @@ public:
 class ZTrait {
 public:
 	enum {
-		BINDC     = 0b001,
-		BINDCPP   = 0b010,
-		DLLIMPORT = 0b100,
+		BINDC     = 0b0001,
+		BINDCPP   = 0b0010,
+		DLLIMPORT = 0b0100,
+		INTRINSIC = 0b1000,
 	};
 	
 	const ZSourcePos* TP = nullptr;
@@ -225,6 +226,8 @@ public:
 	
 	ZClass* TBase = nullptr;
 	ZClass* T = nullptr;
+	ZSourcePos SuperPos;
+	ZClass* Super = nullptr;
 	WithDeepCopy<Array<ObjectType>> Temps;
 	
 	int RTTIIndex = 0;

@@ -39,6 +39,10 @@ public:
 	ZClass* CSlice = nullptr;
 	ZClass* CVect = nullptr;
 	
+	int FilesNew = 0;
+	int FilesChanged = 0;
+	int FilesUnchanged = 0;
+	
 	String BuildPath;
 
 	ArrayMap<String, ZClass> Classes;
@@ -88,9 +92,12 @@ public:
 	String ClassToString(ObjectInfo* type, bool qual = true);
 	String ClassToString(const ObjectType& type);
 	
-	String ToQtColor(ObjectInfo *type);
-	String ToQtColor(ObjectType *type);
-	String ToQtColor(ZClass *type);
+	inline String ToQtColor(ObjectInfo* type) {
+		return ToQtColor(&type->Tt);
+	}
+	
+	String ToQtColor(ObjectType* type);
+	String ToQtColor(ZClass* cls);
 	
 	int AddStringConst(const String& str) {
 		return StringConsts.FindAdd(str);

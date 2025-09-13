@@ -254,6 +254,7 @@ public:
 	//bool Ref = false;
 	//bool Move = false;
 	bool Nop = false;
+	bool Cast = false;
 	Node* Object = nullptr;
 
 	PtrNode() {

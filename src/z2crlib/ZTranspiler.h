@@ -113,6 +113,12 @@ public:
 				NL();
 				cs << "class ";
 				WriteClassName(*inClass);
+				if (inClass->Super) {
+					cs << ": public ";
+					cs << inClass->Super->Owner().BackName;
+					cs << "::";
+					WriteClassName(*inClass->Super);
+				}
 				cs << " {";
 				EL();
 				

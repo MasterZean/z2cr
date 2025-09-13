@@ -801,7 +801,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(*this, parser, &v.Owner(), Class);
+		auto ti = ZExprParser::ParseType(*this, parser, true, &v.Owner(), Class);
 		
 		if (invalidClass(ti.Tt.Class, ass))
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ti.Tt.Class));
@@ -919,9 +919,12 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 		return tclass;
 	}
 
+
+	
 	i = ass.Classes.GetCount();
 	
 	ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
+	
 	tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
 	tclass.BackName = String().Cat() << cc.Name << "_";
 	if (sub.FromTemplate)
@@ -947,9 +950,20 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	resPtr->ResolveNamespaceMembers(tclass);
 	resPtr->ResolveVariables(tclass);
 	//PreCompileVars(tclass);
-	cuClasses.Add(&tclass);
 	
 	tempInstances.Add(&tclass);
+	
+	if (cc.SuperPos.Source) {
+		ZParser parser(cc.SuperPos);
+		ZExprParser exp(tclass, &tclass, nullptr, *this, parser, irg);
+		auto res = exp.ParseType(*this, parser, false, nullptr, &tclass);
+		tclass.Super = res.Tt.Class;
+		cuClasses.Add(tclass.Super);
+		
+		tclass.Super->Meth.Default->SetInUse();
+	}
+	
+	cuClasses.Add(&tclass);
 	
 	return tclass;
 }

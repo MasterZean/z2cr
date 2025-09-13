@@ -290,6 +290,16 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	curClass->IsClass = true;
 	curClass->LibLink = std::move(libLink);
 	
+	if (parser.Char(':')) {
+		curClass->SuperPos = parser.GetFullPos();
+		
+		parser.ExpectZId();
+		if (parser.Char('<')) {
+			parser.ExpectZId();
+			parser.Expect('>');
+		}
+	}
+	
 	parser.Expect('{');
 	
 	bool back = inClass;
@@ -700,8 +710,10 @@ int ZScanner::InterpretTrait(int flags, const String& trait) {
 	}
 	else if (trait == "unsafe")
 		isUnsafe = true;
-	else if (trait == "intrinsic")
+	else if (trait == "intrinsic") {
 		isIntrinsic = true;
+		flags = flags | ZTrait::INTRINSIC;
+	}
 	else if (trait == "dllimport") {
 		isDllImport = true;
 		flags = flags | ZTrait::DLLIMPORT;

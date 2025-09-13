@@ -124,7 +124,7 @@ public:
 	
 	MemNode*   mem_var(ZEntity& var, Node* object, bool isLocal);
 	TempNode*  mem_temp(ZClass& cls, ZFunction *constructor);
-	PtrNode*   mem_ptr(Node* object);
+	PtrNode*   mem_ptr(Node* object, bool cast);
 	IndexNode* mem_index(Node *object, Node *index);
 	MemNode*   mem_this(ZClass& cls);
 	

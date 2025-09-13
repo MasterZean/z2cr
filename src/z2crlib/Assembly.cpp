@@ -156,7 +156,8 @@ ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage&
 		if (t.Compare(temp.Sources[i].Modified) > 0) {
 			// "Overwriting file
 			//ZSource& zs = AddSource(pak, filePath);
-			Cout() << "Adding changed file: " << aFile << "\n";
+			FilesChanged++;
+			//Cout() << "Adding changed file: " << aFile << "\n";
 			
 			ZSource& source = pak.AddSource(aFile, aLoadFile);
 			source.Modified = FileGetTime(aFile);
@@ -178,7 +179,8 @@ ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage&
 				String name = srcSkip.ClassNameList[i].Mid(dd + 1);
 				ass.AddClassCount(name);
 			}*/
-			Cout() << "Adding unchanged file: " << aFile << "\n";
+			FilesUnchanged++;
+			//Cout() << "Adding unchanged file: " << aFile << "\n";
 			
 			ZSource& source = pak.AddSource(aFile, aLoadFile);
 			source.Modified = FileGetTime(aFile);
@@ -188,7 +190,8 @@ ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage&
 	else {
 		// "Adding file
 		//ZSource& zs = AddSource(pak, filePath);
-		Cout() << "Adding new file: " << aFile << "\n";
+		FilesNew++;
+		//Cout() << "Adding new file: " << aFile << "\n";
 		ZSource& source = pak.AddSource(aFile, aLoadFile);
 		source.Modified = FileGetTime(aFile);
 		return source;
@@ -310,6 +313,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 		
 		exCls.CopyPreSection(cls);
 		exCls.Scan = cls.Scan;
+		exCls.SuperPos = cls.SuperPos;
 		
 		return exCls;
 	}
@@ -328,6 +332,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	typeCls.DefPos = cls.DefPos;
 	typeCls.IsClass = cls.IsClass;
 	typeCls.Pt = GetPtr(&typeCls.Tt);
+	typeCls.SuperPos = cls.SuperPos;
 	//typeCls.InUse = cls.InUse;
 	
 	typeCls.RTTIIndex = type;
@@ -403,7 +408,7 @@ String Assembly::TypeToColor(ObjectType& type) {
 		s << '<';
 		s << TypeToColor(type.Class->T->Tt);
 		
-		if (type.Param != -1)
+		if (type.Class->TBase == CRaw && type.Param != -1)
 			s << ", " << type.Param;
 		
 		s << '>';
@@ -415,23 +420,21 @@ String Assembly::TypeToColor(ObjectType& type) {
 	return s;
 }
 
-String Assembly::ToQtColor(ObjectInfo* type) {
-	String s = "'";
-	s << ER::Green << type->Tt.Class->Name;
-	s << ER::White << "'";
-	return s;
-}
-
 String Assembly::ToQtColor(ObjectType* type) {
 	String s = "'";
 	s << ER::Green << type->Class->Name;
+	if (type->Class == CPtr) {
+		s << ER::White << "<";
+		s << ER::Green << type->Next->Class->Name;
+		s << ER::White << ">";
+	}
 	s << ER::White << "'";
 	return s;
 }
 
-String Assembly::ToQtColor(ZClass* type) {
+String Assembly::ToQtColor(ZClass* cls) {
 	String s = "'";
-	s << ER::Green << type->Name;
+	s << ER::Green << cls->Name;
 	s << ER::White << "'";
 	return s;
 }
