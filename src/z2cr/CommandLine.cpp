@@ -122,6 +122,9 @@ bool CommandLine::Read() {
 		else if (commands[i] == "-pp:no-path") {
 			PP_NOPATH = true;
 		}
+		else if (commands[i] == "-ut:exe") {
+			UTEXE = true;
+		}
 		else if (commands[i] == "-ut") {
 			UT = true;
 		}

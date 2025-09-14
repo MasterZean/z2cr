@@ -285,6 +285,23 @@ CONSOLE_APP_MAIN {
 		return;
 	}
 	
+	if (K.UTEXE) {
+		String cmd = GetExeFilePath() + " -ut";
+		LocalProcess exe(cmd);
+		
+		String t, tt;
+		while (exe.Read(t)) {
+			if (t.GetCount())
+				tt << t;
+		}
+		
+		Cout() << tt;
+		
+		if (K.Files.GetCount() == 0) {
+			return;
+		}
+	}
+	
 	if (K.UT) {
 		RunInlineTests(AppendFileName(curDir, "tests"));
 		
