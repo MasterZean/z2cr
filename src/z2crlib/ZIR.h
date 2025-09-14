@@ -65,6 +65,7 @@ protected:
 	NodePool<PtrNode> ptrNodes;
 	NodePool<IndexNode> indexNodes;
 	NodePool<ChainNode> chainNodes;
+	NodePool<DestructNode> destructNodes;
 		
 public:
 	public:
@@ -127,6 +128,8 @@ public:
 	PtrNode*   mem_ptr(Node* object, bool cast);
 	IndexNode* mem_index(Node *object, Node *index);
 	MemNode*   mem_this(ZClass& cls);
+	
+	Node *destruct(Node *e);
 	
 	BlockNode* block();
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);

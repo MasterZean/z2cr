@@ -272,6 +272,10 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 		if (f.Params.GetCount() == 0)
 			cls.Meth.Default = &f;
 	}
+	else if (f.IsDestructor) {
+		if (f.Params.GetCount() == 0)
+			cls.Meth.Destructor = &f;
+	}
 }
 
 void ZResolver::ResolveVariables() {

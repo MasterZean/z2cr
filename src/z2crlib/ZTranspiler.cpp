@@ -559,6 +559,11 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 		WriteFunctionParams(f);
 		return false;
 	}
+	else if (f.IsDestructor) {
+		cs << "~" << f.Owner().BackName;
+		WriteFunctionParams(f);
+		return false;
+	}
 	
 	if (f.Trait.Flags & ZTrait::BINDC)
 		;
@@ -607,6 +612,12 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		cs << f.Namespace().BackName << "::";
 		cs << f.Owner().Name << "::";
 		cs << f.Name;
+		WriteFunctionParams(f);
+		return;
+	}
+	else if (f.IsDestructor) {
+		cs << f.Namespace().BackName << "::";
+		cs << f.Owner().BackName << "::" << "~" << f.Owner().BackName;
 		WriteFunctionParams(f);
 		return;
 	}
@@ -773,8 +784,6 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(DefNode*)node);
 	else if (node->NT == NodeType::List)
 		Proc(*(ListNode*)node);
-	/*else if (node->NT == NodeType::Construct)
-		Proc((ConstructNode*)node);*/
 	else if (node->NT == NodeType::Ptr)
 		Proc(*(PtrNode*)node);
 	else if (node->NT == NodeType::Index)
@@ -809,6 +818,10 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(ForLoopNode*)node);
 	else if (node->NT == NodeType::LoopControl)
 		Proc(*(LoopControlNode*)node);
+	/*else if (node->NT == NodeType::Construct)
+		Proc((ConstructNode*)node);*/
+	else if (node->NT == NodeType::Destruct)
+		Proc(*(DestructNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -1669,3 +1682,12 @@ void ZTranspiler::Proc(IndexNode& node) {
 	Walk(node.Index);
 	cs << ']';
 }
+
+void ZTranspiler::Proc(DestructNode& node) {
+	Walk(node.Object);
+	cs << ".~";
+	cs << node.Object->Tt.Class->BackName;
+	cs << "()";
+}
+
+

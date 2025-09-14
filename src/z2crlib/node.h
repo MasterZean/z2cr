@@ -15,11 +15,9 @@ public:
 		Temporary,
 		Def,
 		List,
-		Construct,
 		Ptr,
 		Index,
 		SizeOf,
-		Destruct,
 		Property,
 		Deref,
 		Intrinsic,
@@ -37,6 +35,8 @@ public:
 		Switch,
 		LoopControl,
 		Chain,
+		Construct,
+		Destruct,
 	};
 };
 

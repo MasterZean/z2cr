@@ -282,4 +282,13 @@ public:
 	}
 };
 
+class DestructNode: public Node {
+public:
+	Node* Object = nullptr;
+	
+	DestructNode() {
+		NT = NodeType::Destruct;
+	}
+};
+
 #endif

@@ -61,6 +61,7 @@ public:
 	ZFunction* Move = nullptr;
 	ZFunction* Default = nullptr;
 	ZFunction* Allocate = nullptr;
+	ZFunction* Destructor = nullptr;
 	
 	ZFunction* Eq = nullptr;
 	ZFunction* Neq = nullptr;
@@ -318,7 +319,8 @@ class ZCompiler;
 class ZFunction: Moveable<ZFunction>, public ZEntity {
 public:
 	bool IsFunction = false;
-	int IsConstructor = 0;
+	int  IsConstructor = 0;
+	bool IsDestructor = false;
 	bool IsValid = false;
 	bool IsDeleted = false;
 	bool IsProperty = false;

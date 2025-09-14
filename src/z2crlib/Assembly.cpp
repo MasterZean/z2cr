@@ -333,7 +333,6 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	typeCls.IsClass = cls.IsClass;
 	typeCls.Pt = GetPtr(&typeCls.Tt);
 	typeCls.SuperPos = cls.SuperPos;
-	//typeCls.InUse = cls.InUse;
 	
 	typeCls.RTTIIndex = type;
 	

@@ -918,8 +918,6 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 		ZClass& tclass = ass.Classes[i];
 		return tclass;
 	}
-
-
 	
 	i = ass.Classes.GetCount();
 	
@@ -936,7 +934,6 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	tclass.FromTemplate = true;
 	tclass.TBase = &cc;
 	tclass.T = &sub;
-	tclass.InUse = true;
 	tclass.Access = cc.Access;
 	
 	ObjectType* t = &cc.Temps.Add();
@@ -949,6 +946,8 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	tclass.CopyPreSection(cc);
 	resPtr->ResolveNamespaceMembers(tclass);
 	resPtr->ResolveVariables(tclass);
+	
+	tclass.SetInUse();
 	//PreCompileVars(tclass);
 	
 	tempInstances.Add(&tclass);

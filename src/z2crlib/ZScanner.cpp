@@ -163,6 +163,9 @@ bool ZScanner::ScanDeclarationItem(AccessType accessType, const ZTrait& trait, b
 		return ScanVar(accessType, true, isStatic);
 	else if (parser.Id("property"))
 		return ScanPropertyMulti(accessType, trait, isStatic);
+	else if (parser.IsChar('~')) {
+		return ScanFuncMulti(accessType, trait, false, false, false);
+	}
 	
 	return false;
 }
@@ -505,12 +508,20 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	String name;
 	String bname;
 	
+	bool isDestructor = false;
+	
 	if (parser.Char('@')) {
 		String s = parser.ExpectId();
 		if (s == "size")
 			parser.Error(dp.P, "'@size' can't be overlaoded");
 		name = "@" + s;
 		bname = "_" + s;
+	}
+	else if (parser.Char('~')) {
+		String s = parser.ExpectId("this");
+		name = "~" + s;
+		bname = "~" + s;
+		isDestructor = true;
 	}
 	else {
 		if (isCons == 0) {
@@ -606,6 +617,8 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	f.IsProperty = isProp;
 	f.IsGetter = returnType;
 	f.IsUnsafe = isUnsafe;
+	f.IsDestructor = isDestructor;
+	
 	if (f.IsProperty && f.IsGetter == false)
 		f.IsFunction = false;
 

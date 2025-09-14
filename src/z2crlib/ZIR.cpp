@@ -1718,3 +1718,12 @@ IndexNode* IR::mem_index(Node* object, Node* index) {
 	ASSERT(node->Tt.Class);
 	return node;
 }
+
+Node* IR::destruct(Node* e) {
+	DestructNode* node = destructNodes.Get();
+	
+	node->Object = e;
+	node->SetType(ass.CVoid->Tt);
+	
+	return node;
+}

@@ -79,6 +79,7 @@ public:
 	void Proc(ListNode& node);
 	void Proc(PtrNode& node);
 	void Proc(IndexNode& node);
+	void Proc(DestructNode& node);
 	
 	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra);
 	void ProcLeftSet(String& cs, Node *n);

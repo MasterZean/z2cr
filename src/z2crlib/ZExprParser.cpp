@@ -506,7 +506,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "malloc")
+	if (s == "HeapBlock")
 		s == "Test";
 	
 	if (Function) {
@@ -805,6 +805,12 @@ Node *ZExprParser::ParseDot(Node *exp) {
 		if (sub == "size")
 			return irg.const_i(4);
 		s = "@" + sub;
+	}
+	else if (parser.Char('~')) {
+		parser.Expect('{');
+		parser.Expect('}');
+		
+		return irg.destruct(exp);
 	}
 	else
 		s = parser.ExpectId();
