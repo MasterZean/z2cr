@@ -1573,21 +1573,32 @@ void ZTranspiler::Proc(ReturnNode& node) {
 }
 
 void ZTranspiler::Proc(IntrinsicNode& node) {
-	cs << "(";
-	for (int i = 0; i < node.Value.GetCount(); i++) {
-		if (i > 0)
-			cs << ", ";
-		
-		cs << "::zprintf";
-		if (node.Value[i]->Tt.Class == ass.CChar)
-			cs << "c";
+	if (node.Operation == 0) {
 		cs << "(";
-		
-		Walk(node.Value[i]);
-		
+		for (int i = 0; i < node.Value.GetCount(); i++) {
+			if (i > 0)
+				cs << ", ";
+			
+			cs << "::zprintf";
+			if (node.Value[i]->Tt.Class == ass.CChar)
+				cs << "c";
+			cs << "(";
+			
+			Walk(node.Value[i]);
+			
+			cs << ")";
+		}
 		cs << ")";
 	}
-	cs << ")";
+	else if (node.Operation == 1) {
+		cs << "sizeof(";
+		ASSERT(node.Value.GetCount());
+		if (node.Value[0]->Tt.Class == ass.CClass)
+			cs << ass.Classes[(int)node.Value[0]->IntVal].BackName;
+		else
+			Walk(node.Value[0]);
+		cs << ")";
+	}
 }
 
 void ZTranspiler::Proc(LoopControlNode& node) {

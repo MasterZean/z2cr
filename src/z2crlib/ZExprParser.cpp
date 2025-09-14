@@ -255,6 +255,9 @@ Node* ZExprParser::ParseAtom() {
 	else if (parser.Id("this")) {
 		exp = irg.mem_this(*(ZClass*)Class);
 	}
+	else if (parser.Id("move")) {
+		exp = Parse();
+	}
 	else if (parser.IsId()) {
 		exp = ParseId();
 	}
@@ -498,9 +501,17 @@ Node* ZExprParser::ParseId() {
 	String s;
 	if (parser.Char('@')) {
 		String sub = parser.ExpectId();
-		// TODO: fix
-		if (sub == "size")
-			return irg.const_i(4);
+		
+		if (sub == "size") {
+			if (Class) {
+				Node* size = irg.intrinsic(irg.mem_this(*Class), 1);
+				size->SetType(ass.CPtrSize->Tt);
+				return size;
+			}
+			else
+				;// TODO: fix
+		}
+		
 		s = "@" + sub;
 	}
 	else
@@ -802,8 +813,18 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	
 	if (parser.Char('@')) {
 		String sub = parser.ExpectId();
-		if (sub == "size")
-			return irg.const_i(4);
+		if (sub == "size") {
+			/*if (exp->Tt.Class == ass.CClass) {
+				Node* size = irg.intrinsic(irg.const_class(ass.Classes[(int)exp->IntVal]), 1);
+				size->SetType(ass.CPtrSize->Tt);
+				return size;
+			}
+			else {*/
+				Node* size = irg.intrinsic(exp, 1);
+				size->SetType(ass.CPtrSize->Tt);
+				return size;
+			//}
+		}
 		s = "@" + sub;
 	}
 	else if (parser.Char('~')) {

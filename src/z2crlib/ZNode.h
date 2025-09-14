@@ -234,6 +234,7 @@ public:
 class IntrinsicNode: public Node {
 public:
 	Vector<Node*> Value;
+	int Operation = 0;
 
 	IntrinsicNode() {
 		NT = NodeType::Intrinsic;

@@ -140,7 +140,7 @@ public:
 	ReturnNode* ret(Node* node);
 	LoopControlNode* loopControl(bool aBreak);
 	
-	IntrinsicNode* intrinsic(Node* node);
+	IntrinsicNode* intrinsic(Node* node, int operation);
 	
 	LocalNode* local(ZVariable& v);
 	

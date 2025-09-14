@@ -513,7 +513,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	if (parser.Char('@')) {
 		String s = parser.ExpectId();
 		if (s == "size")
-			parser.Error(dp.P, "'@size' can't be overlaoded");
+			parser.Error(dp.P, "'@size' can't be overloaded");
 		name = "@" + s;
 		bname = "_" + s;
 	}

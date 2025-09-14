@@ -932,7 +932,7 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 		MemNode& mem = (MemNode&)*left;
 		
 		if (mem.Mem->Name == "Out" && mem.Mem->Namespace().Name == "System.")
-			return intrinsic(right);
+			return intrinsic(right, 0);
 	}
 	else if (left->NT == NodeType::Intrinsic) {
 		IntrinsicNode& mem = (IntrinsicNode&)*left;
@@ -1635,12 +1635,14 @@ ReturnNode* IR::ret(Node* node) {
 	return r;
 }
 
-IntrinsicNode* IR::intrinsic(Node* node) {
+IntrinsicNode* IR::intrinsic(Node* node, int operation) {
 	IntrinsicNode* r = intNodes.Get();
+	
 	if (node)
 		r->Value << node;
 	r->HasSe = true;
 	r->SetType(ass.CIntrinsic->Tt);
+	r->Operation = operation;
 
 	return r;
 }
