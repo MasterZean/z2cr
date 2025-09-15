@@ -1582,6 +1582,8 @@ void ZTranspiler::Proc(IntrinsicNode& node) {
 			cs << "::zprintf";
 			if (node.Value[i]->Tt.Class == ass.CChar)
 				cs << "c";
+			else if (node.Value[i]->Tt.Class == ass.CPtrSize)
+				cs << "s";
 			cs << "(";
 			
 			Walk(node.Value[i]);

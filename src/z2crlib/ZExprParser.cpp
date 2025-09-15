@@ -256,6 +256,8 @@ Node* ZExprParser::ParseAtom() {
 		exp = irg.mem_this(*(ZClass*)Class);
 	}
 	else if (parser.Id("move")) {
+		if (parser.Char('?'))
+			;
 		exp = Parse();
 	}
 	else if (parser.IsId()) {
@@ -827,11 +829,29 @@ Node *ZExprParser::ParseDot(Node *exp) {
 		}
 		s = "@" + sub;
 	}
+	else if (parser.Id("class")) {
+		if (parser.Char('.')) {
+			parser.ExpectId("HasTrait");
+			parser.Expect('(');
+			parser.ReadString('"');
+			parser.Expect(')');
+			return irg.const_bool(false);
+		}
+		else
+			return irg.const_class(ass.Classes[(int)exp->IntVal]);
+	}
 	else if (parser.Char('~')) {
 		parser.Expect('{');
 		parser.Expect('}');
 		
 		return irg.destruct(exp);
+	}
+	else if (parser.Char('!')) {
+		parser.Expect('{');
+		Node* cons = Parse();
+		parser.Expect('}');
+		
+		return irg.attr(exp, cons);
 	}
 	else
 		s = parser.ExpectId();

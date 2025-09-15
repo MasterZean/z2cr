@@ -561,8 +561,16 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 		while (!parser.IsChar(')')) {
 			if (parser.IsId("val"))
 				parser.ReadId();
-			else if (parser.IsId("ref"))
+			else if (parser.IsId("ref")) {
 				parser.ReadId();
+				if (parser.Char('?'))
+					;
+			}
+			else if (parser.IsId("move")) {
+				parser.ReadId();
+				if (parser.Char('?'))
+					;
+			}
 			
 			parser.ExpectId();
 			parser.Expect(':');

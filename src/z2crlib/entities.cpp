@@ -66,6 +66,14 @@ void ZFunction::ParseSignatures(ZCompiler& comp) {
 			else if (parser.IsId("ref")) {
 				parser.ReadId();
 				isVal = true;
+				if (parser.Char('?'))
+					;
+			}
+			else if (parser.IsId("move")) {
+				parser.ReadId();
+				isVal = true;
+				if (parser.Char('?'))
+					;
 			}
 			
 			auto pp = parser.GetFullPos();

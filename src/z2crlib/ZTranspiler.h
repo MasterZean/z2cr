@@ -141,6 +141,8 @@ public:
 					//WriteClassName(*inClass->T);
 					cs << inClass->T->BackName;
 					cs << "& operator[](size_t idx)       { if (idx >= length) throw IndexOutOfBoundsException(); return ptr[idx]; }\n";
+					cs << "const " << inClass->T->BackName;
+					cs << "& operator[](size_t idx) const      { if (idx >= length) throw IndexOutOfBoundsException(); return ptr[idx]; }\n";
 				}
 				
 				firstInClass = false;
