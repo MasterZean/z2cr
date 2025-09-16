@@ -815,11 +815,11 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
 	ZClass* cls = nullptr;
 	
-	if (v.Name == "ptr")
+	if (v.Name == "vvvv")
 		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(*this, parser, true, &v.Owner(), Class);
+		auto ti = ZExprParser::ParseType(*this, parser, true, Class, Class, f);
 		
 		if (invalidClass(ti.Tt.Class, ass))
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ti.Tt.Class));

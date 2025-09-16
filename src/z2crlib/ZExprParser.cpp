@@ -519,7 +519,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "HeapBlock")
+	if (s == "SIZE")
 		s == "Test";
 	
 	if (Function) {
@@ -963,7 +963,7 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, ZNamespace* aclass, ZNamespace* context) {
+ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, ZNamespace* aclass, ZNamespace* context, ZFunction* afunc) {
 	Assembly& ass = comp.Ass();
 	
 	ObjectInfo ti;
@@ -1071,7 +1071,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 			ns.Sections.Add();
 			ZVariable dummy(ns);
 			dummy.Section = &ns.Sections[0];
-			ZExprParser ep(dummy, aclass, nullptr, comp, parser, comp.IRG());
+			ZExprParser ep(dummy, aclass, afunc, comp, parser, comp.IRG());
 			node = ep.Parse(true);
 		}
 		
