@@ -345,6 +345,8 @@ Node* ZExprParser::ParseAtom() {
 				getParams(params, '}');
 				
 				Node* temp = Temporary(cobj, params, &pp);
+				if (cobj.TBase == ass.CRaw)
+					temp->Tt.Param = exp->Tt.Param;
 				exp = temp;
 				
 				exp->Tt.Class->SetInUse();
@@ -439,6 +441,9 @@ Node* ZExprParser::ParseAtomClassInst(Node* exp) {
 	
 		if (ass.IsPtr(mainClass.Tt))
 			target = 1;
+		
+		if (mainClass.Tt.Class == ass.CRaw)
+			target = 2;
 			
 		if (nodes.GetCount() != target)
 			ER::ErrClassTemplateWrongArgumentNo(parser.Source(), posPreTemp, mainClass, target, nodes.GetCount());
@@ -519,7 +524,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "SIZE")
+	if (s == "CArray")
 		s == "Test";
 	
 	if (Function) {
@@ -607,6 +612,13 @@ Node* ZExprParser::ParseId() {
 Node* ZExprParser::ParseNamespace() {
 	Point opp = parser.GetPoint();
 	auto s = parser.ReadId();
+	
+	if (parser.PeekChar() != '.') {
+		int index = parser.Source().ShortNameLookup.Find(s);
+		
+		if (index != -1)
+			return irg.const_class(*parser.Source().ShortNameLookup[index]);
+	}
 	
 	return ParseNamespace(s, opp);
 }
@@ -699,7 +711,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-		if (aName == "Length")
+		if (aName == "Fill")
 			aName == "ToByte";
 		
 		if (method.IsProperty == false) {
@@ -794,8 +806,8 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
-		if (!f.IsEvaluated)
-			comp.CompileVar(f, Function);
+		//if (!f.IsEvaluated)
+		//	comp.CompileVar(f, Function);
 		
 		f.Owner().SetInUse();
 		f.InUse = true;

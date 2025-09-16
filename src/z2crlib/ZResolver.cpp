@@ -211,7 +211,7 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	}
 	
 	f.SetOwner(ns);
-	
+
 //	if (f.Name == "Length")
 //		f.Name == "Length";
 
@@ -263,8 +263,14 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 			d.PropSetter = &f;
 	}
 	
-	if (f.InClass)
+	if (f.InClass) {
 		AssignClassRoles((ZClass&)f.Owner(), f);
+	
+		/*if (f.InClass && f.Class().TBase == ass.CSlice) {
+			if (f.IsConstructor == 1)
+				f.SetInUse();
+		}*/
+	}
 }
 
 void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {

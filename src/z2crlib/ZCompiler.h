@@ -10,10 +10,18 @@
 class ZTranspiler;
 class ZResolver;
 
-class ZContext {
+class ZBlockContext {
 public:
 	bool Return = false;
 	bool InLoop = false;
+};
+
+class ZCompilerContext {
+public:
+	ZClass* Class = nullptr;
+	ZFunction* Func = nullptr;
+	
+	ZVariable* TargetVar = nullptr;
 };
 
 class ZCompiler {
@@ -70,7 +78,7 @@ public:
 	
 	ZClass& ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval);
 	
-	bool CompileVar(ZVariable& v, ZFunction* f = nullptr);
+	bool CompileVar(ZVariable& v, const ZCompilerContext& zcon);
 	
 	bool DoMCU();
 	void DoMCU(ZNamespace& ns);
@@ -100,17 +108,17 @@ private:
 	bool Compile(ZNamespace& ns);
 	bool CompileFunc(ZFunction& f, Node& target);
 		
-	Node* CompileBlock(ZFunction& f, ZParser& parser, ZContext& con);
-	Node* CompileStatement(ZFunction& f, ZParser& parser, ZContext& con);
-	Node *CompileExpression(ZFunction& f, ZParser& parser, ZContext& con);
+	Node* CompileBlock(ZFunction& f, ZParser& parser, ZBlockContext& con);
+	Node* CompileStatement(ZFunction& f, ZParser& parser, ZBlockContext& con);
+	Node *CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext& con);
 	
-	Node* CompileIf(ZFunction& f, ZParser& parser, ZContext& con);
-	Node* CompileWhile(ZFunction& f, ZParser& parser, ZContext& con);
-	Node* CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con);
-	Node *CompileFor(ZFunction& f, ZParser& parser, ZContext& con);
+	Node* CompileIf(ZFunction& f, ZParser& parser, ZBlockContext& con);
+	Node* CompileWhile(ZFunction& f, ZParser& parser, ZBlockContext& con);
+	Node* CompileDoWhile(ZFunction& f, ZParser& parser, ZBlockContext& con);
+	Node *CompileFor(ZFunction& f, ZParser& parser, ZBlockContext& con);
 
 	Node* CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst);
-	Node *CompileReturn(ZFunction& f, ZParser& parser, ZContext& con);
+	Node *CompileReturn(ZFunction& f, ZParser& parser, ZBlockContext& con);
 	
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
 	bool Transpile(ZTranspiler& cpp, ZFunction& f);
@@ -120,7 +128,7 @@ private:
 	void ScanSource(ZSource& src, Array<ZScanner>& scanners);
 	void TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur);
 	
-	Node* compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f);
+	Node* compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, const ZCompilerContext& zcon);
 	
 	void WriteDeps(ZClass& cls);
 	void writeDeps(ZClass& cls);

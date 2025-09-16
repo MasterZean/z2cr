@@ -255,8 +255,9 @@ void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 void ZTranspiler::WriteTypePost(ObjectType* tt) {
 	if (tt->Class->FromTemplate && tt->Class->TBase == ass.CRaw) {
 		cs << '[' << tt->Param << ']';
-		ASSERT(tt->Next);
-		WriteTypePost(tt->Next);
+		//ASSERT(tt->Next);
+		if (tt->Next)
+			WriteTypePost(tt->Next);
 	}
 }
 
@@ -281,6 +282,9 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 		if (&ns == ass.CString)
 			if (v.Name == "text")
 				continue;
+			
+		//if (v.I.Tt.Class)
+		//	continue;
 		
 		ASSERT(v.I.Tt.Class);
 		//ASSERT(v.Value);
@@ -1292,6 +1296,9 @@ void ZTranspiler::Proc(UnaryOpNode& node) {
 void ZTranspiler::Proc(DefNode& node) {
 	ZFunction& f = *node.Function;
 	
+	if (f.Name == "Fill")
+		f.Name == "Length";
+	
 	if (f.Trait.Flags & ZTrait::BINDC)
 		cs << "::";
 	else if (f.IsStatic) {
@@ -1312,8 +1319,27 @@ void ZTranspiler::Proc(DefNode& node) {
 	else {
 		//ASSERT(node.Object);
 		if (node.Object) {
-			Walk(node.Object);
-			cs << ".";
+			if (node.Object->Tt.Class->TBase == ass.CRaw) {
+				if (f.IsProperty && f.Name == "Length") {
+					cs << node.Object->Tt.Param;
+					return;
+				}
+				else {
+					cs << ass.CSlice->Owner().BackName;
+					cs << "::";
+					cs << "Slice_";
+					cs << node.Object->Tt.Class->T->Name;
+					cs << "(";
+					Walk(node.Object);
+					cs << ", ";
+					cs << node.Object->Tt.Param;
+					cs << ").";
+				}
+			}
+			else {
+				Walk(node.Object);
+				cs << ".";
+			}
 		}
 	}
 	

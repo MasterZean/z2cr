@@ -69,6 +69,22 @@ bool ZCompiler::Compile() {
 		WriteDeps((ZClass&)MainFunction->Owner());
 	}
 	
+	for (int i = 0; i < cuClasses.GetCount(); i++) {
+		ZClass& cls = *cuClasses[i];
+		if (cls.TBase == ass.CSlice) {
+			for (int j = 0; j < cls.Methods.GetCount(); j++)
+				if (cls.Methods[j].IsConstructor) {
+					for (int k = 0; k < cls.Methods[j].Functions.GetCount(); k++) {
+						ZFunction& f = *cls.Methods[j].Functions[k];
+						if (f.IsConstructor == 1 && f.IsEvaluated == false) {
+							f.SetInUse();
+							CompileFunc(f);
+						}
+				}
+			}
+		}
+	}
+	
 	if (BuildMode) {
 		String cppCode = AppendFileName(BuildPath, "cppcode.h");
 		if (!FileExists(cppCode))
@@ -335,13 +351,12 @@ bool ZCompiler::PreCompileVars(ZNamespace& ns) {
 		if (v->IsEvaluated)
 			continue;
 		
-//		DUMP("preocmpile " + ns.Name + ":" + v->Name);
-		
-//		if (v->Name == "TileVariant")
-//			v->Name == "TileVariant";
-		CompileVar(*v);
-		
-		//v->InUse = true;
+		ZCompilerContext zcon;
+		if (v->Owner().IsClass)
+			zcon.Class = (ZClass*)&v->Owner();
+		zcon.TargetVar = v;
+			 
+		CompileVar(*v, zcon);
 	}
 	
 	return true;
@@ -393,7 +408,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.Blocks.Add();
 	f.Blocks.Top().Temps = 0;
 	
-	ZContext con;
+	ZBlockContext con;
 	
 	while (!parser.IsChar('}')) {
 		Node* node = CompileStatement(f, parser, con);
@@ -482,7 +497,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	return true;
 }
 
-Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) {
+Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	if (parser.Char('{')) {
 		Node* node = CompileBlock(f, parser, con);
 		
@@ -539,7 +554,7 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 	return nullptr;
 }
 
-Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con) {
+Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	ZExprParser ep(f, Class, &f, *this, parser, irg);
 	auto pp = parser.GetFullPos();
 	Node* node = ep.Parse();
@@ -612,11 +627,11 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZContext& con)
 	return node;
 }
 
-Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser, ZContext& con) {
+Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	f.Blocks.Add();
 	f.Blocks.Top().Temps = 0;
 	
-	ZContext blockCon;
+	ZBlockContext blockCon;
 	blockCon.InLoop = con.InLoop;
 	
 	BlockNode* block = irg.block();
@@ -639,7 +654,7 @@ Node* ZCompiler::CompileBlock(ZFunction& f, ZParser& parser, ZContext& con) {
 	return block;
 }
 
-Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZContext& con) {
+Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	
@@ -651,14 +666,14 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZContext& con) {
 	if (node->Tt.Class != ass.CBool)
 		parser.Error(p, ER::Blue + "if" + ER::White + " condition must be of class " + ass.ToQtColor(ass.CBool) + ", " + ass.ToQtColor(node) + " found");
 	
-	ZContext trueCon;
+	ZBlockContext trueCon;
 	trueCon.InLoop = con.InLoop;
 	
 	Node* tb = CompileStatement(f, parser, trueCon);
 	Node* fb = nullptr;
 	
 	if (parser.Id("else")) {
-		ZContext falseCon;
+		ZBlockContext falseCon;
 		falseCon.InLoop = con.InLoop;
 		fb = CompileStatement(f, parser, falseCon);
 		
@@ -671,7 +686,7 @@ Node* ZCompiler::CompileIf(ZFunction& f, ZParser& parser, ZContext& con) {
 	return irg.ifcond(node, tb, fb);
 }
 
-Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZContext& con) {
+Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	parser.Expect('(');
 	Point p = parser.GetPoint();
 	
@@ -680,7 +695,7 @@ Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.Expect(')');
 	parser.EatNewlines();
 	
-	ZContext loopCon;
+	ZBlockContext loopCon;
 	loopCon.InLoop = true;
 	Node* bd = CompileStatement(f, parser, loopCon);
 	if (node->Tt.Class != ass.CBool)
@@ -689,11 +704,11 @@ Node* ZCompiler::CompileWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	return irg.whilecond(node, bd);
 }
 
-Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
+Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	if (!parser.IsChar('{'))
 		parser.Expect('{');
 	
-	ZContext loopCon;
+	ZBlockContext loopCon;
 	loopCon.InLoop = true;
 	Node* bd = CompileStatement(f, parser, loopCon);
 	if (loopCon.Return)
@@ -716,7 +731,7 @@ Node* ZCompiler::CompileDoWhile(ZFunction& f, ZParser& parser, ZContext& con) {
 	return irg.dowhilecond(node, bd);
 }
 
-Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
+Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	Node* init = nullptr;
 	Node* iter = nullptr;
 	bool addedBlock = false;
@@ -753,7 +768,7 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 	parser.Expect(')');
 	parser.EatNewlines();
 	
-	ZContext loopCon;
+	ZBlockContext loopCon;
 	loopCon.InLoop = true;
 	Node* bd = CompileStatement(f, parser, loopCon);
 	if (loopCon.Return)
@@ -765,13 +780,13 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZContext& con) {
 	return irg.forloop(init, node, iter, bd);
 }
 
-bool ZCompiler::CompileVar(ZVariable& v, ZFunction* f) {
+bool ZCompiler::CompileVar(ZVariable& v, const ZCompilerContext& zcon) {
 	v.IsEvaluated = true;
 	
 	ZParser parser(v.DefPos);
 	parser.ExpectZId();
 	
-	Node* node = compileVarDec(v, parser, v.DefPos, f);
+	Node* node = compileVarDec(v, parser, v.DefPos, zcon);
 	parser.ExpectEndStat();
 	
 	if (v.InClass && !v.I.Tt.Class->CoreSimple) {
@@ -807,19 +822,25 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	v.Section = f.Section;
 	v.IsConst = aConst;
 
-	Node* node = compileVarDec(v, parser, vp, &f);
+	ZCompilerContext zcon;
+	if (v.Owner().IsClass)
+		zcon.Class = (ZClass*)&v.Owner();
+	zcon.Func = &f;
+	zcon.TargetVar = &v;
+		
+	Node* node = compileVarDec(v, parser, vp, zcon);
 	v.I.Tt.Class->SetInUse();
 	return node;
 }
 
-Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZFunction* f) {
+Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, const ZCompilerContext& zcon) {
 	ZClass* cls = nullptr;
 	
-	if (v.Name == "vvvv")
+	if (v.Name == "arr")
 		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(*this, parser, true, Class, Class, f);
+		auto ti = ZExprParser::ParseType(*this, parser, true, zcon.Class, zcon.Class, zcon.Func);
 		
 		if (invalidClass(ti.Tt.Class, ass))
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ti.Tt.Class));
@@ -842,7 +863,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 //	if (v.Name == "TreeColors")
 //		v.Name == "Trees";
 	if (assign) {
-		ZExprParser ep(v, Class, f, *this, parser, irg);
+		ZExprParser ep(v, Class, zcon.Func, *this, parser, irg);
 		Node* node = ep.Parse();
 		
 		if (!cls) {
@@ -882,7 +903,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		}
 		
 		if (v.Value == nullptr) {
-			ZExprParser ep(v, Class, f, *this, parser, irg);
+			ZExprParser ep(v, Class, zcon.Func, *this, parser, irg);
 			Vector<Node*> params;
 			if (v.I.Tt.Class->TBase == nullptr || v.I.Tt.Class->TBase != ass.CRaw)
 				v.Value = ep.Temporary(*v.I.Tt.Class, params, &vp);
@@ -894,15 +915,15 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, ZF
 		PreCompileVars(*cls);
 	}*/
 		
-	if (f) {
-		ZBlock& b = f->Blocks[f->Blocks.GetCount() - 1];
+	if (zcon.Func) {
+		ZBlock& b = zcon.Func->Blocks[zcon.Func->Blocks.GetCount() - 1];
 		b.Locals.Add(v.Name, &v);
 	}
 	
 	return irg.local(v);
 }
 
-Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZContext& con) {
+Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 	auto p = parser.GetPoint();
 	
 	if (f.IsConstructor)
@@ -939,6 +960,8 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	
 	i = ass.Classes.GetCount();
 	
+	LOG("Instantiating " + fullName);
+	
 	ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
 	
 	tclass.Name = String().Cat() << cc.Name << "<" << sub.Name << ">";
@@ -965,6 +988,8 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	resPtr->ResolveNamespaceMembers(tclass);
 	resPtr->ResolveVariables(tclass);
 	
+	PreCompileVars(tclass);
+	
 	tclass.SetInUse();
 	//PreCompileVars(tclass);
 	
@@ -973,7 +998,7 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	if (cc.SuperPos.Source) {
 		ZParser parser(cc.SuperPos);
 		ZExprParser exp(tclass, &tclass, nullptr, *this, parser, irg);
-		auto res = exp.ParseType(*this, parser, false, nullptr, &tclass);
+		auto res = exp.ParseType(*this, parser, false, &tclass, &tclass);
 		tclass.Super = res.Tt.Class;
 		cuClasses.Add(tclass.Super);
 		
