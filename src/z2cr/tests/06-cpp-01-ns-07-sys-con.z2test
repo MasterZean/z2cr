@@ -218,7 +218,7 @@ namespace sys::core::lang {
 /* @dump namespace: sys.core.lang def
 void sys::core::lang::_main() {
 	sys::core::lang::Int::Init(sys::core::lang::Foo());
-	sys::core::lang::Foo f = sys::core::lang::Foo();
+	auto f = sys::core::lang::Foo();
 	int32 a = sys::core::lang::Int::Init(f);
 }
 

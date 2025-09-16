@@ -31,7 +31,7 @@ def @main() {
 // @test access_test
 // @file
 /* @errors
-test.z2(18, 13): can't access protected member:
+test.z2(18, 14): can't access protected member:
 		val g        [namespace test]
 */
 namespace test;
@@ -76,7 +76,7 @@ def @main() {
 // @test access_test
 // @file test1
 /* @errors
-main.z2(8, 10): can't access private member:
+main.z2(8, 11): can't access private member:
 		val f        [namespace test1]
 */
 namespace test1;
@@ -106,7 +106,7 @@ def @main() {
 // @test access_test
 // @file test1
 /* @errors
-main.z2(8, 10): can't access private member:
+main.z2(8, 11): can't access private member:
 		val f        [namespace test2]
 */
 namespace test1;

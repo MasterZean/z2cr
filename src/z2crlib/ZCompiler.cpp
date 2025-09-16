@@ -71,12 +71,25 @@ bool ZCompiler::Compile() {
 	
 	for (int i = 0; i < cuClasses.GetCount(); i++) {
 		ZClass& cls = *cuClasses[i];
+		DUMP(cls.Name);
 		if (cls.TBase == ass.CSlice) {
 			for (int j = 0; j < cls.Methods.GetCount(); j++)
 				if (cls.Methods[j].IsConstructor) {
 					for (int k = 0; k < cls.Methods[j].Functions.GetCount(); k++) {
 						ZFunction& f = *cls.Methods[j].Functions[k];
 						if (f.IsConstructor == 1 && f.IsEvaluated == false) {
+							f.SetInUse();
+							CompileFunc(f);
+						}
+				}
+			}
+		}
+		else {
+			for (int j = 0; j < cls.Methods.GetCount(); j++)
+				if (cls.Methods[j].IsConstructor) {
+					for (int k = 0; k < cls.Methods[j].Functions.GetCount(); k++) {
+						ZFunction& f = *cls.Methods[j].Functions[k];
+						if (f.IsConstructor == 1 && f.IsEvaluated == false && f.Params.GetCount() == 0 && f.IsGenerated == false) {
 							f.SetInUse();
 							CompileFunc(f);
 						}
@@ -130,8 +143,8 @@ void ZCompiler::writeDeps(ZClass& cls) {
 			writeDeps(used);
 	}
 	
-	DUMP(cls.Name);
-	cuClasses.Add(&cls);
+	DUMP("Add to cu " + cls.Name);
+	cuClasses.FindAdd(&cls);
 }
 
 bool ZCompiler::FindMain() {
@@ -906,7 +919,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 			ZExprParser ep(v, Class, zcon.Func, *this, parser, irg);
 			Vector<Node*> params;
 			if (v.I.Tt.Class->TBase == nullptr || v.I.Tt.Class->TBase != ass.CRaw)
-				v.Value = ep.Temporary(*v.I.Tt.Class, params, &vp);
+				v.Value = ep.Temporary(*v.I.Tt.Class, params, vp);
 		}
 	}
 	
@@ -1000,12 +1013,21 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 		ZExprParser exp(tclass, &tclass, nullptr, *this, parser, irg);
 		auto res = exp.ParseType(*this, parser, false, &tclass, &tclass);
 		tclass.Super = res.Tt.Class;
+		
+		DUMP("Inst add to cu " + sub.Name);
+		cuClasses.FindAdd(&sub);
+		sub.SetInUse();
+		DUMP("Inst add to cu " + tclass.Super->Name);
 		cuClasses.Add(tclass.Super);
 		
 		tclass.Super->Meth.Default->SetInUse();
 	}
 	
-	cuClasses.Add(&tclass);
+	DUMP("Inst add to cu " + sub.Name);
+	cuClasses.FindAdd(&sub);
+	
+	DUMP("Inst add to cu " + tclass.Name);
+	cuClasses.FindAdd(&tclass);
 	
 	return tclass;
 }

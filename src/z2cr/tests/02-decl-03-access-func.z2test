@@ -33,7 +33,7 @@ def @main() {
 // @test access_test
 // @file
 /* @errors
-test.z2(19, 13): can't access protected member:
+test.z2(19, 14): can't access protected member:
 		def g()        [namespace test]
 */
 namespace test;
@@ -93,7 +93,7 @@ def @main() {
 // @test access_test
 // @file test1
 /* @errors
-test2.z2(6, 10): can't access private member:
+test2.z2(6, 11): can't access private member:
 		func g()        [namespace test1]
 */
 namespace test1;
@@ -136,7 +136,7 @@ def @main() {
 // @test access_test
 // @file test1
 /* @errors
-main.z2(14, 10): can't access private member:
+main.z2(14, 11): can't access private member:
 		func g()        [namespace test1]
 */
 namespace test1;
@@ -179,7 +179,7 @@ def @main() {
 // @test access_test
 // @file test1
 /* @errors
-main.z2(14, 10): can't access private member:
+main.z2(14, 11): can't access private member:
 		func g()        [namespace test2]
 */
 namespace test1;

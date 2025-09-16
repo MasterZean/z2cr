@@ -344,7 +344,7 @@ Node* ZExprParser::ParseAtom() {
 				Vector<Node*> params;
 				getParams(params, '}');
 				
-				Node* temp = Temporary(cobj, params, &pp);
+				Node* temp = Temporary(cobj, params, pp);
 				if (cobj.TBase == ass.CRaw)
 					temp->Tt.Param = exp->Tt.Param;
 				exp = temp;
@@ -504,7 +504,7 @@ Node* ZExprParser::ParseSpec(ZClass& mainClass, Node* exp, Vector<Node*>& nodes,
 }
 
 Node* ZExprParser::ParseId() {
-	Point opp = parser.GetPoint();
+	auto opp = parser.GetFullPos();
 	String s;
 	if (parser.Char('@')) {
 		String sub = parser.ExpectId();
@@ -589,7 +589,7 @@ Node* ZExprParser::ParseId() {
 			if (ns.HasMember(s))
 				err << "\t\t" << ns.Name.Mid(0, ns.Name.GetCount() - 1) << "\n";
 		}
-		parser.Error(opp, err);
+		parser.Error(opp.P, err);
 	}
 	
 	Node* member = nullptr;
@@ -610,7 +610,7 @@ Node* ZExprParser::ParseId() {
 }
 
 Node* ZExprParser::ParseNamespace() {
-	Point opp = parser.GetPoint();
+	auto opp = parser.GetFullPos();
 	auto s = parser.ReadId();
 	
 	if (parser.PeekChar() != '.') {
@@ -623,7 +623,7 @@ Node* ZExprParser::ParseNamespace() {
 	return ParseNamespace(s, opp);
 }
 
-Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
+Node* ZExprParser::ParseNamespace(const String& s, const ZSourcePos& opp) {
 	ZNamespaceItem* ns = &ass.NsLookup;
 	
 	auto total = s;
@@ -639,16 +639,16 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 		ZParser dummy(dsrc);
 		
 		if (!dummy.IsZId())
-			parser.Error(opp, "unexpected keyword: " + s);
+			parser.Error(opp.P, "unexpected keyword: " + s);
 		else
-			parser.Error(opp, "unknown identifier: " + s);
+			parser.Error(opp.P, "unknown identifier: " + s);
 	}
 	ns = &ns->Names[index];
 	
-	opp = parser.GetPoint();
+	ZSourcePos opp2 = parser.GetFullPos();
 	
 	if (!parser.IsChar('.'))
-		parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
+		parser.Error(opp2.P, "namespace element must be folowed by '.', " + parser.Identify() + " found");
 
 	while (parser.Char('.')) {
 		String name;
@@ -658,14 +658,14 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			name = "@" + parser.ExpectId();
 			
 			ASSERT(ns->Namespace);
-			Node* node = ParseMember(*ns->Namespace, name, opp, true);
+			Node* node = ParseMember(*ns->Namespace, name, opp2, true);
 			if (!node)
-				parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
+				parser.Error(opp2.P, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
 			
 			return node;
 		}
 		else {
-			Point opp2 = parser.GetPoint();
+			auto opp3 = parser.GetFullPos();
 			name = parser.ExpectId();
 			
 			index = ns->Names.Find(name);
@@ -673,14 +673,14 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 			if (index != -1) {
 				// still a namespace, ask for more '.'
 				ns = &ns->Names[index];
-				opp = parser.GetPoint();
+				opp3 = parser.GetFullPos();
 				if (/*!ns->Namespace &&*/ !parser.IsChar('.'))
-					parser.Error(opp, "namespace element must be folowed by '.', " + parser.Identify() + " found");
+					parser.Error(opp3.P, "namespace element must be folowed by '.', " + parser.Identify() + " found");
 			}
 			else {
 				// a namespace child
 				if (ns->Namespace == nullptr)
-					parser.Error(opp2, "namespace element '" + name + " 'is not part of parent namespace");
+					parser.Error(opp3.P, "namespace element '" + name + " 'is not part of parent namespace");
 				
 				int clsIndex = ns->Namespace->Classes.Find(name);
 				
@@ -688,10 +688,10 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 					return irg.const_class(*ns->Namespace->Classes[clsIndex]);
 				}
 				else {
-					Node* node = ParseMember(*ns->Namespace, name, opp, true);
+					Node* node = ParseMember(*ns->Namespace, name, opp3, true);
 					
 					if (!node)
-						parser.Error(opp, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
+						parser.Error(opp3.P, "namespace '" + ns->Namespace->Name + "' does not have a member called: '" + name + "'");
 					
 					return node;
 				}
@@ -704,7 +704,7 @@ Node* ZExprParser::ParseNamespace(const String& s, Point opp) {
 	return nullptr;
 }
 
-Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point& opp, bool onlyStatic, Node* object) {
+Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourcePos& opp, bool onlyStatic, Node* object) {
 	int index = ns.Methods.Find(aName);
 	
 	if (index != -1) {
@@ -730,22 +730,22 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 		ZFunction* f = GetBase(&method, nullptr, params, 1, false, ambig);
 		
 		if (!f)
-			ER::CallError(parser.Source(), opp, ass, ns, &method, params, 0/*ol->IsCons*/);
+			ER::CallError(parser.Source(), opp.P, ass, ns, &method, params, 0/*ol->IsCons*/);
 		
 		if (ambig)
-			parser.Error(opp, ER::Green + aName + ": ambigous symbol");
+			parser.Error(opp.P, ER::Green + aName + ": ambigous symbol");
 		
-		TestAccess(*f, opp);
+		TestAccess(*f, opp.P);
 		
 		if (onlyStatic && !f->IsStatic && f->IsConstructor == 0)
-			parser.Error(opp, ER::Green + aName + ER::White + ": is not a static member");
+			parser.Error(opp.P, ER::Green + aName + ER::White + ": is not a static member");
 		if (!onlyStatic && f->IsStatic) {
 			if (Class && Class != &f->Owner())
-				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
+				parser.Error(opp.P, ER::Green + aName + ER::White + ": is a static member");
 		}
 		// TODO: fix unsafe
 		if (allowUnsafe == false && f->IsUnsafe)
-			parser.Error(opp, ER::Green + aName + ER::White + ": is unsafe, can only be called in unsafe context");
+			parser.Error(opp.P, ER::Green + aName + ER::White + ": is unsafe, can only be called in unsafe context");
 	 
 		if (f->InClass && f->ShouldEvaluate())
 			comp.CompileFunc(*f);
@@ -770,7 +770,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 			node = temp;
 		}
 		else {
-			Node* temp = Temporary((ZClass&)f->Owner(), params);
+			Node* temp = Temporary((ZClass&)f->Owner(), params, opp);
 			temp->Tt.Class->SetInUse();
 			f->Owner().SetInUse();
 			f->SetInUse();
@@ -798,12 +798,12 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 	if (index != -1) {
 		ZVariable& f = *ns.Variables[index];
 		
-		TestAccess(f, opp);
+		TestAccess(f, opp.P);
 		if (onlyStatic && !f.IsStatic)
-			parser.Error(opp, ER::Green + aName + ER::White + ": is not a static member");
+			parser.Error(opp.P, ER::Green + aName + ER::White + ": is not a static member");
 		if (!onlyStatic && f.IsStatic) {
 			if (Class && Class != &f.Owner())
-				parser.Error(opp, ER::Green + aName + ER::White + ": is a static member");
+				parser.Error(opp.P, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
 		//if (!f.IsEvaluated)
@@ -822,7 +822,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const Point&
 }
 
 Node *ZExprParser::ParseDot(Node *exp) {
-	Point p = parser.GetPoint();
+	auto p = parser.GetFullPos();
 	String s;
 	
 	if (parser.Char('@')) {
@@ -862,7 +862,7 @@ Node *ZExprParser::ParseDot(Node *exp) {
 		parser.Expect('{');
 		if (parser.Char('}')) {
 			Vector<Node*> params;
-			return irg.attr(exp, Temporary(*exp->Tt.Class, params));
+			return irg.attr(exp, Temporary(*exp->Tt.Class, params, p));
 		}
 		else {
 			Node* cons = Parse();
@@ -881,10 +881,10 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	if (s == CLS_STR ) {
 		if (exp->Tt.Class == ass.CClass) {
 			if (!exp->IsLiteral)
-				parser.Warning(p, "chained .${magenta}class${white} statements detected. "
+				parser.Warning(p.P, "chained .${magenta}class${white} statements detected. "
 					"Expression is equivalent to '${cyan}Class${white}.${magenta}class${white}' which is '${cyan}Class${white}'");
 			if (exp->IntVal == 1)
-				parser.Warning(p, "'${cyan}Class${white}.${magenta}class${white}' is '${cyan}Class${white}'. Is this intentional?");
+				parser.Warning(p.P, "'${cyan}Class${white}.${magenta}class${white}' is '${cyan}Class${white}'. Is this intentional?");
 			
 			exp = irg.const_class(ass.Classes[(int)exp->IntVal], nullptr);
 			exp->IsLiteral = false;
@@ -913,7 +913,7 @@ Node *ZExprParser::ParseDot(Node *exp) {
 			
 			Node* node = ParseMember(cs, s, p, true);
 			if (!node)
-				parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
+				parser.Error(p.P, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
 			
 			return node;
 		}
@@ -931,7 +931,7 @@ Node *ZExprParser::ParseDot(Node *exp) {
 				if (s == "Length" || s == "Capacity")
 					return irg.const_i(exp->Tt.Param, ass.CPtrSize);
 			}
-			parser.Error(p, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
+			parser.Error(p.P, "${magenta}class${white} '" + ER::Cyan + cs.Name + ER::White + "' does not have a member called: '" + ER::Green + s + ER::White + "'");
 		}
 		
 		return node;
@@ -1128,7 +1128,7 @@ void ZExprParser::getParams(Vector<Node*>& params, char end) {
 	parser.Expect(end);
 }
 
-Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
+Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePos& pos) {
 	if (&cls == ass.CPtr) {
 		/*if (InVarMode)
 			parser.Error(p, "inline member initialization can't take addresses");
@@ -1144,8 +1144,7 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 			return irg.const_null();
 		else if (params.GetCount() == 1) {
 			if (ass.InvalidPtrClass(params[0]->Tt.Class)) {
-				if (pos)
-					ER::Error(*pos->Source, pos->P, "can't have a pointer to class " + ass.ToQtColor(&params[0]->Tt));
+				ER::Error(*pos.Source, pos.P, "can't have a pointer to class " + ass.ToQtColor(&params[0]->Tt));
 				return nullptr;
 			}
 			return irg.mem_ptr(params[0], false);
@@ -1162,10 +1161,12 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	
 	Node* dr = nullptr;
 	
-	ZFunction* f = FindConstructor(cls, params, nullptr);
+	if (cls.Name == "Byte")
+		cls.Name == "Byte";
+	ZFunction* f = FindConstructor(cls, params, pos.P);
 		
 	if (f != nullptr) {
-		f = FindConstructor(cls, params, nullptr);
+		f = FindConstructor(cls, params, pos.P);
 		TempNode* node = irg.mem_temp(cls, f);
 		node->Params = std::move(params);
 		
@@ -1174,8 +1175,7 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 		
 		return node;
 	}
-	else
-	if (&cls == ass.CFloat) {
+	else if (&cls == ass.CFloat) {
 		if (params.GetCount() == 0)
 			return irg.const_r32(0);
 		else {
@@ -1212,14 +1212,14 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 		ZFunction* fc = nullptr;
 		
 		if (!cls.CoreSimple/* && cls.T && cls.T->CoreSimple == false*/) {
-			fc = FindConstructor(cls, params, pos);
+			fc = FindConstructor(cls, params, pos.P);
 			if (f == nullptr) {
 				if (cls.TBase == ass.CRaw)
-					fc = FindConstructor(*cls.T, params, pos);
+					fc = FindConstructor(*cls.T, params, pos.P);
 				
 				if (fc == nullptr) {
 					if (cls.T && cls.T->TBase == ass.CRaw)
-						fc = FindConstructor(*cls.T->T, params, pos);
+						fc = FindConstructor(*cls.T->T, params, pos.P);
 				}
 			}
 		}
@@ -1244,7 +1244,7 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	return nullptr;
 }
 
-ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos) {
+ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, const Point& pos) {
 	int index = cls.Methods.Find(THIS_STR);
 			
 	if (index != -1) {
@@ -1252,16 +1252,16 @@ ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, cons
 		ZFunction* f = GetBase(&cls.Methods[index], nullptr, params, 1, false, ambig);
 		
 		if (!f) {
-			if (pos)
-				ER::CallError(parser.Source(), pos->P, ass, cls, &cls.Methods[index], params, 0, 1);
+			//ER::CallError(parser.Source(), pos, ass, cls, &cls.Methods[index], params, 0, 1);
 			return nullptr;
 		}
 		
 		if (ambig) {
-			if (pos)
-				parser.Error(pos->P, ER::Green + cls.Name + ": ambigous symbol");
+			//parser.Error(pos, ER::Green + cls.Name + ": ambigous symbol");
 			return nullptr;
 		}
+		
+		TestAccess(*f, pos);
 		
 		f->SetInUse();
 		

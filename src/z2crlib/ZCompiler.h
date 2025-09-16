@@ -97,7 +97,7 @@ private:
 	ZResolver* resPtr = nullptr;
 	
 	int cuCounter = 0;
-	Vector<ZClass*> cuClasses;
+	Index<ZClass*> cuClasses;
 	
 	ZClass* Class = nullptr;
 	Vector<ZFunction*> CBinds;

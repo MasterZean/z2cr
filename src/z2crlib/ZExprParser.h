@@ -37,8 +37,8 @@ public:
 	Node* ParseNumeric();
 	Node* ParseId();
 	Node* ParseNamespace();
-	Node* ParseNamespace(const String& s, Point opp);
-	Node* ParseMember(ZNamespace& ns, const String& aName, const Point& opp, bool onlyStatic, Node* object = nullptr);
+	Node* ParseNamespace(const String& s, const ZSourcePos& pos);
+	Node* ParseMember(ZNamespace& ns, const String& aName, const ZSourcePos& opp, bool onlyStatic, Node* object = nullptr);
 	Node* ParseDot(Node* exp);
 	Node* ParseAtomClassInst(Node* exp);
 	Node *ParseSpec(ZClass& mainClass, Node *exp, Vector<Node *>& nodes, const Point& p);
@@ -48,8 +48,8 @@ public:
 	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual,
 		ZNamespace* aclass = nullptr, ZNamespace* context = nullptr, ZFunction* afunc = nullptr);
 	
-	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos* pos = nullptr);
-	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos* pos);
+	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos& pos);
+	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const Point& pos);
 	
 	Node *ResolveOpOverload(Node *left, Node *right, int op, const Point& opp);
 		
