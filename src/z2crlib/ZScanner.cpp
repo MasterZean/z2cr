@@ -277,6 +277,9 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	
 	String name = parser.ExpectId();
 	
+//	if (name == "Win32")
+//		name == "Win32";
+	
 	curClass = &nameSpace->PrepareClass(name);
 	
 	if (parser.Char('<')) {
@@ -292,6 +295,7 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	curClass->DefPos = dp;
 	curClass->IsClass = true;
 	curClass->LibLink = std::move(libLink);
+	curClass->IsStatic = isStatic;
 	
 	if (parser.Char(':')) {
 		curClass->SuperPos = parser.GetFullPos();

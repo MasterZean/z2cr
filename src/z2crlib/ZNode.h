@@ -87,7 +87,7 @@ public:
 	Vector<Node*> Params;
 	
 	ParamsNode() {
-		NT = NodeType::Params;
+		//NT = NodeType::Params;
 	}
 };
 
@@ -289,6 +289,15 @@ public:
 	
 	DestructNode() {
 		NT = NodeType::Destruct;
+	}
+};
+
+class ThrowNode: public OpNode {
+public:
+	Node* Exception = nullptr;
+	
+	ThrowNode() {
+		NT = NodeType::Throw;
 	}
 };
 

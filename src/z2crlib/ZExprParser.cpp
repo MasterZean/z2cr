@@ -848,10 +848,16 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	}
 	else if (parser.Char('!')) {
 		parser.Expect('{');
-		Node* cons = Parse();
-		parser.Expect('}');
-		
-		return irg.attr(exp, cons);
+		if (parser.Char('}')) {
+			Vector<Node*> params;
+			return irg.attr(exp, Temporary(*exp->Tt.Class, params));
+		}
+		else {
+			Node* cons = Parse();
+			parser.Expect('}');
+			
+			return irg.attr(exp, cons);
+		}
 	}
 	else
 		s = parser.ExpectId();

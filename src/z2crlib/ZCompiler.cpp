@@ -37,6 +37,19 @@ bool ZCompiler::Compile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
 	
+	int excIndex = -1;
+	
+	excIndex = ass.Classes.Find("sys.exception.AssertionFailed");
+	if (excIndex != -1) {
+		ass.Classes[excIndex].SetInUse();
+		cuClasses.Add(&ass.Classes[excIndex]);
+	}
+	excIndex = ass.Classes.Find("sys.exception.IndexOutOfBounds");
+	if (excIndex != -1) {
+		ass.Classes[excIndex].SetInUse();
+		cuClasses.Add(&ass.Classes[excIndex]);
+	}
+	
 	if (MainFunction) {
 		MainFunction->SetInUse();
 		MainFunction->Owner().SetInUse();
@@ -52,7 +65,6 @@ bool ZCompiler::Compile() {
 			CompileFunc(*MainFunction);
 		
 		cuCounter = cuClasses.GetCount() + 1;
-		//cuClasses.Clear();
 		
 		WriteDeps((ZClass&)MainFunction->Owner());
 	}
@@ -511,6 +523,12 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZContext& con) 
 		if (!con.InLoop)
 			parser.Error(sp.P, "'" + ER::Blue + "continue" + ER::White + "' found outside of loop");
 		return irg.loopControl(false);
+	}
+	else if (parser.Id("throw")) {
+		ZExprParser ep(f, Class, &f, *this, parser, irg);
+		Node* exc = ep.Parse();
+		parser.ExpectEndStat();
+		return irg.throwExc(exc);
 	}
 	else {
 		Node* node = CompileExpression(f, parser, con);

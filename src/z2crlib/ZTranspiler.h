@@ -80,6 +80,7 @@ public:
 	void Proc(PtrNode& node);
 	void Proc(IndexNode& node);
 	void Proc(DestructNode& node);
+	void Proc(ThrowNode& node);
 	
 	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra);
 	void ProcLeftSet(String& cs, Node *n);
@@ -140,9 +141,10 @@ public:
 					cs << "\t\t";
 					//WriteClassName(*inClass->T);
 					cs << inClass->T->BackName;
-					cs << "& operator[](size_t idx)       { if (idx >= length) throw IndexOutOfBoundsException(); return ptr[idx]; }\n";
+					cs << "& operator[](size_t idx)       { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
+					cs << "\t\t";
 					cs << "const " << inClass->T->BackName;
-					cs << "& operator[](size_t idx) const      { if (idx >= length) throw IndexOutOfBoundsException(); return ptr[idx]; }\n";
+					cs << "& operator[](size_t idx) const      { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
 				}
 				
 				firstInClass = false;
@@ -203,7 +205,7 @@ public:
 	
 	virtual void WalkNode(Node* node);
 		
-	void WriteType(ObjectType* tt);
+	void WriteType(ObjectType* tt, bool useauto = false);
 	void WriteTypePost(ObjectType *tt);
 	
 private:

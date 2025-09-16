@@ -24,7 +24,7 @@ void ZTranspiler::WriteIntro() {
 	NL();
 	EL();
 	
-	cs << "struct IndexOutOfBoundsException {};\n";
+	//cs << "struct IndexOutOfBoundsException {};\n";
 }
 
 void ZTranspiler::NsIntro(ZNamespace& ns) {
@@ -112,12 +112,25 @@ void ZTranspiler::WriteOutro() {
 	EL();
 	
 	NL();
-	cs << "catch (const IndexOutOfBoundsException& e) {";
+	cs << "catch (const sys::exception::IndexOutOfBounds& e) {";
 	EL();
 	
 	indent++;
 	NL();
-	cs << "::zprintf(\"IndexOutOfBoundsException found\\n\");";
+	cs << "::zprintf(\"caught IndexOutOfBounds exception\\n\");";
+	EL();
+	indent--;
+	
+	NL();
+	cs << "}";
+	EL();
+	NL();
+	cs << "catch (const sys::exception::AssertionFailed& e) {";
+	EL();
+	
+	indent++;
+	NL();
+	cs << "::zprintf(\"caught AssertionFailed exception\\n\");";
 	EL();
 	indent--;
 	
@@ -181,9 +194,13 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, boo
 	
 	BeginNamespace(cls.Namespace());
 	BeginClass(cls);
+
+	//if (cls.Name == "Win32")
+	//	cls.Name == "Win32";
+	
 	if (TranspileClassDecl(cls, -1) == 0) {
 		// empty user classes still need declarations
-		if (acls.InUse && !acls.CoreSimple && &acls != ass.CClass && &acls != ass.CRaw /*&& !(acls.FromTemplate*//* && acls.TBase != ass.CRaw*/)
+		if (acls.InUse && !acls.CoreSimple && &acls != ass.CClass && &acls != ass.CRaw && !(acls.FromTemplate/* && acls.TBase != ass.CRaw*/) && !acls.IsStatic)
 			NewMember();
 	}
 	EndClass();
@@ -215,7 +232,7 @@ int ZTranspiler::TranspileClassDecl(ZNamespace& ns, int accessFlags) {
 	return vc + fc;
 }
 
-void ZTranspiler::WriteType(ObjectType* tt) {
+void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 	if (tt->Class == ass.CPtr) {
 		WriteType(tt->Next);
 		cs << "*";
@@ -226,9 +243,12 @@ void ZTranspiler::WriteType(ObjectType* tt) {
 	else if (tt->Class->CoreSimple)
 		cs << tt->Class->BackName;
 	else {
-		//cs << "/* auto */";
-		cs << tt->Class->Namespace().BackName << "::";
-		cs << tt->Class->BackName;
+		if (useauto)
+			cs << "auto";
+		else {
+			cs << tt->Class->Namespace().BackName << "::";
+			cs << tt->Class->BackName;
+		}
 	}
 }
 
@@ -822,6 +842,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc((ConstructNode*)node);*/
 	else if (node->NT == NodeType::Destruct)
 		Proc(*(DestructNode*)node);
+	else if (node->NT == NodeType::Throw)
+		Proc(*(ThrowNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -1519,7 +1541,7 @@ void ZTranspiler::Proc(LocalNode& node) {
 	if (node.Var->IsConst)
 		cs << "const ";
 	
-	WriteType(&node.Var->I.Tt);
+	WriteType(&node.Var->I.Tt, true);
 	cs << " " << node.Var->Name;
 	WriteTypePost(&node.Var->I.Tt);
 	
@@ -1703,4 +1725,8 @@ void ZTranspiler::Proc(DestructNode& node) {
 	cs << "()";
 }
 
+void ZTranspiler::Proc(ThrowNode& node) {
+	cs << "throw ";
+	Walk(node.Exception);
+}
 

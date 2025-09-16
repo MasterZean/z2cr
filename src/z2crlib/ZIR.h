@@ -66,6 +66,7 @@ protected:
 	NodePool<IndexNode> indexNodes;
 	NodePool<ChainNode> chainNodes;
 	NodePool<DestructNode> destructNodes;
+	NodePool<ThrowNode> throwNodes;
 		
 public:
 	public:
@@ -143,6 +144,8 @@ public:
 	IntrinsicNode* intrinsic(Node* node, int operation);
 	
 	LocalNode* local(ZVariable& v);
+	
+	ThrowNode* throwExc(Node* exc);
 	
 	Node* attr(Node* left, Node* right, OpNode::Type extraOp = OpNode::Type::opNotSet, Node* extraNode = nullptr);
 	ListNode* list(Node *node);

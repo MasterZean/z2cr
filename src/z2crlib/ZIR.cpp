@@ -1729,3 +1729,13 @@ Node* IR::destruct(Node* e) {
 	
 	return node;
 }
+
+ThrowNode *IR::throwExc(Node *exc) {
+	ThrowNode* node = throwNodes.Get();
+	
+	node->Exception = exc;
+	node->SetType(ass.CVoid->Tt);
+	
+	return node;
+}
+

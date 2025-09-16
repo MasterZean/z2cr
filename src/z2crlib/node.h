@@ -18,7 +18,7 @@ public:
 		Ptr,
 		Index,
 		SizeOf,
-		Property,
+		//Property,
 		Deref,
 		Intrinsic,
 		Return,
@@ -26,7 +26,7 @@ public:
 		Alloc,
 		Array,
 		Using,
-		Params,
+		//Params,
 		Block,
 		If,
 		While,
@@ -37,6 +37,7 @@ public:
 		Chain,
 		Construct,
 		Destruct,
+		Throw,
 	};
 };
 

@@ -74,6 +74,8 @@ bool GetBuildMethod(const String& exeDir, const ::CommandLine& K, BuildMethod& b
 void RunInlineTests(const String& path) {
 	Cout() << "Searching for tests...\n";
 	
+	StopWatch sw;
+	
 	InlineTester tester;
 	tester.AddTestFolder(path);
 	
@@ -82,7 +84,7 @@ void RunInlineTests(const String& path) {
 		return;
 	}
 	
-	Cout() << "Testing status: " << tester.PassCount << "/" << tester.TestCount << " passed.\n\n";
+	Cout() << "Testing status: " << tester.PassCount << "/" << tester.TestCount << " passed (" << sw.ToString() <<"s).\n\n";
 }
 
 int separate_console() {
@@ -273,8 +275,6 @@ int testansi()
 
 CONSOLE_APP_MAIN {
 	bool noConsole = separate_console();
-	
-	//BuildMethod::NewVs();
 	
 	String curDir = NativePath(GetCurrentDirectory() + "/");
 	String exeDir = GetFileDirectory(GetExeFilePath());
@@ -469,7 +469,7 @@ CONSOLE_APP_MAIN {
 		bool buildOk = builder.Build(compiler.CppPath, compiler.OutPath, ass.LibLink);
 		if (buildOk) {
 			Cout() << "\n";
-			Cout() << bm.Name << " code generation finished in " << tm.ToString() << " seconds.\n";
+			Cout() << bm.Name << " code generation finished, total build time " << tm.ToString() << " seconds.\n";
 		}
 		else {
 			SetExitCode(-1);
