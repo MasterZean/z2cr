@@ -425,7 +425,7 @@ CONSOLE_APP_MAIN {
 		
 		StopWatch tmComp;
 		
-		if (!compiler.Compile()) {
+		if (!compiler.Compile(true)) {
 			if (compiler.MainFound == false) {
 				if (K.EntryFile.GetCount())
 					Cout() << "No main entry point found. Exiting.\n";

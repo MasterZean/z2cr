@@ -41,7 +41,7 @@ public:
 	Node* ParseMember(ZNamespace& ns, const String& aName, const ZSourcePos& opp, bool onlyStatic, Node* object = nullptr);
 	Node* ParseDot(Node* exp);
 	Node* ParseAtomClassInst(Node* exp);
-	Node *ParseSpec(ZClass& mainClass, Node *exp, Vector<Node *>& nodes, const Point& p);
+	Node *ParseSpec(ZClass& mainClass, Node *exp, Vector<Node *>& nodes, const ZSourcePos& p);
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	

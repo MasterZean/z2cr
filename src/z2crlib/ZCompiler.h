@@ -16,12 +16,16 @@ public:
 	bool InLoop = false;
 };
 
-class ZCompilerContext {
+class ZCompilerContext: Moveable<ZCompilerContext> {
 public:
 	ZClass* Class = nullptr;
 	ZFunction* Func = nullptr;
 	
 	ZVariable* TargetVar = nullptr;
+	
+	ZClass* InstCls = nullptr;
+	
+	ZSourcePos Pos;
 };
 
 class ZCompiler {
@@ -49,7 +53,7 @@ public:
 	
 	ZCompiler(Assembly& aAss);
 	
-	bool Compile();
+	bool Compile(bool exc = false);
 	bool Transpile();
 	bool ScanSources();
 	
@@ -76,7 +80,7 @@ public:
 	
 	static String& GetName();
 	
-	ZClass& ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval);
+	ZClass& ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p, bool eval);
 	
 	bool CompileVar(ZVariable& v, const ZCompilerContext& zcon);
 	
@@ -88,6 +92,9 @@ public:
 	}
 			
 	bool PreCompileVars(ZNamespace& ns);
+	
+	void Push(const ZSourcePos& pos, ZClass& cls);
+	void Pop();
 	
 private:
 	Assembly& ass;
@@ -102,8 +109,12 @@ private:
 	ZClass* Class = nullptr;
 	Vector<ZFunction*> CBinds;
 	Vector<ZClass*> tempInstances;
+	
+	Vector<ZCompilerContext> stack;
 
 	Vector<ZFunction*> FindMain(ZSource& src);
+	
+	bool compile();
 	
 	bool Compile(ZNamespace& ns);
 	bool CompileFunc(ZFunction& f, Node& target);

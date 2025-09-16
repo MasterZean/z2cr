@@ -344,7 +344,14 @@ Node* ZExprParser::ParseAtom() {
 				Vector<Node*> params;
 				getParams(params, '}');
 				
+				if (cobj.FromTemplate)
+					comp.Push(pp, cobj);
+				
 				Node* temp = Temporary(cobj, params, pp);
+				
+				if (cobj.FromTemplate)
+					comp.Pop();
+				
 				if (cobj.TBase == ass.CRaw)
 					temp->Tt.Param = exp->Tt.Param;
 				exp = temp;
@@ -407,7 +414,7 @@ Node* ZExprParser::ParseAtom() {
 }
 
 Node* ZExprParser::ParseAtomClassInst(Node* exp) {
-	Point posPreTemp = parser.GetPoint();
+	auto posPreTemp = parser.GetFullPos();
 			
 	parser.Char('<');
 	
@@ -434,7 +441,7 @@ Node* ZExprParser::ParseAtomClassInst(Node* exp) {
 	
 	if (mainClass.TBase == ass.CRaw) {
 		if (nodes.GetCount() < 1 || nodes.GetCount() > 2)
-			ER::ErrCArrayWrongArgumentNo(parser.Source(), posPreTemp, mainClass, nodes.GetCount());
+			ER::ErrCArrayWrongArgumentNo(parser.Source(), posPreTemp.P, mainClass, nodes.GetCount());
 	}
 	else {
 		int target = mainClass.Scan.TName.GetCount();
@@ -446,13 +453,13 @@ Node* ZExprParser::ParseAtomClassInst(Node* exp) {
 			target = 2;
 			
 		if (nodes.GetCount() != target)
-			ER::ErrClassTemplateWrongArgumentNo(parser.Source(), posPreTemp, mainClass, target, nodes.GetCount());
+			ER::ErrClassTemplateWrongArgumentNo(parser.Source(), posPreTemp.P, mainClass, target, nodes.GetCount());
 	}
 	
 	return ParseSpec(mainClass, exp, nodes, posPreTemp);
 }
 
-Node* ZExprParser::ParseSpec(ZClass& mainClass, Node* exp, Vector<Node*>& nodes, const Point& p) {
+Node* ZExprParser::ParseSpec(ZClass& mainClass, Node* exp, Vector<Node*>& nodes, const ZSourcePos& p) {
 	ZClass& ownClass = ass.Classes[(int)exp->IntVal];
 	
 	// TODO: is needed?
@@ -1089,7 +1096,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		
 		parser.Expect('>');
 		
-		cls = &comp.ResolveInstance(*cls, *sub.Tt.Class, tt.P, true);
+		cls = &comp.ResolveInstance(*cls, *sub.Tt.Class, tt, true);
 		ti.Tt = cls->Tt;
 		if (node) {
 			ti.Tt.Param = node->IntVal;

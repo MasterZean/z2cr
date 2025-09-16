@@ -8,7 +8,33 @@ inline bool invalidClass(ZClass* cls, Assembly& ass) {
 	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
 }
 
-bool ZCompiler::Compile() {
+bool ZCompiler::Compile(bool exc) {
+	if (exc == false)
+		return compile();
+	else {
+		try {
+			return compile();
+		}
+		catch (ZException& e) {
+			for (int i = stack.GetCount() - 1; i >= 0; i--) {
+				ZCompilerContext& c = stack[i];
+				ZSourcePos& p = c.Pos;
+				Cout() << p.Source->Path << "(" << p.P.x << ", " << p.P.y << "): ";
+				Cout() << "context: ";
+				
+				if (c.InstCls)
+					Cout() << "instantiating class: " << c.InstCls->Name;
+				
+				Cout() << "\n";
+			}
+			e.PrettyPrint(Cout());
+			Cout() << "\n";
+			return false;
+		}
+	}
+}
+
+bool ZCompiler::compile() {
 	irg.FoldConstants = FoldConstants;
 	
 	if (!ScanSources())
@@ -961,7 +987,7 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZBlockContext& con
 	return irg.ret(retVal);
 }
 
-ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) {
+ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p, bool eval) {
 	String fullName;
 	fullName << cc.Namespace().Name << cc.Name << "<" << sub.Namespace().Name << sub.Name << ">";
 	
@@ -1030,6 +1056,16 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, Point p, bool eval) 
 	cuClasses.FindAdd(&tclass);
 	
 	return tclass;
+}
+
+void ZCompiler::Push(const ZSourcePos& pos, ZClass& cls) {
+	ZCompilerContext& zcon = stack.Add();
+	zcon.Pos = pos;
+	zcon.InstCls = &cls;
+}
+
+void ZCompiler::Pop() {
+	stack.Pop();
 }
 
 void ZCompiler::TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur) {
