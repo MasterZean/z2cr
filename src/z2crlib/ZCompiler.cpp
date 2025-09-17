@@ -214,7 +214,7 @@ bool ZCompiler::Transpile() {
 	cpp.WriteClassForward();
 	
 	for (int i = 0; i < cuClasses.GetCount(); i++)
-		cpp.TranspileClassDeclMaster(*cuClasses[i], 0b11, false);
+		cpp.TranspileClassDeclMaster(*cuClasses[i], 0b11, true);
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		cpp.TranspileDeclarations(ass.Namespaces[i], 0b11, true);

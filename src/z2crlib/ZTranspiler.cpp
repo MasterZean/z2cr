@@ -192,6 +192,11 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, boo
 		for (int j = 0; j < cls.DependsOn.GetCount(); j++)
 			TranspileClassDeclMaster(*cls.DependsOn[j], accessFlags);
 	
+	if (acls.TBase == ass.CSlice && acls.T->TBase == ass.CRaw)
+		return false;
+	if (acls.TBase == ass.CRaw && acls.T->TBase == ass.CRaw)
+		return false;
+	
 	BeginNamespace(cls.Namespace());
 	BeginClass(cls);
 
@@ -1584,6 +1589,7 @@ void ZTranspiler::Proc(LocalNode& node) {
 		cs << ")";
 		ES();
 		
+		NL();
 		cs << node.Var->Name << ".Construct()";
 		
 		return;

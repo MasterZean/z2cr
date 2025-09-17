@@ -135,7 +135,7 @@ public:
 					cs << "\t\tuint8 *text = nullptr;" << "\n";
 				}
 				
-				if (inClass && inClass->TBase == ass.CSlice) {
+				if (inClass && inClass->TBase == ass.CSlice && inClass->T->TBase != ass.CRaw) {
 					cs << "\tpublic:" << "\n";
 					
 					cs << "\t\t";
@@ -156,11 +156,17 @@ public:
 					cs << "& operator[](size_t idx) const      { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
 				}
 				
-				if (inClass && inClass->TBase == ass.CRaw) {
+				if (inClass && inClass->TBase == ass.CRaw && inClass->T->TBase != ass.CRaw) {
 					cs << "\tpublic:" << "\n";
 					cs << "\t\tCArray_";
 					cs << inClass->T->Name;
-					cs << "(int32* aPtr, size_t aLen): Slice_";
+					cs << "(";
+					if (inClass->T->CoreSimple == false) {
+						cs << inClass->T->Owner().BackName;
+						cs << "::";
+					}
+					cs << inClass->T->BackName;
+					cs << "* aPtr, size_t aLen): Slice_";
 					cs << inClass->T->Name;
 					cs << "(aPtr, aLen) {}\n";
 				}
