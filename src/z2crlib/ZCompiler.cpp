@@ -45,6 +45,19 @@ bool ZCompiler::compile() {
 	if (!resolver.Resolve())
 		return false;
 	
+	int excIndex = -1;
+	
+	excIndex = ass.Classes.Find("sys.exception.AssertionFailed");
+	if (excIndex != -1) {
+		ass.Classes[excIndex].SetInUse();
+		cuClasses.Insert(0, &ass.Classes[excIndex]);
+	}
+	excIndex = ass.Classes.Find("sys.exception.IndexOutOfBounds");
+	if (excIndex != -1) {
+		ass.Classes[excIndex].SetInUse();
+		cuClasses.Insert(1, &ass.Classes[excIndex]);
+	}
+	
 	MainFound = FindMain();
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
@@ -62,19 +75,6 @@ bool ZCompiler::compile() {
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
-	
-	int excIndex = -1;
-	
-	excIndex = ass.Classes.Find("sys.exception.AssertionFailed");
-	if (excIndex != -1) {
-		ass.Classes[excIndex].SetInUse();
-		cuClasses.Add(&ass.Classes[excIndex]);
-	}
-	excIndex = ass.Classes.Find("sys.exception.IndexOutOfBounds");
-	if (excIndex != -1) {
-		ass.Classes[excIndex].SetInUse();
-		cuClasses.Add(&ass.Classes[excIndex]);
-	}
 	
 	if (MainFunction) {
 		MainFunction->SetInUse();

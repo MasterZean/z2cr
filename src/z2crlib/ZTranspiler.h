@@ -156,6 +156,15 @@ public:
 					cs << "& operator[](size_t idx) const      { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
 				}
 				
+				if (inClass && inClass->TBase == ass.CRaw) {
+					cs << "\tpublic:" << "\n";
+					cs << "\t\tCArray_";
+					cs << inClass->T->Name;
+					cs << "(int32* aPtr, size_t aLen): Slice_";
+					cs << inClass->T->Name;
+					cs << "(aPtr, aLen) {}\n";
+				}
+				
 				firstInClass = false;
 			}
 			

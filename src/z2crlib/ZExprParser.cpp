@@ -531,7 +531,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "CArray")
+	if (s == "post")
 		s == "Test";
 	
 	if (Function) {
@@ -813,8 +813,13 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 				parser.Error(opp.P, ER::Green + aName + ER::White + ": is a static member");
 		}
 	 
-		//if (!f.IsEvaluated)
-		//	comp.CompileVar(f, Function);
+		if (!f.IsEvaluated) {
+			ZCompilerContext zcon;
+			zcon.Class = Class;
+			zcon.Func = Function;
+			zcon.TargetVar = &f;
+			comp.CompileVar(f, zcon);
+		}
 		
 		f.Owner().SetInUse();
 		f.InUse = true;

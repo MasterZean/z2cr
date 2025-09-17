@@ -195,8 +195,9 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, boo
 	BeginNamespace(cls.Namespace());
 	BeginClass(cls);
 
-	//if (cls.Name == "Win32")
-	//	cls.Name == "Win32";
+	//DUMP(cls.Name);
+	if (cls.Name == "CArray<Int>")
+		cls.Name == "Win32";
 	
 	if (TranspileClassDecl(cls, -1) == 0) {
 		// empty user classes still need declarations
@@ -597,8 +598,8 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 		cs << "static ";
 	else if (f.InClass && ((ZClass&)f.Owner()).CoreSimple)
 		cs << "static ";
-	else if (f.InClass && ((ZClass&)f.Owner()).TBase == ass.CRaw)
-		cs << "static ";
+	//else if (f.InClass && ((ZClass&)f.Owner()).TBase == ass.CRaw)
+	//	cs << "static ";
 	
 	WriteType(&f.Return.Tt);
 	
@@ -1319,7 +1320,7 @@ void ZTranspiler::Proc(DefNode& node) {
 	else {
 		//ASSERT(node.Object);
 		if (node.Object) {
-			if (node.Object->Tt.Class->TBase == ass.CRaw) {
+			/*if (node.Object->Tt.Class->TBase == ass.CRaw) {
 				if (f.IsProperty && f.Name == "Length") {
 					cs << node.Object->Tt.Param;
 					return;
@@ -1327,7 +1328,7 @@ void ZTranspiler::Proc(DefNode& node) {
 				else {
 					cs << ass.CSlice->Owner().BackName;
 					cs << "::";
-					cs << "Slice_";
+					cs << "CArray_";
 					cs << node.Object->Tt.Class->T->Name;
 					cs << "(";
 					Walk(node.Object);
@@ -1336,10 +1337,10 @@ void ZTranspiler::Proc(DefNode& node) {
 					cs << ").";
 				}
 			}
-			else {
+			else {*/
 				Walk(node.Object);
 				cs << ".";
-			}
+			//}
 		}
 	}
 	
@@ -1563,6 +1564,30 @@ void ZTranspiler::Proc(ForLoopNode& node) {
 
 void ZTranspiler::Proc(LocalNode& node) {
 	ASSERT(node.Var);
+	
+	if (node.Tt.Class->TBase == ass.CRaw) {
+		WriteType(&node.Var->I.Tt, true);
+		cs << " __" << node.Var->Name;
+		WriteTypePost(&node.Var->I.Tt);
+		ES();
+		
+		NL();
+		cs << ass.CSlice->Owner().BackName;
+		cs << "::";
+		cs << "CArray_";
+		cs << node.Tt.Class->T->Name;
+		cs << " " << node.Var->Name;
+		cs << "(";
+		cs << " __" << node.Var->Name;
+		cs << ", ";
+		cs << node.Tt.Param;
+		cs << ")";
+		ES();
+		
+		cs << node.Var->Name << ".Construct()";
+		
+		return;
+	}
 	
 	if (node.Var->IsConst)
 		cs << "const ";
