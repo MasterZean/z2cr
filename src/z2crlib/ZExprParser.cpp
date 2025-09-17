@@ -531,7 +531,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "post")
+	if (s == "SIZE")
 		s == "Test";
 	
 	if (Function) {

@@ -862,8 +862,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	v.IsConst = aConst;
 
 	ZCompilerContext zcon;
-	if (v.Owner().IsClass)
-		zcon.Class = (ZClass*)&v.Owner();
+	zcon.Class = (ZClass*)&f.Owner();
 	zcon.Func = &f;
 	zcon.TargetVar = &v;
 		
@@ -1107,6 +1106,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.3.1 (pre-alpha)";
+	static String name = "Z2CR 0.3.2 (pre-alpha)";
 	return name;
 }
