@@ -141,8 +141,8 @@ void ZResolver::ResolveFunctions() {
 				if (c.IsResolved == false)
 					ResolveNamespaceMembers(c);
 			}
-			else
-				LOG("Resolve: Skipping template class: " + c.Name);
+			//else
+			//	LOG("Resolve: Skipping template class: " + c.Name);
 		}
 	}
 }
@@ -201,6 +201,7 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	if (f.InClass && f.IsConstructor == 1) {
 		ZClass& pcls = f.Class();
 		if (pcls.CoreSimple) {
+			f.BackName = "_";
 			if (f.Params.GetCount() == 0) {
 				throw ER::ErrCantOverrideDefaultBehavior(f.DefPos);
 			}
@@ -208,6 +209,8 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 				throw ER::ErrCantOverrideDefaultBehavior(f.DefPos);
 			}
 		}
+		else
+			f.BackName = pcls.BackName;
 	}
 	
 	f.SetOwner(ns);

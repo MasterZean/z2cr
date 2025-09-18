@@ -140,19 +140,21 @@ public:
 					
 					cs << "\t\t";
 					//WriteClassName(*inClass->T);
-					if (inClass->T->CoreSimple == false) {
+					WStorageName(*inClass->T);
+					/*if (inClass->T->CoreSimple == false) {
 						cs << inClass->T->Owner().BackName;
 						cs << "::";
 					}
-					cs << inClass->T->BackName;
+					cs << inClass->T->StorageName;*/
 					cs << "& operator[](size_t idx)       { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
 					cs << "\t\t";
 					cs << "const ";
-					if (inClass->T->CoreSimple == false) {
+					WStorageName(*inClass->T);
+					/*if (inClass->T->CoreSimple == false) {
 						cs << inClass->T->Owner().BackName;
 						cs << "::";
 					}
-					cs << inClass->T->BackName;
+					cs << inClass->T->StorageName;*/
 					cs << "& operator[](size_t idx) const      { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
 				}
 				
@@ -161,11 +163,12 @@ public:
 					cs << "\t\tCArray_";
 					cs << inClass->T->Name;
 					cs << "(";
-					if (inClass->T->CoreSimple == false) {
+					/*if (inClass->T->CoreSimple == false) {
 						cs << inClass->T->Owner().BackName;
 						cs << "::";
 					}
-					cs << inClass->T->BackName;
+					cs << inClass->T->BackName;*/
+					WStorageName(*inClass->T);
 					cs << "* aPtr, size_t aLen): Slice_";
 					cs << inClass->T->Name;
 					cs << "(aPtr, aLen) {}\n";
@@ -251,6 +254,32 @@ private:
 	
 	void NsIntro(ZNamespace& ns);
 	void NsOutro(ZNamespace& ns);
+	
+	void WPNsName(ZEntity& e) {
+		cs << e.Namespace().BackName;
+		cs << "::";
+	}
+	
+	void WPClsName(ZEntity& e) {
+		cs << e.BackName;
+	}
+	
+	void WClsName(ZEntity& e) {
+		WPNsName(e);
+		WPClsName(e);
+	}
+	
+	void WStorageName(ZClass& cls) {
+		if (!cls.CoreSimple)
+			WPNsName(cls);
+		
+		cs << cls.StorageName;
+	}
+	
+	void WFOwnerClsName(ZEntity& e) {
+		WPNsName(e);
+		WPClsName(e.Owner());
+	}
 };
 
 #endif

@@ -220,6 +220,7 @@ class ZClass: public ZNamespace, Moveable<ZClass> {
 public:
 	ZClassScanInfo Scan;
 	ZClassMeth Meth;
+	String StorageName;
 	
 	ObjectType Tt;
 	ObjectType Pt;

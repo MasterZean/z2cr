@@ -282,7 +282,8 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 	typeCls.MIsNumeric = num;
 	typeCls.MIsInteger = integer;
 	typeCls.Name = name;
-	typeCls.BackName = backendName;
+	typeCls.BackName = name;
+	typeCls.StorageName = backendName;
 	//typeCls.MContName = name;
 	typeCls.CoreSimple = core;
 	typeCls.IsDefined = false;
@@ -321,6 +322,8 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 
 	ZClass& typeCls = (index != -1) ? Classes[index]: Classes.Add(cls.Namespace().Name + cls.Name, cls);
 	
+	if (typeCls.StorageName.GetCount() == 0)
+		typeCls.StorageName = cls.BackName;
 	typeCls.Scan = cls.Scan;
 	typeCls.ParamType = &typeCls;
 	typeCls.Index = type;
