@@ -452,7 +452,7 @@ void ZFunctionResolver::Gather(Vector<ZFunction*>& oo, Vector<Node*>& params, in
 	for (int i = 0; i < oo.GetCount(); i++) {
 		ZFunction& over = *oo[i];
 		ObjectInfo& f = over.Params[pi].I;
-		if (conv || (!conv && over.Params[pi].FromTemplate == false))
+		if (conv || (!conv && over.Params[pi].FromTemplate == false)) {
 			if (f.IsRef) {
 				if (f.IsTemporary == false && n.IsAddressable && f.IsConst == a.IsConst) {
 					if (f.Tt == ot || f.Tt == ot2)
@@ -463,6 +463,7 @@ void ZFunctionResolver::Gather(Vector<ZFunction*>& oo, Vector<Node*>& params, in
 				if (f.Tt == ot || f.Tt == ot2)
 					temp.Add(&over);
 			}
+		}
 	}
 	
 	for (int i = 0; i < temp.GetCount(); i++) {

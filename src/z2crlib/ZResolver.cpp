@@ -176,9 +176,9 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 	
 	if (ns.IsClass) {
 		ZClass& cls = (ZClass&)ns;
+		
 		if (cls.CoreSimple == false && cls.Meth.Default == nullptr) {
 			ZMethodBundle& d = cls.Methods.GetAdd("this", ZMethodBundle(cls));
-			//d.Functions << ZFunction(cls);
 			ZFunction& f = cls.PrepareConstructor("this");
 			d.Functions.Add(&f);
 			f.Bundle = &d;
@@ -199,8 +199,8 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	f.DefPos.Source->Functions.Add(&f);
 	
 	if (f.InClass && f.IsConstructor == 1) {
-		ZClass& cls = (ZClass&)f.Owner();
-		if (cls.CoreSimple) {
+		ZClass& pcls = f.Class();
+		if (pcls.CoreSimple) {
 			if (f.Params.GetCount() == 0) {
 				throw ER::ErrCantOverrideDefaultBehavior(f.DefPos);
 			}
@@ -264,7 +264,7 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	}
 	
 	if (f.InClass) {
-		AssignClassRoles((ZClass&)f.Owner(), f);
+		AssignClassRoles(f.Class(), f);
 	
 		/*if (f.InClass && f.Class().TBase == ass.CSlice) {
 			if (f.IsConstructor == 1)

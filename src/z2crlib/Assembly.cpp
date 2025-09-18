@@ -303,9 +303,6 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	
 	String name = cls.Namespace().Name + cls.Name;
 	
-	if (cls.Name == "Slice")
-		cls.Name == "Slice";
-	
 	int index = Classes.Find(name);
 
 	if (index != -1) {

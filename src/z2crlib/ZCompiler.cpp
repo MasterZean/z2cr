@@ -81,9 +81,9 @@ bool ZCompiler::compile() {
 		MainFunction->Owner().SetInUse();
 		
 		if (MainFunction->InClass) {
-			ZClass& cls = (ZClass&)MainFunction->Owner();
-			if (cls.Meth.Default && cls.Meth.Default->IsGenerated == false)
-				CompileFunc(*cls.Meth.Default);
+			ZClass& pcls = MainFunction->Class();
+			if (pcls.Meth.Default && pcls.Meth.Default->IsGenerated == false)
+				CompileFunc(*pcls.Meth.Default);
 				
 		}
 		
@@ -92,7 +92,8 @@ bool ZCompiler::compile() {
 		
 		cuCounter = cuClasses.GetCount() + 1;
 		
-		WriteDeps((ZClass&)MainFunction->Owner());
+		if (MainFunction->InClass)
+			WriteDeps(MainFunction->Class());
 	}
 	
 	for (int i = 0; i < cuClasses.GetCount(); i++) {
@@ -431,7 +432,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	
 	ZClass* clsBack = Class;
 	if (f.InClass) {
-		Class = &(ZClass&)f.Owner();
+		Class = &f.Class();
 		f.Dependencies.FindAdd(Class);
 		
 		/*if (Class->IsEvaluated == false) {
@@ -873,9 +874,6 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, const ZCompilerContext& zcon) {
 	ZClass* cls = nullptr;
-	
-	if (v.Name == "arr")
-		v.Name == "affixes";
 	
 	if (parser.Char(':')) {
 		auto ti = ZExprParser::ParseType(*this, parser, true, zcon.Class, zcon.Class, zcon.Func);

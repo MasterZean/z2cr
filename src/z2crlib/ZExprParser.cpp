@@ -531,9 +531,6 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "SIZE")
-		s == "Test";
-	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
 			if (Function->Params[j].Name == s) {
@@ -718,9 +715,6 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
-		if (aName == "Fill")
-			aName == "ToByte";
-		
 		if (method.IsProperty == false) {
 			if (!method.IsConstructor) {
 				// TODO: unsafe
@@ -768,7 +762,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 			node = call;
 		}
 		else if (f->IsConstructor == 2) {
-			TempNode* temp = irg.mem_temp(((ZClass&)f->Owner()), f);
+			TempNode* temp = irg.mem_temp(f->Class(), f);
 			temp->Params = std::move(params);
 		
 			f->Owner().SetInUse();
@@ -777,7 +771,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 			node = temp;
 		}
 		else {
-			Node* temp = Temporary((ZClass&)f->Owner(), params, opp);
+			Node* temp = Temporary(f->Class(), params, opp);
 			temp->Tt.Class->SetInUse();
 			f->Owner().SetInUse();
 			f->SetInUse();
@@ -885,9 +879,6 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	}
 	else
 		s = parser.ExpectId();
-	
-	if (s == "Length")
-		s == "Length";
 	
 	// case .class
 	if (s == CLS_STR ) {
@@ -997,8 +988,6 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 	auto tt = parser.GetFullPos();
 	String shtype = parser.ExpectId();
 	String type = shtype;
-	if (type == "T")
-		type == "T";
 	
 	while (parser.Char('.'))
 		type << "." << parser.ExpectId();
@@ -1173,8 +1162,6 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	
 	Node* dr = nullptr;
 	
-	if (cls.Name == "Byte")
-		cls.Name == "Byte";
 	ZFunction* f = FindConstructor(cls, params, pos.P);
 		
 	if (f != nullptr) {
