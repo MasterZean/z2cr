@@ -876,7 +876,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 	ZClass* cls = nullptr;
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(*this, parser, true, zcon.Class, zcon.Class, zcon.Func);
+		auto ti = ZExprParser::ParseType(*this, parser, true, false, zcon.Class, zcon.Class, zcon.Func);
 		
 		if (invalidClass(ti.Tt.Class, ass))
 			parser.Error(vp.P, "can't create a variable of type " + ass.ToQtColor(ti.Tt.Class));
@@ -1012,6 +1012,8 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 	tclass.TBase = &cc;
 	tclass.T = &sub;
 	tclass.Access = cc.Access;
+	tclass.ParamType = &tclass;
+	tclass.StorageName = tclass.BackName;
 	
 	ObjectType* t = &cc.Temps.Add();
 	t->Class = &tclass;
@@ -1034,7 +1036,7 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 	if (cc.SuperPos.Source) {
 		ZParser parser(cc.SuperPos);
 		ZExprParser exp(tclass, &tclass, nullptr, *this, parser, irg);
-		auto res = exp.ParseType(*this, parser, false, &tclass, &tclass);
+		auto res = exp.ParseType(*this, parser, false, false, &tclass, &tclass);
 		tclass.Super = res.Tt.Class;
 		
 		DUMP("Inst add to cu " + sub.Name);

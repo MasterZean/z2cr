@@ -116,7 +116,7 @@ class Foo {
 namespace testcpp {
 	class Test {
 	public:
-		static Test Init();
+		static testcpp::Test Init();
 	};
 }
 */
@@ -147,8 +147,8 @@ class Test {
 namespace testcpp {
 	class Test {
 	public:
-		static Test Init();
-		static Test Redo();
+		static testcpp::Test Init();
+		static testcpp::Test Redo();
 	};
 }
 */
@@ -188,7 +188,7 @@ class Test {
 namespace testcpp {
 	class Test {
 	public:
-		static Test Init(double x, uint8* y);
+		static testcpp::Test Init(double x, uint8* y);
 	};
 }
 */
@@ -219,7 +219,7 @@ class Test {
 namespace testcpp {
 	class Test {
 	public:
-		static Test Init(const foo::Foo& x);
+		static testcpp::Test Init(const foo::Foo& x);
 	};
 }
 */

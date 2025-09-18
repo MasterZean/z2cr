@@ -531,6 +531,9 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
+	if (s == "f")
+		s == "f";
+	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
 			if (Function->Params[j].Name == s) {
@@ -711,6 +714,9 @@ Node* ZExprParser::ParseNamespace(const String& s, const ZSourcePos& opp) {
 Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourcePos& opp, bool onlyStatic, Node* object) {
 	int index = ns.Methods.Find(aName);
 	
+	if (aName == "f")
+		aName == "f";
+	
 	if (index != -1) {
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
@@ -830,6 +836,9 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 Node *ZExprParser::ParseDot(Node *exp) {
 	auto p = parser.GetFullPos();
 	String s;
+	
+	if (s == "f")
+		s == "f";
 	
 	if (parser.Char('@')) {
 		String sub = parser.ExpectId();
@@ -978,7 +987,7 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, ZNamespace* aclass, ZNamespace* context, ZFunction* afunc) {
+ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, bool isParam, ZNamespace* aclass, ZNamespace* context, ZFunction* afunc) {
 	Assembly& ass = comp.Ass();
 	
 	ObjectInfo ti;
@@ -1026,7 +1035,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		
 		if (parser.IsId("const"))
 			parser.ReadId();
-		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, aclass, context);
+		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, isParam, aclass, context);
 		
 		parser.Expect('>');
 
@@ -1071,11 +1080,15 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		if (!cls->IsTemplate)
 			parser.Error(tt.P, " class " + ass.ToQtColor(cls) + " is not a template");
 		
-		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, aclass, context);
+		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, isParam, aclass, context);
 		
 		Node* node = nullptr;
 		
-		if (cls == ass.CRaw && reqArrayQual && !parser.IsChar(','))
+		if (cls == ass.CRaw && isParam) {
+			if (parser.IsChar(','))
+				parser.Error(tt.P, " method overloading not permited based on " + ass.ToQtColor(cls) + " size");
+		}
+		else if (cls == ass.CRaw && reqArrayQual && !parser.IsChar(','))
 			parser.Expect(',');
 		
 		if (parser.Char(',')) {

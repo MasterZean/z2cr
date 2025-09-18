@@ -139,22 +139,13 @@ public:
 					cs << "\tpublic:" << "\n";
 					
 					cs << "\t\t";
-					//WriteClassName(*inClass->T);
 					WStorageName(*inClass->T);
-					/*if (inClass->T->CoreSimple == false) {
-						cs << inClass->T->Owner().BackName;
-						cs << "::";
-					}
-					cs << inClass->T->StorageName;*/
+
 					cs << "& operator[](size_t idx)       { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
 					cs << "\t\t";
 					cs << "const ";
 					WStorageName(*inClass->T);
-					/*if (inClass->T->CoreSimple == false) {
-						cs << inClass->T->Owner().BackName;
-						cs << "::";
-					}
-					cs << inClass->T->StorageName;*/
+
 					cs << "& operator[](size_t idx) const      { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
 				}
 				
@@ -163,11 +154,6 @@ public:
 					cs << "\t\tCArray_";
 					cs << inClass->T->Name;
 					cs << "(";
-					/*if (inClass->T->CoreSimple == false) {
-						cs << inClass->T->Owner().BackName;
-						cs << "::";
-					}
-					cs << inClass->T->BackName;*/
 					WStorageName(*inClass->T);
 					cs << "* aPtr, size_t aLen): Slice_";
 					cs << inClass->T->Name;
@@ -214,7 +200,6 @@ public:
 			NL();
 			cs << "}";
 			ES();
-			//EL();
 		}
 		
 		inClass = nullptr;

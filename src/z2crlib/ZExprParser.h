@@ -45,7 +45,7 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
-	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual,
+	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, bool isParam,
 		ZNamespace* aclass = nullptr, ZNamespace* context = nullptr, ZFunction* afunc = nullptr);
 	
 	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos& pos);

@@ -512,6 +512,9 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
+	if (f.Name == "Slice")
+		f.Name == "Slice";
+	
 	if (f.IsSimpleGetter && f.IsGetter) {
 		WriteType(&f.Return.Tt);
 	
@@ -561,11 +564,22 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 		return false;
 	}
 	
-	if (f.IsConstructor == 1) {
+	if (f.IsConstructor == 1 && f.Class().TBase == ass.CRaw) {
+		/*if (f.InClass && f.Class().CoreSimple)
+			cs << "static " << "_";
+		else
+			WPClsName(f.Class());*/
+		cs << "void ";
+		cs << "Init";
+		WriteFunctionParams(f);
+
+		return false;
+	}
+	else if (f.IsConstructor == 1) {
 		if (f.InClass && f.Class().CoreSimple)
 			cs << "static " << "_";
 		else
-			cs << f.Owner().BackName;
+			WPClsName(f.Class());
 		WriteFunctionParams(f);
 		return false;
 	}
@@ -607,7 +621,18 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
-	if (f.IsConstructor == 1) {
+	if (f.IsConstructor == 1 && f.Class().TBase == ass.CRaw) {
+		cs << "void ";
+		WPNsName(f);
+		WPClsName(f.Class());
+		cs << "::";
+		cs << "Init";
+		
+		WriteFunctionParams(f);
+		
+		return;
+	}
+	else if (f.IsConstructor == 1) {
 		ASSERT(f.Owner().IsClass);
 		
 		// ns+cls::f
@@ -644,15 +669,17 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		return;
 	}
 	
+	// ret
 	WriteType(&f.Return.Tt);
-	
 	cs << " ";
+	
+	// ns
+	WPNsName(f);
+	// +cls?
 	if (f.InClass) {
-		cs << f.Namespace().BackName << "::";
-		cs << f.Owner().BackName << "::";
+		WPClsName(f.Class());
+		cs << "::";
 	}
-	else
-		cs << f.Namespace().BackName << "::";
 	cs << f.BackName;
 	WriteFunctionParams(f);
 	
@@ -663,17 +690,22 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionParams(ZFunction& f) {
+	if (f.Name == "f")
+		f.Name == "f";
+	
 	cs << "(";
 	
+	//if (f.InClass && f.Class() ==
 	if (f.IsConstructor == 0 && f.InClass) {
 		 ZClass& pcls = f.Class();
 		 if (pcls.CoreSimple) {
-		     cs << pcls.BackName << " _this";
+		     cs << pcls.StorageName << " _this";
 		 
 			 if (f.Params.GetCount())
 			     cs << ", ";
 		 }
 	}
+	
 	
 	for (int i = 0; i < f.Params.GetCount(); i++) {
 		ZVariable& var = f.Params[i];
@@ -1580,8 +1612,21 @@ void ZTranspiler::Proc(LocalNode& node) {
 		cs << ")";
 		ES();
 		
-		NL();
-		cs << node.Var->Name << ".Construct()";
+		if (node.Var->Value) {
+			NL();
+			if (node.Var->Value->NT == NodeType::Temporary) {
+				TempNode& tmp = (TempNode&)*node.Var->Value;
+				cs << node.Var->Name;
+				cs << ".Init(";
+				for (int i = 0; i < tmp.Params.GetCount(); i++)
+					WalkNode(tmp.Params[i]);
+				cs << ")";
+			}
+			else {
+				//WalkNode(node.Var->Value);
+				cs << node.Var->Name << ".Construct()";
+			}
+		}
 		
 		return;
 	}
@@ -1607,27 +1652,7 @@ void ZTranspiler::Proc(CastNode& node) {
 	ASSERT(node.Object);
 	
 	cs << '(';
-	
 	WStorageName(*node.Tt.Class);
-	
-	/*if (ass.IsPtr(node->Tt)) {
-		WriteClassName(*node->Tt.Next->Class);
-		cs << "*";
-	}
-	else {*/
-		/*if (!node->Tt.Class->CoreSimple)
-			cs << node->Tt.Class->NamespaceQual;
-		if (node->Tt.Class->CoreSimple && node->Tt.Class->Scan.IsEnum)
-			cs << node->Tt.Class->NamespaceQual;*/
-		
-		//cs << node.Tt.Class->BackName;
-		/*if (node->Tt.Class->Scan.IsEnum)
-			*cs << "::Type";
-
-		if (node->Ptr)
-			*cs << "*";*/
-	//}
-	
 	cs << ')';
 	
 	cs << '(';
@@ -1668,7 +1693,7 @@ void ZTranspiler::Proc(IntrinsicNode& node) {
 		cs << "sizeof(";
 		ASSERT(node.Value.GetCount());
 		if (node.Value[0]->Tt.Class == ass.CClass)
-			cs << ass.Classes[(int)node.Value[0]->IntVal].BackName;
+			WStorageName(ass.Classes[(int)node.Value[0]->IntVal]);
 		else
 			Walk(node.Value[0]);
 		cs << ")";
@@ -1743,7 +1768,7 @@ void ZTranspiler::Proc(PtrNode& node) {
 	ASSERT(node.Object);
 	if (node.Cast) {
 		cs << "(";
-		cs << node.Tt.Next->Class->BackName;
+		WStorageName(*node.Tt.Next->Class);
 		cs << "*)(";
 		Walk(node.Object);
 		cs << ")";
@@ -1771,7 +1796,8 @@ void ZTranspiler::Proc(IndexNode& node) {
 void ZTranspiler::Proc(DestructNode& node) {
 	Walk(node.Object);
 	cs << ".~";
-	cs << node.Object->Tt.Class->BackName;
+	WStorageName(*node.Object->Tt.Class);
+	//cs << node.Object->Tt.Class->BackName;
 	cs << "()";
 }
 

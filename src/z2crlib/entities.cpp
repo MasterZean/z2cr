@@ -83,7 +83,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp) {
 				throw ER::Duplicate(name, pp, DefPos);
 			parser.Expect(':');
 			
-			auto ti = ZExprParser::ParseType(comp, parser, true, nullptr, &Owner());
+			auto ti = ZExprParser::ParseType(comp, parser, true, true, nullptr, &Owner());
 			
 			if (parser.Char(',')) {
 				if (parser.IsChar(')'))
@@ -110,7 +110,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp) {
 	}
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(comp, parser, true, nullptr, &Owner());
+		auto ti = ZExprParser::ParseType(comp, parser, true, true, nullptr, &Owner());
 		Return.Tt = ti.Tt;
 	}
 	else
@@ -269,6 +269,9 @@ bool ObjectInfo::CanAssign(Assembly& ass, ObjectInfo& y, bool isCt) {
 		return true;
 
 	if (Tt.Class == y.Tt.Class)
+		return true;
+	
+	if (Tt.Class == y.Tt.Class->Super)
 		return true;
 	
 	if (ass.IsNumeric(Tt) && ass.IsNumeric(y.Tt)) {
