@@ -441,7 +441,7 @@ Node* ZExprParser::ParseAtomClassInst(Node* exp) {
 	
 	if (mainClass.TBase == ass.CRaw) {
 		if (nodes.GetCount() < 1 || nodes.GetCount() > 2)
-			ER::ErrCArrayWrongArgumentNo(parser.Source(), posPreTemp.P, mainClass, nodes.GetCount());
+			ER::ErrCArrayWrongArgumentNo12(parser.Source(), posPreTemp.P, mainClass, nodes.GetCount());
 	}
 	else {
 		int target = mainClass.Scan.TName.GetCount();
@@ -1089,7 +1089,8 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 				parser.Error(tt.P, " method overloading not permited based on " + ass.ToQtColor(cls) + " size");
 		}
 		else if (cls == ass.CRaw && reqArrayQual && !parser.IsChar(','))
-			parser.Expect(',');
+			ER::ErrCArrayWrongArgumentNo2(parser.Source(), tt.P, *cls);
+			//parser.Expect(',');
 		
 		if (parser.Char(',')) {
 			// TODO: fix
@@ -1101,7 +1102,9 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 			node = ep.Parse(true);
 		}
 		
-		parser.Expect('>');
+		if (!parser.Char('>'))
+			ER::ErrCArrayWrongArgumentNo2(parser.Source(), tt.P, *cls);
+		//parser.Expect('>');
 		
 		cls = &comp.ResolveInstance(*cls, *sub.Tt.Class, tt, true);
 		ti.Tt = cls->Tt;
@@ -1175,10 +1178,10 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	
 	Node* dr = nullptr;
 	
-	ZFunction* f = FindConstructor(cls, params, pos.P);
+	ZFunction* f = FindConstructor(cls, params, pos);
 		
 	if (f != nullptr) {
-		f = FindConstructor(cls, params, pos.P);
+		//f = FindConstructor(cls, params, pos.P);
 		TempNode* node = irg.mem_temp(cls, f);
 		node->Params = std::move(params);
 		
@@ -1224,14 +1227,14 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 		ZFunction* fc = nullptr;
 		
 		if (!cls.CoreSimple/* && cls.T && cls.T->CoreSimple == false*/) {
-			fc = FindConstructor(cls, params, pos.P);
+			fc = FindConstructor(cls, params, pos);
 			if (f == nullptr) {
 				if (cls.TBase == ass.CRaw)
-					fc = FindConstructor(*cls.T, params, pos.P);
+					fc = FindConstructor(*cls.T, params, pos);
 				
 				if (fc == nullptr) {
 					if (cls.T && cls.T->TBase == ass.CRaw)
-						fc = FindConstructor(*cls.T->T, params, pos.P);
+						fc = FindConstructor(*cls.T->T, params, pos);
 				}
 			}
 		}
@@ -1256,7 +1259,7 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	return nullptr;
 }
 
-ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, const Point& pos) {
+ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos& pos) {
 	int index = cls.Methods.Find(THIS_STR);
 			
 	if (index != -1) {
@@ -1273,7 +1276,13 @@ ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, cons
 			return nullptr;
 		}
 		
-		TestAccess(*f, pos);
+		//if (cls.FromTemplate)
+		//	comp.Push(pos, cls);
+		
+		TestAccess(*f, pos.P);
+		
+		//if (cls.FromTemplate)
+		//	comp.Pop();
 		
 		f->SetInUse();
 		

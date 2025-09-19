@@ -49,7 +49,7 @@ public:
 		ZNamespace* aclass = nullptr, ZNamespace* context = nullptr, ZFunction* afunc = nullptr);
 	
 	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos& pos);
-	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const Point& pos);
+	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos& pos);
 	
 	Node *ResolveOpOverload(Node *left, Node *right, int op, const Point& opp);
 		

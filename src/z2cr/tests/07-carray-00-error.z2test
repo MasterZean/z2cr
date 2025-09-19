@@ -1,0 +1,153 @@
+// @test array
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 16): template 'class sys.core.lang.CArray' must be instanced with 2 arguments (type and count)
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<Int>;
+	}
+}
+
+// @test array
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 23): identifier expected, integer constant '10' found
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<10>;
+	}
+}
+
+// @test array
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 16): template 'class sys.core.lang.CArray' must be instanced with 2 arguments (type and count)
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<Int, 10, 10>;
+	}
+}
+
+// @test array
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 23): unknown identifier: Int23
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<Int23, 10>;
+	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+C:\dev\z2cr\source\stdlib\sys.core\Slice.z2(37, 21): can't access private member:
+		this{}        [class test.Foo]
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val asss: CArray<Foo, 10>;
+	}
+}
+
+class Foo {
+	private this() {
+	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+C:\dev\z2cr\source\stdlib\sys.core\Slice.z2(37, 21): can't access private member:
+		this{}        [class test.Foo]
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val asss = CArray<Foo, 10>{};
+	}
+}
+
+class Foo {
+	private this() {
+	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(14, 39): can't access private member:
+		this{}        [class test.Foo]
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val asss = CArray<Foo, 10>{Foo{}};
+	}
+}
+
+class Foo {
+	private this() {
+	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+namespace test;
+
+class Test {
+	def @main() {
+		val asss = CArray<Foo, 10>{Foo{6}};
+	}
+}
+
+class Foo {
+	private this() {
+	}
+
+	this(a: Int) {
+	}
+}

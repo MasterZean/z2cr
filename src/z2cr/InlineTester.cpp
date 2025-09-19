@@ -9,25 +9,19 @@ String anErrors = "/* @errors";
 String anDumpBody = "/* @dumpBody";
 String anDumpNsPub = "/* @dump";
 String anDumpGlobalVarDef = "/* @dumpGlobalVarDef";
+String anStdLib = "// @usestdlib";
 
 bool ZTest::Run() {
 	bool result = true;
 	
 	if (Source) {
-		//DUMP(Con);
-		//Source->LoadVirtual(Con);
 		Source = nullptr;
 	}
 		
-	/*LOG("-----------------------------------------------------------------------------------------------------------------");
-	LOG("NEW TEST");
-	for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
-		LOG("=================================================================================================================");
-		LOG(Ass.SourceLookup[i]->Content());
-		LOG("=================================================================================================================");
-	}*/
-			
 	try {
+		if (StdLib)
+			Ass.AddStdlibPakcages(GetFileDirectory(GetExeFilePath()));
+		
 		ZCompiler compiler(Ass);
 		compiler.SetMain("", "test.z2");
 		compiler.FoldConstants = true;
@@ -45,9 +39,11 @@ bool ZTest::Run() {
 			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed\n");
 			
 			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
-				LOG("=================================================================================================================");
-				LOG(Ass.SourceLookup[i]->Content());
-				LOG("=================================================================================================================");
+				if (Ass.SourceLookup[i]->Path.Find('/') == 0) {
+					LOG("=================================================================================================================");
+					LOG(Ass.SourceLookup[i]->Content());
+					LOG("=================================================================================================================");
+				}
 			}
 			
 			LOG("Found error:");
@@ -87,9 +83,11 @@ bool ZTest::Run() {
 				LOG(String().Cat() << Name << "(" << Line << ")" << " test failed\n");
 				
 				for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
-					LOG("=================================================================================================================");
-					LOG(Ass.SourceLookup[i]->Content());
-					LOG("=================================================================================================================");
+					if (Ass.SourceLookup[i]->Path.Find('/') == 0) {
+						LOG("=================================================================================================================");
+						LOG(Ass.SourceLookup[i]->Content());
+						LOG("=================================================================================================================");
+					}
 				}
 			
 				LOG("Found dump:");
@@ -116,9 +114,11 @@ bool ZTest::Run() {
 				LOG(String().Cat() << Name << "(" << Line << ")" << " test failed\n");
 				
 				for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
-					LOG("=================================================================================================================");
-					LOG(Ass.SourceLookup[i]->Content());
-					LOG("=================================================================================================================");
+					if (Ass.SourceLookup[i]->Path.Find('/') == 0) {
+						LOG("=================================================================================================================");
+						LOG(Ass.SourceLookup[i]->Content());
+						LOG("=================================================================================================================");
+					}
 				}
 			
 				LOG("Found dump:");
@@ -143,10 +143,11 @@ bool ZTest::Run() {
 			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed because found exception\n");
 			
 			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
-				LOG("=================================================================================================================");
-				LOG(Ass.SourceLookup[i]->Content());
-				LOG("=================================================================================================================");
-				
+				if (Ass.SourceLookup[i]->Path.Find('/') == 0) {
+					LOG("=================================================================================================================");
+					LOG(Ass.SourceLookup[i]->Content());
+					LOG("=================================================================================================================");
+				}
 			}
 			
 			LOG("Found error:");
@@ -188,6 +189,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 	Ass.Namespaces[index].InUse = true;
 	
 	bool result = true;
+	bool wroteDecl = false;
 	
 	if (!DumpNsPubCon.IsVoid())	{
 		StringStream ss;
@@ -195,6 +197,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		cpp.CheckUse = false;
 		
 		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
+		wroteDecl = true;
 		
 		String dump = ss;
 		dump = TrimBoth(dump);
@@ -222,6 +225,12 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
 		
+		if (wroteDecl == false) {
+			StringStream ss;
+			ZTranspiler cpp(compiler, ss);
+			cpp.CheckUse = false;
+			cpp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
+		}
 		cpp.TranspileDefinitions(Ass.Namespaces[index], true);
 		
 		String dump = ss;
@@ -239,10 +248,11 @@ bool ZTest::DumpEqual(const String& have, const String& want, const String& desc
 		LOG(String().Cat() << Name << "(" << Line << ")" << " test failed: " << desc << "\n");
 			
 		for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
-			LOG("=================================================================================================================");
-			LOG(Ass.SourceLookup[i]->Content());
-			LOG("=================================================================================================================");
-			
+			if (Ass.SourceLookup[i]->Path.Find('/') == 0) {
+				LOG("=================================================================================================================");
+				LOG(Ass.SourceLookup[i]->Content());
+				LOG("=================================================================================================================");
+			}
 		}
 		
 		LOG("Found dump:");
@@ -290,7 +300,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-//	if (!path.EndsWith("03-04-ptrval-02.z2test"))
+//	if (!path.EndsWith("07-carray-00-error.z2test"))
 //		return;
 	
 	FileIn file(path);
@@ -334,6 +344,7 @@ void InlineTester::AddTestCollection(const String& path) {
 			test->Name = GetFileName(path);
 			test->Line = lineNo;
 			test->MainPak = &test->Ass.AddPackage("main", "");
+			test->StdLib = false;
 		}
 		else if (line.StartsWith(anFile)) {
 			if (test && test->MainPak) {
@@ -364,6 +375,10 @@ void InlineTester::AddTestCollection(const String& path) {
 			
 			if (test)
 				test->Error = rest;
+		}
+		else if (line.StartsWith(anStdLib)) {
+			if (test)
+				test->StdLib = true;
 		}
 		else if (line.StartsWith(anDumpBody)) {
 			con << line << "\n";

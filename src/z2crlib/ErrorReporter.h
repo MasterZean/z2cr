@@ -44,7 +44,8 @@ public:
 	
 	static void CantInstantiateTemplate(const ZSourcePos& p, ZClass& cls);
 	
-	static void ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo);
+	static void ErrCArrayWrongArgumentNo12(const ZSource& source, const Point& p, const ZClass& cls, int argNo);
+	static void ErrCArrayWrongArgumentNo2(const ZSource& source, const Point& p, const ZClass& cls);
 	
 	static void ErrClassTemplateWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int target, int argNo);
 	

@@ -255,9 +255,15 @@ void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 	}
 }
 
-void ZTranspiler::WriteTypePost(ObjectType* tt) {
+void ZTranspiler::WriteTypePost(ObjectType* tt, bool array) {
 	if (tt->Class->FromTemplate && tt->Class->TBase == ass.CRaw) {
-		cs << '[' << tt->Param << ']';
+		cs << '[' << tt->Param;
+		if (array) {
+			cs << " * sizeof(";
+			WriteType(tt);
+			cs <<")";
+		}
+		cs << ']';
 		//ASSERT(tt->Next);
 		if (tt->Next)
 			WriteTypePost(tt->Next);
@@ -1061,12 +1067,20 @@ void ZTranspiler::Proc(OpNode& node) {
 			ProcLeftSet(l, r, node.ExtraOp, node.ExtraNode);
 		else {
 			Walk(l);
-			cs << ' ';
-			if (node.ExtraOp != OpNode::Type::opNotSet)
-				cs << opss[node.ExtraOp];
-			cs << opss[node.Op];
-			cs << ' ';
-			Walk(r);
+			
+			if (l->Tt.Class->TBase == ass.CRaw) {
+				cs << ".Copy(";
+				Walk(r);
+				cs << ")";
+			}
+			else {
+				cs << ' ';
+				if (node.ExtraOp != OpNode::Type::opNotSet)
+					cs << opss[node.ExtraOp];
+				cs << opss[node.Op];
+				cs << ' ';
+				Walk(r);
+			}
 		}
 
 	}
@@ -1594,9 +1608,19 @@ void ZTranspiler::Proc(LocalNode& node) {
 	ASSERT(node.Var);
 	
 	if (node.Tt.Class->TBase == ass.CRaw) {
-		WriteType(&node.Var->I.Tt, true);
-		cs << " __" << node.Var->Name;
-		WriteTypePost(&node.Var->I.Tt);
+		if (node.Tt.Class->T->CoreSimple) {
+			WriteType(&node.Var->I.Tt, true);
+			cs << " __" << node.Var->Name;
+			WriteTypePost(&node.Var->I.Tt);
+		}
+		else {
+			cs << "alignas(";
+			WriteType(&node.Var->I.Tt);
+			cs << ") ";
+			cs << "uint8";
+			cs << " __" << node.Var->Name;
+			WriteTypePost(&node.Var->I.Tt, true);
+		}
 		ES();
 		
 		NL();
@@ -1606,13 +1630,20 @@ void ZTranspiler::Proc(LocalNode& node) {
 		cs << node.Tt.Class->T->Name;
 		cs << " " << node.Var->Name;
 		cs << "(";
-		cs << " __" << node.Var->Name;
+		if (!node.Tt.Class->T->CoreSimple) {
+			cs << "(";
+			WriteType(&node.Var->I.Tt);
+			cs << "*)";
+		}
+		//
+		cs << "__" << node.Var->Name;
 		cs << ", ";
 		cs << node.Tt.Param;
 		cs << ")";
-		ES();
 		
 		if (node.Var->Value) {
+			ES();
+			
 			NL();
 			if (node.Var->Value->NT == NodeType::Temporary) {
 				TempNode& tmp = (TempNode&)*node.Var->Value;
@@ -1623,8 +1654,9 @@ void ZTranspiler::Proc(LocalNode& node) {
 				cs << ")";
 			}
 			else {
-				//WalkNode(node.Var->Value);
-				cs << node.Var->Name << ".Construct()";
+				cs << node.Var->Name << ".Copy(";
+				WalkNode(node.Var->Value);
+				cs << ")";
 			}
 		}
 		

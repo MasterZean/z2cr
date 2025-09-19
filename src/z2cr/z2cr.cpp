@@ -378,30 +378,7 @@ CONSOLE_APP_MAIN {
 			}
 		}
 		
-#ifdef PLATFORM_WIN32
-		String platform = "WIN32";
-		String platformLib = "microsoft.windows";
-#endif
-
-			
-#ifdef PLATFORM_POSIX
-		String platform = "POSIX";
-		String platformLib = "ieee.posix";
-#endif
-
-		String stdLibPath = exeDir + NativePath("source\\stdlib\\");
-		
-		if (!ass.LoadPackage(stdLibPath + "bind.c")) {
-			SetExitCode(BuildMethod::ErrorCode(-1));
-			return;
-		}
-		
-		if (!ass.LoadPackage(stdLibPath + "sys.core")) {
-			SetExitCode(BuildMethod::ErrorCode(-1));
-			return;
-		}
-		
-		if (!ass.LoadPackage(stdLibPath + platformLib)) {
+		if (!ass.AddStdlibPakcages(exeDir)) {
 			SetExitCode(BuildMethod::ErrorCode(-1));
 			return;
 		}

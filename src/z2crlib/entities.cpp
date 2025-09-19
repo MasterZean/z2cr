@@ -267,9 +267,13 @@ bool ObjectInfo::CanAssign(Assembly& ass, ObjectInfo& y, bool isCt) {
 
 	if (isCt && Tt.Class == ass.CPtrSize && (y.Tt.Class == ass.CInt))
 		return true;
-
-	if (Tt.Class == y.Tt.Class)
-		return true;
+	
+	if (Tt.Class == y.Tt.Class) {
+		if (Tt.Class->TBase == ass.CRaw)
+			return Tt.Param == y.Tt.Param;
+		else
+			return true;
+	}
 	
 	if (Tt.Class == y.Tt.Class->Super)
 		return true;

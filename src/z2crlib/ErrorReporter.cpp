@@ -95,9 +95,15 @@ ZException ER::ErrCantOverrideDefaultBehavior(const ZSourcePos& p) {
 	return ZException(p.ToString(), "can't override default behaviour for build-in system types");
 }
 
-void ER::ErrCArrayWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int argNo) {
+void ER::ErrCArrayWrongArgumentNo12(const ZSource& source, const Point& p, const ZClass& cls, int argNo) {
 	String err = "template " + ToColor(cls, true) + " must be instanced with 1 or 2 arguments";
-				err << ", " << IntStr(argNo) << " provided.";
+	err << ", " << IntStr(argNo) << " provided.";
+				
+	Error(source, p, err);
+}
+
+void ER::ErrCArrayWrongArgumentNo2(const ZSource& source, const Point& p, const ZClass& cls) {
+	String err = "template " + ToColor(cls, true) + " must be instanced with 2 arguments (type and count)";
 				
 	Error(source, p, err);
 }

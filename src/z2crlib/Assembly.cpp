@@ -1,4 +1,5 @@
 #include "z2cr.h"
+#include "BuildMethod.h"
 
 String ZSourcePos::ToString() const {
 	String str;
@@ -421,13 +422,17 @@ String Assembly::TypeToColor(ObjectType& type) {
 
 String Assembly::ToQtColor(ObjectType* type) {
 	String s = "'";
-	s << ER::Green << type->Class->Name;
+	s << TypeToColor(*type);
+	s << ER::White << "'";
+	
+	/*s << ER::Green << type->Class->Name;
 	if (type->Class == CPtr) {
 		s << ER::White << "<";
 		s << ER::Green << type->Next->Class->Name;
 		s << ER::White << ">";
 	}
-	s << ER::White << "'";
+	s << ER::White << "'";*/
+	
 	return s;
 }
 
@@ -449,3 +454,36 @@ bool Assembly::IsUnsignedInt(const ObjectType& type) const {
 bool Assembly::IsFloat(const ObjectType& type) const {
 	return type.Class == CFloat || type.Class == CDouble;
 }
+
+bool Assembly::AddStdlibPakcages(const String& path) {
+#ifdef PLATFORM_WIN32
+		String platform = "WIN32";
+		String platformLib = "microsoft.windows";
+#endif
+
+			
+#ifdef PLATFORM_POSIX
+		String platform = "POSIX";
+		String platformLib = "ieee.posix";
+#endif
+
+	String stdLibPath = path + NativePath("source\\stdlib\\");
+	
+	if (!LoadPackage(stdLibPath + "bind.c")) {
+		SetExitCode(BuildMethod::ErrorCode(-1));
+		return false;
+	}
+	
+	if (!LoadPackage(stdLibPath + "sys.core")) {
+		SetExitCode(BuildMethod::ErrorCode(-1));
+		return false;
+	}
+	
+	if (!LoadPackage(stdLibPath + platformLib)) {
+		SetExitCode(BuildMethod::ErrorCode(-1));
+		return false;
+	}
+	
+	return true;
+}
+

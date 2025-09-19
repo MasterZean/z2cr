@@ -15,6 +15,7 @@ public:
 	String GlobalVarDef = String::GetVoid();
 	WithDeepCopy<Vector<String>> Files;
 	bool Passed = false;
+	bool StdLib = false;
 	int Line = 0;
 	
 	Assembly Ass;

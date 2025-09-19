@@ -1,0 +1,143 @@
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @dump namespace: test def
+void test::_main() {
+	int32 __a[10];
+	sys::core::lang::CArray_Int a(__a, 10);
+}
+*/
+
+namespace test;
+
+def @main() {
+	val a: CArray<Int, 10> = void;
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @dump namespace: test def
+void test::_main() {
+	int32 __a[10];
+	sys::core::lang::CArray_Int a(__a, 10);
+	a.Init();
+}
+*/
+
+namespace test;
+
+def @main() {
+	val a: CArray<Int, 10>;
+}
+
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @dump namespace: test def
+void test::_main() {
+	int32 __a[10];
+	sys::core::lang::CArray_Int a(__a, 10);
+	a.Init();
+}
+*/
+
+namespace test;
+
+def @main() {
+	val a = CArray<Int, 10>{};
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @dump namespace: test def
+void test::_main() {
+	int32 __a[10];
+	sys::core::lang::CArray_Int a(__a, 10);
+	a.Init(20);
+}
+*/
+
+namespace test;
+
+def @main() {
+	val a = CArray<Int, 10>{20};
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @dump namespace: test def
+void test::_main() {
+	int32 __a[10];
+	sys::core::lang::CArray_Int a(__a, 10);
+	a.Init();
+	int32 __b[10];
+	sys::core::lang::CArray_Int b(__b, 10);
+	b.Copy(a);
+	int32 __c[10];
+	sys::core::lang::CArray_Int c(__c, 10);
+	c.Copy(b);
+	a.Copy(b);
+	b.Copy(a);
+}
+*/
+
+namespace test;
+
+def @main() {
+	val a = CArray<Int, 10>{};
+	val b = a;
+	val c = b;
+	a = b;
+	b = a;
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @dump namespace: test def
+void test::_main() {
+	int32 __a[10];
+	sys::core::lang::CArray_Int a(__a, 10);
+	a.Init();
+	a.Construct();
+	a.Fill(1);
+	a.Fill(2, 1);
+	a.Fill(3, 4, 8);
+	a.Insert(34, 5);
+	a.DeleteIndex(2);
+	a.DeleteAll(1);
+	a.FindIndex(45);
+	a.RFindIndex(45);
+}
+*/
+
+namespace test;
+
+def @main() {
+	val a = CArray<Int, 10>{};
+	a.Construct();
+	a.Fill(1);
+	a.Fill(2, 1);
+	a.Fill(3, 4, 8);
+	a.Insert(34, 5);
+	a.DeleteIndex(2);
+	a.DeleteAll(1);
+	a.FindIndex(45);
+	a.RFindIndex(45);
+}

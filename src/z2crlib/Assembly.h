@@ -120,6 +120,8 @@ public:
 	
 	void WriteCache();
 	
+	bool AddStdlibPakcages(const String& path);
+	
 private:
 	void AddModule(int parent, const String& path, ZPackage& pak);
 	void AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp);

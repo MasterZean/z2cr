@@ -218,7 +218,7 @@ public:
 	virtual void WalkNode(Node* node);
 		
 	void WriteType(ObjectType* tt, bool useauto = false);
-	void WriteTypePost(ObjectType *tt);
+	void WriteTypePost(ObjectType *tt, bool array = false);
 	
 private:
 	void Walk(Node* node);

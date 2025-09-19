@@ -111,7 +111,7 @@ bool ZCompiler::compile() {
 				}
 			}
 		}
-		else {
+		else if (cls.TBase != ass.CRaw) {
 			for (int j = 0; j < cls.Methods.GetCount(); j++)
 				if (cls.Methods[j].IsConstructor) {
 					for (int k = 0; k < cls.Methods[j].Functions.GetCount(); k++) {
@@ -639,6 +639,21 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext&
 			parser.Error(pp.P, "can't assign " + ass.ToQtColor(rs) + " instance to " + ass.ToQtColor(node) + " instance without a cast");
 		}
 		
+		ZClass* cls = node->Tt.Class;
+		
+		if (cls->TBase == ass.CRaw) {
+			int index = cls->Methods.Find("Copy");
+			
+			if (index != -1)
+				for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
+					ZFunction& copy = *cls->Methods[index].Functions[i];
+					
+					copy.SetInUse();
+					if (copy.ShouldEvaluate())
+						CompileFunc(copy);
+				}
+		}
+			
 		if (node && node->Chain && node->Chain->PropCount) {
 			Node* child = node->Chain->First;
 
@@ -896,8 +911,10 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 		if (parser.Char('='))
 			assign = true;
 	//}
-//	if (v.Name == "TreeColors")
-//		v.Name == "Trees";
+	
+	if (v.Name == "farr1")
+		v.Name == "Trees";
+	
 	if (assign) {
 		ZExprParser ep(v, Class, zcon.Func, *this, parser, irg);
 		Node* node = ep.Parse();
@@ -922,6 +939,19 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 			parser.Error(vp.P, "can't assign " + ass.TypeToColor(node->Tt) +
 					" instance to " + ass.TypeToColor(v.I.Tt) + " instance without a cast");
 		}
+		
+		if (cls->TBase == ass.CRaw) {
+			int index = cls->Methods.Find("Copy");
+			
+			if (index != -1)
+				for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
+					ZFunction& copy = *cls->Methods[index].Functions[i];
+					
+					copy.SetInUse();
+					if (copy.ShouldEvaluate())
+						CompileFunc(copy);
+				}
+		}
 	}
 	else {
 		if (v.I.Tt.Class == NULL)
@@ -941,8 +971,16 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 		if (v.Value == nullptr) {
 			ZExprParser ep(v, Class, zcon.Func, *this, parser, irg);
 			Vector<Node*> params;
-			if (v.I.Tt.Class->TBase == nullptr || v.I.Tt.Class->TBase != ass.CRaw)
+			//ep.getParams(params);
+			
+			if (cls->FromTemplate)
+				Push(vp, *cls);
+			
+			//if (v.I.Tt.Class->TBase == nullptr || v.I.Tt.Class->TBase != ass.CRaw)
 				v.Value = ep.Temporary(*v.I.Tt.Class, params, vp);
+				
+			if (cls->FromTemplate)
+				Pop();
 		}
 	}
 	
