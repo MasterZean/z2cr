@@ -10,7 +10,7 @@ It has a relatively small but powerful and practical standard library, made up o
 
 It has a compiler that is also a build tool that builds your packages and employs several techniques in order to provide [[fast compilation times]], something that is a real focus.
 
-It offers a cross-platform editor, called ZIDE, which can be considered a minimal goldens standard, offering a few valuable features out of the box. ZIDE predates LSP and before that, choosing to offer language support to and IDE meant picking one specific one and writing integration plugins for your language. Thus it was decided it is easier not to pick favourites and create a new editor that "just works" for people to get started. But Z2 is still  a command line compiler tool and one can easily invoke it form anything from a makefile toy our favourite editor/IDE.
+It offers a cross-platform editor, called ZIDE, which can be considered a minimal goldens standard, offering a few valuable features out of the box. ZIDE predates LSP and before that, choosing to offer language support to and IDE meant picking one specific one and writing integration plugins for your language. Thus it was decided it is easier not to pick favourites and create a new editor that "just works" for people to get started. But Z2 is still  a command line compiler tool and one can easily invoke it form anything from a `makefile` to your favourite editor/IDE.
 
 ## Assortment of features
 
@@ -29,7 +29,7 @@ It offers a cross-platform editor, called ZIDE, which can be considered a minima
 
 ## Getting started
 
-Getting started with Z2 is easy, all you need is to grab one of the [[pre-compiled releases]] from [GitHub].
+Getting started with Z2 is easy, all you need is to grab one of the [[pre-compiled releases](https://github.com/MasterZean/z2cr/releases)] from [GitHub(https://github.com/MasterZean/z2cr)].
 
 You can check out [[installing and getting started]] guide, which is step one in a series language tour.
 
