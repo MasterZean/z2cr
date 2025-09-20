@@ -31,7 +31,7 @@ It offers a cross-platform editor, called ZIDE, which can be considered a minima
 
 Getting started with Z2 is easy, all you need is to grab one of the [pre-compiled releases](https://github.com/MasterZean/z2cr/releases) from [GitHub](https://github.com/MasterZean/z2cr).
 
-You can check out [installing and getting started](docs/installing%20and%20getting%20started.md) guide, which is step one in a series language tour.
+You can check out [installing and getting started](docs/Installing%20and%20getting%20started.md) guide, which is step one in a series language tour.
 
 Alternatively, you can build from source. Building from source isn't particularly difficult, but you need to install and configure a few dependencies, thus it is harder to get started with, making [compiling from sources]() a more advanced topic that needs to have its own section in the documentation.
 
