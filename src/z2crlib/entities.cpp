@@ -270,7 +270,7 @@ bool ObjectInfo::CanAssign(Assembly& ass, ObjectInfo& y, bool isCt) {
 	
 	if (Tt.Class == y.Tt.Class) {
 		if (Tt.Class->TBase == ass.CRaw)
-			return Tt.Param == y.Tt.Param;
+			return /*Tt.Class->T == y.Tt.Class->T && */Tt.Param == y.Tt.Param;
 		else
 			return true;
 	}

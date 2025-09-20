@@ -152,3 +152,28 @@ class Test {
 		a.RFindIndex(45);
 	}
 }
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(15, 9): can't assign 'CArray<Bar, 5>' instance to 'CArray<Foo, 5>' instance without a cast
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a = CArray<Foo, 5>{};
+		val b = CArray<Bar, 5>{};
+		a = b;
+	}
+}
+
+class Foo {
+}
+
+class Bar {
+}

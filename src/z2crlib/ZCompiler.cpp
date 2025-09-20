@@ -98,7 +98,6 @@ bool ZCompiler::compile() {
 	
 	for (int i = 0; i < cuClasses.GetCount(); i++) {
 		ZClass& cls = *cuClasses[i];
-		DUMP(cls.Name);
 		if (cls.TBase == ass.CSlice) {
 			for (int j = 0; j < cls.Methods.GetCount(); j++)
 				if (cls.Methods[j].IsConstructor) {
@@ -912,7 +911,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 			assign = true;
 	//}
 	
-	if (v.Name == "farr1")
+	if (v.Name == "a")
 		v.Name == "Trees";
 	
 	if (assign) {

@@ -300,7 +300,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-//	if (!path.EndsWith("07-carray-00-error.z2test"))
+//	if (!path.EndsWith("07-carray-dummy.z2test"))
 //		return;
 	
 	FileIn file(path);

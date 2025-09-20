@@ -140,7 +140,7 @@ namespace test;
 
 class Test {
 	def @main() {
-		val asss = CArray<Foo, 10>{Foo{6}};
+		val a = CArray<Foo, 10>{Foo{6}};
 	}
 }
 
@@ -150,4 +150,107 @@ class Foo {
 
 	this(a: Int) {
 	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 13): can't assign CArray<Int, 10> instance to CArray<Int, 20> instance without a cast
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<Int, 20> = CArray<Int, 10>{};
+	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 13): can't assign CArray<Int, 20> instance to CArray<Int, 10> instance without a cast
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<Int, 10> = CArray<Int, 20>{};
+	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(15, 9): can't assign 'CArray<Int, 10>' instance to 'CArray<Int, 20>' instance without a cast
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<Int, 20>;
+		val b: CArray<Int, 10>;
+		a = b;
+	}
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(15, 9): can't assign 'CArray<Bar, 10>' instance to 'CArray<Foo, 20>' instance without a cast
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a: CArray<Foo, 20>;
+		val b: CArray<Bar, 10>;
+		a = b;
+	}
+}
+
+class Foo {
+}
+
+class Bar {
+}
+
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(15, 9): can't assign 'CArray<Bar, 10>' instance to 'CArray<Foo, 20>' instance without a cast
+*/
+
+namespace test;
+
+class Test {
+	def @main() {
+		val a = CArray<Foo, 20>{};
+		val b = CArray<Bar, 10>{};
+		a = b;
+	}
+}
+
+class Foo {
+}
+
+class Bar {
 }

@@ -397,13 +397,7 @@ String Assembly::TypeToString(ObjectType& type) {
 String Assembly::TypeToColor(ObjectType& type) {
 	String s;
 	
-	if (type.Next) {
-		s << ER::Cyan << type.Class->Name << ER::White;
-		s << '<';
-		s << TypeToColor(*type.Next);
-		s << '>';
-	}
-	else if (type.Class->FromTemplate) {
+	if (type.Class->FromTemplate) {
 		s << ER::Cyan << type.Class->TBase->Name << ER::White;
 		s << '<';
 		s << TypeToColor(type.Class->T->Tt);
@@ -411,6 +405,12 @@ String Assembly::TypeToColor(ObjectType& type) {
 		if (type.Class->TBase == CRaw && type.Param != -1)
 			s << ", " << type.Param;
 		
+		s << '>';
+	}
+	else if (type.Next) {
+		s << ER::Cyan << type.Class->Name << ER::White;
+		s << '<';
+		s << TypeToColor(*type.Next);
 		s << '>';
 	}
 	else {
