@@ -27,7 +27,9 @@ file
 	CommandLine.h,
 	CommandLine.cpp,
 	Builder.h,
-	Builder.cpp;
+	Builder.cpp,
+	Builder_POSIX.cpp,
+	ansidemo.cpp;
 
 mainconfig
 	"" = "",

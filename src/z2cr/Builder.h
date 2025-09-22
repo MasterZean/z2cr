@@ -35,8 +35,8 @@ public:
 		subsystem = ss;
 	}
 			
-	bool Build(const String& path, const String& origPath, const Index<String>& libs);
-	bool Compile(const String& src, const String& out, const String& inc = "");
+	inline bool Build(const String& path, const String& origPath, const Index<String>& libs);
+	inline bool Compile(const String& src, const String& out, const String& inc = "");
 	
 private:
 	BuildMethod bm;
@@ -49,6 +49,8 @@ private:
 	String optimize;
 	int subsystem;
 	
+	String QT = "\"";
+	
 	bool BuildMSC(const String& path, const String& origPath, const Index<String>& libs);
 	bool BuildGCC(const String& path, const String& origPath, const Index<String>& libs);
 	
@@ -59,5 +61,25 @@ private:
 	bool CompileMSC(const String& src, const String& out, const String& inc = "");
 	bool CompileGCC(const String& src, const String& out, const String& inc = "");
 };
+
+bool Builder::Build(const String& path, const String& origPath, const Index<String>& libs) {
+	if (bm.Type == BuildMethod::btMSC)
+		return BuildMSC(path, origPath, libs);
+	
+	if (bm.Type == BuildMethod::btGCC)
+		return BuildGCC(path, origPath, libs);
+
+	return false;
+}
+
+bool Builder::Compile(const String& src, const String& out, const String& inc) {
+	if (bm.Type == BuildMethod::btMSC)
+		return CompileMSC(src, out, inc);
+	
+	if (bm.Type == BuildMethod::btGCC)
+		return CompileGCC(src, out, inc);
+
+	return false;
+}
 
 #endif
