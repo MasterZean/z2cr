@@ -4,6 +4,8 @@ String NormalizePathNN(const String& path) {
 	return IsNull(path) ? path : NormalizePath(path);
 }
 
+#ifdef PLATFORM_WIN32
+
 bool ExistProgram(String& bin, const char *dir, const char *file) {
 	String win = NormalizePath(GetWindowsDirectory());
 	if(FileExists(AppendFileName(win.Mid(0, 3) + dir, file))) {
@@ -12,8 +14,6 @@ bool ExistProgram(String& bin, const char *dir, const char *file) {
 	}
 	return false;
 }
-
-#ifdef PLATFORM_WIN32
 
 struct DirFinder {
 	Vector<String> dir;
@@ -502,7 +502,6 @@ bool BuildMethod::DetectClang(Vector<BuildMethod>& methods) {
 	
 	return true;
 }
-#endif
 
 void BuildMethod::NewVs() {
 	DirFinder dir;
@@ -511,6 +510,8 @@ void BuildMethod::NewVs() {
 	
 	DeepVSSearch(methods);
 }
+
+#endif
 
 void BuildMethod::Get(Vector<BuildMethod>& methods, bool print) {
 	methods.Clear();

@@ -345,7 +345,7 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 #ifdef PLATFORM_WIN32
 	PlatformType platform = PlatformType::WINDOWS;
 #else
-	PlatformType platform = PlatformType::UNIX;
+	PlatformType platform = PlatformType::POSIX;
 #endif
 
 	ZScanner scaner = ZScanner(ass, source, platform);

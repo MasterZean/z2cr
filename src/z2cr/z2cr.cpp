@@ -87,6 +87,8 @@ void RunInlineTests(const String& path) {
 	Cout() << "Testing status: " << tester.PassCount << "/" << tester.TestCount << " passed (" << sw.ToString() <<"s).\n\n";
 }
 
+#ifdef PLATFORM_WIN32
+
 int separate_console() {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 
@@ -272,6 +274,18 @@ int testansi()
     
     return 0;
 }
+
+#else
+
+int separate_console() {
+	return 0;
+}
+
+bool EnableVTMode() {
+	return true;
+}
+
+#endif
 
 CONSOLE_APP_MAIN {
 	bool noConsole = separate_console();

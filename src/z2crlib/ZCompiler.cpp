@@ -135,8 +135,10 @@ bool ZCompiler::compile() {
 		}
 	}
 	
+#ifdef PLATFORM_WIN32
 	ass.LibLink.FindAdd("winmm");
 	ass.LibLink.FindAdd("user32");
+#endif
 	
 	return true;
 }

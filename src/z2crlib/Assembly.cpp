@@ -49,7 +49,13 @@ bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
 	if (pakName.GetCount() == 0)
 		pakName = GetFileName(GetFileFolder(pakPath));
 	
-	FindFile ff(pakPath);
+	FindFile ff;
+	
+	if (!ff.Search(pakPath)) {
+		Cout() << "Package '" << pakName << "' could not be found: path '" << pakPath << "' does not exist.\n";
+		Cout() << "Exiting!\n";
+		return false;
+	}
 	
 	if (!ff.IsFolder()) {
 		Cout() << "Could not find package '" << pakName << "' in folder '" << pakPath << "'.\n";

@@ -215,6 +215,13 @@ String DeQtfLf(const char *s) {
 	return String(r);
 }
 
+#ifndef PLATFORM_WIN32
+
+void SetConsoleTextAttribute(int, int) {
+}
+
+#endif
+
 void ZException::PrettyPrint(Stream& stream) {
 #ifdef PLATFORM_WIN32
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // Get handle to standard output
@@ -301,6 +308,7 @@ void ER::PrettyPrint(const String& error, Stream& stream, ErrorColorType color) 
 	int cBlue = 0;
 	int cMagenta = 0;
 	int cYellow = 0;
+	int cGreen = 0;
 	
 #endif
 	

@@ -1,5 +1,7 @@
 #include <z2crlib/BuildMethod.h>
 
+#ifdef PLATFORM_WIN32
+
 bool BuildMethod::DetectMSC7_1(Vector<BuildMethod>& methods) {
 	String vs = GetWinRegString("ProductDir", "SOFTWARE\\Microsoft\\VisualStudio\\7.1\\Setup\\VC");
 	Compiler = NormalizePathNN(
@@ -351,3 +353,5 @@ bool BuildMethod::TestLib(Vector<BuildMethod>& methods, const String& arch) {
 	
 	return true;
 }
+
+#endif

@@ -3,6 +3,8 @@
 
 #include <z2crlib/ZCompiler.h>
 
+#ifdef PLATFORM_WIN32
+
 namespace llvm {
 	class LLVMContext;
 	class Module;
@@ -30,5 +32,7 @@ private:
 		return *mod;
 	}
 };
+
+#endif
 
 #endif

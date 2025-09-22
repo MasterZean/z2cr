@@ -73,16 +73,27 @@ void ExecutableThreadRun(ZideWindow* zide, const String& file, bool newConsole) 
 			;//PutConsole("Unable to launch " + String(_cmdline));
 	}
 	else {
-#endif
+
 		command = "cmd.exe /C cd \"" + GetFileDirectory(file) + "\" && \"" + file + "\"";
 		DUMP(command);
+
+#endif
+
+#ifdef PLATFORM_POSIX
+		//command = "(cd \"" + GetFileDirectory(file) + "\" && exec \"" + file + "\")";
+		//command = "bash -c cd /usr && ls -l";
+		//command = file;//"bash -c pwd && pwd";
+		command = "bash -c 'cd \"" + GetFileDirectory(file) + "\"; \"" + file + "\"'";
+		//Cout() << command << "\n";
+		DUMP(command);
+		
+#endif
 		
 		String t;
 		
 		globalExecutor.Kill();
 		globalExecutor.ConvertCharset(false);
 		globalExecutor.Start(command);
-		
 		
 		StopWatch sw;
 		
@@ -517,6 +528,10 @@ String ZideWindow::BuildCmd(const String& file, bool scu, bool& res, Point p) {
 		cmd << " -subsystem console";
 	else if (lstBldConf.GetIndex() == 1)
 		cmd << " -subsystem windows";
+
+#ifdef PLATFORM_POSIX
+	cmd << " -color none";
+#endif
 	//if (p.x > 0)
 	//	cmd << " -acp " << p.x << " " << p.y;
 	

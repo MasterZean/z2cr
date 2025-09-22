@@ -209,9 +209,6 @@ bool Builder::BuildMSC(const String& path, const String& origPath, const Index<S
 			Cout() << "done in " << sw.ToString() << " seconds.\n";
 		}
 	}
-		
-	//DeleteFile(inPath + inTitle + ".obj");
-	//DeleteFile(inPath + inTitle + ".cpp");
 	
 	return result;
 }
@@ -389,9 +386,6 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 			Cout() << "done in " << sw.ToString() << " seconds.\n";
 		}
 	}
-
-	//DeleteFile(inPath + inTitle + ".o");
-	//DeleteFile(inPath + inTitle + ".cpp");
 	
 	return result;
 }
@@ -400,11 +394,11 @@ bool Builder::BuildGCC(const String& path, const String& origPath, const Index<S
 
 #ifdef PLATFORM_POSIX
 
-bool Builder::CompileMSC(const String& src, const String& out) {
+bool Builder::CompileMSC(const String& src, const String& out, const String& inc) {
 	return false;
 }
 
-bool Builder::CompileGCC(const String& src, const String& out) {
+bool Builder::CompileGCC(const String& src, const String& out, const String& inc) {
 	StopWatch sw;
 	
 	Cout() << "building " << GetFileTitle(src) << "... ";
@@ -426,6 +420,9 @@ bool Builder::CompileGCC(const String& src, const String& out) {
 	cmd << " ";
 	cmd << QT << src << QT << " ";
 	cmd << "-o " << QT << out << QT << " ";
+	
+	if (inc.GetCount())
+		cmd << "-I\"" << inc << "\"";
 	
 	DUMP(cmd);
 	
@@ -449,11 +446,11 @@ bool Builder::CompileGCC(const String& src, const String& out) {
 	}
 }
 
-bool Builder::BuildMSC(const String& path, const String& origPath) {
+bool Builder::BuildMSC(const String& path, const String& origPath, const Index<String>& libs) {
 	return false;
 }
 
-bool Builder::BuildGCC(const String& path, const String& origPath) {
+bool Builder::BuildGCC(const String& path, const String& origPath, const Index<String>& libs) {
 	String inPath = GetFileDirectory(path);
 	String inTitle = GetFileTitle(path);
 	String outPath = GetFileDirectory(origPath);
@@ -473,7 +470,13 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 	if (!FileExists(leakObj))
 		if (!CompileGCC(zPath + "codegen/leakdetect.cpp", leakObj))
 			result = false;
-	
+		
+	String bridgeObj = AppendFileName(target, "zbridge.o");
+
+	if (!FileExists(bridgeObj))
+		if (!CompileGCC(zPath + "codegen/zbridge.cpp", bridgeObj))
+			result = false;
+		
 	if (!CompileGCC(inPath + inTitle + ".cpp", inPath + inTitle + ".o"))
 		result = false;
 	
@@ -482,11 +485,18 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 	
 	Cout() << "linking... ";
 	
-	d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" -o \"" + outPath + outTitle + "\" -m";
+	d << QT + linkPath + QT + " " + inPath + inTitle + ".o \"" + leakObj + "\" \"" + bridgeObj + "\" -o \"" + outPath + outTitle + "\" -m";
 	if (arch == "x64")
 		d << "64";
 	else
 		d << "32";
+	
+	//d << " -static";
+	for (int i = 0; i < libs.GetCount(); i++)
+		d << " -l" << libs[i];
+	
+	DUMP(d);
+	//Cout() << d;
 	
 	{
 		LocalProcess lp(d);
@@ -503,9 +513,6 @@ bool Builder::BuildGCC(const String& path, const String& origPath) {
 			Cout() << "done in " << sw.ToString() << " seconds.\n";
 		}
 	}
-
-	DeleteFile(inPath + inTitle + ".o");
-	DeleteFile(inPath + inTitle + ".cpp");
 	
 	return result;
 }
