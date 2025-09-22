@@ -79,48 +79,20 @@ bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
 	
 	ZPackage& package = Packages[pakIndex];
 	package.Name = pakName;
-	package.Path = pakPath;//AppendFileName(pakPath, "");
+	package.Path = pakPath;
 
-	/*if (fullBuild) {
+	ZPackage temp(*this, "temp", "");
+	
+	if (BuildPath.GetCount()) {
 		package.CachePath = NativePath(BuildPath + "\\" + package.Name);
 		DirectoryCreate(package.CachePath);
 		
-		ZPackage temp;
 		LoadFromFile(temp, NativePath(package.CachePath + "\\cache.dat"));
-		
-		AddModule(0, package.Path, package, temp);
-	}
-	else*/
-	{
-		package.CachePath = NativePath(BuildPath + "\\" + package.Name);
-		DirectoryCreate(package.CachePath);
-		
-		ZPackage temp(*this, "temp", "");
-		LoadFromFile(temp, NativePath(package.CachePath + "\\cache.dat"));
-		
-		AddModule(0, package.Path, package, temp);
 	}
 	
+	AddModule(0, package.Path, package, temp);
+	
 	return true;
-}
-
-void Assembly::AddModule(int parent, const String& path, ZPackage& pak) {
-	FindFile ff;
-	ff.Search(path + "/*");
-
-	while (ff) {
-		if (ff.IsFile()) {
-			String name = ff.GetName();
-			if (GetFileExt(name) == ".z2") {
-				String fp = ff.GetPath();
-				ZSource& zs = AddModuleSource(pak, fp, true);
-			}
-		}
-		else if (ff.IsFolder())
-			AddModule(parent + 1, ff.GetPath(), pak);
-
-		ff.Next();
-	}
 }
 
 void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp) {
@@ -140,17 +112,6 @@ void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage
 
 		ff.Next();
 	}
-}
-
-ZSource& Assembly::AddModuleSource(ZPackage& aPackage, const String& aFile, bool aLoadFile) {
-	String relPath = aFile.Mid(aPackage.Path.GetLength());
-
-	/*ZSource& source = aPackage.Sources[fileIndex];
-	source.Path = relPath;*/
-	ZSource& source = aPackage.AddSource(aFile, aLoadFile);
-	source.Modified = FileGetTime(aFile);
-	
-	return source;//LoadSource(source, populate);
 }
 
 ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile) {
@@ -230,7 +191,8 @@ void Assembly::WriteCache() {
 	for (int i = 0; i < Packages.GetCount(); i++) {
 		ZPackage& pak = Packages[i];
 		
-		StoreToFile(pak, NativePath(pak.CachePath + "\\cache.dat"));
+		if (pak.CachePath.GetCount())
+			StoreToFile(pak, NativePath(pak.CachePath + "\\cache.dat"));
 	}
 }
 

@@ -131,9 +131,15 @@ void ZScanner::ScanSingle(const ZSourcePos& sp, bool isStatic, bool cond) {
 bool ZScanner::ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool isStatic) {
 	ZTrait trait;
 	
-	if (parser.IsChar2('@', '[')) {
-		trait.TP = &p;
-		trait.Flags = TraitLoop();
+	if (useLastTrait) {
+		trait = lastTrait;
+		useLastTrait = false;
+	}
+	else {
+		if (parser.IsChar2('@', '[')) {
+			trait.TP = &p;
+			trait.Flags = TraitLoop(trait.Traits);
+		}
 	}
 		
 	bool newStatic = false;
@@ -755,7 +761,7 @@ int ZScanner::InterpretTrait(int flags, const String& trait) {
 	return flags;
 }
 
-int ZScanner::TraitLoop() {
+int ZScanner::TraitLoop(Vector<String>& traitList) {
 	int flags = 0;
 	
 	bindName = "";
@@ -769,14 +775,15 @@ int ZScanner::TraitLoop() {
 	libLink.Clear();
 	
 	if (parser.Char2('@', '[')) {
-		
 		String trait = parser.ExpectId();
+		traitList << trait;
 		flags = InterpretTrait(flags, trait);
 		
 		while (!parser.IsChar(']')) {
 			parser.Expect(',');
 			
 			trait = parser.ExpectId();
+			traitList << trait;
 			flags = InterpretTrait(flags, trait);
 		}
 		
@@ -797,7 +804,21 @@ void ZScanner::ScanIf() {
 		if (pt == PlatformType::WINDOWS) {
 			while (!parser.IsEof() && !parser.IsChar('#')) {
 				auto p = parser.GetFullPos();
-				ScanSingle(p, false, false);
+				
+				if (parser.IsChar2('@', '[')) {
+					lastTrait.TP = &p;
+					lastTrait.Flags = TraitLoop(lastTrait.Traits);
+					useLastTrait = true;
+					
+					if (parser.EatElse()) {
+						parser.SkipBlock();
+						parser.EatEndIf();
+					}
+					else if (parser.EatEndIf()) {
+					}
+				}
+				else
+					ScanSingle(p, false, false);
 			}
 				
 			if (parser.EatElse()) {

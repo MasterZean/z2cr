@@ -19,10 +19,13 @@ bool ZTest::Run() {
 	}
 		
 	try {
-		if (StdLib)
-			Ass.AddStdlibPakcages(GetFileDirectory(GetExeFilePath()));
-		
+		String exeDir = GetFileDirectory(GetExeFilePath());
 		ZCompiler compiler(Ass);
+		
+		if (StdLib) {
+			Ass.AddStdlibPakcages(exeDir);
+		}
+		
 		compiler.SetMain("", "test.z2");
 		compiler.FoldConstants = true;
 		

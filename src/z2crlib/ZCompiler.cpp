@@ -428,6 +428,10 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.IsEvaluated = true;
 	
+	if (f.Trait.Traits.GetCount()) {
+		DUMP(f.Name);
+		DUMP(f.Trait.Traits);
+	}
 	//if (f.Name == "AddTrees")
 	//	f.Name == "AddTrees";
 	

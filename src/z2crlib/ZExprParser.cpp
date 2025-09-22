@@ -231,22 +231,39 @@ Node* ZExprParser::ParseAtom() {
 		if (Function) {
 			parser.Expect('.');
 			Point p2 = parser.GetPoint();
-			String z = parser.ReadId();
-			if (z == "class")
-				return irg.const_class(*ass.CDef, nullptr);
-			else if (z == "Name")
-				return irg.const_str(ass.AddStringConst(Function->Name));
-			else if (z == "Params") {
-				parser.Expect('.');
-				Point p3 = parser.GetPoint();
-				String pp = parser.ReadId();
-				if (pp == "Length")
-					return irg.const_i(Function->Params.GetCount());
+			if (parser.IsId()) {
+				String z = parser.ReadId();
+				if (z == "class")
+					return irg.const_class(*ass.CDef, nullptr);
+				else if (z == "Name")
+					return irg.const_str(ass.AddStringConst(Function->Name));
+				else if (z == "Params") {
+					parser.Expect('.');
+					Point p3 = parser.GetPoint();
+					String pp = parser.ReadId();
+					if (pp == "Length")
+						return irg.const_i(Function->Params.GetCount());
+					else
+						parser.Error(p3, "undefined member called '" + z + "'");
+				}
 				else
-					parser.Error(p3, "undefined member called '" + z + "'");
+					parser.Error(p2, ER::ToColor(*ass.CDef, false) + " does not have a meber called '" + z + "'");
 			}
-			else
-				parser.Error(p2, ER::ToColor(*ass.CDef, false) + " does not have a meber called '" + z + "'");
+			else if (parser.Char('@')) {
+				String z = "@" + parser.ReadId();
+				
+				if (z == "@HasTrait") {
+					parser.Expect('(');
+					String trait = parser.ReadString();
+					parser.Expect(')');
+					
+					int ti = FindIndex(Function->Trait.Traits, trait);
+					
+					return irg.const_bool(ti != -1);
+				}
+				else
+					parser.Error(p2, ER::ToColor(*ass.CDef, false) + " does not have a meber called '" + z + "'");
+			}
 		}
 		else {
 			parser.Error(opp, "'def' encountered outside of method");

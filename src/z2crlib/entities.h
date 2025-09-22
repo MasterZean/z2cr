@@ -30,7 +30,7 @@ public:
 	String ToString() const;
 };
 
-class ZTrait {
+class ZTrait: Moveable<ZTrait> {
 public:
 	enum {
 		BINDC     = 0b0001,
@@ -41,6 +41,8 @@ public:
 	
 	const ZSourcePos* TP = nullptr;
 	int Flags = 0;
+	
+	WithDeepCopy<Vector<String>> Traits;
 };
 
 class ZClassScanInfo {

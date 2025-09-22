@@ -123,10 +123,8 @@ public:
 	bool AddStdlibPakcages(const String& path);
 	
 private:
-	void AddModule(int parent, const String& path, ZPackage& pak);
 	void AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp);
 	
-	ZSource& AddModuleSource(ZPackage& aPackage, const String& aFile, bool aLoadFile);
 	ZSource& AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile);
 
 	ZClass* AddCoreType(ZNamespace& ns, const String& name, const String& backendName, bool num = false, bool integer = false, bool core = true);

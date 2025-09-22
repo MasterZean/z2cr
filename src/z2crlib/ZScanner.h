@@ -56,12 +56,15 @@ protected:
 	bool isUnsafe = false;
 	Vector<String> libLink;
 	
+	ZTrait lastTrait;
+	bool useLastTrait = false;
+	
 	PlatformType pt;
 	int namespaceCount = 0;
 	ZSourcePos namespacePos;
 	
 	int InterpretTrait(int flags, const String& trait);
-	int TraitLoop();
+	int TraitLoop(Vector<String>& traitList);
 	
 	bool ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic);
 	bool ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);
