@@ -27,8 +27,9 @@ file
 	CommandLine.h,
 	CommandLine.cpp,
 	Builder.h,
-	Builder.cpp,
+	Builder_WIN32.cpp,
 	Builder_POSIX.cpp,
+	misc readonly separator,
 	ansidemo.cpp;
 
 mainconfig

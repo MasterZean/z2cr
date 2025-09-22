@@ -38,6 +38,7 @@ file
 	ErrorReporter.cpp,
 	BuildMethod.h,
 	BuildMethod.cpp,
-	BuildMethod_legacy.cpp,
-	StopWatch.h;
+	StopWatch.h,
+	deprecated readonly separator,
+	BuildMethod_legacy.cpp;
 
