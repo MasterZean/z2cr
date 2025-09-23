@@ -45,6 +45,7 @@ public:
 	
 	Vector<String> MCUPaths;
 	Vector<ZFunction*> LLVMInput;
+	Vector<ZFunction*> Destructors;
 	
 	ZFunction* MainFunction = nullptr;
 	bool MainFound = false;
@@ -95,6 +96,9 @@ public:
 	
 	void Push(const ZSourcePos& pos, ZClass& cls);
 	void Pop();
+	
+	void SetInUse(ZNamespace& cls);
+	void SetInUse(ZClass& cls);
 	
 private:
 	Assembly& ass;

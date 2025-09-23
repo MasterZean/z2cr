@@ -348,8 +348,9 @@ void ZNamespace::SetInUse() {
 	
 	ZClass& cls = (ZClass&)*this;
 	
-	if (cls.Meth.Destructor)
+	if (cls.Meth.Destructor) {
 		cls.Meth.Destructor->SetInUse();
+	}
 }
 
 int tabAss[][14] = {

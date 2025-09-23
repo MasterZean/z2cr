@@ -34,6 +34,38 @@ bool ZCompiler::Compile(bool exc) {
 	}
 }
 
+void ZCompiler::SetInUse(ZNamespace& ns) {
+	if (ns.InUse)
+		return;
+	
+	ns.SetInUse();
+	if (ns.IsClass) {
+		ZClass& cls = (ZClass&)ns;
+	
+		if (cls.Meth.Destructor) {
+			cls.Meth.Destructor->SetInUse();
+			//if (cls.Meth.Destructor->ShouldEvaluate())
+			//	CompileFunc(*cls.Meth.Destructor);
+			
+			Destructors.Add(cls.Meth.Destructor);
+		}
+	}
+}
+
+void ZCompiler::SetInUse(ZClass& cls) {
+	if (cls.InUse)
+		return;
+	
+	cls.SetInUse();
+	if (cls.Meth.Destructor) {
+		cls.Meth.Destructor->SetInUse();
+		//if (cls.Meth.Destructor->ShouldEvaluate())
+		//	CompileFunc(*cls.Meth.Destructor);
+		
+		Destructors.Add(cls.Meth.Destructor);
+	}
+}
+
 bool ZCompiler::compile() {
 	irg.FoldConstants = FoldConstants;
 	
@@ -49,12 +81,12 @@ bool ZCompiler::compile() {
 	
 	excIndex = ass.Classes.Find("sys.exception.AssertionFailed");
 	if (excIndex != -1) {
-		ass.Classes[excIndex].SetInUse();
+		SetInUse(ass.Classes[excIndex]);
 		cuClasses.Insert(0, &ass.Classes[excIndex]);
 	}
 	excIndex = ass.Classes.Find("sys.exception.IndexOutOfBounds");
 	if (excIndex != -1) {
-		ass.Classes[excIndex].SetInUse();
+		SetInUse(ass.Classes[excIndex]);
 		cuClasses.Insert(1, &ass.Classes[excIndex]);
 	}
 	
@@ -78,7 +110,7 @@ bool ZCompiler::compile() {
 	
 	if (MainFunction) {
 		MainFunction->SetInUse();
-		MainFunction->Owner().SetInUse();
+		SetInUse(MainFunction->Owner());
 		
 		if (MainFunction->InClass) {
 			ZClass& pcls = MainFunction->Class();
@@ -96,6 +128,11 @@ bool ZCompiler::compile() {
 			WriteDeps(MainFunction->Class());
 	}
 	
+	for (int i = 0; i < Destructors.GetCount(); i++) {
+		if (Destructors[i]->ShouldEvaluate())
+			CompileFunc(*Destructors[i]);
+	}
+
 	for (int i = 0; i < cuClasses.GetCount(); i++) {
 		ZClass& cls = *cuClasses[i];
 		if (cls.TBase == ass.CSlice) {
@@ -888,7 +925,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	zcon.TargetVar = &v;
 		
 	Node* node = compileVarDec(v, parser, vp, zcon);
-	v.I.Tt.Class->SetInUse();
+	SetInUse(*v.I.Tt.Class);
 	return node;
 }
 
@@ -1067,8 +1104,7 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 	resPtr->ResolveVariables(tclass);
 	
 	PreCompileVars(tclass);
-	
-	tclass.SetInUse();
+
 	//PreCompileVars(tclass);
 	
 	tempInstances.Add(&tclass);
@@ -1081,7 +1117,7 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 		
 		DUMP("Inst add to cu " + sub.Name);
 		cuClasses.FindAdd(&sub);
-		sub.SetInUse();
+		SetInUse(sub);
 		DUMP("Inst add to cu " + tclass.Super->Name);
 		cuClasses.Add(tclass.Super);
 		
@@ -1093,6 +1129,8 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 	
 	DUMP("Inst add to cu " + tclass.Name);
 	cuClasses.FindAdd(&tclass);
+	
+	SetInUse(tclass);
 	
 	return tclass;
 }

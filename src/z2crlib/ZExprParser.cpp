@@ -158,7 +158,7 @@ Node* ZExprParser::GetOpOverload(Node* left, Node* right, int op, const Point& o
 	
 	ParamsNode* call = irg.callfunc(*f, left);
 	call->Params = std::move(params);
-	f->Owner().SetInUse();
+	comp.SetInUse(f->Owner());
 	f->SetInUse();
 	
 	if (Function)
@@ -194,7 +194,7 @@ Node* ZExprParser::GetOpOverloadStatic(Node* left, Node* right, int op, const Po
 	
 	ParamsNode* call = irg.callfunc(*f, left);
 	call->Params = std::move(params);
-	f->Owner().SetInUse();
+	comp.SetInUse(f->Owner());
 	f->SetInUse();
 	
 	if (Function)
@@ -373,7 +373,7 @@ Node* ZExprParser::ParseAtom() {
 					temp->Tt.Param = exp->Tt.Param;
 				exp = temp;
 				
-				exp->Tt.Class->SetInUse();
+				comp.SetInUse(*exp->Tt.Class);
 			}
 		}
 		else if (parser.IsChar('<') && !parser.IsChar2('<', '<') && exp->NT == NodeType::Const && exp->Tt.Class == ass.CClass && exp->IsLiteral) {
@@ -547,6 +547,9 @@ Node* ZExprParser::ParseId() {
 	}
 	else
 		s = parser.ExpectId();
+	
+	if (s == "ptr")
+		s == "ptr";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -773,7 +776,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 		if (f->IsConstructor == 0) {
 			ParamsNode* call = irg.callfunc(*f, object);
 			call->Params = std::move(params);
-			f->Owner().SetInUse();
+			comp.SetInUse(f->Owner());
 			f->SetInUse();
 			
 			node = call;
@@ -782,15 +785,15 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 			TempNode* temp = irg.mem_temp(f->Class(), f);
 			temp->Params = std::move(params);
 		
-			f->Owner().SetInUse();
+			comp.SetInUse(f->Owner());
 			f->SetInUse();
 			
 			node = temp;
 		}
 		else {
 			Node* temp = Temporary(f->Class(), params, opp);
-			temp->Tt.Class->SetInUse();
-			f->Owner().SetInUse();
+			comp.SetInUse(*temp->Tt.Class);
+			comp.SetInUse(f->Owner());
 			f->SetInUse();
 			((TempNode*)temp)->Constructor = f;
 			
@@ -832,7 +835,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 			comp.CompileVar(f, zcon);
 		}
 		
-		f.Owner().SetInUse();
+		comp.SetInUse(f.Owner());
 		f.InUse = true;
 		
 		if (Function)
@@ -896,6 +899,9 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	}
 	else
 		s = parser.ExpectId();
+	
+	if (s == "malloc")
+		s == "free";
 	
 	// case .class
 	if (s == CLS_STR ) {
