@@ -160,6 +160,7 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 	if (!classes)
 		return;
 	
+	// TODO: fix
 	for (int i = 0; i < ns.Classes.GetCount(); i++) {
 		ZClass& cls = *ns.Classes[i];
 		TranspileClassDeclMaster(cls, accessFlags);
@@ -200,6 +201,7 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, boo
 	if (acls.TBase == ass.CRaw && acls.T->TBase == ass.CRaw)
 		return false;
 	
+	// TODO: fix
 	BeginNamespace(cls.Namespace());
 	BeginClass(cls);
 

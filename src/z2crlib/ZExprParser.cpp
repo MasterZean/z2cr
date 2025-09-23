@@ -257,7 +257,7 @@ Node* ZExprParser::ParseAtom() {
 					String trait = parser.ReadString();
 					parser.Expect(')');
 					
-					int ti = FindIndex(Function->Trait.Traits, trait);
+					int ti = Function->Trait.Traits.Find(trait);///) FindIndex(Function->Trait.Traits, trait);
 					
 					return irg.const_bool(ti != -1);
 				}

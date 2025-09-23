@@ -300,8 +300,9 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 	curClass->BackName = name;
 	curClass->DefPos = dp;
 	curClass->IsClass = true;
-	curClass->LibLink = std::move(libLink);
+	//curClass->LibLink = std::move(libLink);
 	curClass->IsStatic = isStatic;
+	curClass->Trait = trait;
 	
 	if (parser.Char(':')) {
 		curClass->SuperPos = parser.GetFullPos();
@@ -724,7 +725,9 @@ void ZScanner::ScanToken() {
 	}
 }
 
-int ZScanner::InterpretTrait(int flags, const String& trait) {
+int ZScanner::InterpretTrait(int flags, const String& trait, VectorMap<String, String>& traitList) {
+	bool added = false;
+	
 	if (trait == "bindc") {
 		bindName = trait;
 		flags = flags | ZTrait::BINDC;
@@ -737,7 +740,11 @@ int ZScanner::InterpretTrait(int flags, const String& trait) {
 		parser.Expect('=');
 		if (!parser.IsString())
 			parser.Error(parser.GetPoint(), "string literal expected");
-		libLink << parser.ReadString();
+		String lname = parser.ReadString();
+		libLink << lname;
+		
+		traitList.Add(trait, lname);
+		added = true;
 	}
 	else if (trait == "unsafe")
 		isUnsafe = true;
@@ -758,10 +765,13 @@ int ZScanner::InterpretTrait(int flags, const String& trait) {
 	else if (trait == "force")
 		isForce = true;
 	
+	if (!added)
+		traitList.Add(trait, "");
+	
 	return flags;
 }
 
-int ZScanner::TraitLoop(Vector<String>& traitList) {
+int ZScanner::TraitLoop(VectorMap<String, String>& traitList) {
 	int flags = 0;
 	
 	bindName = "";
@@ -776,15 +786,14 @@ int ZScanner::TraitLoop(Vector<String>& traitList) {
 	
 	if (parser.Char2('@', '[')) {
 		String trait = parser.ExpectId();
-		traitList << trait;
-		flags = InterpretTrait(flags, trait);
+		
+		flags = InterpretTrait(flags, trait, traitList);
 		
 		while (!parser.IsChar(']')) {
 			parser.Expect(',');
 			
 			trait = parser.ExpectId();
-			traitList << trait;
-			flags = InterpretTrait(flags, trait);
+			flags = InterpretTrait(flags, trait, traitList);
 		}
 		
 		parser.Expect(']');
@@ -794,56 +803,83 @@ int ZScanner::TraitLoop(Vector<String>& traitList) {
 }
 
 void ZScanner::ScanIf() {
-	String id1 = parser.ExpectId();
+	auto p = parser.GetPoint();
+	String cname = parser.ExpectId();
+	if (cname != "Compiler")
+		parser.Error(p, "unknown identifier: " + cname);
 	parser.Expect('.');
-	String id2 = parser.ExpectId();
+	
+	p = parser.GetPoint();
+	String mname = parser.ExpectId();
+	if (mname != "Platform")
+		parser.Error(p, "unknown identifier: " + mname);
+	
 	parser.Expect('=');
 	parser.Expect('=');
-	String id3 = parser.ReadString();
-	if (id3 == "WIN32") {
-		if (pt == PlatformType::WINDOWS) {
+	
+	String val = parser.ReadString();
+	if (val == "WIN32")
+		ScanIfBranch(PlatformType::WINDOWS);
+	else if (val == "POSIX")
+		ScanIfBranch(PlatformType::POSIX);
+	else {
+		parser.SkipBlock();
+		if (parser.EatElse()) {
 			while (!parser.IsEof() && !parser.IsChar('#')) {
 				auto p = parser.GetFullPos();
-				
-				if (parser.IsChar2('@', '[')) {
-					lastTrait.TP = &p;
-					lastTrait.Flags = TraitLoop(lastTrait.Traits);
-					useLastTrait = true;
-					
-					if (parser.EatElse()) {
-						parser.SkipBlock();
-						parser.EatEndIf();
-					}
-					else if (parser.EatEndIf()) {
-					}
-				}
-				else
-					ScanSingle(p, false, false);
+				ScanSingle(p, false, false);
 			}
-				
-			if (parser.EatElse()) {
-				parser.SkipBlock();
-				parser.EatEndIf();
-			}
-			else {
-				parser.EatEndIf();
-			}
+			parser.EatEndIf();
 		}
 		else {
+			parser.EatEndIf();
+		}
+	}
+}
+
+void ZScanner::ScanIfBranch(PlatformType platfrom) {
+	if (pt == platfrom) {
+		while (!parser.IsEof() && !parser.IsChar('#'))
+			ScanIfBranchTraitAndStatement();
+			
+		if (parser.EatElse()) {
 			parser.SkipBlock();
-			if (parser.EatElse()) {
-				while (!parser.IsEof() && !parser.IsChar('#')) {
-					auto p = parser.GetFullPos();
-					ScanSingle(p, false, false);
-				}
-				parser.EatEndIf();
-			}
-			else {
-				parser.EatEndIf();
-			}
+			parser.EatEndIf();
+		}
+		else {
+			parser.EatEndIf();
 		}
 	}
 	else {
-		
+		parser.SkipBlock();
+		if (parser.EatElse()) {
+			while (!parser.IsEof() && !parser.IsChar('#'))
+				ScanIfBranchTraitAndStatement();
+			
+			parser.EatEndIf();
+		}
+		else {
+			parser.EatEndIf();
+		}
 	}
+}
+
+void ZScanner::ScanIfBranchTraitAndStatement() {
+	auto p = parser.GetFullPos();
+			
+	if (parser.IsChar2('@', '[')) {
+		lastTrait.TP = &p;
+		lastTrait.Traits.Clear();
+		lastTrait.Flags = TraitLoop(lastTrait.Traits);
+		useLastTrait = true;
+		
+		if (parser.EatElse()) {
+			parser.SkipBlock();
+			parser.EatEndIf();
+		}
+		else if (parser.EatEndIf()) {
+		}
+	}
+	else
+		ScanSingle(p, false, false);
 }

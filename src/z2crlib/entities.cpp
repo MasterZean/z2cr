@@ -320,13 +320,22 @@ void ZNamespace::SetInUse() {
 	if (InUse)
 		return;
 	
+	if (Trait.Traits.GetCount()) {
+		DUMP(Name);
+		DUMP(Trait.Traits);
+	}
+	
 	InUse = true;
 	
 	if (IsClass == false)
 		return;
 	
-	for (int k = 0; k < LibLink.GetCount(); k++)
-		ass.LibLink.FindAdd(LibLink[k]);
+	for (int k = 0; k < Trait.Traits.GetCount(); k++) {
+		if (Trait.Traits.GetKey(k) == "liblink")
+			ass.LibLink.FindAdd(Trait.Traits[k]);
+	}
+	//for (int k = 0; k < LibLink.GetCount(); k++)
+	//	ass.LibLink.FindAdd(LibLink[k]);
 	
 	for (int i = 0; i < Variables.GetCount(); i++) {
 		ZVariable& v = *Variables[i];

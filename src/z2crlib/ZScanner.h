@@ -63,8 +63,8 @@ protected:
 	int namespaceCount = 0;
 	ZSourcePos namespacePos;
 	
-	int InterpretTrait(int flags, const String& trait);
-	int TraitLoop(Vector<String>& traitList);
+	int InterpretTrait(int flags, const String& trait, VectorMap<String, String>& traitList);
+	int TraitLoop(VectorMap<String, String>& traitList);
 	
 	bool ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic);
 	bool ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);
@@ -72,6 +72,8 @@ protected:
 	void ScanDefAlias(ZFunction& over);
 	
 	void ScanIf();
+	void ScanIfBranch(PlatformType platfrom);
+	void ScanIfBranchTraitAndStatement();
 };
 
 #endif

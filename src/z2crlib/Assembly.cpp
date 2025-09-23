@@ -281,6 +281,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 		exCls.CopyPreSection(cls);
 		exCls.Scan = cls.Scan;
 		exCls.SuperPos = cls.SuperPos;
+		exCls.Trait = cls.Trait;
 		
 		return exCls;
 	}
@@ -304,6 +305,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	typeCls.SuperPos = cls.SuperPos;
 	typeCls.IsStatic = cls.IsStatic;
 	typeCls.RTTIIndex = type;
+	typeCls.Trait = cls.Trait;
 	
 	return typeCls;
 }

@@ -42,7 +42,7 @@ public:
 	const ZSourcePos* TP = nullptr;
 	int Flags = 0;
 	
-	WithDeepCopy<Vector<String>> Traits;
+	WithDeepCopy<VectorMap<String, String>> Traits;
 };
 
 class ZClassScanInfo {
@@ -93,6 +93,7 @@ public:
 	String BackName;
 	EntityType Type;
 	AccessType Access;
+	ZTrait Trait;
 	
 	bool IsEvaluated = false;
 	
@@ -153,7 +154,7 @@ public:
 	bool IsDefined = false;
 	String BackNameLegacy;
 	String LegacySufix;
-	WithDeepCopy<Vector<String>> LibLink;
+	//WithDeepCopy<Vector<String>> LibLink;
 	Index<ZNamespace*> DependsOn;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
@@ -168,7 +169,7 @@ public:
 	
 	ZNamespace(const ZNamespace& aNs): ZEntity(aNs), ass(aNs.Ass()) {
 		ProperName = aNs.ProperName;
-		LibLink = aNs.LibLink;
+		//LibLink = aNs.LibLink;
 		IsClass = aNs.IsClass;
 		
 		for (int i = 0; i < aNs.PreConstructors.GetCount(); i++)
@@ -332,7 +333,6 @@ public:
 	bool IsSetterPrivate = false;
 	bool IsGenerated = false;
 	
-	ZTrait Trait;
 	ZSourcePos ParamPos;
 	ZSourcePos BodyPos;
 	
