@@ -917,9 +917,6 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 			assign = true;
 	//}
 	
-	if (v.Name == "a")
-		v.Name == "Trees";
-	
 	if (assign) {
 		ZExprParser ep(v, Class, zcon.Func, *this, parser, irg);
 		Node* node = ep.Parse();

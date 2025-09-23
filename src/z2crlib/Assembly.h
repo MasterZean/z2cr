@@ -5,6 +5,7 @@
 #include <z2crlib/BuildMethod.h>
 
 class ZNamespace;
+class ZSourceCache;
 
 class Assembly {
 public:
@@ -66,7 +67,7 @@ public:
 	}
 	
 	ZPackage& AddPackage(const String& aName, const String& aPath);
-	bool LoadPackage(const String& aPath, bool fullBuild = false);
+	bool LoadPackage(const String& aPath, ZSourceCache* cache = nullptr);
 	ZPackage* FindPackage(const String& aName);
 	
 	ZSource* FindSource(const String& aName);
@@ -122,7 +123,7 @@ public:
 	
 	void WriteCache();
 	
-	bool AddStdlibPakcages(const String& path);
+	bool AddStdlibPakcages(const String& path, ZSourceCache* cache = nullptr);
 	
 	void SetBM(BuildMethod& abm) {
 		bm = &abm;
@@ -131,8 +132,8 @@ public:
 private:
 	BuildMethod* bm = nullptr;
 	
-	void AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp);
-	ZSource& AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile);
+	void AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp, ZSourceCache* cache = nullptr);
+	ZSource& AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile, ZSourceCache* cache = nullptr);
 	void AddBindsFile(const String& path);
 	
 	ZClass* AddCoreType(ZNamespace& ns, const String& name, const String& backendName, bool num = false, bool integer = false, bool core = true);

@@ -11,7 +11,7 @@ String anDumpNsPub = "/* @dump";
 String anDumpGlobalVarDef = "/* @dumpGlobalVarDef";
 String anStdLib = "// @usestdlib";
 
-bool ZTest::Run() {
+bool ZTest::Run(ZSourceCache* cache) {
 	bool result = true;
 	
 	if (Source) {
@@ -23,7 +23,7 @@ bool ZTest::Run() {
 		ZCompiler compiler(Ass);
 		
 		if (StdLib) {
-			Ass.AddStdlibPakcages(exeDir);
+			Ass.AddStdlibPakcages(exeDir, cache);
 		}
 		
 		compiler.SetMain("", "test.z2");
@@ -229,10 +229,10 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		cpp.CheckUse = false;
 		
 		if (wroteDecl == false) {
-			StringStream ss;
-			ZTranspiler cpp(compiler, ss);
-			cpp.CheckUse = false;
-			cpp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
+			StringStream temp;
+			ZTranspiler cpptemp(compiler, temp);
+			cpptemp.CheckUse = false;
+			cpptemp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
 		}
 		cpp.TranspileDefinitions(Ass.Namespaces[index], true);
 		
@@ -328,7 +328,7 @@ void InlineTester::AddTestCollection(const String& path) {
 				if (test->Source)
 					test->Source->LoadVirtual(con);
 				
-				if (test->Run())
+				if (test->Run(&Cache))
 					PassCount++;
 				
 				test = nullptr;

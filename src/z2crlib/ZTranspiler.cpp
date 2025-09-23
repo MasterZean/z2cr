@@ -529,9 +529,6 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (f.Name == "malloc")
-		f.Name == "Slice";
-	
 	if (f.IsSimpleGetter && f.IsGetter) {
 		WriteType(&f.Return.Tt);
 	
@@ -707,9 +704,6 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionParams(ZFunction& f) {
-	if (f.Name == "f")
-		f.Name == "f";
-	
 	cs << "(";
 	
 	//if (f.InClass && f.Class() ==

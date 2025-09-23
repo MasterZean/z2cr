@@ -43,7 +43,7 @@ ZPackage& Assembly::AddPackage(const String& aName, const String& aPath) {
 	return pak;
 }
 
-bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
+bool Assembly::LoadPackage(const String& aPath, ZSourceCache* cache) {
 	String pakPath = NativePath(NormalizePath(aPath));
 	String pakName = GetFileName(pakPath);
 	if (pakName.GetCount() == 0)
@@ -90,12 +90,12 @@ bool Assembly::LoadPackage(const String& aPath, bool fullBuild) {
 		LoadFromFile(temp, NativePath(package.CachePath + "\\cache.dat"));
 	}
 	
-	AddModule(0, package.Path, package, temp);
+	AddModule(0, package.Path, package, temp, cache);
 	
 	return true;
 }
 
-void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp) {
+void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp, ZSourceCache* cache) {
 	FindFile ff;
 	ff.Search(path + "/*");
 
@@ -106,7 +106,7 @@ void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage
 			String name = ff.GetName();
 			if (GetFileExt(name) == ".z2") {
 				String fp = ff.GetPath();
-				ZSource& zs = AddModuleSource(pak, fp, temp, true);
+				ZSource& zs = AddModuleSource(pak, fp, temp, true, cache);
 			}
 			if (bm != nullptr) {
 				if (name.EndsWith(".msc.binds") && bm->Type == BuildMethod::btMSC)
@@ -120,7 +120,7 @@ void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage
 			}
 		}
 		else if (ff.IsFolder())
-			AddModule(parent + 1, ff.GetPath(), pak, temp);
+			AddModule(parent + 1, ff.GetPath(), pak, temp, cache);
 
 		ff.Next();
 	}
@@ -129,7 +129,7 @@ void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage
 		AddBindsFile(post);
 }
 
-ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile) {
+ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile, ZSourceCache* cache) {
 	//String fileName = aFile.Mid(pak.Path.GetLength());
 	int i = temp.Sources.Find(aFile);
 	
@@ -142,7 +142,7 @@ ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage&
 			FilesChanged++;
 			//Cout() << "Adding changed file: " << aFile << "\n";
 			
-			ZSource& source = pak.AddSource(aFile, aLoadFile);
+			ZSource& source = pak.AddSource(aFile, aLoadFile, cache);
 			source.Modified = FileGetTime(aFile);
 			return source;
 		}
@@ -165,7 +165,7 @@ ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage&
 			FilesUnchanged++;
 			//Cout() << "Adding unchanged file: " << aFile << "\n";
 			
-			ZSource& source = pak.AddSource(aFile, aLoadFile);
+			ZSource& source = pak.AddSource(aFile, aLoadFile, cache);
 			source.Modified = FileGetTime(aFile);
 			return source;
 		}
@@ -175,7 +175,7 @@ ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage&
 		//ZSource& zs = AddSource(pak, filePath);
 		FilesNew++;
 		//Cout() << "Adding new file: " << aFile << "\n";
-		ZSource& source = pak.AddSource(aFile, aLoadFile);
+		ZSource& source = pak.AddSource(aFile, aLoadFile, cache);
 		source.Modified = FileGetTime(aFile);
 		return source;
 	}
@@ -468,7 +468,7 @@ bool Assembly::IsFloat(const ObjectType& type) const {
 	return type.Class == CFloat || type.Class == CDouble;
 }
 
-bool Assembly::AddStdlibPakcages(const String& path) {
+bool Assembly::AddStdlibPakcages(const String& path, ZSourceCache* cache) {
 #ifdef PLATFORM_WIN32
 		String platform = "WIN32";
 		String platformLib = "microsoft.windows";
@@ -482,17 +482,17 @@ bool Assembly::AddStdlibPakcages(const String& path) {
 
 	String stdLibPath = path + NativePath("source\\stdlib\\");
 	
-	if (!LoadPackage(stdLibPath + "bind.c")) {
+	if (!LoadPackage(stdLibPath + "bind.c", cache)) {
 		SetExitCode(BuildMethod::ErrorCode(-1));
 		return false;
 	}
 	
-	if (!LoadPackage(stdLibPath + "sys.core")) {
+	if (!LoadPackage(stdLibPath + "sys.core", cache)) {
 		SetExitCode(BuildMethod::ErrorCode(-1));
 		return false;
 	}
 	
-	if (!LoadPackage(stdLibPath + platformLib)) {
+	if (!LoadPackage(stdLibPath + platformLib, cache)) {
 		SetExitCode(BuildMethod::ErrorCode(-1));
 		return false;
 	}

@@ -22,7 +22,7 @@ public:
 	ZPackage* MainPak = nullptr;
 	ZSource* Source = nullptr;
 	
-	bool Run();
+	bool Run(ZSourceCache* cache = nullptr);
 	
 	bool RunDumpNsPub(ZCompiler& compiler);
 	
@@ -34,6 +34,7 @@ public:
 	Array<ZTest> Tests;
 	int TestCount = 0;
 	int PassCount = 0;
+	ZSourceCache Cache;
 	
 	InlineTester();
 	

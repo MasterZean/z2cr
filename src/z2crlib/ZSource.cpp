@@ -84,12 +84,26 @@ void ZSource::AddAlias(const String& alias, const String& ref) {
 }
 
 bool ZSource::LoadFile() {
+	if (cache) {
+		int ii = cache->Cache.Find(Path);
+		
+		if (ii != -1) {
+			content = cache->Cache[ii];
+			IsLoaded = true;
+			
+			return true;
+		}
+	}
+	
 	String fileContent = Upp::LoadFile(Path);
 	if (fileContent.IsVoid())
 		return false;
 	
 	content = fileContent;
 	IsLoaded = true;
+	
+	if (cache)
+		cache->Cache.FindAdd(Path, content);
 	
 	return true;
 }
@@ -101,12 +115,13 @@ bool ZSource::LoadVirtual(const String& aContent) {
 	return true;
 }
 
-ZSource& ZPackage::AddSource(const String& aPath, bool aLoadFile) {
+ZSource& ZPackage::AddSource(const String& aPath, bool aLoadFile, ZSourceCache* cache) {
 	int index = Sources.Find(aPath);
 	
 	ASSERT(index == -1);
 	
 	ZSource& source = Sources.Add(aPath);
+	source.SetCache(cache);
 	source.Path = aPath;
 	
 	ass->SourceLookup.FindAdd(aPath, &source);

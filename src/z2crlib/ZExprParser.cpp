@@ -548,9 +548,6 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "HeapBlock")
-		s == "f";
-	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
 			if (Function->Params[j].Name == s) {
@@ -731,9 +728,6 @@ Node* ZExprParser::ParseNamespace(const String& s, const ZSourcePos& opp) {
 Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourcePos& opp, bool onlyStatic, Node* object) {
 	int index = ns.Methods.Find(aName);
 	
-	if (aName == "f")
-		aName == "f";
-	
 	if (index != -1) {
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
@@ -853,9 +847,6 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 Node *ZExprParser::ParseDot(Node *exp) {
 	auto p = parser.GetFullPos();
 	String s;
-	
-	if (s == "f")
-		s == "f";
 	
 	if (parser.Char('@')) {
 		String sub = parser.ExpectId();

@@ -3,6 +3,11 @@
 
 #include <z2crlib/entities.h>
 
+class ZSourceCache {
+public:
+	VectorMap<String, String> Cache;
+};
+
 class ZSource {
 public:
 	String Path;
@@ -55,10 +60,16 @@ public:
 		s % Path % Modified;
 	}
 	
+	void SetCache(ZSourceCache* aCache) {
+		cache = aCache;
+	}
+	
 private:
 	//ZPackage& pak;
 	
 	String content;
+	
+	ZSourceCache* cache = nullptr;
 };
 
 class ZPackage {
@@ -74,7 +85,7 @@ public:
 	ZPackage(Assembly& aAss, const String& aName, const String& aPath): ass(&aAss), Name(aName), Path(aPath) {
 	}
 	
-	ZSource& AddSource(const String& aPath, bool aLoadFile);
+	ZSource& AddSource(const String& aPath, bool aLoadFile, ZSourceCache* cache = nullptr);
 	
 	/*Assembly& Ass() {
 		return ass;

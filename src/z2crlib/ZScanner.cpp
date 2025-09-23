@@ -826,8 +826,8 @@ void ZScanner::ScanIf() {
 		parser.SkipBlock();
 		if (parser.EatElse()) {
 			while (!parser.IsEof() && !parser.IsChar('#')) {
-				auto p = parser.GetFullPos();
-				ScanSingle(p, false, false);
+				auto pe = parser.GetFullPos();
+				ScanSingle(pe, false, false);
 			}
 			parser.EatEndIf();
 		}
