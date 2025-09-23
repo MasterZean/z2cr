@@ -1,0 +1,56 @@
+namespace test.dyn2;
+
+class Test {
+	const SIZE = 4;
+	
+	def @main() {
+		val arr = CArray<Int, SIZE>{};
+		
+		System.Out << "Array 0\n";
+		arr.Print();
+		System.Out << "\n";
+		
+		for (val i = 0; i < arr.Length; i++)
+			arr[i] = 3;
+				
+		System.Out << "Array A\n";
+		arr.Print();
+		System.Out << "\n";
+		
+		arr.Fill(56);
+		
+		System.Out << "Array B\n";
+		arr.Print();
+		System.Out << "\n";
+		
+		arr.Insert(7000, 2);
+		System.Out << "Array C\n";
+		arr.Print();
+		System.Out << "\n";
+		
+		arr.DeleteIndex(1);
+		System.Out << "Array D\n";
+		arr.Print();
+		System.Out << "\n";
+		
+		System.Out << 56 << " was deleted " << arr.DeleteAll(56) << " time(s).\n";
+		
+		System.Out << "Array E\n";
+		arr.Print();
+		System.Out << "\n";
+		
+		System.Out << -56 << " was deleted " << arr.DeleteAll(-56) << " time(s).\n";
+		System.Out << 0 << " was deleted " << arr.DeleteAll(0) << " time(s).\n";
+	}
+}
+
+class Foo {
+	private this() {
+	}
+	
+	this(a: Int) {
+	}
+}
+
+class Bar {
+}

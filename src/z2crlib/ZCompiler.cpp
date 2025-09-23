@@ -582,7 +582,7 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZBlockContext& 
 		parser.Id("continue");
 		if (!con.InLoop)
 			parser.Error(sp.P, "'" + ER::Blue + "continue" + ER::White + "' found outside of loop");
-		return irg.loopControl(false);
+		return irg.loopControl(false); 
 	}
 	else if (parser.Id("throw")) {
 		ZExprParser ep(f, Class, &f, *this, parser, irg);

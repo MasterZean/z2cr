@@ -1,0 +1,5 @@
+namespace org.z2legacy.ut.hellofunc;
+
+def @main() {
+	System.Out << "Hello World!\n";
+}

@@ -1,0 +1,5 @@
+namespace sys.core.lang;
+
+class System {
+	static val Out = 0;
+}

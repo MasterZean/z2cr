@@ -1,0 +1,57 @@
+namespace test.arrcall;
+
+class Test{
+	def @main() {
+		val v1 = CArray<Int, 30>{14};
+		v1.Print();
+		System.Out << "\n";
+		
+		v1.Fill(20);
+		
+		f(v1);
+		f(v1.Slice());
+		
+		v1.Fill(50, 0, v1.Length / 2 - 1);
+		
+		v1.Print();
+		System.Out << "\n";
+		
+		// g(v1) does not compile this release
+		val v2 = v1.Slice();
+		g(v2);
+		
+		v1.DeleteAll(20);
+		f(v1);
+		g(v2);
+		
+		v1.Delete(50);
+		v1.Delete(50);
+		v1.Delete(50);
+		
+		v1.Print();
+		System.Out << "\n";
+		
+		val v3 = v1;
+		v3.Print();
+		System.Out << "\n";
+		v3 = v1;
+		
+		val v4 = CArray<Int, 100>{100};
+		v3.Emplace(v4);
+		v3.Print();
+		System.Out << "\n";
+	}
+	
+	def f(v: CArray<Int>) {
+		v.Print();
+		System.Out << "\n";
+	}
+	
+	def f(v: Slice<Int>) {
+		System.Out << "20 found at index: " << v.FindIndex(20) << "\n";
+	}
+	
+	def g(v: Slice<Int>) {
+		System.Out << "20 found at index: " << v.FindIndex(20) << "\n";
+	}
+}

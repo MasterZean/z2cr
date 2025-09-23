@@ -1,0 +1,144 @@
+/*******************************************************************************************
+*
+*   raylib example - particles blending
+*
+*   Example originally created with raylib 1.7, last time updated with raylib 3.5
+*
+*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
+*   BSD-like license that allows static linking with closed source software
+*
+*   Copyright (c) 2017-2024 Ramon Santamaria (@raysan5)
+*
+********************************************************************************************/
+
+namespace org.z2legacy.ut.raytest.particletrail;
+
+using ray = raylib.Raylib;
+using Color = raylib.Color;
+using Vec2 = raylib.Vector2f;
+using raylib.Texture2D;
+using raylib.BlendMode;
+using Key = raylib.KeyboardKey;
+using raylib.Rectangle;
+
+// Particle structure with basic data
+class Particle {
+    val position: Vec2;
+    val color: Color;
+    val alpha: Float;
+    val size: Float;
+    val rotation: Float;
+    val active: Bool;        // NOTE: Use it to activate/deactive particle
+}
+
+//------------------------------------------------------------------------------------
+// Program main entry point
+//------------------------------------------------------------------------------------
+def @main()
+{
+    // Initialization
+    //--------------------------------------------------------------------------------------
+    const screenWidth = 800;
+    const screenHeight = 450;
+
+    ray.InitWindow(screenWidth, screenHeight, Ptr{"raylib [textures] example - particles blending"});
+
+    // Particles pool, reuse them!
+    val mouseTail: CArray<Particle, 200>;
+
+    // Initialize particles
+    for (val i = 0; i < mouseTail.Length; i++)
+    {
+        mouseTail[i].position = Vec2{ 0, 0 };
+        mouseTail[i].color = Color{ ray.GetRandomValue(0, 255), ray.GetRandomValue(0, 255), ray.GetRandomValue(0, 255), 255 };
+        mouseTail[i].alpha = 1.0f;
+        mouseTail[i].size = Float{ray.GetRandomValue(1, 30)/20.0f};
+        mouseTail[i].rotation = Float{ray.GetRandomValue(0, 360)};
+        mouseTail[i].active = false;
+    }
+
+    val gravity = 3.0f;
+
+    val smoke = ray.LoadTexture(Ptr{"spark_flame.png"});
+
+    val blending = BlendMode.BLEND_ALPHA;
+
+    ray.SetTargetFPS(60);
+    //--------------------------------------------------------------------------------------
+
+    // Main game loop
+    while (!ray.WindowShouldClose())    // Detect window close button or ESC key
+    {
+        // Update
+        //----------------------------------------------------------------------------------
+
+        // Activate one particle every frame and Update active particles
+        // NOTE: Particles initial position should be mouse position when activated
+        // NOTE: Particles fall down with gravity and rotation... and disappear after 2 seconds (alpha = 0)
+        // NOTE: When a particle disappears, active = false and it can be reused.
+        for (val i = 0; i < mouseTail.Length; i++)
+        {
+            if (!mouseTail[i].active)
+            {
+                mouseTail[i].active = true;
+                mouseTail[i].alpha = 1.0f;
+                mouseTail[i].position = ray.GetMousePosition();
+                break;
+            }
+        }
+
+        for (val i = 0; i < mouseTail.Length; i++)
+        {
+            if (mouseTail[i].active)
+            {
+                mouseTail[i].position.y = mouseTail[i].position.y + gravity/2;
+                mouseTail[i].alpha = mouseTail[i].alpha - 0.005f;
+
+                if (mouseTail[i].alpha <= 0.0f) mouseTail[i].active = false;
+
+                mouseTail[i].rotation = mouseTail[i].rotation + 2.0f;
+            }
+        }
+
+        if (ray.IsKeyPressed(Key.KEY_SPACE))
+        {
+            if (blending == BlendMode.BLEND_ALPHA) blending = BlendMode.BLEND_ADDITIVE;
+            else blending = BlendMode.BLEND_ALPHA;
+        }
+        //----------------------------------------------------------------------------------
+
+        // Draw
+        //----------------------------------------------------------------------------------
+        ray.BeginDrawing();
+
+            ray.ClearBackground(Color{80, 80, 80, 255});
+
+            ray.BeginBlendMode(blending);
+
+                // Draw active particles
+                for (val i = 0; i < mouseTail.Length; i++)
+                {
+                    if (mouseTail[i].active) ray.DrawTexturePro(smoke, Rectangle{ 0.0f, 0.0f, Float{smoke.width}, Float{smoke.height}},
+                                                           Rectangle{ mouseTail[i].position.x, mouseTail[i].position.y, smoke.width*mouseTail[i].size, smoke.height*mouseTail[i].size },
+                                                           Vec2{ Float{smoke.width*mouseTail[i].size/2.0f}, Float{smoke.height*mouseTail[i].size/2.0f} }, mouseTail[i].rotation,
+                                                           ray.Fade(mouseTail[i].color, mouseTail[i].alpha));
+                }
+
+            ray.EndBlendMode();
+
+            ray.DrawText(Ptr{"PRESS SPACE to CHANGE BLENDING MODE"}, 180, 20, 20, Color{0, 0, 0, 255});
+
+            if (blending == BlendMode.BLEND_ALPHA) ray.DrawText(Ptr{"ALPHA BLENDING"}, 290, screenHeight - 40, 20, Color{0, 0, 0, 255});
+            else ray.DrawText(Ptr{"ADDITIVE BLENDING"}, 280, screenHeight - 40, 20, Color{ 245, 245, 245, 255 });
+
+        ray.EndDrawing();
+        //----------------------------------------------------------------------------------
+    }
+
+    // De-Initialization
+    //--------------------------------------------------------------------------------------
+    ray.UnloadTexture(smoke);
+
+    ray.CloseWindow();        // Close window and OpenGL context
+    //--------------------------------------------------------------------------------------
+}
