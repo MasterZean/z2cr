@@ -214,6 +214,7 @@ CONSOLE_APP_MAIN {
 	StopWatch tm;
 	
 	Assembly ass;
+	ass.SetBM(bm);
 	
 	try {
 		ZCompiler compiler(ass);

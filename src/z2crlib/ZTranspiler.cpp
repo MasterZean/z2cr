@@ -393,8 +393,17 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 			}
 			
 			NL();
-			if (bindc)
+			if (bindc) {
+				if (f.Trait.Flags & ZTrait::BINDC) {
+					int ii = ass.Binds.Find(f.Name);
+					if (ii != -1) {
+						cs << ass.Binds[ii] << "\n";
+						f.WroteDeclaration = true;
+						continue;
+					}
+				}
 				cs << "extern \"C\" ";
+			}
 			else if (f.Trait.Flags & ZTrait::BINDCPP)
 				cs << "extern ";
 			if (f.Trait.Flags & ZTrait::DLLIMPORT)
@@ -520,7 +529,7 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
-	if (f.Name == "Slice")
+	if (f.Name == "malloc")
 		f.Name == "Slice";
 	
 	if (f.IsSimpleGetter && f.IsGetter) {

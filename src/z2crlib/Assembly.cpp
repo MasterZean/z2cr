@@ -99,6 +99,8 @@ void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage
 	FindFile ff;
 	ff.Search(path + "/*");
 
+	String post;
+
 	while (ff) {
 		if (ff.IsFile()) {
 			String name = ff.GetName();
@@ -106,12 +108,25 @@ void Assembly::AddModule(int parent, const String& path, ZPackage& pak, ZPackage
 				String fp = ff.GetPath();
 				ZSource& zs = AddModuleSource(pak, fp, temp, true);
 			}
+			if (bm != nullptr) {
+				if (name.EndsWith(".msc.binds") && bm->Type == BuildMethod::btMSC)
+					AddBindsFile(ff.GetPath());
+				else if (name.EndsWith(".gcc.binds") && bm->Type != BuildMethod::btMSC)
+					AddBindsFile(ff.GetPath());
+				else if (name.EndsWith("." + bm->Name + ".binds"))
+					post = ff.GetPath();
+				else if (!name.EndsWith(".msc.binds") && !name.EndsWith(".gcc.binds") && (name.EndsWith(".binds") && GetFileExt(GetFileExt(name)) == ""))
+					AddBindsFile(ff.GetPath());
+			}
 		}
 		else if (ff.IsFolder())
 			AddModule(parent + 1, ff.GetPath(), pak, temp);
 
 		ff.Next();
 	}
+	
+	if (post.GetCount())
+		AddBindsFile(post);
 }
 
 ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile) {
@@ -164,6 +179,34 @@ ZSource& Assembly::AddModuleSource(ZPackage& pak, const String& aFile, ZPackage&
 		source.Modified = FileGetTime(aFile);
 		return source;
 	}
+}
+
+void Assembly::AddBindsFile(const String& path) {
+	FileIn f(path);
+	
+	String key;
+	String con;
+	
+	while (!f.IsEof()) {
+		String line = f.GetLine();
+		
+		if (line.EndsWith(":")) {
+			if (key.GetCount() && con.GetCount())
+				Binds.FindAdd(key, con);
+			
+			key = line.Mid(0, line.GetCount() - 1);
+			con = "";
+		}
+		else {
+			if (con.GetCount())
+				con << "\n";
+			
+			con << line;
+		}
+	}
+	
+	if (key.GetCount() && con.GetCount())
+		Binds.FindAdd(key, con);
 }
 
 ZPackage* Assembly::FindPackage(const String& aName) {
@@ -372,7 +415,7 @@ String Assembly::TypeToColor(ObjectType& type) {
 		s << '<';
 		s << TypeToColor(type.Class->T->Tt);
 		
-		if (type.Class->TBase == CRaw && type.Param != -1)
+		if (type.Class->TBase == CRaw && (type.Param != -1 && type.Param != 0))
 			s << ", " << type.Param;
 		
 		s << '>';

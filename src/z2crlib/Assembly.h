@@ -2,6 +2,7 @@
 #define _z2cr_Assembly_h_
 
 #include <z2crlib/entities.h>
+#include <z2crlib/BuildMethod.h>
 
 class ZNamespace;
 
@@ -13,6 +14,7 @@ public:
 	Index<String> StringConsts;
 	ZNamespaceItem NsLookup;
 	Index<String> LibLink;
+	VectorMap<String, String> Binds;
 	
 	ZClass* CClass = nullptr;
 	ZClass* CDef = nullptr;
@@ -122,11 +124,17 @@ public:
 	
 	bool AddStdlibPakcages(const String& path);
 	
-private:
-	void AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp);
+	void SetBM(BuildMethod& abm) {
+		bm = &abm;
+	}
 	
+private:
+	BuildMethod* bm = nullptr;
+	
+	void AddModule(int parent, const String& path, ZPackage& pak, ZPackage& temp);
 	ZSource& AddModuleSource(ZPackage& pak, const String& aFile, ZPackage& temp, bool aLoadFile);
-
+	void AddBindsFile(const String& path);
+	
 	ZClass* AddCoreType(ZNamespace& ns, const String& name, const String& backendName, bool num = false, bool integer = false, bool core = true);
 };
 
