@@ -548,7 +548,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "f")
+	if (s == "HeapBlock")
 		s == "f";
 	
 	if (Function) {
@@ -1244,14 +1244,14 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 		ZFunction* fc = nullptr;
 		
 		if (!cls.CoreSimple/* && cls.T && cls.T->CoreSimple == false*/) {
-			fc = FindConstructor(cls, params, pos);
+			fc = FindConstructor(cls, params, pos, true);
 			if (f == nullptr) {
 				if (cls.TBase == ass.CRaw)
-					fc = FindConstructor(*cls.T, params, pos);
+					fc = FindConstructor(*cls.T, params, pos, true);
 				
 				if (fc == nullptr) {
 					if (cls.T && cls.T->TBase == ass.CRaw)
-						fc = FindConstructor(*cls.T->T, params, pos);
+						fc = FindConstructor(*cls.T->T, params, pos, true);
 				}
 			}
 		}
@@ -1276,7 +1276,7 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	return nullptr;
 }
 
-ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos& pos) {
+ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos& pos, bool check) {
 	int index = cls.Methods.Find(THIS_STR);
 			
 	if (index != -1) {
@@ -1284,7 +1284,8 @@ ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, cons
 		ZFunction* f = GetBase(&cls.Methods[index], nullptr, params, 1, false, ambig);
 		
 		if (!f) {
-			//ER::CallError(parser.Source(), pos, ass, cls, &cls.Methods[index], params, 0, 1);
+			if (check)
+				ER::CallError(parser.Source(), pos.P, ass, cls, &cls.Methods[index], params, 0, 1);
 			return nullptr;
 		}
 		
