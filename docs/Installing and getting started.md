@@ -26,7 +26,7 @@ You can copy this folder anywhere you wish on your Windows system, but the rest 
 You should end up with the following folder:
 
 
-![screenshot](docs/img/doneinstallwin.png)
+![screenshot](img/doneinstallwin.png)
 
 
 ### Build environment integration and detection
@@ -43,7 +43,7 @@ Auto-detection is quite an involved process and can be difficult to account for 
 
 The Z2 package comes with ZIDE (zide.exe), a small IDE that supports Z2. ZIDE, upon first tun, will run auto-detection and will show a UI progress indicator:
 
-![screenshot](docs/img/autodetectwin.png)
+![screenshot](img/autodetectwin.png)
 
 The Z2 Compiler, Z2C (z2c.exe) will also auto-detect your build environment, but only when actually attempting to compile something for the first time.
 
@@ -51,7 +51,7 @@ The results of the autodetection are cached in the buildMethods.xml file (` c:\z
 
 With auto-detection having run once and presuming no errors, you will be greeted by ZIDE having opened the samples folder and the "HelloWorld" sample:
 
-![screenshot](docs/img/zidewin.png)
+![screenshot](img/zidewin.png)
 
 Now you can press F5 and it will build your sample and all its dependencies and then run the program!
 
