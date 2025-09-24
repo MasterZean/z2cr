@@ -193,19 +193,36 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, boo
 	cls.IsDefined = true;
 	
 	if (checkDepends)
-		for (int j = 0; j < cls.DependsOn.GetCount(); j++)
-			TranspileClassDeclMaster(*cls.DependsOn[j], accessFlags);
+		for (int j = 0; j < acls.DependsOn.GetCount(); j++)
+			TranspileClassDeclMaster(*acls.DependsOn[j], accessFlags);
 	
 	if (acls.TBase == ass.CSlice && acls.T->TBase == ass.CRaw)
 		return false;
 	if (acls.TBase == ass.CRaw && acls.T->TBase == ass.CRaw)
 		return false;
 	
+	if (acls.CABICompensation) {
+		cs << "struct _";
+		WPClsName(acls);
+		cs << " {";
+		EL();
+		
+		indent++;
+		TranspileCABIStruct(acls);
+		indent--;
+		
+		NL();
+		cs << "};";
+		EL();
+		
+		EL();
+	}
+	
 	// TODO: fix
-	BeginNamespace(cls.Namespace());
-	BeginClass(cls);
+	BeginNamespace(acls.Namespace());
+	BeginClass(acls);
 
-	if (TranspileClassDecl(cls, -1) == 0) {
+	if (TranspileClassDecl(acls, -1) == 0) {
 		// empty user classes still need declarations
 		if (acls.InUse && !acls.CoreSimple && &acls != ass.CClass && &acls != ass.CRaw && !(acls.FromTemplate/* && acls.TBase != ass.CRaw*/) && !acls.IsStatic)
 			NewMember();
@@ -239,6 +256,20 @@ int ZTranspiler::TranspileClassDecl(ZNamespace& ns, int accessFlags) {
 	return vc + fc;
 }
 
+int ZTranspiler::TranspileCABIStruct(ZClass& cls) {
+	//if (CheckUse && !ns.InUse)
+	//	return 0;
+	
+	if (cls.Variables.GetCount() == 0)
+		return 0;
+	
+	int vc = TranspileMemberDeclVar(cls, 0b1);
+	vc += TranspileMemberDeclVar(cls, 0b10);
+	vc += TranspileMemberDeclVar(cls, 0b100);
+	
+	return vc;
+}
+
 void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 	if (tt->Class == ass.CPtr) {
 		WriteType(tt->Next);
@@ -255,6 +286,15 @@ void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 		else
 			WStorageName(*tt->Class);
 	}
+}
+
+void ZTranspiler::WriteReturnType(ObjectType *tt, bool useCABI) {
+	if (useCABI && tt->Class->CABICompensation) {
+		cs << "_";
+		WPClsName(*tt->Class);
+	}
+	else
+		WriteType(tt, false);
 }
 
 void ZTranspiler::WriteTypePost(ObjectType* tt, bool array) {
@@ -621,7 +661,7 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	//else if (f.InClass && f.Class().TBase == ass.CRaw)
 	//	cs << "static ";
 	
-	WriteType(&f.Return.Tt);
+	WriteReturnType(&f.Return.Tt, f.Trait.Flags & ZTrait::BINDC);
 	
 	cs << " " << f.BackName;
 	WriteFunctionParams(f);
@@ -684,7 +724,7 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	}
 	
 	// ret
-	WriteType(&f.Return.Tt);
+	WriteReturnType(&f.Return.Tt, f.Trait.Flags & ZTrait::BINDC);
 	cs << " ";
 	
 	// ns

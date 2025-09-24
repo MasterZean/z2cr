@@ -224,6 +224,15 @@ void ZFunction::SetInUse() {
 	
 	for (int i = 0; i < Params.GetCount(); i++)
 		Params[i].I.Tt.Class->SetInUse();
+	
+	if (Return.Tt.Class && Return.Tt.Class != Ass().CVoid) {
+		Return.Tt.Class->SetInUse();
+		
+		if (Trait.Flags & ZTrait::BINDC && !Return.Tt.Class->CoreSimple) {
+			DUMP(Return.Tt.Class->Name);
+			Return.Tt.Class->CABICompensation = true;
+		}
+	}
 }
 
 ZFunction& ZNamespace::PrepareConstructor(const String& aName) {

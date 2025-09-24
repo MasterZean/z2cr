@@ -126,6 +126,22 @@ public:
 				
 				indent++;
 				
+				if (inClass->CABICompensation) {
+					cs << "\tpublic:" << "\n";
+					cs << "\t\t";
+					WPClsName(*inClass);
+					cs << "(_";
+					WPClsName(*inClass);
+					cs << " v";
+					cs << ") {\n";
+					
+					cs << "\t\t\tmemcpy(this, &v, sizeof(_";
+					WPClsName(*inClass);
+					cs << "));\n";
+					
+					cs << "\t\t}\n";
+				}
+				
 				// todo: fix
 				if (inClass == ass.CString) {
 					cs << "\tpublic:" << "\n";
@@ -211,6 +227,7 @@ public:
 	int  TranspileClassDecl(ZNamespace& ns, int accessFlags = 0);
 	int  TranspileMemberDeclVar(ZNamespace& ns, int accessFlags);
 	int  TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool doBinds, int vc);
+	int  TranspileCABIStruct(ZClass& cls);
 
 	void TranspileDefinitions(ZNamespace& ns, bool vars = true, bool fDecl = true, bool wrap = true);
 	void TranspileValDefintons(ZNamespace& ns, bool trail = true);
@@ -218,6 +235,7 @@ public:
 	virtual void WalkNode(Node* node);
 		
 	void WriteType(ObjectType* tt, bool useauto = false);
+	void WriteReturnType(ObjectType* tt, bool useCABI);
 	void WriteTypePost(ObjectType *tt, bool array = false);
 	
 private:

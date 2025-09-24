@@ -240,6 +240,8 @@ public:
 	bool IsTemplate = false;
 	bool FromTemplate = false;
 	
+	bool CABICompensation = false;
+	
 	ZClass(ZNamespace& aNmspace): ZNamespace(aNmspace.Ass(), aNmspace) {
 		Type = EntityType::Class;
 	}
