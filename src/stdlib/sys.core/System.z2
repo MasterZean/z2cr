@@ -1,5 +1,35 @@
 namespace sys.core.lang;
 
-class System {
-	static val Out = 0;
+static class System {
+	val Out = 0;
+	
+	@[intrinsic]
+	def Assert(cond: Bool) {
+		if (cond == false)
+			throw sys.exception.AssertionFailed{};
+	}
+	
+	@[intrinsic]
+	def DebugAssert(cond: Bool) {
+	}
+	
+	@[intrinsic, syscall]
+	def MemCopy(destination: Ptr<Byte>, source: Ptr<Byte>, bytes: PtrSize) {
+		bind.c.string.memcpy(destination, source, bytes);
+	}
+	
+	@[intrinsic, syscall]
+	def MemMove(destination: Ptr<Byte>, source: Ptr<Byte>, bytes: PtrSize) {
+		bind.c.string.memmove(destination, source, bytes);
+	}
+	
+	@[intrinsic, syscall]
+	def Malloc(size: PtrSize) : Ptr<Byte> {
+		return Ptr<Byte>{bind.c.string.malloc(size)};
+	}
+	
+	@[intrinsic, syscall]
+	def Mfree(ptr: Ptr<Byte>) {
+		bind.c.string.free(ptr);
+	}
 }

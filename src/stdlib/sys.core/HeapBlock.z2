@@ -1,0 +1,29 @@
+namespace sys.core;
+
+class HeapBlock<T: Class>: Slice<T> {
+	private this() {
+	}
+	
+	this(aSize: PtrSize, value: T) {
+		length = aSize;
+		
+		if (length > 0) {
+			ptr = Ptr<T>{System.Malloc(aSize * T.@size)};
+			if (ptr == null)
+				length = 0;
+		}
+		
+		Construct(value);
+	}
+	
+	~this() {
+		if (ptr != null) {
+			System.Mfree(Ptr<Byte>{ptr});
+			ptr = null;
+		}
+	}
+	
+	func Slice(): Slice<T> {
+		return ::Slice<T>{ptr, length};
+	}
+}

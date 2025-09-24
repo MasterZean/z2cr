@@ -37,8 +37,13 @@ class Slice<T: Class> {
 			this[i].!{};
 	}
 	
+	def Construct(value: T) {
+		for (val i = 0; i < length; i++)
+			this[i].!{value};
+	}
+	
 	def Insert(move? item: T, pos: PtrSize) {
-		Intrinsic.Assert(pos < length);
+		System.Assert(pos < length);
 		
 		this[length - 1].~{};
 		
@@ -47,13 +52,13 @@ class Slice<T: Class> {
 			    this[i] = move(this[i - 1]);
 		}
 		else
-			Intrinsic.MemMove(Ptr<Byte>{ptr + pos + 1}, Ptr<Byte>{ptr + pos}, (length - pos - 1) * T.@size);
+			System.MemMove(Ptr<Byte>{ptr + pos + 1}, Ptr<Byte>{ptr + pos}, (length - pos - 1) * T.@size);
 			
 		this[pos].!{move?(item)};
 	}
 	
 	def DeleteIndex(pos: PtrSize): PtrSize {
-		Intrinsic.Assert(pos < length);
+		System.Assert(pos < length);
 		
 		if (T.class.HasTrait("nostdlibmove")) {
 			for (val i = pos; i < length - 1; i++)
@@ -61,7 +66,7 @@ class Slice<T: Class> {
 		}
 		else {
 			this[pos].~{};
-			Intrinsic.MemMove(Ptr<Byte>{ptr + pos}, Ptr<Byte>{ptr + pos + 1}, (length - pos - 1) * T.@size);
+			System.MemMove(Ptr<Byte>{ptr + pos}, Ptr<Byte>{ptr + pos + 1}, (length - pos - 1) * T.@size);
 		}
 		
 		this[length - 1].!{};
@@ -113,6 +118,14 @@ class Slice<T: Class> {
 				return i;
 		
 		return PtrSize{-1};
+	}
+	
+	func Print() {
+		for (val i = 0p; i < length; i++) {
+			System.Out << this[i];
+			if (i < length - 1)
+				System.Out << ' ';
+		}
 	}
 	
 #endregion

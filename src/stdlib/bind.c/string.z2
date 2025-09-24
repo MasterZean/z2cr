@@ -6,5 +6,6 @@ static class string {
 	@[bindc] def strcpy(destination: Ptr<Byte>, source: Ptr<Byte>): Ptr<Byte>;
 	@[bindc] def strncpy(destination: Ptr<Byte>, source: Ptr<Byte>, num: PtrSize): Ptr<Byte>;
 	@[bindc] def strlen(str: Ptr<Byte>): PtrSize;
-	@[bindc, intrinsic] def malloc(size: PtrSize) : Ptr<Byte>;
+	@[bindc] def malloc(size: PtrSize): Ptr<Byte>;
+	@[bindc] def free(ptr: Ptr<Byte>);
 }
