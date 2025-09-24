@@ -1,18 +1,37 @@
 # Language overview
 
-Z2 is a statically-typed high-level OOP with functional elements general-purpose performance-centric natively-compiled systems-programming language.
+Z2 is a statically-typed high-level OOP general-purpose performance-centric natively-compiled systems-programming language. It also has some functional programing features.
 
-It is a multi-paradigm language capable of multiple styles, but it designed to be particularly good at a programming style which uses heavy ownership, the "[everything belongs somewhere](everything%20belongs%20somewhere)" rule, RAII, values and references, copy and move semantics in order to offer automatic deterministic of most resources, not just memory.
+It is a multi-paradigm language capable of multiple styles, but it is designed to be particularly good at a programming style which uses heavy ownership, the "[everything belongs somewhere](everything%20belongs%20somewhere)" rule, RAII, values and references, copy and move semantics in order to offer automatic deterministic of most resources, not just memory.
 
 It is a language in the C++ family and can be considered an intentionally smaller, simple to learn and master version of it, eliminating many of the more obscure elements and designed to be highly practical, something you can pick up and use.
 
 It has a relatively small but powerful and practical standard library, made up of several classes which have the right balance between safety and performance. One can write bindings and make use of any C library, even limited interoperability with C++ is supported.
 
-It has a compiler that is also a build tool that builds your packages and employs several techniques in order to provide [fast compilation times](fast%20compilation%20times), something that is a real focus.
+It has a compiler that is also a build tool that builds your packages and employs several techniques in order to provide [fast compilation times](fast%20compilation%20times) for incremental builds. Compilation speed is an area of focus.
 
-It offers a cross-platform editor, called ZIDE, which can be considered a minimal goldens standard, offering a few valuable features out of the box. ZIDE predates LSP and before that, choosing to offer language support to and IDE meant picking one specific one and writing integration plugins for your language. Thus it was decided it is easier not to pick favourites and create a new editor that "just works" for people to get started. But Z2 is still  a command line compiler tool and one can easily invoke it form anything from a `makefile` to your favourite editor/IDE.
+It offers a cross-platform editor, called ZIDE, which can be considered a minimal goldens standard, offering a few valuable features out of the box. ZIDE predates LSP. In that era, choosing to offer language support to an IDE meant picking a specific one and writing integration plugins for your language. Thus it was decided it is easier not to pick favorites and create a new editor that "just works" for people to get started. But Z2 is still a command line compiler tool and one can easily invoke it form anything from a `makefile` to your favorite editor/IDE.
 
-## Assortment of features
+# Key language features
+- high level language with an OOP based object model
+- high performance, focusing on zero cost abstractions. When comparing to C++, as a design goal, Z2 must on average be as fast or faster 
+- focused on a programming style with ownership, RAII, everything belong somewhere rule, value and references, copy and move in order to provide resource management
+- it is a language in the C++ family and can be considered a smaller easy to learn and master subset of it 
+- focuses on not being its own build environment and custom code generation, but perfectly integrating into existing development environments and its tool
+- currently integrated with MSVC, GCC and CLANG under Windows and GCC and CLANG under Linux
+- targets optionally C++ ABI and has full interoperability with C and partial interoperability with C++
+- had a standard library that offers numeric types, math, containers, IO, filesystem access, marshaling among the main features
+- has a modern package/module system which works well with fast incremental builds
+
+## Getting started
+
+Getting started with Z2 is easy, all you need is to grab one of the [pre-compiled releases](https://github.com/MasterZean/z2cr/releases) from [GitHub](https://github.com/MasterZean/z2cr).
+
+You can check out [installing and getting started](docs/Installing%20and%20getting%20started.md) guide, which is step one in a yet to be written  language tour styled documentation.
+
+Alternatively, you can build from source. Building from source isn't particularly difficult, but you need to install and configure a few dependencies, thus it is harder to get started with, making [compiling from sources]() a more advanced topic that needs to have its own section in the documentation.
+
+## Miscellaneous feature notes
 
 - it is a statically typed language that compiles to dependency free native platform binaries
 - it is closely related to C++, but also draws inspiration from C#, Delphi and Ruby
@@ -26,13 +45,5 @@ It offers a cross-platform editor, called ZIDE, which can be considered a minima
 - the compiler has a single front-end that compiles source code into an intermediate form and an open set of backend compilers that take that intermediate form and generate native platform binaries
 - it uses a modern module system for building, where projects are divided into multiple packages with dependency management, each package is compiled only once and is designed to minimize backend compilations (these are slow) at the expense of more frontend compilations (these are fast)
 - the main backend compiler uses transpilation to C++/C. This is the most practical and general way to get integrated into and existing platform and leverage to power of both new and old compilers, like Clang, GCC and MSVC, which are all supported out of the box.
-
-## Getting started
-
-Getting started with Z2 is easy, all you need is to grab one of the [pre-compiled releases](https://github.com/MasterZean/z2cr/releases) from [GitHub](https://github.com/MasterZean/z2cr).
-
-You can check out [installing and getting started](docs/Installing%20and%20getting%20started.md) guide, which is step one in a series language tour.
-
-Alternatively, you can build from source. Building from source isn't particularly difficult, but you need to install and configure a few dependencies, thus it is harder to get started with, making [compiling from sources]() a more advanced topic that needs to have its own section in the documentation.
 
 
