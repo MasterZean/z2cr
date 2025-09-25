@@ -23,9 +23,9 @@ IF %ERRORLEVEL% NEQ 0 (
   EXIT /B %errno%
 )
 
-copy /b LICENSE %BUILD_PATH%
-copy /b README.md %BUILD_PATH%
-copy /b detect.bat %BUILD_PATH%
+xcopy /k /h /y /q LICENSE %BUILD_PATH%\
+xcopy /k /h /y /q README.md %BUILD_PATH%\
+xcopy /k /h /y /q detect.bat %BUILD_PATH%\
 
 if exist %BUILD_PATH%\codegen\ rmdir /s /q %BUILD_PATH%\codegen
 xcopy /e /k /h /i codegen %BUILD_PATH%\codegen
