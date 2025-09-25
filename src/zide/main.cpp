@@ -88,7 +88,7 @@ GUI_APP_MAIN {
 	zide.PopulateMehods();
 
 	if (!LoadFromFile(zide)) {
-		String pakPath = NativePath(zide.CurFolder + "source/ut/org.z2legacy.ut");
+		String pakPath = NativePath(zide.CurFolder + "source/samples/org.z2legacy.ut");
 		zide.LastPackage = pakPath;
 		zide.RecentPackages.Add(zide.LastPackage);
 		

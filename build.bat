@@ -27,17 +27,17 @@ copy /b LICENSE %BUILD_PATH%
 copy /b README.md %BUILD_PATH%
 copy /b detect.bat %BUILD_PATH%
 
-rmdir /s /q %BUILD_PATH%\codegen
+if exist %BUILD_PATH%\codegen\ rmdir /s /q %BUILD_PATH%\codegen
 xcopy /e /k /h /i codegen %BUILD_PATH%\codegen
 
-rmdir /s /q %BUILD_PATH%\licenses
+if exist %BUILD_PATH%\licenses\ rmdir /s /q %BUILD_PATH%\licenses
 xcopy /e /k /h /i licenses %BUILD_PATH%\licenses
 
-rmdir /s /q %BUILD_PATH%\tests
+if exist %BUILD_PATH%\tests\ rmdir /s /q %BUILD_PATH%\tests
 xcopy /e /k /h /i  src\z2cr\tests %BUILD_PATH%\tests
 
-rmdir /s /q %BUILD_PATH%\source\stdlib
+if exist %BUILD_PATH%\source\stdlib\ rmdir /s /q %BUILD_PATH%\source\stdlib
 xcopy /e /k /h /i  source\stdlib %BUILD_PATH%\source\stdlib
 
-rmdir /s /q %BUILD_PATH%\source\samples
+if exist %BUILD_PATH%\source\samples\ rmdir /s /q %BUILD_PATH%\source\samples
 xcopy /e /k /h /i  source\samples %BUILD_PATH%\source\samples
