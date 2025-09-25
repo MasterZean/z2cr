@@ -36,8 +36,8 @@ xcopy /e /k /h /i licenses %BUILD_PATH%\licenses
 rmdir /s /q %BUILD_PATH%\tests
 xcopy /e /k /h /i  src\z2cr\tests %BUILD_PATH%\tests
 
-rmdir /s /q %BUILD_PATH%\src\stdlib
-xcopy /e /k /h /i  src\stdlib %BUILD_PATH%\src\stdlib
+rmdir /s /q %BUILD_PATH%\source\stdlib
+xcopy /e /k /h /i  source\stdlib %BUILD_PATH%\source\stdlib
 
-rmdir /s /q %BUILD_PATH%\src\samples
-xcopy /e /k /h /i  src\samples %BUILD_PATH%\src\samples
+rmdir /s /q %BUILD_PATH%\source\samples
+xcopy /e /k /h /i  source\samples %BUILD_PATH%\source\samples
