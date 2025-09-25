@@ -931,7 +931,7 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 	if (left->NT == NodeType::Memory) {
 		MemNode& mem = (MemNode&)*left;
 		
-		if (mem.Mem->Name == "Out" && mem.Mem->Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System")
+		if (mem.Mem->Name == "Out" && mem.Mem->_Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System")
 			return intrinsic(right, 0);
 	}
 	else if (left->NT == NodeType::Intrinsic) {

@@ -259,7 +259,7 @@ private:
 	void NsOutro(ZNamespace& ns);
 	
 	void WPNsName(ZEntity& e) {
-		cs << e.Namespace().BackName;
+		cs << e._Namespace().BackName;
 		cs << "::";
 	}
 	

@@ -110,10 +110,7 @@ public:
 	
 	ZNamespaceSection* Section = nullptr;
 	
-	ZEntity(ZNamespace& aNmspace): nmsspace(aNmspace) {
-		Type = EntityType::Unknown;
-		parent = &aNmspace;
-	}
+	inline ZEntity(ZNamespace& aNmspace);
 	
 	ZEntity(const ZEntity& aEnitity) = default;
 	
@@ -137,12 +134,20 @@ public:
 	virtual const String& OwnerSig() const {
 		return dummy;
 	}
+	
+	ZNamespace& _Namespace() {
+		ASSERT(nmsspace);
+		return *nmsspace;
+	}
 
 private:
-	ZNamespace& nmsspace;
+	ZNamespace* nmsspace;
 	ZNamespace* parent;
 	
 	static String dummy;
+	
+protected:
+	inline ZEntity();
 };
 
 class ZNamespace: public ZEntity {
@@ -159,7 +164,7 @@ public:
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	
-	ZNamespace(Assembly& aAss): ZEntity(*this), ass(aAss) {
+	ZNamespace(Assembly& aAss): ZEntity(), ass(aAss) {
 		Type = EntityType::Namespace;
 	}
 	
@@ -216,7 +221,7 @@ private:
 };
 
 Assembly& ZEntity::Ass() {
-	return nmsspace.Ass();
+	return nmsspace->Ass();
 }
 
 class ZClass: public ZNamespace, Moveable<ZClass> {
@@ -419,20 +424,36 @@ public:
 	}
 };
 
+ZEntity::ZEntity() {
+	Type = EntityType::Unknown;
+}
+
+ZEntity::ZEntity(ZNamespace& aNmspace) {
+	if (aNmspace.IsClass) {
+		nmsspace = &aNmspace._Namespace();
+		parent = &aNmspace;
+	}
+	else {
+		nmsspace = &aNmspace;
+		parent = &aNmspace;
+	}
+		
+	Type = EntityType::Unknown;
+}
+	
 ZNamespace& ZEntity::Namespace() {
 	if (InClass == true)
-		return nmsspace.Namespace();
+		return nmsspace->Namespace();
 	else
-		return nmsspace;
+		return *nmsspace;
 }
 
 const ZNamespace& ZEntity::Namespace() const {
 	if (InClass == true)
-		return nmsspace.Namespace();
+		return nmsspace->Namespace();
 	else
-		return nmsspace;
+		return *nmsspace;
 }
-
 
 ZNamespace& ZEntity::Owner() {
 	return *parent;
@@ -442,7 +463,5 @@ ZClass& ZEntity::Class() {
 	ASSERT(parent->IsClass);
 	return (ZClass&)*parent;
 }
-
-
 
 #endif

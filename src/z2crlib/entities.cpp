@@ -96,7 +96,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp) {
 					found = true;
 				
 			if (!found) {
-				ZVariable& var = Params.Add(ZVariable(Namespace()));
+				ZVariable& var = Params.Add(ZVariable(_Namespace()));
 				var.Name = name;
 				var.BackName = name;
 				var.I = ti;
@@ -123,7 +123,7 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	csig = "";
 	
 	if (InClass == false) {
-		fsig << Namespace().ProperName << "::";
+		fsig << _Namespace().ProperName << "::";
 		
 		if (IsFunction) {
 			fsig << "func ";

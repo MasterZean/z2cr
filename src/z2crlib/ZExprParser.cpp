@@ -548,7 +548,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "ptr")
+	if (s == "Byte")
 		s == "ptr";
 	
 	if (Function) {

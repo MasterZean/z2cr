@@ -314,12 +314,14 @@ ZClass* Assembly::AddCoreType(ZNamespace& ns, const String& name, const String& 
 ZClass& Assembly::AddClass(ZClass& cls) {
 	int type = Classes.GetCount();
 	
-	String name = cls.Namespace().Name + cls.Name;
+	String name = cls._Namespace().Name + cls.Name;
 	
 	int index = Classes.Find(name);
 
 	if (index != -1) {
 		ZClass& exCls = Classes[index];
+		
+		ASSERT(&exCls._Namespace() != nullptr);
 		
 		exCls.CopyPreSection(cls);
 		exCls.Scan = cls.Scan;
@@ -333,7 +335,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 		//LOG(String().Cat() << "Adding class " << name);
 	}
 
-	ZClass& typeCls = (index != -1) ? Classes[index]: Classes.Add(cls.Namespace().Name + cls.Name, cls);
+	ZClass& typeCls = (index != -1) ? Classes[index]: Classes.Add(cls._Namespace().Name + cls.Name, cls);
 	
 	if (typeCls.StorageName.GetCount() == 0)
 		typeCls.StorageName = cls.BackName;

@@ -29,7 +29,7 @@ void ZTranspiler::WriteIntro() {
 
 void ZTranspiler::NsIntro(ZNamespace& ns) {
 	if (CppVersion >= 2017)
-		cs << ns.BackName<< " {";
+		cs << ns.BackName << " {";
 	else
 		cs << ns.BackNameLegacy;
 }
@@ -219,7 +219,7 @@ bool ZTranspiler::TranspileClassDeclMaster(ZNamespace& cls, int accessFlags, boo
 	}
 	
 	// TODO: fix
-	BeginNamespace(acls.Namespace());
+	BeginNamespace(acls._Namespace());
 	BeginClass(acls);
 
 	if (TranspileClassDecl(acls, -1) == 0) {
@@ -467,7 +467,7 @@ void ZTranspiler::TranspileDefinitions(ZNamespace& ns, bool vars, bool fDecl, bo
 		
 		for (int i = 0; i < ns.Classes.GetCount(); i++) {
 			ZClass& cls = *ns.Classes[i];
-			BeginNamespace(cls.Namespace());
+			BeginNamespace(cls._Namespace());
 			TranspileValDefintons(cls);
 			EndNamespace();
 		}
@@ -717,7 +717,7 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		return;
 	}
 	else if (f.IsDestructor) {
-		cs << f.Namespace().BackName << "::";
+		cs << f._Namespace().BackName << "::";
 		cs << f.Owner().BackName << "::" << "~" << f.Owner().BackName;
 		WriteFunctionParams(f);
 		return;
@@ -773,9 +773,9 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 			//cs << parCls.BackName;
 		else {
 			if (f.Trait.Flags & ZTrait::BINDC)
-				cs << parCls.Namespace().BackName << "::" << parCls.BackName;
+				cs << parCls._Namespace().BackName << "::" << parCls.BackName;
 			else
-				cs << "const "<< parCls.Namespace().BackName << "::" << parCls.BackName << "&";
+				cs << "const "<< parCls._Namespace().BackName << "::" << parCls.BackName << "&";
 		}
 		cs << " " << var.Name;
 	}
@@ -806,7 +806,7 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 			cs << " ";
 		}
 		else {
-			cs << f.Namespace().BackName << "::";
+			cs << f._Namespace().BackName << "::";
 			cs << f.Owner().Name << " ";
 		}
 		
@@ -1304,7 +1304,7 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 						if (f.Trait.Flags & ZTrait::BINDC)
 							cs << "::";
 						else if (f.IsStatic) {
-							cs << f.Namespace().BackName << "::";
+							cs << f._Namespace().BackName << "::";
 							if (f.InClass)
 								cs << f.Owner().BackName << "::";
 						}
@@ -1390,12 +1390,12 @@ void ZTranspiler::Proc(DefNode& node) {
 	if (f.Trait.Flags & ZTrait::BINDC)
 		cs << "::";
 	else if (f.IsStatic) {
-		cs << f.Namespace().BackName << "::";
+		cs << f._Namespace().BackName << "::";
 		if (f.InClass)
 			cs << f.Owner().BackName << "::";
 	}
 	else if (f.InClass && f.Class().CoreSimple) {
-		cs << f.Namespace().BackName << "::";
+		cs << f._Namespace().BackName << "::";
 		WriteClassName(*node.Tt.Class);
 		cs << "::";
 		cs << f.BackName;
@@ -1462,7 +1462,7 @@ void ZTranspiler::Proc(MemNode& node) {
 	if (node.IsLocal == false && node.IsParam == false && node.Mem->InClass == false) {
 		if (node.Mem->InClass) {
 			//if (&node.Mem->Namespace() != inNamespace)
-				cs << node.Mem->Namespace().BackName << "::";
+				cs << node.Mem->_Namespace().BackName << "::";
 			//cs << node.Mem->Owner().BackName << "::";
 			WriteClassName(node.Mem->Class());
 		}
@@ -1474,7 +1474,7 @@ void ZTranspiler::Proc(MemNode& node) {
 	}
 	else if (node.Mem->InClass == true && node.Mem->IsStatic) {
 		//if (&node.Mem->Namespace() != inNamespace)
-			cs << node.Mem->Namespace().BackName << "::";
+			cs << node.Mem->_Namespace().BackName << "::";
 		//cs << node.Mem->Owner().BackName << "::";
 		WriteClassName(node.Mem->Class());
 		cs << "::";
@@ -1793,7 +1793,7 @@ void ZTranspiler::Proc(TempNode& node) {
 	
 	if (cls.CoreSimple) {
 		//if (&cls.Namespace() != inNamespace)
-			cs << cls.Namespace().BackName << "::";
+			cs << cls._Namespace().BackName << "::";
 		cs << cls.Name << "::";
 		if (node.Constructor->IsConstructor == 1)
 			cs << "_(";
@@ -1802,7 +1802,7 @@ void ZTranspiler::Proc(TempNode& node) {
 	}
 	else {
 		//if (&cls.Namespace() != inNamespace)
-			cs << cls.Namespace().BackName << "::";
+			cs << cls._Namespace().BackName << "::";
 		if (node.Constructor->IsConstructor == 1)
 			cs << cls.BackName;
 		else if (node.Constructor->IsConstructor == 2) {

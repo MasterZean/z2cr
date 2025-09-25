@@ -410,7 +410,7 @@ Vector<ZFunction*> ZCompiler::FindMain(ZSource& src) {
 	
 	for (int i = 0; i < src.Functions.GetCount(); i++) {
 		ZFunction& f = *src.Functions[i];
-		if (mainClass.GetCount() && f.Namespace().Name != mainClass + ".")
+		if (mainClass.GetCount() && f._Namespace().Name != mainClass + ".")
 			continue;
 		
 		if (f.Name == "@main" && f.Params.GetCount() == 0) {
@@ -912,7 +912,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	String name = parser.ExpectZId();
 	TestVarDup(Class, f, name, vp);
 	
-	ZVariable& v = f.Locals.Add(ZVariable(f.Namespace()));
+	ZVariable& v = f.Locals.Add(ZVariable(f._Namespace()));
 	v.Name = name;
 	v.BackName = name;
 	v.DefPos = vp;

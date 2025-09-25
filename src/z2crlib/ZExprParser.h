@@ -21,7 +21,7 @@ public:
 	ZExprParser(ZEntity& entity, ZNamespace* ns, ZFunction* f, ZCompiler& aComp, ZParser& aPos, IR& aIrg): parser(aPos), comp(aComp), irg(aIrg), ass(aIrg.Ass()) {
 		//ASSERT(entity.Section);
 		Section = entity.Section;
-		Namespace = &entity.Namespace();
+		Namespace = &entity._Namespace();
 		Function = f;
 		if (ns && ns->IsClass)
 			Class = (ZClass*)ns;

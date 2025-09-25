@@ -402,8 +402,8 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 			ZNamespace& cls = (ZNamespace&)ent;
 			
 			ZItem clsItem;
-			
-			String clsName = cls.Namespace().Name + cls.Name;
+
+			String clsName = ent.Type == EntityType::Class ? (cls._Namespace().Name + cls.Name) : cls.Name;
 			
 			int ii = asbAss.Docs.Find(clsName);
 			if (ii != -1)
