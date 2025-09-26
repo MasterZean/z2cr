@@ -280,6 +280,8 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 	if (f.IsConstructor == 1) {
 		if (f.Params.GetCount() == 0)
 			cls.Meth.Default = &f;
+		if (f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class == &f.Class())
+			cls.Meth.CopyCon = &f;
 	}
 	else if (f.IsDestructor) {
 		if (f.Params.GetCount() == 0)

@@ -64,6 +64,13 @@ void ZCompiler::SetInUse(ZClass& cls) {
 		
 		Destructors.Add(cls.Meth.Destructor);
 	}
+	if (cls.Meth.CopyCon) {
+		cls.Meth.CopyCon->SetInUse();
+		//if (cls.Meth.Destructor->ShouldEvaluate())
+		//	CompileFunc(*cls.Meth.Destructor);
+		
+		Destructors.Add(cls.Meth.CopyCon);
+	}
 }
 
 bool ZCompiler::compile() {

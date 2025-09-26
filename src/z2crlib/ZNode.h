@@ -301,4 +301,14 @@ public:
 	}
 };
 
+class PlacementNewNode: public Node {
+public:
+	Node* Object;
+	Node* Value;
+	
+	PlacementNewNode() {
+		NT = NodeType::PlacamentNew;
+	}
+};
+
 #endif

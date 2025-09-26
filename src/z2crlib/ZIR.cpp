@@ -1810,3 +1810,16 @@ ThrowNode *IR::throwExc(Node *exc) {
 	return node;
 }
 
+Node *IR::placementNew(Node *object, Node *value) {
+	PlacementNewNode* node = placementNewNodes.Get();
+		
+	node->Object = object;
+	node->Value = value;
+	
+	node->SetType(ass.CVoid->Tt);
+	
+	return node;
+}
+
+
+

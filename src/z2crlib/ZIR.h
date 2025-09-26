@@ -70,6 +70,7 @@ protected:
 	NodePool<ChainNode> chainNodes;
 	NodePool<DestructNode> destructNodes;
 	NodePool<ThrowNode> throwNodes;
+	NodePool<PlacementNewNode> placementNewNodes;
 		
 public:
 	public:
@@ -133,7 +134,8 @@ public:
 	IndexNode* mem_index(Node *object, Node *index);
 	MemNode*   mem_this(ZClass& cls);
 	
-	Node *destruct(Node *e);
+	Node* placementNew(Node* object, Node* value);
+	Node* destruct(Node *e);
 	
 	BlockNode* block();
 	IfNode* ifcond(Node* cond, Node* truebranch, Node* falsebranch);

@@ -81,6 +81,7 @@ public:
 	void Proc(IndexNode& node);
 	void Proc(DestructNode& node);
 	void Proc(ThrowNode& node);
+	void Proc(PlacementNewNode& node);
 	
 	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra);
 	void ProcLeftSet(String& cs, Node *n);
@@ -157,12 +158,23 @@ public:
 					cs << "\t\t";
 					WStorageName(*inClass->T);
 
-					cs << "& operator[](size_t idx)       { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
+					cs << "& operator[](size_t idx) {\n";
+					cs << "\t\t\t";
+					cs << "if (idx >= length) throw sys::exception::IndexOutOfBounds();\n";
+					cs << "\t\t\t";
+					cs << "return ptr[idx];\n";
+					cs << "\t\t}\n";
+					
 					cs << "\t\t";
 					cs << "const ";
 					WStorageName(*inClass->T);
 
-					cs << "& operator[](size_t idx) const      { if (idx >= length) throw sys::exception::IndexOutOfBounds(); return ptr[idx]; }\n";
+					cs << "& operator[](size_t idx) const {\n";
+					cs << "\t\t\t";
+					cs << "if (idx >= length) throw sys::exception::IndexOutOfBounds();\n";
+					cs << "\t\t\t";
+					cs << "return ptr[idx];\n";
+					cs << "\t\t}\n";
 				}
 				
 				if (inClass && inClass->TBase == ass.CRaw && inClass->T->TBase != ass.CRaw) {

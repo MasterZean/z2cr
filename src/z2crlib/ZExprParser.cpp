@@ -888,13 +888,13 @@ Node *ZExprParser::ParseDot(Node *exp) {
 		parser.Expect('{');
 		if (parser.Char('}')) {
 			Vector<Node*> params;
-			return irg.attr(exp, Temporary(*exp->Tt.Class, params, p));
+			return irg.placementNew(exp, Temporary(*exp->Tt.Class, params, p));
 		}
 		else {
 			Node* cons = Parse();
 			parser.Expect('}');
 			
-			return irg.attr(exp, cons);
+			return irg.placementNew(exp, cons);
 		}
 	}
 	else

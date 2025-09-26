@@ -931,6 +931,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(DestructNode*)node);
 	else if (node->NT == NodeType::Throw)
 		Proc(*(ThrowNode*)node);
+	else if (node->NT == NodeType::PlacamentNew)
+		Proc(*(PlacementNewNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -1887,3 +1889,20 @@ void ZTranspiler::Proc(ThrowNode& node) {
 	Walk(node.Exception);
 }
 
+void ZTranspiler::Proc(PlacementNewNode& node) {
+	if (node.Object->Tt.Class->CoreSimple) {
+		Walk(node.Object);
+		cs << " = ";
+		Walk(node.Value);
+	}
+	else {
+		cs << "new (&";
+		Walk(node.Object);
+		cs << ") ";
+		WClsName(*node.Value->Tt.Class);
+		cs << "(";
+		if (node.Value)
+			Walk(node.Value);
+		cs << ")";
+	}
+}

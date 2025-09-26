@@ -38,6 +38,7 @@ public:
 		Construct,
 		Destruct,
 		Throw,
+		PlacamentNew,
 	};
 };
 
