@@ -1671,8 +1671,7 @@ void ZTranspiler::Proc(LocalNode& node) {
 		NL();
 		cs << ass.CSlice->Owner().BackName;
 		cs << "::";
-		cs << "CArray_";
-		cs << node.Tt.Class->T->Name;
+		WriteClassName(*node.Tt.Class);
 		cs << " " << node.Var->Name;
 		cs << "(";
 		if (!node.Tt.Class->T->CoreSimple) {
@@ -1753,16 +1752,21 @@ void ZTranspiler::Proc(IntrinsicNode& node) {
 			if (i > 0)
 				cs << ", ";
 			
-			cs << "::zprintf";
-			if (node.Value[i]->Tt.Class == ass.CChar)
-				cs << "c";
-			else if (node.Value[i]->Tt.Class == ass.CPtrSize)
-				cs << "s";
-			cs << "(";
-			
-			Walk(node.Value[i]);
-			
-			cs << ")";
+			if (node.Value[i]->NT != NodeType::Intrinsic || ((IntrinsicNode*)node.Value[i])->Operation != 2) {
+				cs << "::zprintf";
+				if (node.Value[i]->Tt.Class == ass.CChar)
+					cs << "c";
+				else if (node.Value[i]->Tt.Class == ass.CPtrSize)
+					cs << "s";
+				cs << "(";
+				
+				Walk(node.Value[i]);
+				
+				cs << ")";
+			}
+			else {
+				Walk(((IntrinsicNode*)node.Value[i])->Value[0]);
+			}
 		}
 		cs << ")";
 	}

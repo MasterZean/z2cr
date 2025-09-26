@@ -1063,7 +1063,7 @@ Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZBlockContext& con
 
 ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p, bool eval) {
 	String fullName;
-	fullName << cc.Namespace().Name << cc.Name << "<" << sub.Namespace().Name << sub.Name << ">";
+	fullName << cc._Namespace().Name << cc.Name << "<" << sub._Namespace().Name << sub.Name << ">";
 	
 	int i = ass.Classes.Find(fullName);
 	if (i != -1) {
@@ -1167,7 +1167,7 @@ void ZCompiler::TestVarDup(ZClass* cls, ZFunction& over, const String& name, con
 			parser.Warning(p, "local '" + name + "' hides a class member");*/
 }
 
-ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass) {
+ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass, *this) {
 #ifdef PLATFORM_WIN32
 	Platform = PlatformType::WINDOWS;
 	PlatformString = "WIN32";

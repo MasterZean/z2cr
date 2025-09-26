@@ -167,12 +167,12 @@ public:
 				
 				if (inClass && inClass->TBase == ass.CRaw && inClass->T->TBase != ass.CRaw) {
 					cs << "\tpublic:" << "\n";
-					cs << "\t\tCArray_";
-					cs << inClass->T->Name;
+					cs << "\t\t";
+					WriteClassName(*inClass);
 					cs << "(";
 					WStorageName(*inClass->T);
-					cs << "* aPtr, size_t aLen): Slice_";
-					cs << inClass->T->Name;
+					cs << "* aPtr, size_t aLen): ";
+					WriteClassName(*inClass->Super);
 					cs << "(aPtr, aLen) {}\n";
 				}
 				

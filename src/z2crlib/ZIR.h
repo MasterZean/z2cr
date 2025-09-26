@@ -3,6 +3,8 @@
 
 #include <z2crlib/ZNode.h>
 
+class ZCompiler;
+
 template<class Tt>
 class NodePool {
 private:
@@ -43,6 +45,7 @@ public:
 class IR {
 protected:
 	Assembly& ass;
+	ZCompiler& comp;
 		
 	NodePool<OpNode> opNodes;
 	NodePool<UnaryOpNode> unaryOpNodes;
@@ -72,7 +75,7 @@ public:
 	public:
 	bool FoldConstants = false;
 	
-	IR(Assembly& ass): ass(ass) {
+	IR(Assembly& ass, ZCompiler& aComp): ass(ass), comp(aComp) {
 	}
 	
 	Assembly& Ass() const {
