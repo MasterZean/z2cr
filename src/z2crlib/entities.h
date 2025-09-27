@@ -114,9 +114,6 @@ public:
 	
 	ZEntity(const ZEntity& aEnitity) = default;
 	
-	inline ZNamespace& Namespace();
-	inline const ZNamespace& Namespace() const;
-	
 	inline ZNamespace& Owner();
 	
 	inline ZClass& Class();
@@ -135,11 +132,11 @@ public:
 		return dummy;
 	}
 	
-	ZNamespace& _Namespace() {
+	ZNamespace& Namespace() const {
 		ASSERT(nmsspace);
 		return *nmsspace;
 	}
-
+	
 private:
 	ZNamespace* nmsspace;
 	ZNamespace* parent;
@@ -159,7 +156,6 @@ public:
 	bool IsDefined = false;
 	String BackNameLegacy;
 	String LegacySufix;
-	//WithDeepCopy<Vector<String>> LibLink;
 	Index<ZNamespace*> DependsOn;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
@@ -252,7 +248,6 @@ public:
 	}
 	
 	bool CoreSimple = false;
-	bool IsDefined = true;
 
 	bool IsEvaluated = false;
 	
@@ -430,7 +425,7 @@ ZEntity::ZEntity() {
 
 ZEntity::ZEntity(ZNamespace& aNmspace) {
 	if (aNmspace.IsClass) {
-		nmsspace = &aNmspace._Namespace();
+		nmsspace = &aNmspace.Namespace();
 		parent = &aNmspace;
 	}
 	else {
@@ -441,20 +436,6 @@ ZEntity::ZEntity(ZNamespace& aNmspace) {
 	Type = EntityType::Unknown;
 }
 	
-ZNamespace& ZEntity::Namespace() {
-	if (InClass == true)
-		return nmsspace->Namespace();
-	else
-		return *nmsspace;
-}
-
-const ZNamespace& ZEntity::Namespace() const {
-	if (InClass == true)
-		return nmsspace->Namespace();
-	else
-		return *nmsspace;
-}
-
 ZNamespace& ZEntity::Owner() {
 	return *parent;
 }

@@ -931,7 +931,7 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 	if (left->NT == NodeType::Memory) {
 		MemNode& mem = (MemNode&)*left;
 		
-		if (mem.Mem->Name == "Out" && mem.Mem->_Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System") {
+		if (mem.Mem->Name == "Out" && mem.Mem->Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System") {
 			if (!right->Tt.Class->CoreSimple && right->Tt.Class != ass.CString) {// TBase == ass.CRaw || right->Tt.Class->TBase == ass.CSlice) {
 				ZClass* cls = right->Tt.Class;
 				
@@ -968,7 +968,7 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 			return intrinsic(right, 0);
 		}
 		
-		if (mem.Mem->Name == "Fmt" && mem.Mem->_Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System") {
+		if (mem.Mem->Name == "Fmt" && mem.Mem->Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System") {
 			if (!right->Tt.Class->CoreSimple && right->Tt.Class != ass.CString) {// TBase == ass.CRaw || right->Tt.Class->TBase == ass.CSlice) {
 				ZClass* cls = right->Tt.Class;
 				

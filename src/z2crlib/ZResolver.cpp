@@ -122,7 +122,7 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 	//LOG(String().Cat() << "Resolving :" << ns.Name << cls.Name << " Index " << cls.Index);
 	
 	for (int k = 0; k < ns.Sources.GetCount(); k++) {
-		ns.Sources[k]->AddReference(cls._Namespace().Name + cls.Name, Point(1, 1));
+		ns.Sources[k]->AddReference(cls.Namespace().Name + cls.Name, Point(1, 1));
 	}
 }
 
@@ -231,7 +231,7 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 				found = true;
 		
 		if (found == false) {
-			ZVariable& var = f.Params.Add(ZVariable(f._Namespace()));
+			ZVariable& var = f.Params.Add(ZVariable(f.Namespace()));
 			var.Name = "__value";
 			var.BackName = "__value";
 			var.I = d2.Functions[0]->Return;
