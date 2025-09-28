@@ -500,6 +500,12 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	ZBlockContext con;
 	
 	while (!parser.IsChar('}')) {
+		if (parser.Char2('@', '[')) {
+			lastTrait.TP = parser.GetFullPos();
+			lastTrait.Parse(parser);
+			useLastTrait = true;
+		}
+		
 		Node* node = CompileStatement(f, parser, con);
 		
 		if (node != nullptr)
@@ -587,6 +593,9 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 }
 
 Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZBlockContext& con) {
+	bool originalUse = useLastTrait;
+	useLastTrait = false;
+	
 	if (parser.Char('{')) {
 		Node* node = CompileBlock(f, parser, con);
 		
@@ -603,12 +612,12 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZBlockContext& 
 	else if (parser.Id("for"))
 		return CompileFor(f, parser, con);
 	else if (parser.Id("val")) {
-		Node* node = CompileLocalVar(f, parser, false);
+		Node* node = CompileLocalVar(f, parser, false, originalUse);
 		parser.ExpectEndStat();
 		return node;
 	}
 	else if (parser.Id("const")) {
-		Node* node = CompileLocalVar(f, parser, true);
+		Node* node = CompileLocalVar(f, parser, true, originalUse);
 		parser.ExpectEndStat();
 		return node;
 	}
@@ -626,7 +635,7 @@ Node* ZCompiler::CompileStatement(ZFunction& f, ZParser& parser, ZBlockContext& 
 		parser.Id("continue");
 		if (!con.InLoop)
 			parser.Error(sp.P, "'" + ER::Blue + "continue" + ER::White + "' found outside of loop");
-		return irg.loopControl(false); 
+		return irg.loopControl(false);
 	}
 	else if (parser.Id("throw")) {
 		ZExprParser ep(f, Class, &f, *this, parser, irg);
@@ -849,7 +858,7 @@ Node* ZCompiler::CompileFor(ZFunction& f, ZParser& parser, ZBlockContext& con) {
 			f.Blocks.Top().Temps = 0;
 			addedBlock = true;
 			
-			init = CompileLocalVar(f, parser, false);
+			init = CompileLocalVar(f, parser, false, false);
 		}
 		else
 			init = CompileExpression(f, parser, con);
@@ -913,7 +922,7 @@ bool ZCompiler::CompileVar(ZVariable& v, const ZCompilerContext& zcon) {
 	return node;
 }
 
-Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
+Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, bool useLastTrait) {
 	auto vp = parser.GetFullPos();
 	
 	String name = parser.ExpectZId();
@@ -925,6 +934,8 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst) {
 	v.DefPos = vp;
 	v.Section = f.Section;
 	v.IsConst = aConst;
+	if (useLastTrait)
+		v.Trait = lastTrait;
 
 	ZCompilerContext zcon;
 	zcon.Class = (ZClass*)&f.Owner();

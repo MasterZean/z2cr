@@ -6,6 +6,7 @@
 
 class ZSource;
 class ZPackage;
+class ZParser;
 
 class ZNamespace;
 class ZVariable;
@@ -33,16 +34,29 @@ public:
 class ZTrait: Moveable<ZTrait> {
 public:
 	enum {
-		BINDC     = 0b0001,
-		BINDCPP   = 0b0010,
-		DLLIMPORT = 0b0100,
-		INTRINSIC = 0b1000,
+		BINDC       = 1,
+		BINDCPP     = 1 << 1,
+		
+		INTRINSIC   = 1 << 2,
+		SYSTEM      = 1 << 3,
+		UNSAFE      = 1 << 4,
+		
+		DLLIMPORT   = 1 << 5,
+		CCCDECL     = 1 << 6,
+		CCSTDCALL   = 1 << 7,
+		
+		RAW         = 1 << 8,
 	};
 	
-	const ZSourcePos* TP = nullptr;
+	ZSourcePos TP;
 	int Flags = 0;
 	
 	WithDeepCopy<VectorMap<String, String>> Traits;
+	
+	void Parse(ZParser& parser);
+	
+private:
+	void InterpretTrait(ZParser& parser, const String& trait);
 };
 
 class ZClassScanInfo {
@@ -100,7 +114,6 @@ public:
 	bool InClass = false;
 	bool IsStatic = false;
 	bool InUse = false;
-	bool IsUnsafe = false;
 	
 	int CUCounter = 0;
 	

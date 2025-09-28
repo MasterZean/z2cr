@@ -321,8 +321,6 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 	if (index != -1) {
 		ZClass& exCls = Classes[index];
 		
-		ASSERT(&exCls.Namespace() != nullptr);
-		
 		exCls.CopyPreSection(cls);
 		exCls.Scan = cls.Scan;
 		exCls.SuperPos = cls.SuperPos;

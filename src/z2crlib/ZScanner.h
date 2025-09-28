@@ -47,24 +47,12 @@ protected:
 	ZNamespaceSection* section = nullptr;
 	ZClass* curClass = nullptr;
 	
-	bool isIntrinsic = false;
-	bool isDllImport = false;
-	bool isStdCall = false;
-	bool isNoDoc = false;
-	bool isForce = false;
-	bool isCDecl = false;
-	bool isUnsafe = false;
-	Vector<String> libLink;
-	
 	ZTrait lastTrait;
 	bool useLastTrait = false;
 	
 	PlatformType pt;
 	int namespaceCount = 0;
 	ZSourcePos namespacePos;
-	
-	int InterpretTrait(int flags, const String& trait, VectorMap<String, String>& traitList);
-	int TraitLoop(VectorMap<String, String>& traitList);
 	
 	bool ScanDeclarationItem(AccessType accessType, const ZTrait& trait, bool isStatic);
 	bool ScanClassBody(const ZSourcePos& p, AccessType accessType, bool isStatic, const ZTrait& trait);

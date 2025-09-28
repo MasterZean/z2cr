@@ -765,7 +765,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 				parser.Error(opp.P, ER::Green + aName + ER::White + ": is a static member");
 		}
 		// TODO: fix unsafe
-		if (allowUnsafe == false && f->IsUnsafe)
+		if (allowUnsafe == false && f->Trait.Flags & ZTrait::UNSAFE)
 			parser.Error(opp.P, ER::Green + aName + ER::White + ": is unsafe, can only be called in unsafe context");
 	 
 		if (f->InClass && f->ShouldEvaluate())

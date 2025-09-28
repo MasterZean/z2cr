@@ -1395,6 +1395,17 @@ void ZTranspiler::Proc(DefNode& node) {
 	else {
 		//ASSERT(node.Object);
 		if (node.Object) {
+			if (node.Object->Tt.Class->TBase == ass.CRaw && f.IsProperty && node.Object->NT == NodeType::Memory && f.Name == "Length") {
+				auto mem = (MemNode*)node.Object;
+				if (mem->Mem->Trait.Flags & ZTrait::RAW) {
+					cs << node.Object->Tt.Param;
+					return;
+				}
+				else {
+					Walk(node.Object);
+					cs << ".";
+				}
+			}
 			/*if (node.Object->Tt.Class->TBase == ass.CRaw) {
 				if (f.IsProperty && f.Name == "Length") {
 					cs << node.Object->Tt.Param;
@@ -1411,11 +1422,11 @@ void ZTranspiler::Proc(DefNode& node) {
 					cs << node.Object->Tt.Param;
 					cs << ").";
 				}
-			}
-			else {*/
+			}*/
+			else {
 				Walk(node.Object);
 				cs << ".";
-			//}
+			}
 		}
 	}
 	
@@ -1635,7 +1646,7 @@ void ZTranspiler::Proc(ForLoopNode& node) {
 void ZTranspiler::Proc(LocalNode& node) {
 	ASSERT(node.Var);
 	
-	if (node.Tt.Class->TBase == ass.CRaw) {
+	if ((node.Var->Trait.Flags & ZTrait::RAW) == 0 && node.Tt.Class->TBase == ass.CRaw) {
 		if (node.Tt.Class->T->CoreSimple) {
 			WriteType(&node.Var->I.Tt, true);
 			cs << " __" << node.Var->Name;

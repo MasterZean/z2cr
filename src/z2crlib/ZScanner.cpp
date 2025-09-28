@@ -136,9 +136,9 @@ bool ZScanner::ScanDeclaration(const ZSourcePos& p, AccessType accessType, bool 
 		useLastTrait = false;
 	}
 	else {
-		if (parser.IsChar2('@', '[')) {
-			trait.TP = &p;
-			trait.Flags = TraitLoop(trait.Traits);
+		if (parser.Char2('@', '[')) {
+			trait.TP = p;
+			trait.Parse(parser);
 		}
 	}
 		
@@ -635,7 +635,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 	f.IsConstructor = isCons;
 	f.IsProperty = isProp;
 	f.IsGetter = returnType;
-	f.IsUnsafe = isUnsafe;
+	//f.IsUnsafe = isUnsafe;
 	f.IsDestructor = isDestructor;
 	
 	if (f.IsProperty && f.IsGetter == false)
@@ -725,83 +725,6 @@ void ZScanner::ScanToken() {
 	}
 }
 
-int ZScanner::InterpretTrait(int flags, const String& trait, VectorMap<String, String>& traitList) {
-	bool added = false;
-	
-	if (trait == "bindc") {
-		bindName = trait;
-		flags = flags | ZTrait::BINDC;
-	}
-	else if (trait == "bindcpp") {
-		bindName = trait;
-		flags = flags | ZTrait::BINDCPP;
-	}
-	else if (trait == "liblink") {
-		parser.Expect('=');
-		if (!parser.IsString())
-			parser.Error(parser.GetPoint(), "string literal expected");
-		String lname = parser.ReadString();
-		libLink << lname;
-		
-		traitList.Add(trait, lname);
-		added = true;
-	}
-	else if (trait == "unsafe")
-		isUnsafe = true;
-	else if (trait == "intrinsic") {
-		isIntrinsic = true;
-		flags = flags | ZTrait::INTRINSIC;
-	}
-	else if (trait == "dllimport") {
-		isDllImport = true;
-		flags = flags | ZTrait::DLLIMPORT;
-	}
-	else if (trait == "stdcall")
-		isStdCall = true;
-	else if (trait == "cdecl")
-		isCDecl = true;
-	else if (trait == "nodoc")
-		isNoDoc = true;
-	else if (trait == "force")
-		isForce = true;
-	
-	if (!added)
-		traitList.Add(trait, "");
-	
-	return flags;
-}
-
-int ZScanner::TraitLoop(VectorMap<String, String>& traitList) {
-	int flags = 0;
-	
-	bindName = "";
-	isIntrinsic = false;
-	isDllImport = false;
-	isStdCall = false;
-	isCDecl = false;
-	isNoDoc = false;
-	isForce = false;
-	isUnsafe = false;
-	libLink.Clear();
-	
-	if (parser.Char2('@', '[')) {
-		String trait = parser.ExpectId();
-		
-		flags = InterpretTrait(flags, trait, traitList);
-		
-		while (!parser.IsChar(']')) {
-			parser.Expect(',');
-			
-			trait = parser.ExpectId();
-			flags = InterpretTrait(flags, trait, traitList);
-		}
-		
-		parser.Expect(']');
-	}
-	
-	return flags;
-}
-
 void ZScanner::ScanIf() {
 	auto p = parser.GetPoint();
 	String cname = parser.ExpectId();
@@ -867,10 +790,10 @@ void ZScanner::ScanIfBranch(PlatformType platfrom) {
 void ZScanner::ScanIfBranchTraitAndStatement() {
 	auto p = parser.GetFullPos();
 			
-	if (parser.IsChar2('@', '[')) {
-		lastTrait.TP = &p;
+	if (parser.Char2('@', '[')) {
+		lastTrait.TP = p;
 		lastTrait.Traits.Clear();
-		lastTrait.Flags = TraitLoop(lastTrait.Traits);
+		lastTrait.Parse(parser);
 		useLastTrait = true;
 		
 		if (parser.EatElse()) {
@@ -883,3 +806,64 @@ void ZScanner::ScanIfBranchTraitAndStatement() {
 	else
 		ScanSingle(p, false, false);
 }
+
+void ZTrait::Parse(ZParser& parser) {
+	String trait = parser.ExpectId();
+		
+	InterpretTrait(parser, trait);
+	
+	while (!parser.IsChar(']')) {
+		parser.Expect(',');
+		
+		trait = parser.ExpectId();
+		InterpretTrait(parser, trait);
+	}
+	
+	parser.Expect(']');
+}
+
+void ZTrait::InterpretTrait(ZParser& parser, const String& trait) {
+	bool added = false;
+	
+	if (trait == "bindc") {
+		//bindName = trait;
+		Flags = Flags | ZTrait::BINDC;
+	}
+	else if (trait == "bindcpp") {
+		//bindName = trait;
+		Flags = Flags | ZTrait::BINDCPP;
+	}
+	else if (trait == "liblink") {
+		parser.Expect('=');
+		if (!parser.IsString())
+			parser.Error(parser.GetPoint(), "string literal expected");
+		
+		String lname = parser.ReadString();
+		Traits.Add(trait, lname);
+		
+		added = true;
+	}
+	else if (trait == "unsafe")
+		Flags = Flags | ZTrait::UNSAFE;
+	else if (trait == "intrinsic") {
+		Flags = Flags | ZTrait::INTRINSIC;
+	}
+	else if (trait == "dllimport") {
+		Flags = Flags | ZTrait::DLLIMPORT;
+	}
+	else if (trait == "stdcall")
+		Flags = Flags | ZTrait::CCSTDCALL;
+	else if (trait == "cdecl")
+		Flags = Flags | ZTrait::CCCDECL;
+	else if (trait == "raw")
+		Flags = Flags | ZTrait::RAW;
+	else if (trait == "nodoc")
+		;//isNoDoc = true;
+	else if (trait == "force")
+		;//isForce = true;
+	
+	if (!added)
+		Traits.Add(trait, "");
+}
+
+

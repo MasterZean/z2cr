@@ -118,6 +118,9 @@ private:
 
 	Vector<ZFunction*> FindMain(ZSource& src);
 	
+	ZTrait lastTrait;
+	bool useLastTrait = false;
+	
 	bool compile();
 	
 	bool Compile(ZNamespace& ns);
@@ -132,7 +135,7 @@ private:
 	Node* CompileDoWhile(ZFunction& f, ZParser& parser, ZBlockContext& con);
 	Node *CompileFor(ZFunction& f, ZParser& parser, ZBlockContext& con);
 
-	Node* CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst);
+	Node* CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, bool useLastTrait);
 	Node *CompileReturn(ZFunction& f, ZParser& parser, ZBlockContext& con);
 	
 	bool Transpile(ZTranspiler& cpp, ZNamespace& ns);
