@@ -360,7 +360,11 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 //			v.Name == "TileVariant"
 
 		WriteType(&v.I.Tt);
-		cs << " " << v.Name;
+		cs << " ";
+		// TODO: fix
+		//if (v.InClass && v.I.Tt.Class->TBase == ass.CRaw && v.I.Tt.Class->T->TBase != ass.CRaw)
+		//	cs << "__";
+		cs << v.BackName;
 		WriteTypePost(&v.I.Tt);
 		
 		if (v.I.Tt.Class->FromTemplate && v.I.Tt.Class->TBase == ass.CRaw) {
@@ -809,6 +813,18 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 		EL();
 	}
 	
+	// todo: fix
+	/*if (f.InClass*//* && &f == f.Class().Meth.Default*//*) {
+		ZClass& cls = f.Class();
+		
+		for (ZVariable* var: cls.Variables) {
+			if (var->I.Tt.Class->TBase == ass.CRaw && var->I.Tt.Class->T->TBase != ass.CRaw) {
+				WriteCArrayVarBoiler(*var);
+				ES();
+			}
+		}
+	}*/
+	
 	int count = WalkChildren(&f.Nodes);
 	
 	if (special) {
@@ -1134,8 +1150,10 @@ void ZTranspiler::ProcLeftSet(String& cs, Node* n) {
 		
 		if (mn->IsThis)
 			cs << "(*this)";
-		else
+		else {
+			//if (mn->Mem->Tt->Class->TBase == ass.CRaw)
 			cs << mn->Mem->BackName;
+		}
 	}
 	else if (n->NT == NodeType::Def) {
 		auto dn = (DefNode*)n;
@@ -1643,60 +1661,70 @@ void ZTranspiler::Proc(ForLoopNode& node) {
 	}
 }
 
+void ZTranspiler::WriteCArrayVarBoiler(ZVariable& var) {
+	if (var.InClass == false) {
+		if (var.I.Tt.Class->T->CoreSimple) {
+			WriteType(&var.I.Tt, true);
+			cs << " __" << var.Name;
+			WriteTypePost(&var.I.Tt);
+		}
+		else {
+			cs << "alignas(";
+			WriteType(&var.I.Tt);
+			cs << ") ";
+			cs << "uint8";
+			cs << " __" << var.Name;
+			WriteTypePost(&var.I.Tt, true);
+		}
+		ES();
+	}
+	
+	NL();
+	cs << ass.CSlice->Owner().BackName;
+	cs << "::";
+	WriteClassName(*var.I.Tt.Class);
+	cs << " " << var.Name;
+	cs << "(";
+	if (!var.I.Tt.Class->T->CoreSimple) {
+		cs << "(";
+		WriteType(&var.I.Tt);
+		cs << "*)";
+	}
+	
+	//if (var.InClass == false)
+		cs << "__";
+	cs << var.Name;
+	//if (var.InClass == true)
+	//	cs << ".Data()";
+	cs << ", ";
+	cs << var.I.Tt.Param;
+	cs << ")";
+	
+	if (var.Value) {
+		ES();
+		
+		NL();
+		if (var.Value->NT == NodeType::Temporary) {
+			TempNode& tmp = (TempNode&)*var.Value;
+			cs << var.Name;
+			cs << ".Init(";
+			for (int i = 0; i < tmp.Params.GetCount(); i++)
+				WalkNode(tmp.Params[i]);
+			cs << ")";
+		}
+		else {
+			cs << var.Name << ".Copy(";
+			WalkNode(var.Value);
+			cs << ")";
+		}
+	}
+}
+
 void ZTranspiler::Proc(LocalNode& node) {
 	ASSERT(node.Var);
 	
 	if ((node.Var->Trait.Flags & ZTrait::RAW) == 0 && node.Tt.Class->TBase == ass.CRaw) {
-		if (node.Tt.Class->T->CoreSimple) {
-			WriteType(&node.Var->I.Tt, true);
-			cs << " __" << node.Var->Name;
-			WriteTypePost(&node.Var->I.Tt);
-		}
-		else {
-			cs << "alignas(";
-			WriteType(&node.Var->I.Tt);
-			cs << ") ";
-			cs << "uint8";
-			cs << " __" << node.Var->Name;
-			WriteTypePost(&node.Var->I.Tt, true);
-		}
-		ES();
-		
-		NL();
-		cs << ass.CSlice->Owner().BackName;
-		cs << "::";
-		WriteClassName(*node.Tt.Class);
-		cs << " " << node.Var->Name;
-		cs << "(";
-		if (!node.Tt.Class->T->CoreSimple) {
-			cs << "(";
-			WriteType(&node.Var->I.Tt);
-			cs << "*)";
-		}
-		//
-		cs << "__" << node.Var->Name;
-		cs << ", ";
-		cs << node.Tt.Param;
-		cs << ")";
-		
-		if (node.Var->Value) {
-			ES();
-			
-			NL();
-			if (node.Var->Value->NT == NodeType::Temporary) {
-				TempNode& tmp = (TempNode&)*node.Var->Value;
-				cs << node.Var->Name;
-				cs << ".Init(";
-				for (int i = 0; i < tmp.Params.GetCount(); i++)
-					WalkNode(tmp.Params[i]);
-				cs << ")";
-			}
-			else {
-				cs << node.Var->Name << ".Copy(";
-				WalkNode(node.Var->Value);
-				cs << ")";
-			}
-		}
+		WriteCArrayVarBoiler(*node.Var);
 		
 		return;
 	}
@@ -1867,7 +1895,8 @@ void ZTranspiler::Proc(IndexNode& node) {
 void ZTranspiler::Proc(DestructNode& node) {
 	Walk(node.Object);
 	cs << ".~";
-	WStorageName(*node.Object->Tt.Class);
+	//WStorageName(*node.Object->Tt.Class);
+	cs << node.Object->Tt.Class->StorageName;
 	//cs << node.Object->Tt.Class->BackName;
 	cs << "()";
 }

@@ -85,6 +85,7 @@ public:
 	
 	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra);
 	void ProcLeftSet(String& cs, Node *n);
+	void WriteCArrayVarBoiler(ZVariable& var);
 	
 	void BeginNamespace(ZNamespace& ns) {
 		inNamespace = &ns;

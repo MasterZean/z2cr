@@ -41,14 +41,7 @@ void ZCompiler::SetInUse(ZNamespace& ns) {
 	ns.SetInUse();
 	if (ns.IsClass) {
 		ZClass& cls = (ZClass&)ns;
-	
-		if (cls.Meth.Destructor) {
-			cls.Meth.Destructor->SetInUse();
-			//if (cls.Meth.Destructor->ShouldEvaluate())
-			//	CompileFunc(*cls.Meth.Destructor);
-			
-			Destructors.Add(cls.Meth.Destructor);
-		}
+		SetInUse(cls);
 	}
 }
 
@@ -57,19 +50,33 @@ void ZCompiler::SetInUse(ZClass& cls) {
 		return;
 	
 	cls.SetInUse();
+	
+	/*if (cls.Meth.Default) {
+		cls.Meth.Default->SetInUse();
+		ExtraFunctions.Add(cls.Meth.Default);
+	}*/
 	if (cls.Meth.Destructor) {
 		cls.Meth.Destructor->SetInUse();
-		//if (cls.Meth.Destructor->ShouldEvaluate())
-		//	CompileFunc(*cls.Meth.Destructor);
-		
-		Destructors.Add(cls.Meth.Destructor);
+		ExtraFunctions.Add(cls.Meth.Destructor);
 	}
 	if (cls.Meth.CopyCon) {
 		cls.Meth.CopyCon->SetInUse();
-		//if (cls.Meth.Destructor->ShouldEvaluate())
-		//	CompileFunc(*cls.Meth.Destructor);
+		ExtraFunctions.Add(cls.Meth.CopyCon);
+	}
+	
+	if (cls.TBase == ass.CSlice	|| cls.Super == ass.CSlice) {
+		int index = cls.Methods.Find("Data");
 		
-		Destructors.Add(cls.Meth.CopyCon);
+		if (index != -1) {
+			ZMethodBundle& meth = cls.Methods[index];
+			
+			for (ZFunction* f: meth.Functions) {
+				if (f->IsProperty) {
+					f->SetInUse();
+					ExtraFunctions.Add(f);
+				}
+			}
+		}
 	}
 }
 
@@ -121,9 +128,9 @@ bool ZCompiler::compile() {
 		
 		if (MainFunction->InClass) {
 			ZClass& pcls = MainFunction->Class();
-			if (pcls.Meth.Default && pcls.Meth.Default->IsGenerated == false)
+			
+			if (pcls.Meth.Default/* && pcls.Meth.Default->IsGenerated == false*/)
 				CompileFunc(*pcls.Meth.Default);
-				
 		}
 		
 		if (MainFunction->ShouldEvaluate())
@@ -135,9 +142,9 @@ bool ZCompiler::compile() {
 			WriteDeps(MainFunction->Class());
 	}
 	
-	for (int i = 0; i < Destructors.GetCount(); i++) {
-		if (Destructors[i]->ShouldEvaluate())
-			CompileFunc(*Destructors[i]);
+	for (ZFunction* func: ExtraFunctions) {
+		if (func->ShouldEvaluate())
+			CompileFunc(*func);
 	}
 
 	for (int i = 0; i < cuClasses.GetCount(); i++) {
@@ -471,6 +478,7 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.IsEvaluated = true;
+	f.InUse = true;
 	
 	if (f.Trait.Traits.GetCount()) {
 		DUMP(f.Name);
@@ -489,6 +497,9 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 			Class->IsEvaluated = true;
 		}*/
 	}
+	
+	if (f.IsGenerated)
+		return true;
 	
 	ZParser parser(f.BodyPos);
 	
@@ -1202,6 +1213,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass, *this) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.3.2 (pre-alpha)";
+	static String name = "Z2CR 0.3.3.0 (pre-alpha)";
 	return name;
 }

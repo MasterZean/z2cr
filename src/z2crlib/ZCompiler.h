@@ -45,7 +45,7 @@ public:
 	
 	Vector<String> MCUPaths;
 	Vector<ZFunction*> LLVMInput;
-	Vector<ZFunction*> Destructors;
+	Vector<ZFunction*> ExtraFunctions;
 	
 	ZFunction* MainFunction = nullptr;
 	bool MainFound = false;
