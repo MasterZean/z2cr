@@ -950,11 +950,11 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 				
 				cls = right->Tt.Class->Super;
 				if (cls != nullptr) {
-					int index = cls->Methods.Find("Print");
+					int printIndex = cls->Methods.Find("Print");
 			
-					if (index != -1)
-						for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
-							ZFunction& copy = *cls->Methods[index].Functions[i];
+					if (printIndex != -1)
+						for (int i = 0; i < cls->Methods[printIndex].Functions.GetCount(); i++) {
+							ZFunction& copy = *cls->Methods[printIndex].Functions[i];
 							
 							copy.SetInUse();
 							if (copy.ShouldEvaluate())
@@ -987,11 +987,11 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 				
 				cls = right->Tt.Class->Super;
 				if (cls != nullptr) {
-					int index = cls->Methods.Find("PrintFmt");
+					int printIndex = cls->Methods.Find("PrintFmt");
 			
-					if (index != -1)
-						for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
-							ZFunction& copy = *cls->Methods[index].Functions[i];
+					if (printIndex != -1)
+						for (int i = 0; i < cls->Methods[printIndex].Functions.GetCount(); i++) {
+							ZFunction& copy = *cls->Methods[printIndex].Functions[i];
 							
 							copy.SetInUse();
 							if (copy.ShouldEvaluate())

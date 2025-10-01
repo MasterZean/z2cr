@@ -548,8 +548,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Byte")
-		s == "ptr";
+//	if (s == "Byte")
+//		s == "ptr";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -900,8 +900,8 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "malloc")
-		s == "free";
+//	if (s == "malloc")
+//		s == "free";
 	
 	// case .class
 	if (s == CLS_STR ) {

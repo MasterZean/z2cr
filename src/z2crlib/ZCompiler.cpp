@@ -933,7 +933,7 @@ bool ZCompiler::CompileVar(ZVariable& v, const ZCompilerContext& zcon) {
 	return node;
 }
 
-Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, bool useLastTrait) {
+Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, bool aUseLastTrait) {
 	auto vp = parser.GetFullPos();
 	
 	String name = parser.ExpectZId();
@@ -945,7 +945,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, boo
 	v.DefPos = vp;
 	v.Section = f.Section;
 	v.IsConst = aConst;
-	if (useLastTrait)
+	if (aUseLastTrait)
 		v.Trait = lastTrait;
 
 	ZCompilerContext zcon;
@@ -1213,6 +1213,6 @@ ZCompiler::ZCompiler(Assembly& aAss): ass(aAss), irg(ass, *this) {
 }
 
 String& ZCompiler::GetName() {
-	static String name = "Z2CR 0.3.3.0 (pre-alpha)";
+	static String name = "Z2CR 0.3.3 (pre-alpha)";
 	return name;
 }

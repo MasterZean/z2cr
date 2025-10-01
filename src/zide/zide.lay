@@ -1,4 +1,4 @@
-LAYOUT(ZideLayout, 1000, 600)
+LAYOUT(ZideLayout, 1200, 700)
 END_LAYOUT
 
 LAYOUT(SetupEditorLayout, 544, 200)
