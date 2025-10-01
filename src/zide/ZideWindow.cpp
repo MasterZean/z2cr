@@ -403,7 +403,7 @@ void ZideWindow::LoadNavigation(SmartEditor& editor, const String& text) {
 			
 			ZItem clsItem;
 
-			String clsName = ent.Type == EntityType::Class ? (cls._Namespace().Name + cls.Name) : cls.Name;
+			String clsName = ent.Type == EntityType::Class ? (cls.Namespace().Name + cls.Name) : cls.Name;
 			
 			int ii = asbAss.Docs.Find(clsName);
 			if (ii != -1)
