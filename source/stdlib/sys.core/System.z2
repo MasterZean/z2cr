@@ -2,6 +2,7 @@ namespace sys.core.lang;
 
 static class System {
 	val Out = 0;
+	val Fmt = 0;
 	
 	@[intrinsic]
 	def Assert(cond: Bool) {

@@ -4,6 +4,18 @@ class HeapBlock<T: Class>: Slice<T> {
 	private this() {
 	}
 	
+	this(aSize: PtrSize) {
+		length = aSize;
+		
+		if (length > 0) {
+			ptr = Ptr<T>{System.Malloc(aSize * T.@size)};
+			if (ptr == null)
+				length = 0;
+		}
+		
+		Construct();
+	}
+	
 	this(aSize: PtrSize, value: T) {
 		length = aSize;
 		
@@ -14,6 +26,12 @@ class HeapBlock<T: Class>: Slice<T> {
 		}
 		
 		Construct(value);
+	}
+	
+	this(copy: HeapBlock<T>) {
+		length = copy.Length;
+		ptr = Ptr<T>{System.Malloc(copy.Length * T.@size)};
+		System.MemCopy(Ptr<Byte>{ptr}, Ptr<Byte>{copy.Data}, copy.Length * T.@size);
 	}
 	
 	~this() {

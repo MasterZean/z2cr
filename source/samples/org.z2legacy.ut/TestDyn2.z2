@@ -43,14 +43,3 @@ class Test {
 		System.Out << 0 << " was deleted " << arr.DeleteAll(0) << " time(s).\n";
 	}
 }
-
-class Foo {
-	private this() {
-	}
-	
-	this(a: Int) {
-	}
-}
-
-class Bar {
-}

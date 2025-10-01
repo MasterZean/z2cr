@@ -1,7 +1,7 @@
 namespace sys.core.lang;
 
 class Slice<T: Class> {
-	@[unsafe]
+	@[unsafe, system]
 	this(aPtr: Ptr<T>, aLen: PtrSize) {
 		ptr = aPtr;
 		length = aLen;
@@ -128,14 +128,24 @@ class Slice<T: Class> {
 		}
 	}
 	
+	func PrintFmt() {
+		System.Out << '[';
+		for (val i = 0p; i < length; i++) {
+			System.Fmt << this[i];
+			if (i < length - 1)
+				System.Out << ", ";
+		}
+		System.Out << ']';
+	}
+	
 #endregion
 
 	property Length: PtrSize {
 		return length;
 	}
 	
-	@[unsafe]
-	property SysDataPointer: Ptr<T> {
+	@[unsafe, system]
+	property Data: Ptr<T> {
 		return ptr;
 	}
 	

@@ -10,6 +10,11 @@ class CArray<T: Class>: Slice<T> {
 			this[i].!{value};
 	}
 	
+	~this() {
+		for (val i = 0p; i < length; i++)
+			this[i].~{};
+	}
+	
 	def Copy(array: CArray<T>) {
 		if (length != array.length)
 			return;
