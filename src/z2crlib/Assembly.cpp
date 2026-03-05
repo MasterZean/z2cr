@@ -271,6 +271,7 @@ void Assembly::AddBuiltInClasses() {
 	CRaw->IsTemplate = true;
 	
 	CVect     = AddCoreType(LangNamespace(), "Vector", "Vector", false, false, false);
+	CVect->IsTemplate = true;
 
 	CSlice    = AddCoreType(LangNamespace(), "Slice", "Slice", false, false, false);
 	CSlice->IsTemplate = true;

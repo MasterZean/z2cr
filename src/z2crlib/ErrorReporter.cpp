@@ -115,7 +115,7 @@ void ER::CantInstantiateTemplate(const ZSourcePos& p, ZClass& cls) {
 
 
 void ER::ErrClassTemplateWrongArgumentNo(const ZSource& source, const Point& p, const ZClass& cls, int target, int argNo) {
-	String err = "template " + ToColor(cls, true) + "' must be instanced with " + IntStr(target) + " argument";
+	String err = "template " + ToColor(cls, true) + " must be instanced with " + IntStr(target) + " argument";
 	if (target != 1)
 		err << "s";
 	err << ", " << IntStr(argNo) << " provided.";

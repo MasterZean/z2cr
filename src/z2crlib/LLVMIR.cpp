@@ -1,6 +1,6 @@
 #include <z2crlib/LLVMIR.h>
 
-#if defined(_RELEASE) && defined(flagLLVM) && defined(_MSC_VER)
+#if defined(flagLLVM) && defined(_MSC_VER)
 
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/STLExtras.h"

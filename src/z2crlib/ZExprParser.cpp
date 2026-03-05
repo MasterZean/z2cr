@@ -391,7 +391,16 @@ Node* ZExprParser::ParseAtom() {
 				Node* index = Parse();
 				parser.Expect(']');
 				
-				if (/*exp->Tt.Class == ass.CPtr || */exp->Tt.Class->TBase == ass.CRaw || exp->Tt.Class->TBase == ass.CSlice
+				if (exp->Tt.Class == ass.CPtr) {
+					// TODO: add sys excep
+					Node* temp = irg.mem_index(exp, index);
+					if (temp == nullptr)
+						parser.Error(p, "expression of type '" + ass.TypeToColor(exp->Tt) + "' does not have a '["
+							+ ass.TypeToColor(index->Tt) + "]' operator defined");
+					
+					exp = temp;
+				}
+				else if (exp->Tt.Class->TBase == ass.CRaw || exp->Tt.Class->TBase == ass.CSlice
 						|| (exp->Tt.Class->Super && exp->Tt.Class->Super->TBase == ass.CSlice)) {
 					Node* temp = irg.mem_index(exp, index);
 					if (temp == nullptr)
@@ -548,8 +557,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "Byte")
-//		s == "ptr";
+	if (s == "Length")
+		s == "ptr";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -900,8 +909,8 @@ Node *ZExprParser::ParseDot(Node *exp) {
 	else
 		s = parser.ExpectId();
 	
-//	if (s == "malloc")
-//		s == "free";
+	if (s == "Length")
+		s == "free";
 	
 	// case .class
 	if (s == CLS_STR ) {

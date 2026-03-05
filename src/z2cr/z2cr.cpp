@@ -328,7 +328,7 @@ CONSOLE_APP_MAIN {
 		
 		Cout() << "\n";
 		
-#if defined(_RELEASE) && defined(flagLLVM) && defined(_MSC_VER)
+#if defined(flagLLVM) && defined(_MSC_VER)
 		int main2();
 		
 		//main2();

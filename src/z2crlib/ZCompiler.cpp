@@ -9,6 +9,7 @@ inline bool invalidClass(ZClass* cls, Assembly& ass) {
 }
 
 bool ZCompiler::Compile(bool exc) {
+	//MCU = true;
 	if (exc == false)
 		return compile();
 	else {
@@ -258,6 +259,15 @@ bool ZCompiler::FindMain() {
 }
 
 bool ZCompiler::Transpile() {
+	// TODO: enhance
+	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
+		if (ass.Namespaces.GetKey(i) == "sys.core.")
+			ass.Namespaces[i].BackName = "zc";
+		else if (ass.Namespaces.GetKey(i) == "sys.core.lang.")
+			ass.Namespaces[i].BackName = "zl";
+		DUMP(ass.Namespaces.GetKey(i));
+	}
+	
 	CppPath = AppendFileName(BuildPath, "out.cpp");
 	FileOut out(CppPath);
 	ZTranspiler cpp(*this, out);

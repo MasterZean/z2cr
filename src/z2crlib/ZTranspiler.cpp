@@ -18,6 +18,12 @@ bool CanAccess(AccessType access, int accessFlags) {
 
 void ZTranspiler::WriteIntro() {
 	NL();
+	/*cs << "#include <cstdio>\n";
+	cs << "#include <vector>\n";
+	cs << "#include <string>\n";
+	cs << "#include <map>\n";
+	cs << "#include <algorithm>\n";*/
+	//cs << "#include <new>\n";
 	cs << "#include \"cppcode.h\"";
 	EL();
 	

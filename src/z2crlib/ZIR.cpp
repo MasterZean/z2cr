@@ -1765,13 +1765,13 @@ IndexNode* IR::mem_index(Node* object, Node* index) {
 		node->Chain = object->Chain;
 	}
 
-	/*if (exp->Tt.Class == ass.CPtr) {
-		node->SetType(exp->Tt.Next);
-		node->LValue = true;
+	if (object->Tt.Class == ass.CPtr) {
+		node->SetType(object->Tt.Next);
+		node->IsAddressable = true;
 	}
-	else if (exp->Tt.Class == ass.CString)
-		node->SetType(ass.CByte->Tt);
-	else*/ if (object->Tt.Class->TBase == ass.CRaw || object->Tt.Class->TBase == ass.CSlice
+	/*else if (exp->Tt.Class == ass.CString)
+		node->SetType(ass.CByte->Tt);*/
+	else if (object->Tt.Class->TBase == ass.CRaw || object->Tt.Class->TBase == ass.CSlice
 				|| (object->Tt.Class->Super && object->Tt.Class->Super->TBase == ass.CSlice)) {
 		object->IsIndirect = false;
 		node->SetType(object->Tt.Class->T->Tt);
