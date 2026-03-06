@@ -1441,13 +1441,19 @@ void ZTranspiler::Proc(DefNode& node) {
 					cs << ".";
 				}*/
 			}
-			/*if (node.Object->Tt.Class->TBase == ass.CRaw) {
-				if (f.IsProperty && f.Name == "Length") {
+			if (node.Object->Tt.Class->TBase == ass.CRaw) {
+				/*if (f.IsProperty && f.Name == "Length") {
 					cs << node.Object->Tt.Param;
 					return;
 				}
-				else {
-					cs << ass.CSlice->Owner().BackName;
+				else {*/
+					WClsName(*node.Object->Tt.Class->Super);
+					cs << "(";
+					Walk(node.Object);
+					cs << ", ";
+					cs << node.Object->Tt.Param;
+					cs << ").";
+					/*cs << ass.CSlice->Owner().BackName;
 					cs << "::";
 					cs << "CArray_";
 					cs << node.Object->Tt.Class->T->Name;
@@ -1455,9 +1461,9 @@ void ZTranspiler::Proc(DefNode& node) {
 					Walk(node.Object);
 					cs << ", ";
 					cs << node.Object->Tt.Param;
-					cs << ").";
-				}
-			}*/
+					cs << ").";*/
+				//}
+			}
 			else {
 				Walk(node.Object);
 				cs << ".";
