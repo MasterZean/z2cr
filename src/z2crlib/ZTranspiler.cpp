@@ -1127,14 +1127,24 @@ void ZTranspiler::Proc(OpNode& node) {
 		if (node.Op == OpNode::opAssign && l->Chain && l->Chain->PropCount)
 			ProcLeftSet(l, r, node.ExtraOp, node.ExtraNode);
 		else {
-			Walk(l);
-			
-			if (l->Tt.Class->TBase == ass.CRaw) {
-				cs << ".Copy(";
+			if (node.Op == OpNode::opAssign && l->Tt.Class->TBase == ass.CRaw) {
+				WClsName(*l->Tt.Class);
+				cs << "(";
+				Walk(l);
+				cs << ", ";
+				cs << l->Tt.Param;
+				cs << ").";
+				cs << "Copy(";
+				WClsName(*r->Tt.Class);
+				cs << "(";
 				Walk(r);
+				cs << ", ";
+				cs << r->Tt.Param;
+				cs << ")";
 				cs << ")";
 			}
 			else {
+				Walk(l);
 				cs << ' ';
 				if (node.ExtraOp != OpNode::Type::opNotSet)
 					cs << opss[node.ExtraOp];
