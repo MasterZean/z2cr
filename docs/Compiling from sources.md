@@ -43,18 +43,19 @@ The `install` script will install the dependencies of U++ and the build the pack
 
 #### Sample output from a system that already has all the dependencies:
 
-> g++ is already the newest version (4:13.2.0-7ubuntu1).  
-> clang is already the newest version (1:18.0-59~exp2).  
-> clang-format is already the newest version (1:18.0-59~exp2).  
-> git is already the newest version (1:2.43.0-1ubuntu7.3).  
-> make is already the newest version (4.3-4.1build2).  
-> libgtk-3-dev is already the newest version (3.24.41-4ubuntu1.3).  
-> libnotify-dev is already the newest version (0.8.3-1build2).  
-> libbz2-dev is already the newest version (1.0.8-5.1build0.1).  
-> libssl-dev is already the newest version (3.0.13-0ubuntu3.7).  
-> xdotool is already the newest version (1:3.20160805.1-5build1).  
-> 0 upgraded, 0 newly installed, 0 to remove and 329 not upgraded.  
-
+```
+g++ is already the newest version (4:13.2.0-7ubuntu1).  
+clang is already the newest version (1:18.0-59~exp2).  
+clang-format is already the newest version (1:18.0-59~exp2).  
+git is already the newest version (1:2.43.0-1ubuntu7.3).  
+make is already the newest version (4.3-4.1build2).  
+libgtk-3-dev is already the newest version (3.24.41-4ubuntu1.3).  
+libnotify-dev is already the newest version (0.8.3-1build2).  
+libbz2-dev is already the newest version (1.0.8-5.1build0.1).  
+libssl-dev is already the newest version (3.0.13-0ubuntu3.7).  
+xdotool is already the newest version (1:3.20160805.1-5build1).  
+0 upgraded, 0 newly installed, 0 to remove and 329 not upgraded.  
+```
 
 Finally, it will ask you if you want to use prebuilt `umks32` to speed up the process.
 
