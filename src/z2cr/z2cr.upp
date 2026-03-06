@@ -2,21 +2,21 @@ uses
 	Core,
 	z2crlib;
 
-library(LLVM) "LLVMCore.lib LLVMRemarks.lib LLVMBitstreamReader.lib LLVMBinaryFormat.lib LLVMTargetParser.lib LLVMSupport.lib LLVMDemangle.lib";
+library(LLVM) "LLVMCore LLVMRemarks LLVMBitstreamReader LLVMBinaryFormat LLVMTargetParser LLVMSupport LLVMDemangle";
 
-library(LLVM) "LLVMBitstreamReader.lib LLVMBinaryFormat.lib LLVMTargetParser.lib LLVMDemangle.lib ";
+library(LLVM) "LLVMBitstreamReader LLVMBinaryFormat LLVMTargetParser LLVMDemangle";
 
-library(LLVM) "LLVMDebugInfoCodeView.lib LLVMDebugInfoMSF.lib LLVMDebugInfoBTF.lib LLVMFrontendHLSL.lib LLVMRemarks.lib";
+library(LLVM) "LLVMDebugInfoCodeView LLVMDebugInfoMSF LLVMDebugInfoBTF LLVMFrontendHLSL LLVMRemarks";
 
-library(LLVM) "LLVMDebugInfoGSYM.lib LLVMDebugInfoDWARF.lib LLVMDebugInfoDWARFLowLevel.lib LLVMDebugInfoPDB.lib LLVMObject.lib LLVMIRReader.lib LLVMBitReader.lib LLVMAsmParser.lib LLVMMCParser.lib LLVMTextAPI.lib ";
+library(LLVM) "LLVMDebugInfoGSYM LLVMDebugInfoDWARF LLVMDebugInfoDWARFLowLevel LLVMDebugInfoPDB LLVMObject.lib LLVMIRReader LLVMBitReader LLVMAsmParser LLVMMCParser LLVMTextAPI ";
 
-library(LLVM) "LLVMScalarOpts.lib LLVMAggressiveInstCombine.lib LLVMInstCombine.lib LLVMCGData.lib LLVMBitWriter.lib LLVMCodeGenTypes.lib LLVMTransformUtils.lib LLVMAnalysis.lib LLVMProfileData.lib LLVMSymbolize.lib";
+library(LLVM) "LLVMScalarOpts LLVMAggressiveInstCombine LLVMInstCombine LLVMCGData LLVMBitWriter LLVMCodeGenTypes LLVMTransformUtils LLVMAnalysis LLVMProfileData LLVMSymbolize";
 
-library(LLVM) "LLVMMCDisassembler.lib LLVMAsmPrinter.lib LLVMCFGuard.lib LLVMGlobalISel.lib LLVMIRPrinter.lib LLVMInstrumentation.lib LLVMSelectionDAG.lib LLVMCodeGen.lib LLVMTarget.lib LLVMObjCARCOpts.lib ";
+library(LLVM) "LLVMMCDisassembler LLVMAsmPrinter LLVMCFGuard LLVMGlobalISel LLVMIRPrinter LLVMInstrumentation LLVMSelectionDAG LLVMCodeGen LLVMTarget LLVMObjCARCOpts";
 
-library(LLVM) "LLVMExecutionEngine.lib LLVMInterpreter.lib LLVMMC.lib LLVMMCJIT.lib LLVMSupport.lib LLVMX86CodeGen.lib LLVMX86Desc.lib LLVMX86Info.lib LLVMOrcTargetProcess.lib LLVMOrcShared.lib LLVMRuntimeDyld.lib ";
+library(LLVM) "LLVMExecutionEngine LLVMInterpreter LLVMMC LLVMMCJIT LLVMSupport LLVMX86CodeGen LLVMX86Desc LLVMX86Info LLVMOrcTargetProcess LLVMOrcShared LLVMRuntimeDyld";
 
-library(LLVM) "psapi.lib shell32.lib ole32.lib uuid.lib advapi32.lib ws2_32.lib ntdll.lib delayimp.lib -delayload:shell32.dll -delayload:ole32.dll kernel32.lib user32.lib gdi32.lib winspool.lib oleaut32.lib comdlg32.lib ";
+library(LLVM) "psapi shell32 ole32 uuid advapi32 ws2_32 ntdll delayimp -delayload:shell32.dll -delayload:ole32.dll kernel32 user32 gdi32 winspool oleaut32 comdlg32 ";
 
 options(GCC | CLANG) -Wshadow;
 

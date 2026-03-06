@@ -1421,14 +1421,15 @@ void ZTranspiler::Proc(DefNode& node) {
 		if (node.Object) {
 			if (node.Object->Tt.Class->TBase == ass.CRaw && f.IsProperty && node.Object->NT == NodeType::Memory && f.Name == "Length") {
 				auto mem = (MemNode*)node.Object;
-				if (mem->Mem->Trait.Flags & ZTrait::RAW) {
+				// TODO: fix?
+				//if (mem->Mem->Trait.Flags & ZTrait::RAW) {
 					cs << node.Object->Tt.Param;
 					return;
-				}
+				/*}
 				else {
 					Walk(node.Object);
 					cs << ".";
-				}
+				}*/
 			}
 			/*if (node.Object->Tt.Class->TBase == ass.CRaw) {
 				if (f.IsProperty && f.Name == "Length") {
@@ -1729,11 +1730,12 @@ void ZTranspiler::WriteCArrayVarBoiler(ZVariable& var) {
 void ZTranspiler::Proc(LocalNode& node) {
 	ASSERT(node.Var);
 	
-	if ((node.Var->Trait.Flags & ZTrait::RAW) == 0 && node.Tt.Class->TBase == ass.CRaw) {
+	// TODO: fix?
+	/*if ((node.Var->Trait.Flags & ZTrait::RAW) == 0 && node.Tt.Class->TBase == ass.CRaw) {
 		WriteCArrayVarBoiler(*node.Var);
 		
 		return;
-	}
+	}*/
 	
 	if (node.Var->IsConst)
 		cs << "const ";
@@ -1928,4 +1930,108 @@ void ZTranspiler::Proc(PlacementNewNode& node) {
 			Walk(node.Value);
 		cs << ")";
 	}
+}
+
+void ZTranspiler::NewMember() {
+	if (inNamespace) {
+		if (firstInNamespace) {
+			NL();
+			cs << "namespace ";
+			NsIntro(*inNamespace);
+			EL();
+			
+			indent++;
+			
+			firstInNamespace = false;
+		}
+		
+		namespaceWrites++;
+	}
+	
+	if (!inClass)
+		return;
+	
+	if (firstInClass) {
+		if (classWrites)
+			NL();
+		
+		NL();
+		cs << "class ";
+		WriteClassName(*inClass);
+		if (inClass->Super) {
+			cs << ": public ";
+			cs << inClass->Super->Owner().BackName;
+			cs << "::";
+			WriteClassName(*inClass->Super);
+		}
+		cs << " {";
+		EL();
+		
+		indent++;
+		
+		if (inClass->CABICompensation) {
+			cs << "\tpublic:" << "\n";
+			cs << "\t\t";
+			WPClsName(*inClass);
+			cs << "(_";
+			WPClsName(*inClass);
+			cs << " v";
+			cs << ") {\n";
+			
+			cs << "\t\t\tmemcpy(this, &v, sizeof(_";
+			WPClsName(*inClass);
+			cs << "));\n";
+			
+			cs << "\t\t}\n";
+		}
+		
+		// todo: fix
+		if (inClass == ass.CString) {
+			cs << "\tpublic:" << "\n";
+			cs << "\t\tString(): text((uint8*)\"\") {}" << "\n";
+			cs << "\t\tString(const char *aTxt): text((uint8*)aTxt) {}" << "\n";
+			cs << "\tpublic:" << "\n";
+			cs << "\t\tuint8 *text = nullptr;" << "\n";
+		}
+		
+		if (inClass && inClass->TBase == ass.CSlice && inClass->T->TBase != ass.CRaw) {
+			cs << "\tpublic:" << "\n";
+			
+			cs << "\t\t";
+			WStorageName(*inClass->T);
+
+			cs << "& operator[](size_t idx) {\n";
+			cs << "\t\t\t";
+			cs << "if (idx >= length) throw sys::exception::IndexOutOfBounds();\n";
+			cs << "\t\t\t";
+			cs << "return ptr[idx];\n";
+			cs << "\t\t}\n";
+			
+			cs << "\t\t";
+			cs << "const ";
+			WStorageName(*inClass->T);
+
+			cs << "& operator[](size_t idx) const {\n";
+			cs << "\t\t\t";
+			cs << "if (idx >= length) throw sys::exception::IndexOutOfBounds();\n";
+			cs << "\t\t\t";
+			cs << "return ptr[idx];\n";
+			cs << "\t\t}\n";
+		}
+		
+		if (inClass && inClass->TBase == ass.CRaw && inClass->T->TBase != ass.CRaw) {
+			cs << "\tpublic:" << "\n";
+			cs << "\t\t";
+			WriteClassName(*inClass);
+			cs << "(";
+			WStorageName(*inClass->T);
+			cs << "* aPtr, size_t aLen): ";
+			WriteClassName(*inClass->Super);
+			cs << "(aPtr, aLen) {}\n";
+		}
+		
+		firstInClass = false;
+	}
+	
+	classWrites++;
 }
