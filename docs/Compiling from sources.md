@@ -41,8 +41,8 @@ tar -xvf upp-posix-18467.tar.xz
 You should get a fresh U++ source code copy under the folder `upp`. We can `cd` into it to make sure everything is ok and see if the install script is available:
 
 ```
-> cd ~/sandbox/z2cr-git/z2cr/upp
-> ls install
+cd ~/sandbox/z2cr-git/z2cr/upp
+ls install
 ```
 
 The `install` script will install the dependencies of U++ and the build the package if no error is encountered. It will use the package manager of your distribution to get official packages for said dependencies. It might ask for permission or your sudo password. Here is a sample of what you might encounter:
