@@ -287,6 +287,12 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 		if (f.Params.GetCount() == 0)
 			cls.Meth.Destructor = &f;
 	}
+	else {
+		if (f.Name == "@attr" && f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class == &f.Class()) {
+			cls.Meth.Copy = &f;
+			//f.Return.Tt = f.Class().Tt;
+		}
+	}
 }
 
 void ZResolver::ResolveVariables() {

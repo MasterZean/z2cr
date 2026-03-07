@@ -64,6 +64,10 @@ void ZCompiler::SetInUse(ZClass& cls) {
 		cls.Meth.CopyCon->SetInUse();
 		ExtraFunctions.Add(cls.Meth.CopyCon);
 	}
+	if (cls.Meth.Copy) {
+		cls.Meth.Copy->SetInUse();
+		ExtraFunctions.Add(cls.Meth.Copy);
+	}
 	
 	if (cls.TBase == ass.CSlice	|| cls.Super == ass.CSlice) {
 		int index = cls.Methods.Find("Data");
