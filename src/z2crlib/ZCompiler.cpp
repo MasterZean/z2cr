@@ -5,7 +5,7 @@
 extern String opss[];
 
 inline bool invalidClass(ZClass* cls, Assembly& ass) {
-	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass || cls == ass.CDef;
+	return cls == ass.CVoid || cls == ass.CNull || cls == ass.CClass/* || cls == ass.CDef*/;
 }
 
 bool ZCompiler::Compile(bool exc) {
@@ -983,6 +983,8 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, boo
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, const ZCompilerContext& zcon) {
 	ZClass* cls = nullptr;
 	
+	if (v.Name == "f1")
+		v.Name == "f1";
 	if (parser.Char(':')) {
 		auto ti = ZExprParser::ParseType(*this, parser, true, false, zcon.Class, zcon.Class, zcon.Func);
 		

@@ -1039,6 +1039,22 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 	ti.IsConst = false;
 	
 	auto tt = parser.GetFullPos();
+	
+	if (parser.Id("func") || parser.Id("def")) {
+		ZFunction f(*aclass);
+		f.InClass = true;
+		f.ParamPos = parser.GetFullPos();
+		
+		f.ParseSignatures(comp, parser);
+		f.GenerateSignatures();
+		
+		DUMP(f.FuncSig());
+		
+		ti.Tt.Class = ass.CDef;
+		
+		return ti;
+	}
+	
 	String shtype = parser.ExpectId();
 	String type = shtype;
 	

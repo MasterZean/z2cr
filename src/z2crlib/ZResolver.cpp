@@ -195,7 +195,7 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 
 void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 	f.ParseSignatures(comp);
-	f.GenerateSignatures(comp);
+	f.GenerateSignatures();
 	f.DefPos.Source->Functions.Add(&f);
 	
 	if (f.InClass && f.IsConstructor == 1) {
@@ -241,7 +241,7 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 			
 			f.Return.Tt = ass.CVoid->Tt;
 			
-			f.GenerateSignatures(comp);
+			f.GenerateSignatures();
 			
 			DUMP(&f);
 		}

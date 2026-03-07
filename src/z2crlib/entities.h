@@ -376,7 +376,9 @@ public:
 	ZFunction(const ZFunction& aEntity) = default;
 	
 	void ParseSignatures(ZCompiler& comp);
-	void GenerateSignatures(ZCompiler& comp);
+	void ParseSignatures(ZCompiler& comp, ZParser& parser);
+	
+	void GenerateSignatures();
 	
 	const String& FuncSig() const {
 		return fsig;

@@ -46,7 +46,10 @@ void ZClass::CopyPreSection(ZClass& cls) {
 
 void ZFunction::ParseSignatures(ZCompiler& comp) {
 	ZParser parser(ParamPos);
-	
+	ParseSignatures(comp, parser);
+}
+
+void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 	bool paramList = true;
 	
 	if (IsProperty && (IsGetter || IsSimpleGetter))
@@ -117,7 +120,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp) {
 		Return.Tt = Ass().CVoid->Tt;
 }
 
-void ZFunction::GenerateSignatures(ZCompiler& comp) {
+void ZFunction::GenerateSignatures() {
 	fsig = "";
 	dsig = "";
 	csig = "";
@@ -184,6 +187,7 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	
 	String lpsig = IsConstructor ? "{" : "(";
 	String psigc = IsConstructor ? "{" : "(";
+	psig = IsConstructor ? "{" : "(";
 	
 	for (int i = 0; i < Params.GetCount(); i++) {
 		ZVariable& var = Params[i];
@@ -203,7 +207,7 @@ void ZFunction::GenerateSignatures(ZCompiler& comp) {
 	dsig << psig;
 	fsig << psig;
 	csig << psigc;
-	psig = lpsig;
+	//psig = lpsig;
 	
 	if (Return.Tt.Class && Return.Tt.Class != Ass().CVoid) {
 		fsig << ": ";
