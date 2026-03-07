@@ -280,8 +280,12 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 	if (f.IsConstructor == 1) {
 		if (f.Params.GetCount() == 0)
 			cls.Meth.Default = &f;
-		if (f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class == &f.Class())
-			cls.Meth.CopyCon = &f;
+		if (f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class == &f.Class()) {
+			if (f.Params[0].PType == ZVariable::tyAuto)
+				cls.Meth.CopyCon = &f;
+			else if (f.Params[0].PType == ZVariable::tyMove)
+				cls.Meth.MoveCon = &f;
+		}
 	}
 	else if (f.IsDestructor) {
 		if (f.Params.GetCount() == 0)
@@ -289,8 +293,10 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 	}
 	else {
 		if (f.Name == "@attr" && f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class == &f.Class()) {
-			cls.Meth.Copy = &f;
-			//f.Return.Tt = f.Class().Tt;
+			if (f.Params[0].PType == ZVariable::tyAuto)
+				cls.Meth.Copy = &f;
+			else if (f.Params[0].PType == ZVariable::tyMove)
+				cls.Meth.Move = &f;
 		}
 	}
 }

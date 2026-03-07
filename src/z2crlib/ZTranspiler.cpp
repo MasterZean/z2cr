@@ -570,6 +570,8 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 }
 
 bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
+	//if (f.InClass && f.Class().TBase == ass.CVect && f.IsConstructor)
+	//	f.Name == "aaa";
 	if (f.IsSimpleGetter && f.IsGetter) {
 		WriteType(&f.Return.Tt);
 	
@@ -662,7 +664,7 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	//else if (f.InClass && f.Class().TBase == ass.CRaw)
 	//	cs << "static ";
 	
-	if (&f == f.Bundle->Class().Meth.Copy) {
+	if (f.InClass && (&f == f.Bundle->Class().Meth.Copy || &f == f.Bundle->Class().Meth.Move)) {
 		WriteReturnType(&f.Class().Tt, false);
 		cs << "&";
 	}
@@ -670,7 +672,7 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 		WriteReturnType(&f.Return.Tt, f.Trait.Flags & ZTrait::BINDC);
 	
 	cs << " ";
-	if (&f == f.Bundle->Class().Meth.Copy)
+	if (f.InClass && (&f == f.Bundle->Class().Meth.Copy || &f == f.Bundle->Class().Meth.Move))
 		cs << "operator=";
 	else
 		cs << f.BackName;
@@ -737,7 +739,7 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	}
 	
 	// ret
-	if (&f == f.Bundle->Class().Meth.Copy) {
+	if (f.InClass && (&f == f.Bundle->Class().Meth.Copy || &f == f.Bundle->Class().Meth.Move)) {
 		WriteReturnType(&f.Class().Tt, false);
 		cs << "&";
 	}
@@ -753,7 +755,7 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 		cs << "::";
 	}
 
-	if (&f == f.Bundle->Class().Meth.Copy)
+	if (f.InClass && (&f == f.Bundle->Class().Meth.Copy || &f == f.Bundle->Class().Meth.Move))
 		cs << "operator=";
 	else
 		cs << f.BackName;
@@ -798,9 +800,21 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 				cs << parCls.BackName;
 			}
 			else {
-				cs << "const ";
-				WPNsName(parCls);
-				cs << parCls.BackName << "&";
+				if (var.PType == ZVariable::tyAuto) {
+					cs << "const ";
+					WPNsName(parCls);
+					cs << parCls.BackName << "&";
+				}
+				else if (var.PType == ZVariable::tyRef) {
+					WPNsName(parCls);
+					cs << parCls.BackName << "&";
+				}
+				else if (var.PType == ZVariable::tyMove) {
+					WPNsName(parCls);
+					cs << parCls.BackName << "&&";
+				}
+				else
+					ASSERT(0);
 			}
 		}
 		cs << " " << var.Name;
@@ -862,7 +876,7 @@ void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
 		ES();
 	}
 	
-	if (inFunction && inFunction == inFunction->Bundle->Class().Meth.Copy) {
+	if (inFunction && inFunction->InClass && (inFunction == inFunction->Bundle->Class().Meth.Copy || inFunction == inFunction->Bundle->Class().Meth.Move)) {
 		NL();
 		cs << "return *this";
 		ES();
@@ -1814,7 +1828,7 @@ void ZTranspiler::Proc(ReturnNode& node) {
 		Walk(node.Value);
 	}
 	
-	if (inFunction && inFunction == inFunction->Bundle->Class().Meth.Copy)
+	if (inFunction && inFunction->InClass && (inFunction == inFunction->Bundle->Class().Meth.Copy || inFunction == inFunction->Bundle->Class().Meth.Move))
 		cs << " *this";
 }
 
