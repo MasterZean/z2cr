@@ -106,6 +106,7 @@ public:
 class TempNode: public ParamsNode {
 public:
 	ZFunction *Constructor = nullptr;
+	Vector<Node*> Array;
 
 	TempNode() {
 		NT = NodeType::Temporary;

@@ -1839,6 +1839,9 @@ void ZTranspiler::Proc(TempNode& node) {
 	
 	ZClass& cls = *node.Tt.Class;
 	
+	if (node.Array.GetCount())
+		cs << "[]() { auto v = ";
+	
 	if (cls.CoreSimple) {
 		WClsName(cls);
 		cs << "::";
@@ -1870,6 +1873,18 @@ void ZTranspiler::Proc(TempNode& node) {
 	}
 	
 	cs << ')';
+	
+	if (node.Array.GetCount()) {
+		cs << "; ";
+		
+		for (int i = 0; i < node.Array.GetCount(); i++) {
+			cs << "v.Add(";
+			Walk(node.Array[i]);
+			cs << "); ";
+		}
+	
+		cs << "return v; }()";
+	}
 }
 
 void ZTranspiler::Proc(ListNode& node) {

@@ -207,7 +207,7 @@ Node* ZExprParser::GetOpOverloadStatic(Node* left, Node* right, int op, const Po
 }
 
 Node* ZExprParser::ParseAtom() {
-	Point opp = parser.GetPoint();
+	auto opp = parser.GetFullPos();
 
 	Node* exp = nullptr;
 	
@@ -216,7 +216,7 @@ Node* ZExprParser::ParseAtom() {
 	else if (parser.IsCharConst()) {
 		uint32 ch = parser.ReadChar();
 		if (ch == -1)
-			parser.Error(opp, "illegal " + ass.ToQtColor(ass.CChar) + " literal constant");
+			parser.Error(opp.P, "illegal " + ass.ToQtColor(ass.CChar) + " literal constant");
 		exp = irg.const_char(ch);
 	}
 	else if (parser.Id("true"))
@@ -266,7 +266,7 @@ Node* ZExprParser::ParseAtom() {
 			}
 		}
 		else {
-			parser.Error(opp, "'def' encountered outside of method");
+			parser.Error(opp.P, "'def' encountered outside of method");
 		}
 	}
 	else if (parser.Id("this")) {
@@ -311,33 +311,54 @@ Node* ZExprParser::ParseAtom() {
 		Node* node = ParseAtom();
 		exp = irg.minus(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '-' ('@minus') on type " + ass.ToQtColor(node));
+			parser.Error(opp.P, "can't apply unary '-' ('@minus') on type " + ass.ToQtColor(node));
 	}
 	else if (parser.Char('+')) {
 		Node* node = ParseAtom();
 		exp = irg.plus(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '+' ('@plus') on type " + ass.ToQtColor(node));
+			parser.Error(opp.P, "can't apply unary '+' ('@plus') on type " + ass.ToQtColor(node));
 	}
 	else if (parser.Char('!')) {
 		Node* node = ParseAtom();
 		exp = irg.op_not(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '!' ('@not') on type " + ass.ToQtColor(node));
+			parser.Error(opp.P, "can't apply unary '!' ('@not') on type " + ass.ToQtColor(node));
 	}
 	else if (parser.Char('~')) {
 		Node* node = ParseAtom();
 		exp = irg.bitnot(node);
 		if (exp == nullptr)
-			parser.Error(opp, "can't apply unary '~' ('@bitnot') on type " + ass.ToQtColor(node));
+			parser.Error(opp.P, "can't apply unary '~' ('@bitnot') on type " + ass.ToQtColor(node));
 	}
 	else if (parser.Char('(')) {
 		Node* node = Parse();
 		parser.Expect(')');
 		exp = irg.list(node);
 	}
+	else if (parser.Char('[')) {
+		Vector<Node*> params;
+		
+		getParams(params, ']');
+		
+		Vector<Node*> nodes;
+		
+		nodes << irg.const_class(*params[0]->Tt.Class);
+		
+		exp = ParseSpec(*ass.CVect, irg.const_class(*ass.CVect), nodes, opp);
+		
+		exp = Temporary(ass.Classes[(int)exp->IntVal], Vector<Node*>{}, opp);
+		
+		ASSERT(exp->NT == NodeType::Temporary);
+		
+		auto temp = (TempNode*)exp;
+		
+		temp->Array = std::move(params);
+		
+		return temp;
+	}
 	else {
-		parser.Error(opp, "expression expected, " + parser.Identify() + " found");
+		parser.Error(opp.P, "expression expected, " + parser.Identify() + " found");
 		return nullptr;
 	}
 	
