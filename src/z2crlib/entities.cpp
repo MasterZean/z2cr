@@ -59,21 +59,21 @@ void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 		parser.Expect('(');
 		
 		while (!parser.IsChar(')')) {
-			ZVariable::ParamType ptype = ZVariable::tyAuto;
+			ParamType ptype = ParamType::Auto;
 			
 			if (parser.IsId("val")) {
 				parser.ReadId();
-				ptype = ZVariable::tyVal;
+				ptype = ParamType::Val;
 			}
 			else if (parser.IsId("ref")) {
 				parser.ReadId();
-				ptype = ZVariable::tyRef;
+				ptype = ParamType::Ref;
 				if (parser.Char('?'))
 					;
 			}
 			else if (parser.IsId("move")) {
 				parser.ReadId();
-				ptype = ZVariable::tyMove;
+				ptype = ParamType::Move;
 				if (parser.Char('?'))
 					;
 			}
@@ -105,7 +105,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 				var.DefPos = pp;
 				var.PType = ptype;
 				//todo: remove?
-				var.IsConst = var.PType == ZVariable::tyAuto;
+				var.IsConst = var.PType == ParamType::Auto;
 			}
 		}
 		

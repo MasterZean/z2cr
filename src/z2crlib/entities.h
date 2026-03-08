@@ -289,14 +289,6 @@ private:
 
 class ZVariable: Moveable<ZVariable>, public ZEntity {
 public:
-	enum ParamType {
-		tyAuto,
-		tyRef,
-		tyConstRef,
-		tyVal,
-		tyMove,
-	};
-	
 	bool FromTemplate = false;
 	bool IsDuplicate = false;
 	bool IsConst = false;

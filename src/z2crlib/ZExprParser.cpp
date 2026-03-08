@@ -578,7 +578,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Length")
+	if (s == "f")
 		s == "ptr";
 	
 	if (Function) {
@@ -765,6 +765,14 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 		ZMethodBundle& method = ns.Methods[index];
 		Vector<Node*> params;
 		
+		if (method.IsProperty == false && method.IsConstructor == false) {
+			if (parser.IsChar2(':', ':')) {
+				ASSERT(0);
+			}
+			else if (!parser.IsChar('(')) {
+				ASSERT(0);
+			}
+		}
 		if (method.IsProperty == false) {
 			if (!method.IsConstructor) {
 				// TODO: unsafe

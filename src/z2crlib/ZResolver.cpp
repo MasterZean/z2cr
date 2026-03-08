@@ -236,7 +236,7 @@ void ZResolver::ResolveFunction(ZNamespace& ns, ZFunction& f) {
 			var.BackName = "__value";
 			var.I = d2.Functions[0]->Return;
 			//var.DefPos = pp;
-			var.PType = ZVariable::ParamType::tyAuto;
+			var.PType = ParamType::Auto;
 			//var.IsConst = !isVal;
 			
 			f.Return.Tt = ass.CVoid->Tt;
@@ -281,9 +281,9 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 		if (f.Params.GetCount() == 0)
 			cls.Meth.Default = &f;
 		if (f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class == &f.Class()) {
-			if (f.Params[0].PType == ZVariable::tyAuto)
+			if (f.Params[0].PType == ParamType::Auto)
 				cls.Meth.CopyCon = &f;
-			else if (f.Params[0].PType == ZVariable::tyMove)
+			else if (f.Params[0].PType == ParamType::Move)
 				cls.Meth.MoveCon = &f;
 		}
 	}
@@ -293,9 +293,9 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 	}
 	else {
 		if (f.Name == "@attr" && f.Params.GetCount() == 1 && f.Params[0].I.Tt.Class == &f.Class()) {
-			if (f.Params[0].PType == ZVariable::tyAuto)
+			if (f.Params[0].PType == ParamType::Auto)
 				cls.Meth.Copy = &f;
-			else if (f.Params[0].PType == ZVariable::tyMove)
+			else if (f.Params[0].PType == ParamType::Move)
 				cls.Meth.Move = &f;
 		}
 	}

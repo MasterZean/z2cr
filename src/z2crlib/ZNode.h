@@ -91,15 +91,15 @@ public:
 	}
 };
 
-class DefNode: public ParamsNode {
+class CallNode: public ParamsNode {
 public:
 	ZFunction* Function = nullptr;
 	Node* Object = nullptr;
 	bool Property = false;
 	bool IsDestructor = false;
 
-	DefNode() {
-		NT = NodeType::Def;
+	CallNode() {
+		NT = NodeType::CallFunc;
 	}
 };
 

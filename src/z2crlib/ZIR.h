@@ -53,7 +53,7 @@ protected:
 	NodePool<CastNode> castNodes;
 	
 	NodePool<MemNode> memNodes;
-	NodePool<DefNode> defNodes;
+	NodePool<CallNode> callNodes;
 	NodePool<BlockNode> blockNodes;
 	NodePool<IfNode> ifNodes;
 	NodePool<WhileNode> whileNodes;

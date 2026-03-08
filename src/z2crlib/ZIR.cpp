@@ -1463,7 +1463,7 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 		return op;
 	}*/
 	
-	DefNode* node = defNodes.Get();
+	CallNode* node = callNodes.Get();
 	node->Function = &over;
 	node->Object = object;
 	

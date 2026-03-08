@@ -749,8 +749,8 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext&
 			Node* child = node->Chain->First;
 
 			while (child) {
-				if (child->NT == NodeType::Def) {
-					DefNode *p = (DefNode*)child;
+				if (child->NT == NodeType::CallFunc) {
+					CallNode *p = (CallNode*)child;
 					if (p->Function->IsProperty && p->Function->Bundle->PropSetter) {
 						DUMP(p->Function->Bundle->PropSetter);
 						ep.TestAccess(*p->Function->Bundle->PropSetter, pp.P);

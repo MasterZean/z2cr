@@ -414,7 +414,7 @@ void ZFunctionResolver::Gather(Vector<ZFunction*>& oo, Vector<Node*>& params, in
 						temp.Add(&over);
 				}
 			}
-			else if (over.Params[pi].PType == ZVariable::tyAuto || over.Params[pi].PType == ZVariable::tyVal) {
+			else if (over.Params[pi].PType == ParamType::Auto || over.Params[pi].PType == ParamType::Val) {
 				if (f.Tt == ot)
 					temp.Add(&over);
 			}
@@ -459,7 +459,7 @@ void ZFunctionResolver::Gather(Vector<ZFunction*>& oo, Vector<Node*>& params, in
 						temp.Add(&over);
 				}
 			}
-			else if (over.Params[pi].PType == ZVariable::tyAuto || over.Params[pi].PType == ZVariable::tyVal) {
+			else if (over.Params[pi].PType == ParamType::Auto || over.Params[pi].PType == ParamType::Val) {
 				if (f.Tt == ot || f.Tt == ot2)
 					temp.Add(&over);
 			}
@@ -499,9 +499,9 @@ void ZFunctionResolver::GatherD2(Vector<ZFunction*>& oo, Vector<Node*>& params, 
 		//DUMP(over.PSig);
 	
 		// match ref only
-		if (par.PType == ZVariable::tyRef && TypesEqualS(ass, &par.I.Tt, &a.Tt) && a.IsConst == false)
+		if (par.PType == ParamType::Ref && TypesEqualS(ass, &par.I.Tt, &a.Tt) && a.IsConst == false)
 			temp.Add(&over);
-		else if (par.PType == ZVariable::tyConstRef && TypesEqualS(ass, &par.I.Tt, &a.Tt))
+		else if (par.PType == ParamType::ConstRef && TypesEqualS(ass, &par.I.Tt, &a.Tt))
 			temp.Add(&over);
 		
 		/*if (f.IsRef && !f.IsConst && !a.IsConst && !f.IsTemporary) {
@@ -543,7 +543,7 @@ void ZFunctionResolver::GatherD(Vector<ZFunction*>& oo, Vector<Node*>& params, i
 		ZFunction& over = *oo[i];
 		ObjectInfo& f = over.Params[pi].I;
 		
-		if (over.Params[pi].PType == ZVariable::tyRef || over.Params[pi].PType == ZVariable::tyConstRef)
+		if (over.Params[pi].PType == ParamType::Ref || over.Params[pi].PType == ParamType::ConstRef)
 			continue;
 		
 		if (f.IsRef && !f.IsConst && !a.IsConst && !f.IsTemporary) {
@@ -588,9 +588,9 @@ void ZFunctionResolver::GatherDRef(Vector<ZFunction*>& oo, Vector<Node*>& params
 		//DUMP(over.PSig);
 	
 		// match ref only
-		if (par.PType == ZVariable::tyRef && TypesEqualD(ass, &par.I.Tt, &a.Tt) && a.IsConst == false)
+		if (par.PType == ParamType::Ref && TypesEqualD(ass, &par.I.Tt, &a.Tt) && a.IsConst == false)
 			temp.Add(&over);
-		else if (par.PType == ZVariable::tyConstRef && TypesEqualD(ass, &par.I.Tt, &a.Tt))
+		else if (par.PType == ParamType::ConstRef && TypesEqualD(ass, &par.I.Tt, &a.Tt))
 			temp.Add(&over);
 		//ObjectInfo& f = over.Params[pi].I;
 		//if (f.IsRef && !f.IsTemporary && !f.IsConst && !a.IsConst && TypesEqualD(ass, &f.Tt, &a.Tt))
@@ -624,7 +624,7 @@ void ZFunctionResolver::GatherDMove(Vector<ZFunction*>& oo, Vector<Node*>& param
 		ZFunction& over = *oo[i];
 		ZVariable& par = over.Params[pi];
 
-		if (par.PType == ZVariable::tyMove && TypesEqualD(ass, &par.I.Tt, &a.Tt))
+		if (par.PType == ParamType::Move && TypesEqualD(ass, &par.I.Tt, &a.Tt))
 			temp.Add(&over);
 	}
 	
@@ -688,7 +688,7 @@ void ZFunctionResolver::GatherS(Vector<ZFunction*>& oo, Vector<Node*>& params, i
 		ZFunction& over = *oo[i];
 		ObjectInfo& f = over.Params[pi].I;
 
-		if (over.Params[pi].PType == ZVariable::tyRef || over.Params[pi].PType == ZVariable::tyConstRef)
+		if (over.Params[pi].PType == ParamType::Ref || over.Params[pi].PType == ParamType::ConstRef)
 			continue;
 		
 		if (f.IsRef && !f.IsConst && !f.IsTemporary) {

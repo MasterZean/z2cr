@@ -40,6 +40,14 @@ enum class ErrorColorType {
 	Qtf,
 };
 
+enum class ParamType {
+	Auto,
+	Ref,
+	ConstRef,
+	Val,
+	Move,
+};
+
 class ObjectType {
 public:
 	ZClass* Class = nullptr;

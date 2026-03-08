@@ -800,16 +800,16 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 				cs << parCls.BackName;
 			}
 			else {
-				if (var.PType == ZVariable::tyAuto) {
+				if (var.PType == ParamType::Auto) {
 					cs << "const ";
 					WPNsName(parCls);
 					cs << parCls.BackName << "&";
 				}
-				else if (var.PType == ZVariable::tyRef) {
+				else if (var.PType == ParamType::Ref) {
 					WPNsName(parCls);
 					cs << parCls.BackName << "&";
 				}
-				else if (var.PType == ZVariable::tyMove) {
+				else if (var.PType == ParamType::Move) {
 					WPNsName(parCls);
 					cs << parCls.BackName << "&&";
 				}
@@ -939,8 +939,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(CastNode*)node);
 	else if (node->NT == NodeType::Temporary)
 		Proc(*(TempNode*)node);
-	else if (node->NT == NodeType::Def)
-		Proc(*(DefNode*)node);
+	else if (node->NT == NodeType::CallFunc)
+		Proc(*(CallNode*)node);
 	else if (node->NT == NodeType::List)
 		Proc(*(ListNode*)node);
 	else if (node->NT == NodeType::Ptr)
@@ -1209,8 +1209,8 @@ void ZTranspiler::ProcLeftSet(String& cs, Node* n) {
 			cs << mn->Mem->BackName;
 		}
 	}
-	else if (n->NT == NodeType::Def) {
-		auto dn = (DefNode*)n;
+	else if (n->NT == NodeType::CallFunc) {
+		auto dn = (CallNode*)n;
 		cs << dn->Function->BackName;
 	}
 	/*else if (n->NT == NodeType::Index) {
@@ -1228,15 +1228,15 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 	Node* child = l->Chain->First;
 	
 	bool state = 0;
-	DefNode* prop = nullptr;
+	CallNode* prop = nullptr;
 	int index = 0;
 	
 	String seq;
-	Vector<DefNode*> props;
+	Vector<CallNode*> props;
 	
 	while (child) {
-		if (child->NT == NodeType::Def) {
-			DefNode *p = (DefNode*)child;
+		if (child->NT == NodeType::CallFunc) {
+			CallNode *p = (CallNode*)child;
 			if (child->Next == nullptr) {
 				if (p->Function->IsProperty) {
 					if (prop == nullptr) {
@@ -1361,10 +1361,10 @@ void ZTranspiler::ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extr
 			
 			if (i == props.GetCount() - 1 && extraOp != OpNode::Type::opNotSet) {
 				if (extraOp != OpNode::Type::opNotSet) {
-					if (extra && extra->NT == NodeType::Def) {
+					if (extra && extra->NT == NodeType::CallFunc) {
 						cs << "_tmp" << startTmp << ".";
 						
-						DefNode* def = (DefNode*)extra;
+						CallNode* def = (CallNode*)extra;
 						ZFunction& f = *def->Function;
 	
 						if (f.Trait.Flags & ZTrait::BINDC)
@@ -1447,7 +1447,7 @@ void ZTranspiler::Proc(UnaryOpNode& node) {
 	}
 }
 
-void ZTranspiler::Proc(DefNode& node) {
+void ZTranspiler::Proc(CallNode& node) {
 	ZFunction& f = *node.Function;
 	
 	if (f.Trait.Flags & ZTrait::BINDC)

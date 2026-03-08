@@ -13,7 +13,7 @@ public:
 		Memory,
 		Cast,
 		Temporary,
-		Def,
+		CallFunc,
 		List,
 		Ptr,
 		Index,
