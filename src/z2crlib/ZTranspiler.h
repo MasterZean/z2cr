@@ -82,6 +82,7 @@ public:
 	void Proc(DestructNode& node);
 	void Proc(ThrowNode& node);
 	void Proc(PlacementNewNode& node);
+	void Proc(LambdaNode& node);
 	
 	void ProcLeftSet(Node* l, Node* r, OpNode::Type extraOp, Node* extra);
 	void ProcLeftSet(String& cs, Node *n);

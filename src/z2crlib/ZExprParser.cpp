@@ -156,7 +156,7 @@ Node* ZExprParser::GetOpOverload(Node* left, Node* right, int op, const Point& o
 
 	TestAccess(*f, opp);
 	
-	ParamsNode* call = irg.callfunc(*f, left);
+	CallNode* call = irg.callfunc(*f, left);
 	call->Params = std::move(params);
 	comp.SetInUse(f->Owner());
 	f->SetInUse();
@@ -192,7 +192,7 @@ Node* ZExprParser::GetOpOverloadStatic(Node* left, Node* right, int op, const Po
 
 	TestAccess(*f, opp);
 	
-	ParamsNode* call = irg.callfunc(*f, left);
+	CallNode* call = irg.callfunc(*f, left);
 	call->Params = std::move(params);
 	comp.SetInUse(f->Owner());
 	f->SetInUse();
@@ -369,8 +369,26 @@ Node* ZExprParser::ParseAtom() {
 		Point p = parser.GetPoint();
 		
 		if (parser.Char('(')) {
-			// TODO: fix
-			parser.Error(p, "syntax error");
+			if (exp->Tt.Class == ass.CDef) {
+				ZLambdaInfo& info = ass.Lambdas[exp->Tt.Param];
+				ASSERT(info.Params);
+				ASSERT(exp->NT == NodeType::Memory);
+				MemNode& mem = *(MemNode*)exp;
+				
+				Vector<Node*> params;
+				getParams(params);
+				
+				ZVariable& var = *(ZVariable*)mem.Mem;
+				LambdaNode& lambda = *(LambdaNode*)var.Value;
+				
+				CallNode* call = irg.callfunc(*lambda.Function, exp);
+				call->Params = std::move(params);
+				call->IsLambda = true;
+				
+				exp = call;
+			}
+			else
+				parser.Error(p, "syntax error");
 		}
 		else if (parser.Char('{')) {
 			if (exp->IsLiteral && exp->Tt.Class == ass.CClass) {
@@ -766,11 +784,20 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 		Vector<Node*> params;
 		
 		if (method.IsProperty == false && method.IsConstructor == false) {
-			if (parser.IsChar2(':', ':')) {
-				ASSERT(0);
+			if (parser.Char2(':', ':')) {
+				parser.ExpectId("func");
+				parser.Expect('(');
+				parser.Expect(')');
+				
+				// TODO: resolve
+				LambdaNode* lambda = irg.lambda(method);
+				
+				return lambda;
 			}
 			else if (!parser.IsChar('(')) {
-				ASSERT(0);
+				LambdaNode* lambda = irg.lambda(method);
+				
+				return lambda;
 			}
 		}
 		if (method.IsProperty == false) {
@@ -785,72 +812,7 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 			}
 		}
 		
-		bool ambig = false;
-		ZFunction* f = GetBase(&method, nullptr, params, 1, false, ambig);
-		
-		if (!f)
-			ER::CallError(parser.Source(), opp.P, ass, ns, &method, params, 0/*ol->IsCons*/);
-		
-		if (ambig)
-			parser.Error(opp.P, ER::Green + aName + ": ambigous symbol");
-		
-		TestAccess(*f, opp.P);
-		
-		if (onlyStatic && !f->IsStatic && f->IsConstructor == 0)
-			parser.Error(opp.P, ER::Green + aName + ER::White + ": is not a static member");
-		if (!onlyStatic && f->IsStatic) {
-			if (Class && Class != &f->Owner())
-				parser.Error(opp.P, ER::Green + aName + ER::White + ": is a static member");
-		}
-		// TODO: fix unsafe
-		if (allowUnsafe == false && f->Trait.Flags & ZTrait::UNSAFE)
-			parser.Error(opp.P, ER::Green + aName + ER::White + ": is unsafe, can only be called in unsafe context");
-	 
-		if (f->InClass && f->ShouldEvaluate())
-			comp.CompileFunc(*f);
-
-		Node* node = nullptr;
-		
-		if (f->IsConstructor == 0) {
-			ParamsNode* call = irg.callfunc(*f, object);
-			call->Params = std::move(params);
-			comp.SetInUse(f->Owner());
-			f->SetInUse();
-			
-			node = call;
-		}
-		else if (f->IsConstructor == 2) {
-			TempNode* temp = irg.mem_temp(f->Class(), f);
-			temp->Params = std::move(params);
-		
-			comp.SetInUse(f->Owner());
-			f->SetInUse();
-			
-			node = temp;
-		}
-		else {
-			Node* temp = Temporary(f->Class(), params, opp);
-			comp.SetInUse(*temp->Tt.Class);
-			comp.SetInUse(f->Owner());
-			f->SetInUse();
-			((TempNode*)temp)->Constructor = f;
-			
-			node = temp;
-		}
-		
-		if (Function)
-			Function->Dependencies.FindAdd(f);
-		
-		if (Function && Function->ShouldEvaluate())
-			comp.CompileFunc(*Function);
-		
-		if (f->IsProperty) {
-			ASSERT(f->Bundle);
-			if(f->Bundle->PropSetter)
-				node->IsEffLValue = true;
-		}
-		
-		return node;
+		return ResolveOverload(ns, method, params, opp, onlyStatic, object);
 	}
 	
 	index = ns.Variables.Find(aName);
@@ -885,7 +847,76 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 	return nullptr;
 }
 
-Node *ZExprParser::ParseDot(Node *exp) {
+Node* ZExprParser::ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector<Node*>& params, const ZSourcePos& opp, bool onlyStatic, Node* object) {
+	bool ambig = false;
+	ZFunction* f = GetBase(&method, nullptr, params, 1, false, ambig);
+	
+	if (!f)
+		ER::CallError(parser.Source(), opp.P, ass, ns, &method, params, 0/*ol->IsCons*/);
+	
+	if (ambig)
+		parser.Error(opp.P, ER::Green + method.Name + ": ambigous symbol");
+	
+	TestAccess(*f, opp.P);
+	
+	if (onlyStatic && !f->IsStatic && f->IsConstructor == 0)
+		parser.Error(opp.P, ER::Green + method.Name + ER::White + ": is not a static member");
+	if (!onlyStatic && f->IsStatic) {
+		if (Class && Class != &f->Owner())
+			parser.Error(opp.P, ER::Green + method.Name + ER::White + ": is a static member");
+	}
+	// TODO: fix unsafe
+	if (allowUnsafe == false && f->Trait.Flags & ZTrait::UNSAFE)
+		parser.Error(opp.P, ER::Green + method.Name + ER::White + ": is unsafe, can only be called in unsafe context");
+ 
+	if (f->InClass && f->ShouldEvaluate())
+		comp.CompileFunc(*f);
+
+	Node* node = nullptr;
+	
+	if (f->IsConstructor == 0) {
+		CallNode* call = irg.callfunc(*f, object);
+		call->Params = std::move(params);
+		comp.SetInUse(f->Owner());
+		f->SetInUse();
+		
+		node = call;
+	}
+	else if (f->IsConstructor == 2) {
+		TempNode* temp = irg.mem_temp(f->Class(), f);
+		temp->Params = std::move(params);
+	
+		comp.SetInUse(f->Owner());
+		f->SetInUse();
+		
+		node = temp;
+	}
+	else {
+		Node* temp = Temporary(f->Class(), params, opp);
+		comp.SetInUse(*temp->Tt.Class);
+		comp.SetInUse(f->Owner());
+		f->SetInUse();
+		((TempNode*)temp)->Constructor = f;
+		
+		node = temp;
+	}
+	
+	if (Function)
+		Function->Dependencies.FindAdd(f);
+	
+	if (Function && Function->ShouldEvaluate())
+		comp.CompileFunc(*Function);
+	
+	if (f->IsProperty) {
+		ASSERT(f->Bundle);
+		if(f->Bundle->PropSetter)
+			node->IsEffLValue = true;
+	}
+	
+	return node;
+}
+
+Node* ZExprParser::ParseDot(Node *exp) {
 	auto p = parser.GetFullPos();
 	String s;
 	
@@ -1049,16 +1080,25 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 	auto tt = parser.GetFullPos();
 	
 	if (parser.Id("func") || parser.Id("def")) {
-		ZFunction f(*aclass);
-		f.InClass = true;
-		f.ParamPos = parser.GetFullPos();
+		ZFunction* f = new ZFunction(*aclass);
+		f->ParamPos = parser.GetFullPos();
 		
-		f.ParseSignatures(comp, parser);
-		f.GenerateSignatures();
+		//todo: remove hack
+		f->InClass = true;
+		f->ParseSignatures(comp, parser);
+		f->GenerateSignatures();
+		f->InClass = false;
 		
-		DUMP(f.FuncSig());
+		//DUMP(f.FuncSig());
 		
 		ti.Tt.Class = ass.CDef;
+		
+		int index = ass.Lambdas.FindAdd(f->FuncSig());
+		ZLambdaInfo& lambda = ass.Lambdas[index];
+		
+		lambda.Params = f;
+		
+		ti.Tt.Param = index;
 		
 		return ti;
 	}

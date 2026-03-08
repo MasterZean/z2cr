@@ -12,6 +12,7 @@ public:
 	ArrayMap<String, ZNamespace> Namespaces;
 	ArrayMap<String, ZPackage> Packages;
 	ArrayMap<String, ZSource*> SourceLookup;
+	ArrayMap<String, ZLambdaInfo> Lambdas;
 	Index<String> StringConsts;
 	ZNamespaceItem NsLookup;
 	Index<String> LibLink;

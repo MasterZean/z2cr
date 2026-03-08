@@ -510,6 +510,8 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	//	f.Name == "AddTrees";
 	
 	ZClass* clsBack = Class;
+	ZFunction* funBack = Function;
+	Function = &f;
 	if (f.InClass) {
 		Class = &f.Class();
 		f.Dependencies.FindAdd(Class);
@@ -561,6 +563,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.Blocks.Drop();
 	
 	Class = clsBack;
+	Function = funBack;
 	
 	/*String deps;
 	
@@ -982,9 +985,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, boo
 
 Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, const ZCompilerContext& zcon) {
 	ZClass* cls = nullptr;
-	
-	if (v.Name == "f1")
-		v.Name == "f1";
+
 	if (parser.Char(':')) {
 		auto ti = ZExprParser::ParseType(*this, parser, true, false, zcon.Class, zcon.Class, zcon.Func);
 		
@@ -1043,6 +1044,25 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 					if (copy.ShouldEvaluate())
 						CompileFunc(copy);
 				}
+		}
+		
+		if (cls == ass.CDef) {
+			ZLambdaInfo& info = ass.Lambdas[v.I.Tt.Param];
+			ASSERT(info.Params);
+			ASSERT(node->NT == NodeType::Lambda);
+			LambdaNode& lambda = *(LambdaNode*)node;
+			ASSERT(lambda.Bundle);
+			
+			int index = Function->Owner().Methods.Find(lambda.Bundle->Name);
+	
+			if (index != -1) {
+				for (int i = 0; i < lambda.Bundle->Functions.GetCount(); i++) {
+					ZFunction& f = *lambda.Bundle->Functions[i];
+					
+					if (f.Params.GetCount() == info.Params->Params.GetCount())
+						lambda.Function = &f;
+				}
+			}
 		}
 	}
 	else {

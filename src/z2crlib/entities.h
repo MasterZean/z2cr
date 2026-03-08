@@ -452,4 +452,16 @@ ZClass& ZEntity::Class() {
 	return (ZClass&)*parent;
 }
 
+class ZLambdaInfo {
+public:
+	ZFunction* Params = nullptr;
+	
+	ZLambdaInfo() {
+	}
+	
+	~ZLambdaInfo() {
+		delete Params;
+	}
+};
+
 #endif

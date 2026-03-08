@@ -54,6 +54,7 @@ protected:
 	
 	NodePool<MemNode> memNodes;
 	NodePool<CallNode> callNodes;
+	NodePool<LambdaNode> lambdaNodes;
 	NodePool<BlockNode> blockNodes;
 	NodePool<IfNode> ifNodes;
 	NodePool<WhileNode> whileNodes;
@@ -126,7 +127,8 @@ public:
 	
 	Node* cast(Node* left, ObjectType* tt, bool sc = true, bool ptr = false);
 	
-	ParamsNode* callfunc(ZFunction& over, Node* object);
+	CallNode* callfunc(ZFunction& over, Node* object);
+	LambdaNode* lambda(ZMethodBundle& bundle);
 	
 	MemNode*   mem_var(ZEntity& var, Node* object, bool isLocal);
 	TempNode*  mem_temp(ZClass& cls, ZFunction *constructor);

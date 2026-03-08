@@ -111,6 +111,7 @@ private:
 	Index<ZClass*> cuClasses;
 	
 	ZClass* Class = nullptr;
+	ZFunction* Function = nullptr;
 	Vector<ZFunction*> CBinds;
 	Vector<ZClass*> tempInstances;
 	

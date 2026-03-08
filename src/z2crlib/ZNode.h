@@ -97,6 +97,7 @@ public:
 	Node* Object = nullptr;
 	bool Property = false;
 	bool IsDestructor = false;
+	bool IsLambda = false;
 
 	CallNode() {
 		NT = NodeType::CallFunc;
@@ -117,6 +118,16 @@ class ListNode: public ParamsNode {
 public:
 	ListNode() {
 		NT = NodeType::List;
+	}
+};
+
+class LambdaNode: public ParamsNode {
+public:
+	ZMethodBundle* Bundle = nullptr;
+	ZFunction* Function = nullptr;
+	
+	LambdaNode() {
+		NT = NodeType::Lambda;
 	}
 };
 

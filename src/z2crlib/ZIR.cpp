@@ -1453,7 +1453,7 @@ Node* IR::cast(Node* left, ObjectType* tt, bool sc, bool ptr) {
 	return node;
 }
 
-ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
+CallNode* IR::callfunc(ZFunction& over, Node* object) {
 	/*if (over.IsIntrinsic && over.IsIntrinsicType != -1) {
 		IntNode* op = intNodes.Get();
 		op->I = (IntNode::Type)over.IsIntrinsicType;
@@ -1509,6 +1509,15 @@ ParamsNode* IR/*AST*/::callfunc(ZFunction& over, Node* object) {
 	return node;
 }
 
+LambdaNode* IR::lambda(ZMethodBundle& bundle) {
+	LambdaNode* node = lambdaNodes.Get();
+	
+	node->Bundle = &bundle;
+	node->Tt = ass.CDef->Tt;
+	
+	return node;
+}
+	
 MemNode* IR::mem_var(ZEntity& mem, Node* object, bool isLocal) {
 	MemNode* node = memNodes.Get();
 	node->Mem = &mem;

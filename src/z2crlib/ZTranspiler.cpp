@@ -275,6 +275,12 @@ void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 	else if (tt->Class->FromTemplate && tt->Class->TBase == ass.CRaw) {
 		WriteType(&tt->Class->T->Tt);
 	}
+	else if (tt->Class == ass.CDef) {
+		ZLambdaInfo& lambda = ass.Lambdas[tt->Param];
+		ASSERT(lambda.Params);
+		
+		WriteReturnType(&lambda.Params->Return.Tt, false);
+	}
 	else if (tt->Class->CoreSimple)
 		WStorageName(*tt->Class);//cs << tt->Class->BackName;
 	else {
@@ -985,6 +991,8 @@ void ZTranspiler::Walk(Node* node) {
 		Proc(*(ThrowNode*)node);
 	else if (node->NT == NodeType::PlacamentNew)
 		Proc(*(PlacementNewNode*)node);
+	else if (node->NT == NodeType::Lambda)
+		Proc(*(LambdaNode*)node);
 	else
 		ASSERT_(0, "Invalid node");
 }
@@ -1450,7 +1458,9 @@ void ZTranspiler::Proc(UnaryOpNode& node) {
 void ZTranspiler::Proc(CallNode& node) {
 	ZFunction& f = *node.Function;
 	
-	if (f.Trait.Flags & ZTrait::BINDC)
+	if (node.IsLambda)
+		Walk(node.Object);
+	else if (f.Trait.Flags & ZTrait::BINDC)
 		cs << "::";
 	else if (f.IsStatic)
 		WFOwnerClsName(f, true);
@@ -1509,7 +1519,8 @@ void ZTranspiler::Proc(CallNode& node) {
 		}
 	}
 	
-	cs << f.BackName;
+	if (!node.IsLambda)
+		cs << f.BackName;
 	cs << '(';
 	
 	int count = node.Params.GetCount();
@@ -1791,6 +1802,24 @@ void ZTranspiler::Proc(LocalNode& node) {
 		return;
 	}*/
 	
+	if (node.Tt.Class == ass.CDef) {
+		ZLambdaInfo& lambda = ass.Lambdas[node.Tt.Param];
+		ASSERT(lambda.Params);
+		
+		WriteReturnType(&lambda.Params->Return.Tt, false);
+		
+		cs << " (*" << node.Var->Name << ")";
+		
+		WriteFunctionParams(*lambda.Params);
+		
+		if (node.Var->Value) {
+			cs << " = ";
+			Walk(node.Var->Value);
+		}
+		
+		return;
+	}
+		
 	if (node.Var->IsConst)
 		cs << "const ";
 	
@@ -2002,6 +2031,10 @@ void ZTranspiler::Proc(PlacementNewNode& node) {
 			Walk(node.Value);
 		cs << ")";
 	}
+}
+
+void ZTranspiler::Proc(LambdaNode& node) {
+	cs << node.Bundle->Name;
 }
 
 void ZTranspiler::NewMember() {

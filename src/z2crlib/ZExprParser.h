@@ -45,6 +45,8 @@ public:
 	
 	ZFunction* GetBase(ZMethodBundle* def, ZClass* spec, Vector<Node*>& params, int limit, bool conv, bool& ambig);
 	
+	Node* ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector<Node*>& params, const ZSourcePos& opp, bool onlyStatic, Node* object);
+	
 	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, bool isParam,
 		ZNamespace* aclass = nullptr, ZNamespace* context = nullptr, ZFunction* afunc = nullptr);
 	
