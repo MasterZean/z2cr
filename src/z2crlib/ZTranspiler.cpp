@@ -279,7 +279,7 @@ void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 		ZLambdaInfo& lambda = ass.Lambdas[tt->Param];
 		ASSERT(lambda.Params);
 		
-		WriteReturnType(&lambda.Params->Return.Tt, false);
+		WriteReturnType(lambda.Params->Return.Tt, false);
 	}
 	else if (tt->Class->CoreSimple)
 		WStorageName(*tt->Class);//cs << tt->Class->BackName;
@@ -291,13 +291,13 @@ void ZTranspiler::WriteType(ObjectType* tt, bool useauto) {
 	}
 }
 
-void ZTranspiler::WriteReturnType(ObjectType *tt, bool useCABI) {
-	if (useCABI && tt->Class->CABICompensation) {
+void ZTranspiler::WriteReturnType(ObjectType& tt, bool useCABI) {
+	if (useCABI && tt.Class->CABICompensation) {
 		cs << "_";
-		WPClsName(*tt->Class);
+		WPClsName(*tt.Class);
 	}
 	else
-		WriteType(tt, false);
+		WriteType(&tt, false);
 }
 
 void ZTranspiler::WriteTypePost(ObjectType* tt, bool array) {
@@ -671,11 +671,11 @@ bool ZTranspiler::WriteFunctionDef(ZFunction& f) {
 	//	cs << "static ";
 	
 	if (f.InClass && (&f == f.Bundle->Class().Meth.Copy || &f == f.Bundle->Class().Meth.Move)) {
-		WriteReturnType(&f.Class().Tt, false);
+		WriteReturnType(f.Class().Tt, false);
 		cs << "&";
 	}
 	else
-		WriteReturnType(&f.Return.Tt, f.Trait.Flags & ZTrait::BINDC);
+		WriteReturnType(f.Return.Tt, f.Trait.Flags & ZTrait::BINDC);
 	
 	cs << " ";
 	if (f.InClass && (&f == f.Bundle->Class().Meth.Copy || &f == f.Bundle->Class().Meth.Move))
@@ -746,11 +746,11 @@ void ZTranspiler::WriteFunctionDecl(ZFunction& f) {
 	
 	// ret
 	if (f.InClass && (&f == f.Bundle->Class().Meth.Copy || &f == f.Bundle->Class().Meth.Move)) {
-		WriteReturnType(&f.Class().Tt, false);
+		WriteReturnType(f.Class().Tt, false);
 		cs << "&";
 	}
 	else
-		WriteReturnType(&f.Return.Tt, f.Trait.Flags & ZTrait::BINDC);
+		WriteReturnType(f.Return.Tt, f.Trait.Flags & ZTrait::BINDC);
 	cs << " ";
 	
 	// ns
@@ -796,34 +796,43 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 		
 		ZClass& parCls = *var.I.Tt.Class->ParamType;
 		
-		if (var.I.Tt.Class == ass.CPtr)
-			WriteType(&var.I.Tt);
-		else if (parCls.CoreSimple)
-			WStorageName(parCls);
-		else {
-			if (f.Trait.Flags & ZTrait::BINDC) {
-				WPNsName(parCls);
-				cs << parCls.BackName;
-			}
-			else {
-				if (var.PType == ParamType::Auto) {
-					cs << "const ";
-					WPNsName(parCls);
-					cs << parCls.BackName << "&";
-				}
-				else if (var.PType == ParamType::Ref) {
-					WPNsName(parCls);
-					cs << parCls.BackName << "&";
-				}
-				else if (var.PType == ParamType::Move) {
-					WPNsName(parCls);
-					cs << parCls.BackName << "&&";
-				}
-				else
-					ASSERT(0);
-			}
+		if (&parCls == ass.CDef) {
+			
+			ZLambdaInfo& lambda = ass.Lambdas[var.I.Tt.Param];
+			WriteReturnType(lambda.Params->Return.Tt, false);
+			cs << " (*" << var.Name << ")";
+			WriteFunctionParams(*lambda.Params);
 		}
-		cs << " " << var.Name;
+		else {
+			if (var.I.Tt.Class == ass.CPtr)
+				WriteType(&var.I.Tt);
+			else if (parCls.CoreSimple)
+				WStorageName(parCls);
+			else {
+				if (f.Trait.Flags & ZTrait::BINDC) {
+					WPNsName(parCls);
+					cs << parCls.BackName;
+				}
+				else {
+					if (var.PType == ParamType::Auto) {
+						cs << "const ";
+						WPNsName(parCls);
+						cs << parCls.BackName << "&";
+					}
+					else if (var.PType == ParamType::Ref) {
+						WPNsName(parCls);
+						cs << parCls.BackName << "&";
+					}
+					else if (var.PType == ParamType::Move) {
+						WPNsName(parCls);
+						cs << parCls.BackName << "&&";
+					}
+					else
+						ASSERT(0);
+				}
+			}
+			cs << " " << var.Name;
+		}
 	}
 	
 	cs << ")";
@@ -1458,8 +1467,15 @@ void ZTranspiler::Proc(UnaryOpNode& node) {
 void ZTranspiler::Proc(CallNode& node) {
 	ZFunction& f = *node.Function;
 	
-	if (node.IsLambda)
-		Walk(node.Object);
+	if (node.IsLambda) {
+		if (node.Function)
+			Walk(node.Object);
+		else if (node.Object) {
+			Walk(node.Object);
+		}
+		else
+			ASSERT(0);
+	}
 	else if (f.Trait.Flags & ZTrait::BINDC)
 		cs << "::";
 	else if (f.IsStatic)
@@ -1806,7 +1822,7 @@ void ZTranspiler::Proc(LocalNode& node) {
 		ZLambdaInfo& lambda = ass.Lambdas[node.Tt.Param];
 		ASSERT(lambda.Params);
 		
-		WriteReturnType(&lambda.Params->Return.Tt, false);
+		WriteReturnType(lambda.Params->Return.Tt, false);
 		
 		cs << " (*" << node.Var->Name << ")";
 		

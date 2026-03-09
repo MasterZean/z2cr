@@ -337,7 +337,7 @@ Node* ZExprParser::ParseAtom() {
 		exp = irg.list(node);
 	}
 	else if (parser.Char('[')) {
-		Vector<Node*> params;
+		Vector<Node*> params, params2;
 		
 		getParams(params, ']');
 		
@@ -347,7 +347,7 @@ Node* ZExprParser::ParseAtom() {
 		
 		exp = ParseSpec(*ass.CVect, irg.const_class(*ass.CVect), nodes, opp);
 		
-		exp = Temporary(ass.Classes[(int)exp->IntVal], Vector<Node*>{}, opp);
+		exp = Temporary(ass.Classes[(int)exp->IntVal], params2, opp);
 		
 		ASSERT(exp->NT == NodeType::Temporary);
 		
@@ -355,7 +355,7 @@ Node* ZExprParser::ParseAtom() {
 		
 		temp->Array = std::move(params);
 		
-		return temp;
+		exp = temp;
 	}
 	else {
 		parser.Error(opp.P, "expression expected, " + parser.Identify() + " found");
@@ -379,13 +379,24 @@ Node* ZExprParser::ParseAtom() {
 				getParams(params);
 				
 				ZVariable& var = *(ZVariable*)mem.Mem;
-				LambdaNode& lambda = *(LambdaNode*)var.Value;
 				
-				CallNode* call = irg.callfunc(*lambda.Function, exp);
-				call->Params = std::move(params);
-				call->IsLambda = true;
-				
-				exp = call;
+				if (var.Value) {
+					LambdaNode& lambda = *(LambdaNode*)var.Value;
+					
+					CallNode* call = irg.callfunc(*lambda.Function, exp);
+					call->Params = std::move(params);
+					call->IsLambda = true;
+					
+					exp = call;
+				}
+				else {
+					CallNode* call = irg.calllambda(exp);
+					call->Params = std::move(params);
+					call->IsLambda = true;
+					call->Tt = info.Params->Return.Tt;
+					
+					exp = call;
+				}
 			}
 			else
 				parser.Error(p, "syntax error");
@@ -596,7 +607,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "f")
+	if (s == "abs")
 		s == "ptr";
 	
 	if (Function) {
@@ -868,6 +879,24 @@ Node* ZExprParser::ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector
 	// TODO: fix unsafe
 	if (allowUnsafe == false && f->Trait.Flags & ZTrait::UNSAFE)
 		parser.Error(opp.P, ER::Green + method.Name + ER::White + ": is unsafe, can only be called in unsafe context");
+	
+	for (int i = 0; i < f->Params.GetCount(); i++) {
+		ZVariable& p = f->Params[i];
+		
+		if (p.I.Tt.Class == ass.CDef) {
+			ASSERT(params[i]->Tt.Class == ass.CDef);
+			ASSERT(params[i]->NT == NodeType::Lambda);
+			
+			LambdaNode* lambda = (LambdaNode*)params[i];
+			ASSERT(lambda->Bundle);
+			
+			ZFunction* g = lambda->Bundle->Functions[0];
+			if (g->ShouldEvaluate())
+				comp.CompileFunc(*g);
+			
+			//ResolveOverload(ns, lambda->Bundle, 
+		}
+	}
  
 	if (f->InClass && f->ShouldEvaluate())
 		comp.CompileFunc(*f);
@@ -1070,7 +1099,7 @@ Node* ZExprParser::ParseNumeric() {
 	return exp;
 }
 
-ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, bool isParam, ZNamespace* aclass, ZNamespace* context, ZFunction* afunc) {
+ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, bool isParam, ZNamespace* context, ZFunction* afunc) {
 	Assembly& ass = comp.Ass();
 	
 	ObjectInfo ti;
@@ -1080,7 +1109,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 	auto tt = parser.GetFullPos();
 	
 	if (parser.Id("func") || parser.Id("def")) {
-		ZFunction* f = new ZFunction(*aclass);
+		ZFunction* f = new ZFunction(*context);
 		f->ParamPos = parser.GetFullPos();
 		
 		//todo: remove hack
@@ -1089,7 +1118,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		f->GenerateSignatures();
 		f->InClass = false;
 		
-		//DUMP(f.FuncSig());
+		DUMP(f->FuncSig());
 		
 		ti.Tt.Class = ass.CDef;
 		
@@ -1143,7 +1172,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		
 		if (parser.IsId("const"))
 			parser.ReadId();
-		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, isParam, aclass, context);
+		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, isParam, context);
 		
 		parser.Expect('>');
 
@@ -1188,7 +1217,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		if (!cls->IsTemplate)
 			parser.Error(tt.P, " class " + ass.ToQtColor(cls) + " is not a template");
 		
-		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, isParam, aclass, context);
+		ObjectInfo sub = ParseType(comp, parser, reqArrayQual, isParam, context);
 		
 		Node* node = nullptr;
 		
@@ -1206,7 +1235,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 			ns.Sections.Add();
 			ZVariable dummy(ns);
 			dummy.Section = &ns.Sections[0];
-			ZExprParser ep(dummy, aclass, afunc, comp, parser, comp.IRG());
+			ZExprParser ep(dummy, context, afunc, comp, parser, comp.IRG());
 			node = ep.Parse(true);
 		}
 		

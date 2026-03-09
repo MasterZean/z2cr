@@ -128,6 +128,7 @@ public:
 	Node* cast(Node* left, ObjectType* tt, bool sc = true, bool ptr = false);
 	
 	CallNode* callfunc(ZFunction& over, Node* object);
+	CallNode* calllambda(Node* object);
 	LambdaNode* lambda(ZMethodBundle& bundle);
 	
 	MemNode*   mem_var(ZEntity& var, Node* object, bool isLocal);

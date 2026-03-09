@@ -342,19 +342,35 @@ bool ZScanner::ScanClassBody(const ZSourcePos& p, AccessType accessType, bool is
 }
 
 void ZScanner::ScanType() {
-	parser.ExpectId();
-	while (parser.Char('.'))
-		parser.ExpectId();
-	
-	if (parser.Char('<')) {
-		ScanSubType();
-		
-		while (parser.Char(',')) {
-			while (!parser.IsChar(',') && !parser.IsChar('>')) {
-				ScanToken();//ScanSubType();
-			}
+	if (parser.Id("func") || parser.Id("def")) {
+		parser.Expect('(');
+		while (!parser.IsChar(')')) {
+			parser.ExpectId();
+			parser.Expect(':');
+			
+			ScanType();
 		}
-		parser.Expect('>');
+		parser.Expect(')');
+		
+		if (parser.Char(':')) {
+			ScanType();
+		}
+	}
+	else {
+		parser.ExpectId();
+		while (parser.Char('.'))
+			parser.ExpectId();
+		
+		if (parser.Char('<')) {
+			ScanSubType();
+			
+			while (parser.Char(',')) {
+				while (!parser.IsChar(',') && !parser.IsChar('>')) {
+					ScanToken();//ScanSubType();
+				}
+			}
+			parser.Expect('>');
+		}
 	}
 }
 
@@ -552,6 +568,9 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 		}
 	}
 	
+	if (name == "Apply")
+		name == "abs";
+	
 	if (isCons && curClass == nullptr)
 		parser.Error(dp.P, "constructor defintion found outside of class");
 	if (isProp && curClass == nullptr)
@@ -582,7 +601,7 @@ ZFunction& ZScanner::ScanFunc(AccessType accessType, int isCons, bool aFunc, boo
 				if (parser.Char('?'))
 					;
 			}
-			
+						
 			parser.ExpectId();
 			parser.Expect(':');
 			

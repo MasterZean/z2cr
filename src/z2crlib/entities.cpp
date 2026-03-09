@@ -55,6 +55,9 @@ void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 	if (IsProperty && (IsGetter || IsSimpleGetter))
 		paramList = false;
 	
+	if (Name == "Apply")
+		Name == "Apply";
+	
 	if (paramList) {
 		parser.Expect('(');
 		
@@ -85,7 +88,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 				throw ER::Duplicate(name, pp, DefPos);
 			parser.Expect(':');
 			
-			auto ti = ZExprParser::ParseType(comp, parser, true, true, nullptr, &Owner());
+			auto ti = ZExprParser::ParseType(comp, parser, true, true, &Owner());
 			
 			if (parser.Char(',')) {
 				if (parser.IsChar(')'))
@@ -113,7 +116,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 	}
 	
 	if (parser.Char(':')) {
-		auto ti = ZExprParser::ParseType(comp, parser, true, true, nullptr, &Owner());
+		auto ti = ZExprParser::ParseType(comp, parser, true, true, &Owner());
 		Return.Tt = ti.Tt;
 	}
 	else

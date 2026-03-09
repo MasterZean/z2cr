@@ -1509,6 +1509,15 @@ CallNode* IR::callfunc(ZFunction& over, Node* object) {
 	return node;
 }
 
+CallNode* IR::calllambda(Node* object) {
+	// todo: fix
+	CallNode* node = callNodes.Get();
+	//node->Function = &over;
+	node->Object = object;
+	
+	return node;
+}
+
 LambdaNode* IR::lambda(ZMethodBundle& bundle) {
 	LambdaNode* node = lambdaNodes.Get();
 	

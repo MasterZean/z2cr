@@ -148,7 +148,7 @@ public:
 	virtual void WalkNode(Node* node);
 		
 	void WriteType(ObjectType* tt, bool useauto = false);
-	void WriteReturnType(ObjectType* tt, bool useCABI);
+	void WriteReturnType(ObjectType& tt, bool useCABI);
 	void WriteTypePost(ObjectType *tt, bool array = false);
 	
 private:

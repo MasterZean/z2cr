@@ -48,7 +48,7 @@ public:
 	Node* ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector<Node*>& params, const ZSourcePos& opp, bool onlyStatic, Node* object);
 	
 	static ObjectInfo ParseType(ZCompiler& comp, ZParser& parser, bool reqArrayQual, bool isParam,
-		ZNamespace* aclass = nullptr, ZNamespace* context = nullptr, ZFunction* afunc = nullptr);
+		ZNamespace* context = nullptr, ZFunction* afunc = nullptr);
 	
 	Node* Temporary(ZClass& cls, Vector<Node*>&, const ZSourcePos& pos);
 	ZFunction* FindConstructor(ZClass& cls, Vector<Node*>& params, const ZSourcePos& pos, bool check = false);
