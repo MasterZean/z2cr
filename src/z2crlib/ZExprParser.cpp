@@ -1122,10 +1122,15 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		
 		ti.Tt.Class = ass.CDef;
 		
-		int index = ass.Lambdas.FindAdd(f->FuncSig());
-		ZLambdaInfo& lambda = ass.Lambdas[index];
+		int index = ass.Lambdas.Find(f->FuncSig());
+		if (index == -1) {
+			index = ass.Lambdas.FindAdd(f->FuncSig());
+			ZLambdaInfo& lambda = ass.Lambdas[index];
 		
-		lambda.Params = f;
+			lambda.Params = f;
+		}
+		else
+			delete f;
 		
 		ti.Tt.Param = index;
 		

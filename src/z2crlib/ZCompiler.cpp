@@ -434,6 +434,7 @@ bool ZCompiler::ScanSources() {
 }
 
 void ZCompiler::ScanSource(ZSource& src, Array<ZScanner>& scanners) {
+	//LOG("Scanning source: " + src.Path);
 	src.AddStdClassRefs();
 			
 	auto& scanner = scanners.Add(ZScanner(ass, src, Platform));
