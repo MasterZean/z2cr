@@ -1,0 +1,202 @@
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(14, 7): context: instantiating class: class Test
+test.z2(15, 9): context: initializing variable: val foo
+test.z2(20, 9): context: calling function: def f(Int): Int
+test.z2(21, 20): foo: circular variable reference
+*/
+
+namespace test.what;
+
+class Test {
+	val foo = f(4);
+
+	def @main() {
+	}
+	
+	def f(a: Int): Int {
+		return a + foo;
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(14, 7): context: instantiating class: class Test
+test.z2(15, 9): context: initializing variable: val foo
+test.z2(21, 9): context: calling function: def f(Int): Int
+test.z2(22, 20): foo: circular variable reference
+*/
+
+namespace test.what;
+
+class Test {
+	val foo = f(4);
+
+	def @main() {
+		f(4);
+	}
+	
+	def f(a: Int): Int {
+		return a + foo;
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+namespace test.what;
+
+class Test {
+	val foo = 4;
+
+	def @main() {
+		f(4);
+	}
+	
+	def f(a: Int): Int {
+		return a + foo;
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(14, 7): context: instantiating class: class Test
+test.z2(15, 9): context: initializing variable: val foo
+test.z2(21, 9): context: calling function: def f(Int): Int
+test.z2(22, 20): bar: class variable not defined at this point
+*/
+
+namespace test.what;
+
+class Test {
+	val foo = f(4);
+	val bar = 0;
+
+	def @main() {
+	}
+	
+	def f(a: Int): Int {
+		return a + bar;
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(14, 7): context: instantiating class: class Test
+test.z2(15, 9): context: initializing variable: val foo
+test.z2(22, 9): context: calling function: def f(Int): Int
+test.z2(23, 20): bar: class variable not defined at this point
+*/
+
+namespace test.what;
+
+class Test {
+	val foo = f(4);
+	val bar = 0;
+
+	def @main() {
+		f(4);
+	}
+	
+	def f(a: Int): Int {
+		return a + bar;
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+namespace test.what;
+
+class Test {
+	val foo = 4;
+	val bar = 0;
+
+	def @main() {
+		f(4);
+	}
+	
+	def f(a: Int): Int {
+		return a + bar;
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 7): context: instantiating class: class Test
+test.z2(14, 9): context: initializing variable: val foo
+test.z2(14, 19): circular class instantiation: Test
+*/
+
+namespace test.what;
+
+class Test {
+	val foo = Test{};
+
+	def @main() {
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 7): context: instantiating class: class Test
+test.z2(14, 9): context: initializing variable: val foo
+test.z2(14, 9): circular class instantiation: Test
+*/
+
+namespace test.what;
+
+class Test {
+	val foo: Test;
+
+	def @main() {
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+namespace test.what;
+
+class Test {
+	val foo: Ptr<Test>;
+
+	def @main() {
+		val t: Test;
+	}
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+namespace test.what;
+
+class Test {
+	val foo: Ptr<Test>;
+
+	def @main() {
+		val t = Test{};
+	}
+}

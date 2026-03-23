@@ -125,7 +125,7 @@ private func f() {
 	g();
 }
 
-private func g() {	
+private func g() {
 }
 
 def @main() {

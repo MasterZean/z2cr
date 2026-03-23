@@ -1,0 +1,24 @@
+// @test array
+// @usestdlib
+// =================================================================================================================
+// @file
+
+/* @dump namespace: test def
+void test::Test::_main() {
+	int32 __a[10];
+	sys::core::lang::CArray_Int a(__a, 10);
+}
+*/
+
+namespace test;
+
+class Test {
+	val a: CArray<Int, 10> = void;
+
+	this() {
+	}
+
+	def @main() {
+		a.Length;
+	}
+}

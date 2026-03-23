@@ -1,0 +1,104 @@
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 5): context: initializing variable: val foo
+test.z2(18, 5): context: calling function: def f(Int): Int
+test.z2(19, 16): foo: circular variable reference
+*/
+
+namespace test.what;
+
+val foo = f(4);
+
+def @main() {
+}
+	
+def f(a: Int): Int {
+	return a + foo;
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(13, 5): context: initializing variable: val foo
+test.z2(19, 5): context: calling function: def f(Int): Int
+test.z2(20, 16): foo: circular variable reference
+*/
+
+namespace test.what;
+
+val foo = f(4);
+
+def @main() {
+	f(4);
+}
+	
+def f(a: Int): Int {
+	return a + foo;
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+namespace test.what;
+
+val foo = 4;
+
+def @main() {
+	f(4);
+}
+	
+def f(a: Int): Int {
+	return a + foo;
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+namespace test.what;
+
+val foo = f(4);
+val bar = 0;
+
+def @main() {
+}
+	
+def f(a: Int): Int {
+	return a + bar;
+}
+
+// @test da
+// =================================================================================================================
+// @file
+
+/* @errors
+test.z2(16, 5): context: initializing variable: val a
+test.z2(23, 6): context: calling function: func f(): Int
+test.z2(17, 5): context: initializing variable: val b
+test.z2(17, 13): context: instantiating class: class Test
+test.z2(28, 9): context: initializing variable: val c
+test.z2(28, 13): a: circular variable reference
+*/
+
+namespace test.what;
+
+val a = 7 + f();
+val b = Test{}.c;
+
+def @main() {
+    a;
+}
+
+func f(): Int {
+    return b;
+}
+
+class Test {
+    val c = a;
+}
