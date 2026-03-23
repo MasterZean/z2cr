@@ -158,6 +158,291 @@ void ZTranspiler::WriteOutro() {
 	EL();
 }
 
+void ZTranspiler::WriteFuncs(Vector<ZFunction*>& Use) {
+	CheckUse = false;
+	int excIndex = -1;
+	
+	excIndex = ass.Classes.Find("sys.exception.AssertionFailed");
+	if (excIndex != -1) {
+		//SetInUse(ass.Classes[excIndex]);
+		classes.Insert(0, &ass.Classes[excIndex]);
+	}
+	excIndex = ass.Classes.Find("sys.exception.IndexOutOfBounds");
+	if (excIndex != -1) {
+		//SetInUse(ass.Classes[excIndex]);
+		classes.Insert(1, &ass.Classes[excIndex]);
+	}
+	
+	for (int i = 0; i < Use.GetCount(); i++) {
+		ZFunction& f = *Use[i];
+
+		LOG("USE: " + f.Owner().Name + "::" + f.FuncSig());
+		
+		if (f.Owner().CUIndex < cuIndex) {
+			if (f.InClass)
+				Proc(f.Class());
+			else {
+				f.Owner().CUIndex = cuIndex;
+				classes << &f.Owner();
+			}
+		}
+		
+		Proc(f);
+	}
+	
+	for (int i = 0; i < classes.GetCount(); i++) {
+		if (classes[i]->IsClass)
+			TranspileClassDeclMaster(*(ZClass*)classes[i], 0b11, false);
+		else {
+			DUMP(classes[i]->Name);
+			BeginNamespace(*classes[i]);
+			TranspileNamespaceDecl(*classes[i], 0b11, false);
+			EndNamespace();
+		}
+	}
+	
+	for (int i = 0; i < stats.GetCount(); i++) {
+		if (stats[i]->IsClass) {
+			ZClass& cls = *(ZClass*)stats[i];
+			BeginNamespace(cls.Namespace());
+			TranspileValDefintons(cls);
+			EndNamespace();
+		}
+		else {
+			ZNamespace& cls = *stats[i];
+			//DUMP(cls.Name);
+			BeginNamespace(cls);
+			TranspileValDefintons(cls);
+			EndNamespace();
+		}
+			
+		//TranspileValDefintons(*stats[i]);
+	}
+	
+	for (int i = 0; i < funcs.GetCount(); i++) {
+		ZFunction& f = *funcs[i];
+		
+	
+		
+		//DUMP("AAAAAAAAAAA " + f.BackName);
+		if (f.BackName == "")
+			continue;//;f.Name == "";
+		
+		if (f.IsGenerated)
+			continue;
+		
+		//DUMP(f.FuncSig());
+		if (i == 11 || f.Name == "LoadTexture") {
+			f.Name == "LoadTexture";
+			//return;
+		}
+			
+		
+		if (f.Trait.Flags & ZTrait::BINDC) {
+			int ii = ass.Binds.Find(f.Name);
+			if(ii != -1) {
+				cs << ass.Binds[ii] << "\n";
+				f.WroteDeclaration = true;
+				continue;
+			}
+			
+			cs << "extern \"C\" ";
+			WriteFunctionDef(f);
+			ES();
+			EL();
+		}
+		else {
+			//if (f.InClass && f.Class().TBase == ass.CSlice)
+			//	continue;
+			//if (f.InClass && f.Class().TBase == ass.CRaw)
+			//	continue;
+			WriteFunctionDecl(f);
+			WriteFunctionBody(f);
+		}
+	}
+}
+
+void ZTranspiler::Proc(ZFunction& f) {
+	if (f.CUIndex >= cuIndex)
+		return;
+	
+	if (f.InClass && f.Class().T && f.Class().T->TBase == ass.CRaw)
+		return;
+	
+	f.CUIndex = cuIndex;
+	
+	if (f.Name == "@main")
+		f.Name == "@main";
+		
+	if (f.InClass)
+		Proc(f.Class());
+	
+	for (int j = 0; j < f.Dependencies2.GetCount(); j++) {
+		ZEntity& e = *f.Dependencies2[j];
+		DUMP(e.Name);
+		DUMP(e.CUIndex);
+	}
+	
+	LOG("Processing: func " + f.FuncSig() + " in " + (f.Owner().IsClass ? f.Class().Name : f.Owner().ProperName));
+	
+	if (f.FuncSig().GetCount() == 0)
+		f.FuncSig().GetCount() == 0;
+	//if (f.InClass && f.Class().T && f.Class().T->TBase)
+	//	DUMP(f.Class().T->TBase->Name);
+
+	
+	//if (f.InClass && f.Class().T && (f.Class().T->TBase == ass.CRaw || f.Class().T->TBase  == ass.CSlice))
+	//	return;
+	
+
+	if (f.Return.Tt.Class && f.Return.Tt.Class != ass.CVoid)
+		Proc(*f.Return.Tt.Class);
+	
+	
+	
+	/*if (f.Trait.Flags & ZTrait::BINDC) {
+		LOG("Bindc add: " + f.Owner().Name + "::" + f.FuncSig());
+		funcs << &f;
+	}*/
+	
+	for (int j = 0; j < f.Dependencies2.GetCount(); j++) {
+		ZEntity& e = *f.Dependencies2[j];
+
+		//if (e.Type == EntityType::Class)
+		//	ss << "class " << e.Name;
+		if (e.Type == EntityType::Variable) {
+			if (e.CUIndex < cuIndex) {
+				Proc((ZVariable&)e);
+			}
+		}
+		else if (e.Type == EntityType::Function) {
+			auto& func =(ZFunction&)e;
+			if (func.CUIndex < cuIndex)
+				Proc(func);
+		}
+		else
+			ASSERT(0);
+	}
+	
+	for (int j = 0; j < f.Dependencies2.GetCount(); j++) {
+		ZEntity& e = *f.Dependencies2[j];
+
+		//if (e.Type == EntityType::Class)
+		//	ss << "class " << e.Name;
+		if (e.Type == EntityType::Variable) {
+			if (e.InClass) {
+				ZClass& cls = e.Class();
+				if (cls.CUIndex < cuIndex) {
+					cls.CUIndex = cuIndex;
+					
+					classes << &cls;
+				}
+			}
+		}
+		else if (e.Type == EntityType::Function) {
+			
+		}
+		else
+			ASSERT(0);
+	}
+	
+	if (f.InClass)
+		classes << &f.Class();
+	
+	funcs << &f;
+}
+
+bool ZTranspiler::IsSlice(ZFunction& f) {
+	return f.InClass && f.Class().T && (f.Class().T->TBase == ass.CRaw || f.Class().T->TBase  == ass.CSlice);
+}
+
+void ZTranspiler::Proc(ZClass& cls, bool addVars) {
+	if (cls.CUIndex >= cuIndex)
+		return;
+	
+	if (cls.T && cls.T->TBase == ass.CRaw)
+		return;
+	
+	LOG("Processing: class " + cls.Name);
+	
+	cls.CUIndex = cuIndex;
+	
+	if (cls.Name == "Texture2D")
+		cls.Name == "Texture2D";
+	
+	if (cls.T)
+		Proc(*cls.T);
+	if (cls.Super)
+		Proc(*cls.Super);
+	
+	for (int i = 0; i < cls.Variables.GetCount(); i++) {
+		ZVariable& var = *cls.Variables[i];
+		
+		if (var.IsStatic == false)
+			Proc(var);
+	}
+	
+	if (cls.Meth.Default && cls.Meth.Default->CUIndex < cuIndex) {
+		Proc(*cls.Meth.Default);//cls.Meth.Default->CUIndex = cuIndex;
+		
+		if (!IsSlice(*cls.Meth.Default) && cls.Meth.Default->IsGenerated == false) {
+			//LOG("default add: " + cls.Meth.Default->Owner().Name + "::" + cls.Meth.Default->FuncSig());
+			//funcs << cls.Meth.Default;
+		}
+	}
+	if (cls.Meth.CopyCon)
+		cls.Meth.CopyCon->CUIndex = cuIndex;
+	if (cls.Meth.MoveCon)
+		cls.Meth.MoveCon->CUIndex = cuIndex;
+	if (cls.Meth.Copy)
+		cls.Meth.Copy->CUIndex = cuIndex;
+	if (cls.Meth.Move)
+		cls.Meth.Move->CUIndex = cuIndex;
+	
+	for (int j = 0; j < cls.Dependencies2.GetCount(); j++) {
+		ZEntity& e = *cls.Dependencies2[j];
+
+		if (e.Type == EntityType::Function) {
+			auto& func =(ZFunction&)e;
+			if (func.CUIndex < cuIndex)
+				Proc(func);
+		}
+	}
+	
+	//if (cls.TBase != ass.CRaw && cls.TBase != ass.CSlice)
+		//continue;
+		classes << &cls;
+}
+
+void ZTranspiler::Proc(ZVariable& var) {
+	var.CUIndex = cuIndex;
+	
+	if (var.IsStatic && var.Owner().IsClass) {
+		stats.FindAdd(&var.Class());
+	}
+	else if (var.InClass == false) {
+		if (var.Owner().CUIndex < cuIndex) {
+			var.Owner().CUIndex = cuIndex;
+			classes << &var.Owner();
+		}
+		stats.FindAdd(&var.Owner());
+		
+	}
+	
+	ZClass& cls = *var.I.Tt.Class;
+	
+	/*if (cls.CUIndex < cuIndex) {
+		cls.CUIndex = cuIndex;
+		
+		classes << &cls;
+	}*/
+	
+
+	
+	Proc(cls);
+	cs.Flush();
+}
+
 void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool classes) {
 	BeginNamespace(ns);
 	TranspileNamespaceDecl(ns, accessFlags, false);
@@ -179,6 +464,9 @@ void ZTranspiler::TranspileDeclarations(ZNamespace& ns, int accessFlags, bool cl
 }
 
 bool ZTranspiler::TranspileClassDeclMaster(ZClass& cls, int accessFlags, bool checkDepends) {
+	if (cls.Name == "Texture2D")
+		cls.Name == "Rectangle";
+	
 	if (CheckUse && !cls.InUse)
 		return false;
 	
@@ -188,16 +476,26 @@ bool ZTranspiler::TranspileClassDeclMaster(ZClass& cls, int accessFlags, bool ch
 	if (cls.IsDefined)
 		return false;
 	
+	// ?
+	//if (cls.T && cls.T->TBase && cls.T->TBase == ass.CSlice)
+	//	return false;
+	//if (cls.T && cls.T->TBase && cls.T->TBase == ass.CRaw)
+	//	return false;
+	
 	cls.IsDefined = true;
 	
 	if (checkDepends)
 		for (int j = 0; j < cls.DependsOn.GetCount(); j++)
 			TranspileClassDeclMaster(*(ZClass*)cls.DependsOn[j], accessFlags);
 	
-	if (cls.TBase == ass.CSlice && cls.T->TBase == ass.CRaw)
-		return false;
-	if (cls.TBase == ass.CRaw && cls.T->TBase == ass.CRaw)
-		return false;
+	//if (cls.TBase == ass.CSlice && cls.T->TBase == ass.CRaw)
+	//	return false;
+	//if (cls.TBase == ass.CRaw && cls.T->TBase == ass.CRaw)
+	//	return false;
+	//if (cls.TBase == ass.CSlice)
+	//	return false;
+	//if (cls.TBase == ass.CRaw)
+	//	return false;
 	
 	if (cls.CABICompensation) {
 		cs << "struct _";
@@ -316,8 +614,8 @@ void ZTranspiler::WriteTypePost(ObjectType* tt, bool array) {
 }
 
 int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
-	if (CheckUse && !ns.InUse)
-		return 0;
+	//if (CheckUse && !ns.InUse)
+	//	return 0;
 	
 	bool first = true;
 	
@@ -325,6 +623,9 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 	
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
+		
+		if (v.IsStatic && v.CUIndex < cuIndex)
+			continue;
 		
 		if (!CanAccess(v.Access, accessFlags))
 			continue;
@@ -398,6 +699,8 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 	if (CheckUse && !ns.InUse)
 		return 0;
 	
+
+	
 	bool first = true;
 	
 	int count = 0;
@@ -405,6 +708,14 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 	for (int i = 0; i < ns.Methods.GetCount(); i++) {
 		for (int j = 0; j < ns.Methods[i].Functions.GetCount(); j++) {
 			ZFunction& f = *ns.Methods[i].Functions[j];
+			
+			/*if (f.Owner().IsClass && f.Class().TBase == ass.CSlice && f.Class().T == ass.CByte) {
+				DUMP(&ns);
+				DUMP(&f);
+			}*/
+			
+			if (f.CUIndex < cuIndex)
+				continue;
 			
 			if (CheckUse && !f.InUse)
 				continue;
@@ -539,7 +850,14 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 	
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
+		
+		if (v.IsStatic && v.IsDefined == false)
+			continue;
+		//DUMP(v.Name);
 		ASSERT(v.I.Tt.Class);
+		
+		if (v.CUIndex < cuIndex)
+			continue;
 		
 		if (v.InClass && !v.IsStatic)
 			continue;
@@ -839,8 +1157,8 @@ void ZTranspiler::WriteFunctionParams(ZFunction& f) {
 }
 
 void ZTranspiler::WriteFunctionBody(ZFunction& f, bool wrap) {
-	if (CheckUse && !f.InUse)
-		return;
+	//if (CheckUse && !f.InUse)
+	//	return;
 	
 	inFunction = &f;
 	tmpCount = 0;

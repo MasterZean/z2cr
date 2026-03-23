@@ -256,6 +256,10 @@ void ZException::PrettyPrint(Stream& stream) {
 	
 #endif
 
+	for (int i = 0; i < Prelude.GetCount(); i++) {
+		Prelude[i].PrettyPrint(stream);
+	}
+
 	if (Path.GetCount()) {
 		if (ER::ErrorColor == ErrorColorType::Win32) {
 			SetConsoleTextAttribute(hConsole, cGray);

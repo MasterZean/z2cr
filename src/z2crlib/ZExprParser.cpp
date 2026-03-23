@@ -355,6 +355,9 @@ Node* ZExprParser::ParseAtom() {
 		
 		temp->Array = std::move(params);
 		
+		if (exp->Tt.Class->Meth.Add && exp->Tt.Class->Meth.Add->ShouldEvaluate())
+			comp.CompileFunc(*exp->Tt.Class->Meth.Add);
+		
 		exp = temp;
 	}
 	else {
@@ -411,13 +414,16 @@ Node* ZExprParser::ParseAtom() {
 				Vector<Node*> params;
 				getParams(params, '}');
 				
-				if (cobj.FromTemplate)
-					comp.Push(pp, cobj);
+				//if (cobj.FromTemplate)
+				//	comp.Push(pp, cobj);
+				
+				if (!comp.DoDeps(cobj, &pp))
+					parser.Error(p, "circular class instantiation: " + ass.TypeToColor(cobj.Tt));
 				
 				Node* temp = Temporary(cobj, params, pp);
 				
-				if (cobj.FromTemplate)
-					comp.Pop();
+				//if (cobj.FromTemplate)
+				//	comp.Pop();
 				
 				if (cobj.TBase == ass.CRaw)
 					temp->Tt.Param = exp->Tt.Param;
@@ -607,7 +613,7 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "abs")
+	if (s == "test1")
 		s == "ptr";
 	
 	if (Function) {
@@ -830,9 +836,20 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 	if (index != -1) {
 		ZVariable& f = *ns.Variables[index];
 		
+		if (comp.TargetFunc) {
+			if (ns.IsClass == false || f.IsStatic)
+				comp.TargetFunc->Dependencies2.FindAdd(&f);
+		}
 		TestAccess(f, opp.P);
+		
+		if (f.IsStatic && f.IsEvaluated == false)
+			comp.PreCompileVars2(&f);
 		if (onlyStatic && !f.IsStatic)
 			parser.Error(opp.P, ER::Green + aName + ER::White + ": is not a static member");
+		if (f.MidEval)
+			parser.Error(opp.P, ER::Green + aName + ER::White + ": circular variable reference");
+		if (f.InClass && f.IsDefined == false)
+			parser.Error(opp.P, ER::Green + aName + ER::White + ": class variable not defined at this point");
 		if (!onlyStatic && f.IsStatic) {
 			if (Class && Class != &f.Owner())
 				parser.Error(opp.P, ER::Green + aName + ER::White + ": is a static member");
@@ -849,8 +866,11 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 		comp.SetInUse(f.Owner());
 		f.InUse = true;
 		
-		if (Function)
+		if (Function) {
+			//if (f.IsStatic)
+			//	Function->Dependencies2.FindAdd(&f);
 			Function->Dependencies.FindAdd(&f);
+		}
 		
 		return irg.mem_var(f, object, false);
 	}
@@ -893,13 +913,16 @@ Node* ZExprParser::ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector
 			ZFunction* g = lambda->Bundle->Functions[0];
 			if (g->ShouldEvaluate())
 				comp.CompileFunc(*g);
-			
-			//ResolveOverload(ns, lambda->Bundle, 
 		}
 	}
  
-	if (f->InClass && f->ShouldEvaluate())
+	if (comp.TargetFunc)
+		comp.TargetFunc->Dependencies2.FindAdd(f);
+	if (/*f->InClass &&*/ f->ShouldEvaluate())
 		comp.CompileFunc(*f);
+	
+	if (f->Return.Tt.Class != ass.CVoid)
+		comp.DoDeps(*f->Return.Tt.Class);
 
 	Node* node = nullptr;
 	
@@ -998,7 +1021,7 @@ Node* ZExprParser::ParseDot(Node *exp) {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "Length")
+	if (s == "SetTileVariants")
 		s == "free";
 	
 	// case .class
@@ -1029,6 +1052,9 @@ Node* ZExprParser::ParseDot(Node *exp) {
 	if (exp->Tt.Class == ass.CClass) {
 		if (exp->IsLiteral) {
 			ZClass& cs = ass.Classes[(int)exp->IntVal];
+			
+			if (cs.IsEvaluated == false)
+				comp.DoDeps(cs, &p);
 			
 			/*if (cs.IsEvaluated == false) {
 				cs.IsEvaluated = true;
@@ -1118,7 +1144,7 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		f->GenerateSignatures();
 		f->InClass = false;
 		
-		DUMP(f->FuncSig());
+		//DUMP(f->FuncSig());
 		
 		ti.Tt.Class = ass.CDef;
 		
@@ -1253,9 +1279,13 @@ ObjectInfo ZExprParser::ParseType(ZCompiler& comp, ZParser& parser, bool reqArra
 		if (node) {
 			ti.Tt.Param = node->IntVal;
 		}
-		auto temp = new ObjectType(sub.Tt);
-		cls->Temps.Add(temp);
-		ti.Tt.Next = temp;
+		// TODO: Refactor?
+		if (cls->TBase == ass.CRaw) {
+			auto temp = new ObjectType(sub.Tt);
+			
+			cls->Temps.Add(temp);
+			ti.Tt.Next = temp;
+		}
 		
 		return ti;
 	}
@@ -1313,7 +1343,7 @@ Node* ZExprParser::Temporary(ZClass& cls, Vector<Node*>& params, const ZSourcePo
 	}
 	
 	if (cls.TBase == ass.CPtr) {
-		Node* ptr = irg.mem_ptr(params[0], true);
+		Node* ptr = irg.mem_ptr(params.GetCount() ? params[0] : irg.const_null(), true);
 		ptr->SetType(cls.T->Pt);
 		return ptr;
 	}
@@ -1419,18 +1449,26 @@ ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, cons
 			return nullptr;
 		}
 		
+		if (comp.TargetFunc)
+			comp.TargetFunc->Dependencies2.FindAdd(f);
+		
+		comp.DoDeps(cls);
 		//if (cls.FromTemplate)
 		//	comp.Push(pos, cls);
+		
+		f->SetInUse();
+		f->Owner();
+		//ZClass* cls2 = &f->Class();
 		
 		TestAccess(*f, pos.P);
 		
 		//if (cls.FromTemplate)
 		//	comp.Pop();
 		
-		f->SetInUse();
-		
 		if (f->InClass && f->ShouldEvaluate())
 			comp.CompileFunc(*f);
+		
+		
 		
 		return f;
 	}
@@ -1447,7 +1485,7 @@ void ZExprParser::TestAccess(ZEntity& f, const Point& opp) {
 	}
 	else {
 		// TODO:fix ihneritence
-		if (f.Access == AccessType::Protected && (&f.Owner() != Class && &f.Owner() != Class->Super))
+		if (f.Access == AccessType::Protected && (&f.Owner() != Class && (Class && &f.Owner() != Class->Super)))
 			parser.Error(opp, "can't access protected member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
 		if (f.Access == AccessType::Private && &f.Owner() != Class)
 			parser.Error(opp, "can't access private member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");

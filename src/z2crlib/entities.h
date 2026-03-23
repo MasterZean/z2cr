@@ -85,6 +85,8 @@ public:
 	ZFunction* More = nullptr;
 	ZFunction* LessEq = nullptr;
 	ZFunction* MoreEq = nullptr;
+	
+	ZFunction* Add = nullptr;
 };
 
 class ZNamespaceItem {
@@ -114,8 +116,10 @@ public:
 	bool InClass = false;
 	bool IsStatic = false;
 	bool InUse = false;
+	bool MidEval = false;
 	
 	int CUCounter = 0;
+	int CUIndex = 0;
 	
 	bool WroteDeclaration = false;
 		
@@ -170,6 +174,7 @@ public:
 	String BackNameLegacy;
 	String LegacySufix;
 	Index<ZNamespace*> DependsOn;
+	WithDeepCopy<Index<ZEntity*>> Dependencies2;
 	
 	ZNamespaceItem* NamespaceItem = nullptr;
 	
@@ -263,6 +268,8 @@ public:
 	bool CoreSimple = false;
 
 	bool IsEvaluated = false;
+	// TODO: delete
+	bool IsEvaluated2 = false;
 	
 	bool MIsNumeric = false;
 	bool MIsInteger = false;
@@ -292,6 +299,7 @@ public:
 	bool FromTemplate = false;
 	bool IsDuplicate = false;
 	bool IsConst = false;
+	bool IsDefined = false;
 	
 	Node* Value = nullptr;
 	ObjectInfo I;
@@ -351,6 +359,7 @@ public:
 	WithDeepCopy<Vector<ZBlock>> Blocks;
 	WithDeepCopy<Array<ZVariable>> Locals;
 	WithDeepCopy<Index<ZEntity*>> Dependencies;
+	WithDeepCopy<Index<ZEntity*>> Dependencies2;
 	
 	ZMethodBundle* Bundle = nullptr;
 	

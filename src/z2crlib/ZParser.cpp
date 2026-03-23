@@ -152,8 +152,9 @@ void ZParser::ExpectEndStat() {
 }
 
 void ZParser::Error(const Point& p, const String& text) {
-	throw ZException(String().Cat() << source.Path << "(" << p.x << ", " << p.y << ")" << Mode, text);
-	//Cout() << source.Path() << "(" << p.x << ", " << p.y << "): " << text << "\n";
+	auto exc = ZException(String().Cat() << source.Path << "(" << p.x << ", " << p.y << ")" << Mode, text);
+	//LOG(exc.ToString());
+	throw exc;
 }
 
 void ZParser::Warning(const Point& p, const String& text) {

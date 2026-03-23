@@ -17,7 +17,7 @@ bool ZCompiler::Compile(bool exc) {
 			return compile();
 		}
 		catch (ZException& e) {
-			for (int i = stack.GetCount() - 1; i >= 0; i--) {
+			/*for (int i = stack.GetCount() - 1; i >= 0; i--) {
 				ZCompilerContext& c = stack[i];
 				ZSourcePos& p = c.Pos;
 				Cout() << p.Source->Path << "(" << p.P.x << ", " << p.P.y << "): ";
@@ -25,9 +25,14 @@ bool ZCompiler::Compile(bool exc) {
 				
 				if (c.InstCls)
 					Cout() << "instantiating class: " << c.InstCls->Name;
+				if (c.InstVar)
+					Cout() << "initializing variable: " << c.InstVar->Name;
+				if (c.CallFunc)
+					Cout() << "calling function: " << c.CallFunc->FuncSig();
 				
 				Cout() << "\n";
-			}
+			}*/
+			//Cout() << e.Prelude;
 			e.PrettyPrint(Cout());
 			Cout() << "\n";
 			return false;
@@ -119,28 +124,34 @@ bool ZCompiler::compile() {
 	
 	MainFound = FindMain();
 	
-	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
-		auto& ns = ass.Namespaces[i];
-		PreCompileVars(ns);
-		
-		for (int j = 0; j < ns.Classes.GetCount(); j++) {
-			Class = ns.Classes[j];
+	bool ndp = true;
+	
+	if (!ndp) {
+		for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
+			auto& ns = ass.Namespaces[i];
+			PreCompileVars(ns);
 			
-			if (Class->IsTemplate == false)
-				PreCompileVars(*Class);
+			for (int j = 0; j < ns.Classes.GetCount(); j++) {
+				Class = ns.Classes[j];
+				
+				if (Class->IsTemplate == false)
+					PreCompileVars(*Class);
+			}
+			Class = nullptr;
 		}
-		Class = nullptr;
 	}
 	
-	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
+	if (!ndp) {
+			for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		Compile(ass.Namespaces[i]);
-	
 	if (MainFunction) {
 		MainFunction->SetInUse();
 		SetInUse(MainFunction->Owner());
 		
 		if (MainFunction->InClass) {
 			ZClass& pcls = MainFunction->Class();
+			
+			DoDeps(pcls);
 			
 			if (pcls.Meth.Default/* && pcls.Meth.Default->IsGenerated == false*/)
 				CompileFunc(*pcls.Meth.Default);
@@ -187,6 +198,30 @@ bool ZCompiler::compile() {
 			}
 		}
 	}
+	}
+	else {
+		if (MainFunction) {
+			if (MainFunction->InClass) {
+				ZClass& pcls = MainFunction->Class();
+				
+				DoDeps(pcls);
+				
+				CompileFunc(*MainFunction);
+				
+				Use << MainFunction;
+			}
+			else {
+				PreCompileVars2(MainFunction->Owner());
+				CompileFunc(*MainFunction);
+				Use << MainFunction;
+			}
+		}
+		
+		for (int i = 0; i < cuClasses.GetCount(); i++) {
+			ZClass& cls = *cuClasses[i];
+			DUMP(cls.Name);
+		}
+	}
 	
 	if (BuildMode) {
 		String cppCode = AppendFileName(BuildPath, "cppcode.h");
@@ -205,6 +240,224 @@ bool ZCompiler::compile() {
 #endif
 	
 	return true;
+}
+
+bool ZCompiler::DoDeps(ZClass& c, ZSourcePos* pos, ObjectType* tt) {
+	if (c.IsTemplate)
+		return true;
+	if (c.IsEvaluated2)
+		return true;
+	
+	int index = depCls.Find(&c);
+	if (index != -1) {
+		LINDENT(-1);
+		return false;
+	}
+	
+	//if (TargetFunc)
+	//	TargetFunc->Dependencies2 << &c;
+	
+	// TODO: optimize
+	String s = LI;
+	if (c.IsEvaluated)
+		s << "x ";
+	s << "class " << c.Name;
+	/*if (c.FromTemplate) {
+		ASSERT(c.TBase);
+		s << "<" << c.TBase->Name << ">";
+	}
+	else*/ if (&c == ass.CPtr && tt) {
+		s << "<" << tt->Next->Class->Name << ">";
+	}
+			
+	if (c.IsEvaluated) {
+		LOG(s + " [" + c.Owner().ProperName + "]" + ": skipped");
+		c.IsEvaluated2 = true;
+		return true;
+	}
+	
+	
+	
+	LOG(s + " [" + c.Owner().ProperName + "]" + ": instantiation skip static vars {");
+	LINDENT(1);
+	
+	c.IsEvaluated = true;
+	
+	if (c.Super)
+		DoDeps(*c.Super);
+	
+	if (c.TBase)
+		DoDeps(*c.TBase);
+	if (c.T)
+		DoDeps(*c.T);
+	
+	ZCompilerContext& zcon = push();
+	zcon.Class = &c;
+	zcon.Reason = 1;
+	zcon.InstCls = &c;
+	zcon.Pos = pos ? *pos : c.DefPos;
+	
+	depCls.Add(&c);
+	ZClass* clsBack = Class;
+	Class = &c;
+	PreCompileVars2(c);
+	
+	if (c.Meth.CopyCon)
+		CompileFunc(*c.Meth.CopyCon);
+	if (c.Meth.MoveCon)
+		CompileFunc(*c.Meth.MoveCon);
+	if (c.Meth.Copy)
+		CompileFunc(*c.Meth.Copy);
+	if (c.Meth.Move)
+		CompileFunc(*c.Meth.Move);
+	if (c.Meth.Destructor)
+		CompileFunc(*c.Meth.Destructor);
+	if (c.TBase == ass.CRaw) {
+		ZClass& sup = *c.Super;
+		
+		index = sup.Methods.Find("this");
+		if (index != -1) {
+			ZMethodBundle& meth = sup.Methods[index];
+			
+			for (ZFunction* f: meth.Functions) {
+				if (f->IsConstructor == 1 && f->Params.GetCount() == 2) {
+					CompileFunc(*f);
+					c.Dependencies2.FindAdd(f);
+					//ExtraFunctions.Add(f);
+					// TODO: WHAT?
+					//f->CUIndex = 1;
+					
+					//DUMP(&cls);
+					//DUMP(f);
+				}
+			}
+		}
+	}
+	
+	Class = clsBack;
+	LINDENT(-1);
+	depCls.RemoveKey(&c);
+	
+	SetInUse(c);
+	
+	Pop();
+	
+	//LOG(LI + c.Owner().Name + c.Name + ": done compiling class");
+	LOG(LI + "}");
+	
+	c.IsEvaluated = true;
+	
+	return true;
+}
+
+ZCompilerContext& ZCompiler::push() {
+	ZCompilerContext& zcon = stack.Add();
+	zcon.Clear();
+	return zcon;
+}
+
+bool ZCompiler::PreCompileVars2(ZNamespace& ns) {
+	for (int i = 0; i < ns.Variables.GetCount(); i++) {
+		ZVariable* v = ns.Variables[i];
+		
+		if (ns.IsClass && v->IsStatic)
+			continue;
+		
+		PreCompileVars2(v);
+	}
+	
+	return true;
+}
+		
+bool ZCompiler::PreCompileVars2(ZVariable* v) {
+	v->MidEval = true;
+	
+	if (v->IsStatic)
+		LOG(LI + "static var " + v->Name + " in class " + v->Owner().Name + ": compiling");
+	else
+		LOG(LI + "var " + v->Name + " in class " + v->Owner().Name + ": compiling");
+	LINDENT(1);
+	
+	/*if (v->IsEvaluated)
+		continue;*/
+	//if (v->IsStatic && TargetFunc)
+	//	TargetFunc->Dependencies2.FindAdd(v);
+		
+	v->IsDefined = true;
+	v->IsEvaluated = true;
+	
+	ZCompilerContext& zcon = push();
+	if (v->Owner().IsClass)
+		zcon.Class = (ZClass*)&v->Owner();
+	zcon.TargetVar = v;
+	zcon.Pos = v->DefPos;
+	zcon.InstVar = v;
+	
+	int stackCount = stack.GetCount();
+		 
+	try {
+		CompileVar(*v, zcon);
+	}
+	catch (ZException& e) {
+		for (int j = 0; j < stack.GetCount(); j++) {
+			ZCompilerContext& c = stack[j];
+			ZSourcePos& p = c.Pos;
+			
+			ZException& pre = e.Prelude.Add();
+			
+			{
+				StringStream ss;
+				
+				ss << p.Source->Path << "(" << p.P.x << ", " << p.P.y << ")";
+				
+				pre.Path = ss;
+			}
+						
+			{
+				StringStream ss;
+				
+				ss << "context: ";
+				
+				if (c.InstCls)
+					ss << "instantiating class: " << c.InstCls->ColorSig();
+				if (c.InstVar)
+					ss << "initializing variable: " << c.InstVar->ColorSig();
+				if (c.CallFunc)
+					ss << "calling function: " << c.CallFunc->ColorSig();
+								
+				ss << "\n";
+				
+				pre.Error = ss;
+			}
+		}
+		//e.PrettyPrint(Cout());
+		//Cout() << "\n";
+		
+		//while (stack.GetCount() > stackCount)
+		//	stack.Pop();
+		
+		stack.Clear();
+				
+		throw e;
+		
+		return false;
+	}
+	
+	v->MidEval = false;
+	
+	Pop();
+	
+	LINDENT(-1);
+	//LOG(LI + "}");
+
+	return true;
+}
+
+void ZCompiler::LINDENT(int ind) {
+	lindent += ind;
+	LI = "";
+	for (int i = 0; i < lindent; i++)
+		LI << "  ";
 }
 
 void ZCompiler::WriteDeps(ZClass& cls) {
@@ -235,7 +488,7 @@ void ZCompiler::writeDeps(ZClass& cls) {
 			writeDeps(used);
 	}
 	
-	DUMP("Add to cu " + cls.Name);
+	//DUMP("Add to cu " + cls.Name);
 	cuClasses.FindAdd(&cls);
 }
 
@@ -277,7 +530,7 @@ bool ZCompiler::Transpile() {
 			ass.Namespaces[i].BackName = "zc";
 		else if (ass.Namespaces.GetKey(i) == "sys.core.lang.")
 			ass.Namespaces[i].BackName = "zl";
-		DUMP(ass.Namespaces.GetKey(i));
+		//DUMP(ass.Namespaces.GetKey(i));
 	}
 	
 	CppPath = AppendFileName(BuildPath, "out.cpp");
@@ -288,7 +541,7 @@ bool ZCompiler::Transpile() {
 	cpp.WriteIntro();
 	cpp.WriteClassForward();
 	
-	for (int i = 0; i < cuClasses.GetCount(); i++)
+	/*for (int i = 0; i < cuClasses.GetCount(); i++)
 		cpp.TranspileClassDeclMaster(*cuClasses[i], 0b11, true);
 	
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
@@ -298,7 +551,12 @@ bool ZCompiler::Transpile() {
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++)
 		cpp.TranspileDefinitions(ass.Namespaces[i]);
 	for (int i = 0; i < tempInstances.GetCount(); i++)
-		cpp.TranspileDefinitions(*tempInstances[i]);
+		cpp.TranspileDefinitions(*tempInstances[i]);*/
+		
+	
+	
+	cpp.WriteFuncs(Use);
+	
 	cpp.WriteOutro();
 	
 	if (MCU)
@@ -500,12 +758,26 @@ bool ZCompiler::Compile(ZNamespace& ns) {
 }
 
 bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
+	LOG(LI + f.FuncSig() + " in class " + f.Owner().Name + ": compiling {");
+	LINDENT(1);
+	
+	ZFunction* back = TargetFunc;
+	//if (f.Name == "InitChunks")
+		TargetFunc = &f;
+	
+	ZCompilerContext& zcon = push();
+	if (f.Owner().IsClass)
+		zcon.Class = (ZClass*)&f.Owner();
+	zcon.Func = &f;
+	zcon.Pos = f.DefPos;
+	zcon.CallFunc = &f;
+		
 	f.IsEvaluated = true;
 	f.InUse = true;
 	
 	if (f.Trait.Traits.GetCount()) {
-		DUMP(f.Name);
-		DUMP(f.Trait.Traits);
+		//DUMP(f.Name);
+		//DUMP(f.Trait.Traits);
 	}
 	//if (f.Name == "AddTrees")
 	//	f.Name == "AddTrees";
@@ -523,8 +795,11 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 		}*/
 	}
 	
-	if (f.IsGenerated)
+	if (f.IsGenerated) {
+		LINDENT(-1);
+		LOG(LI + f.Name + f.FuncSig() + ": generated function: compiling skipped");
 		return true;
+	}
 	
 	ZParser parser(f.BodyPos);
 	
@@ -625,6 +900,31 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	
 	DUMP(deps);
 	*/
+	
+	TargetFunc = back;
+	
+	Pop();
+	
+	LINDENT(-1);
+	LOG(LI + "}");
+	
+	if (f.Dependencies2.GetCount()) {
+		StringStream ss;
+		for (int i = 0; i < f.Dependencies2.GetCount(); i++) {
+			ZEntity& e = *f.Dependencies2[i];
+			if (i)
+				ss << ", ";
+			if (e.Type == EntityType::Class)
+				ss << "class " << e.Name;
+			if (e.Type == EntityType::Variable)
+				ss << "var " << e.Name << " in " << e.Owner().Name;
+			if (e.Type == EntityType::Function)
+				ss << ((ZFunction&)e).FuncSig() << " in " << e.Owner().Name;
+		}
+		LOG(LI + f.FuncSig() + " depends on: " + ss);
+		//if (f.Name == "InitChunks" /*|| f.Name == "Set" || f.Name == "SetTileVariants" || f.Name == "SetTileVariants2" || f.Name == "SetTileVariants3" || f.Name == "AddTrees" || f.Name == "Update"*/)
+		//	Use << &f;
+	}
 	
 	return true;
 }
@@ -756,7 +1056,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext&
 				if (child->NT == NodeType::CallFunc) {
 					CallNode *p = (CallNode*)child;
 					if (p->Function->IsProperty && p->Function->Bundle->PropSetter) {
-						DUMP(p->Function->Bundle->PropSetter);
+						//DUMP(p->Function->Bundle->PropSetter);
 						ep.TestAccess(*p->Function->Bundle->PropSetter, pp.P);
 						p->Function = p->Function->Bundle->PropSetter;
 						p->Function->InUse = true;
@@ -963,6 +1263,8 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, boo
 	auto vp = parser.GetFullPos();
 	
 	String name = parser.ExpectZId();
+	if (name == "smoke")
+		name == "smoke";
 	TestVarDup(Class, f, name, vp);
 	
 	ZVariable& v = f.Locals.Add(ZVariable(f.Namespace()));
@@ -971,6 +1273,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, boo
 	v.DefPos = vp;
 	v.Section = f.Section;
 	v.IsConst = aConst;
+	//v.IsDefined = true;
 	if (aUseLastTrait)
 		v.Trait = lastTrait;
 
@@ -997,6 +1300,9 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 		
 		v.I = ti;
 		cls = ti.Tt.Class;
+		
+		//if (cls->IsEvaluated == false)
+		//	DoDeps(*cls, &vp);
 	}
 	
 	bool assign = false;
@@ -1010,7 +1316,7 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 	//}
 	
 	if (assign) {
-		ZExprParser ep(v, Class, zcon.Func, *this, parser, irg);
+		ZExprParser ep(v, zcon.Class, zcon.Func, *this, parser, irg);
 		Node* node = ep.Parse();
 		
 		if (!cls) {
@@ -1033,6 +1339,9 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 			parser.Error(vp.P, "can't assign " + ass.TypeToColor(node->Tt) +
 					" instance to " + ass.TypeToColor(v.I.Tt) + " instance without a cast");
 		}
+		
+		//if (cls->IsEvaluated == false)
+		//	DoDeps(*cls, &vp);
 		
 		if (cls->TBase == ass.CRaw) {
 			int index = cls->Methods.Find("Copy");
@@ -1069,6 +1378,9 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 	else {
 		if (v.I.Tt.Class == NULL)
 			parser.Error(vp.P, "variable must have either an explicit type or be initialized");
+		
+		if (!DoDeps(*cls, &vp, &v.I.Tt))
+			parser.Error(vp.P, "circular class instantiation: " + ass.TypeToColor(cls->Tt));
 		
 		if (cls->CoreSimple == false && cls->TBase == nullptr) {
 			if (cls->Meth.Default == nullptr)
@@ -1147,7 +1459,7 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 	
 	i = ass.Classes.GetCount();
 	
-	LOG("Instantiating " + fullName);
+	//LOG("Instantiating " + fullName);
 	
 	ZClass& tclass = ass.Classes.Add(fullName, ZClass(cc.Namespace()));
 	
@@ -1177,7 +1489,9 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 	resPtr->ResolveNamespaceMembers(tclass);
 	resPtr->ResolveVariables(tclass);
 	
-	PreCompileVars(tclass);
+	//DoDeps()
+	
+	//PreCompileVars(tclass);
 
 	//PreCompileVars(tclass);
 	
@@ -1189,19 +1503,19 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 		auto res = exp.ParseType(*this, parser, false, false, &tclass);
 		tclass.Super = res.Tt.Class;
 		
-		DUMP("Inst add to cu " + sub.Name);
+		//DUMP("Inst add to cu " + sub.Name);
 		cuClasses.FindAdd(&sub);
 		SetInUse(sub);
-		DUMP("Inst add to cu " + tclass.Super->Name);
+		//DUMP("Inst add to cu " + tclass.Super->Name);
 		cuClasses.Add(tclass.Super);
 		
 		tclass.Super->Meth.Default->SetInUse();
 	}
 	
-	DUMP("Inst add to cu " + sub.Name);
+	//DUMP("Inst add to cu " + sub.Name);
 	cuClasses.FindAdd(&sub);
 	
-	DUMP("Inst add to cu " + tclass.Name);
+	//DUMP("Inst add to cu " + tclass.Name);
 	cuClasses.FindAdd(&tclass);
 	
 	SetInUse(tclass);
@@ -1211,12 +1525,13 @@ ZClass& ZCompiler::ResolveInstance(ZClass& cc, ZClass& sub, const ZSourcePos& p,
 
 void ZCompiler::Push(const ZSourcePos& pos, ZClass& cls) {
 	ZCompilerContext& zcon = stack.Add();
+	zcon.Clear();
 	zcon.Pos = pos;
 	zcon.InstCls = &cls;
 }
 
 void ZCompiler::Pop() {
-	stack.Pop();
+	delete stack.PopDetach();
 }
 
 void ZCompiler::TestVarDup(ZClass* cls, ZFunction& over, const String& name, const ZSourcePos& cur) {

@@ -55,7 +55,7 @@ void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 	if (IsProperty && (IsGetter || IsSimpleGetter))
 		paramList = false;
 	
-	if (Name == "Apply")
+	if (Name == "Insert")
 		Name == "Apply";
 	
 	if (paramList) {
@@ -77,8 +77,10 @@ void ZFunction::ParseSignatures(ZCompiler& comp, ZParser& parser) {
 			else if (parser.IsId("move")) {
 				parser.ReadId();
 				ptype = ParamType::Move;
-				if (parser.Char('?'))
-					;
+				if (parser.Char('?')) {
+					// TODO: fix
+					ptype = ParamType::Auto;
+				}
 			}
 			
 			auto pp = parser.GetFullPos();
@@ -195,11 +197,18 @@ void ZFunction::GenerateSignatures() {
 	for (int i = 0; i < Params.GetCount(); i++) {
 		ZVariable& var = Params[i];
 		
+		//if (var.I.Tt.Class->TBase == Ass().CVect)
+		//	var.Name == "aa";
+		
 		if (i > 0) {
 			psig << ", ";
 			psigc << ", ";
 		}
 		
+		if (var.PType == ParamType::Move) {
+			psig << "move ";
+			psigc << ER::Magenta << "move " << ER::White;
+		}
 		psig << Ass().TypeToString(var.I.Tt);
 		psigc << Ass().TypeToColor(var.I.Tt);
 	}
@@ -236,7 +245,7 @@ void ZFunction::SetInUse() {
 		Return.Tt.Class->SetInUse();
 		
 		if (Trait.Flags & ZTrait::BINDC && !Return.Tt.Class->CoreSimple) {
-			DUMP(Return.Tt.Class->Name);
+			//DUMP(Return.Tt.Class->Name);
 			Return.Tt.Class->CABICompensation = true;
 		}
 	}

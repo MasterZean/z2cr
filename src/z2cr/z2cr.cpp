@@ -187,7 +187,7 @@ CONSOLE_APP_MAIN {
 	ER::ErrorColor = K.ErrorColor;
 	if (ER::ErrorColor == ErrorColorType::Ansi) {
 		bool result = EnableVTMode();
-		LOG(result);
+		//LOG(result);
 	}
 	
 	if (K.NoConsoleTest)
@@ -344,6 +344,7 @@ CONSOLE_APP_MAIN {
 #endif
 	}
 	catch (ZException& e) {
+		//Cout() << e.Prelude;
 		e.PrettyPrint(Cout());
 		Cout() << "\n";
 		SetExitCode(-1);

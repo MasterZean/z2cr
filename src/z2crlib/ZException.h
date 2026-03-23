@@ -5,6 +5,10 @@ class ZException {
 public:
 	String Path;
 	String Error;
+	WithDeepCopy<Array<ZException>> Prelude;
+	
+	ZException() {
+	}
 	
 	ZException(const String& error): Error(error) {
 	}

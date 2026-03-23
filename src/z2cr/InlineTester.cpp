@@ -58,6 +58,8 @@ bool ZTest::Run(ZSourceCache* cache) {
 			LOG("-----------------------------------------------------------------------------------------------------------------");
 			
 			result = false;
+			
+			Cout() << Name << "(" << Line << ")" << " test failed because error expected, but none found\n";
 		}
 		
 		for (int td = 0; td < Dumps.GetCount(); td++) {
@@ -138,12 +140,13 @@ bool ZTest::Run(ZSourceCache* cache) {
 	}
 	catch (ZException& e) {
 		StringStream ss;
+		//ss << e.Prelude;
 		e.PrettyPrint(ss);
 		String aError = ss;
 		aError = TrimRight(aError);
 		Error = TrimRight(Error);
 		if (Error != aError) {
-			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed because found exception\n");
+			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed because found exception does not match\n");
 			
 			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 				if (Ass.SourceLookup[i]->Path.Find('/') == 0) {
@@ -169,7 +172,7 @@ bool ZTest::Run(ZSourceCache* cache) {
 			LOG("");
 			
 			
-			Cout() << Name << "(" << Line << ")" << " test failed because found exception\n";
+			Cout() << Name << "(" << Line << ")" << " test failed because found exception does not match\n";
 			result = false;
 		}
 		else
@@ -303,8 +306,8 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-//	if (!path.EndsWith("06-cpp-01-ns-05-user-con.z2test"))
-//		return;
+	//if (!path.EndsWith("01-error-01-da.z2test"))
+	//	return;
 	
 	FileIn file(path);
 	

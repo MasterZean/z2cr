@@ -189,6 +189,8 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 			d.IsConstructor = true;
 			
 			cls.Meth.Default = &f;
+			
+			f.GenerateSignatures();
 		}
 	}
 }
@@ -298,6 +300,8 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 			else if (f.Params[0].PType == ParamType::Move)
 				cls.Meth.Move = &f;
 		}
+		else if (f.Name == "Add" && f.Params.GetCount() == 1)
+			cls.Meth.Add = &f;
 	}
 }
 
