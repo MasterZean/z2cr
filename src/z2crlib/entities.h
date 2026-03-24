@@ -358,7 +358,7 @@ public:
 	WithDeepCopy<Vector<ZClass*>> TParam;
 	WithDeepCopy<Vector<ZBlock>> Blocks;
 	WithDeepCopy<Array<ZVariable>> Locals;
-	WithDeepCopy<Index<ZEntity*>> Dependencies;
+	//WithDeepCopy<Index<ZEntity*>> Dependencies;
 	WithDeepCopy<Index<ZEntity*>> Dependencies2;
 	
 	ZMethodBundle* Bundle = nullptr;

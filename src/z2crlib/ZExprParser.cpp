@@ -161,11 +161,10 @@ Node* ZExprParser::GetOpOverload(Node* left, Node* right, int op, const Point& o
 	comp.SetInUse(f->Owner());
 	f->SetInUse();
 	
-	if (Function)
-		Function->Dependencies.FindAdd(f);
+	//if (Function)
+	//	Function->Dependencies.FindAdd(f);
 	
-	if (f->InClass && f->ShouldEvaluate())
-		comp.CompileFunc(*f);
+	comp.CompileAndUse(*f);
 	
 	return call;
 }
@@ -197,11 +196,10 @@ Node* ZExprParser::GetOpOverloadStatic(Node* left, Node* right, int op, const Po
 	comp.SetInUse(f->Owner());
 	f->SetInUse();
 	
-	if (Function)
-		Function->Dependencies.FindAdd(f);
+	//if (Function)
+	//	Function->Dependencies.FindAdd(f);
 	
-	if (f->InClass && f->ShouldEvaluate())
-		comp.CompileFunc(*f);
+	comp.CompileAndUse(*f);
 	
 	return call;
 }
@@ -866,11 +864,11 @@ Node* ZExprParser::ParseMember(ZNamespace& ns, const String& aName, const ZSourc
 		comp.SetInUse(f.Owner());
 		f.InUse = true;
 		
-		if (Function) {
+		/*if (Function) {
 			//if (f.IsStatic)
 			//	Function->Dependencies2.FindAdd(&f);
 			Function->Dependencies.FindAdd(&f);
-		}
+		}*/
 		
 		return irg.mem_var(f, object, false);
 	}
@@ -916,10 +914,7 @@ Node* ZExprParser::ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector
 		}
 	}
  
-	if (comp.TargetFunc)
-		comp.TargetFunc->Dependencies2.FindAdd(f);
-	if (/*f->InClass &&*/ f->ShouldEvaluate())
-		comp.CompileFunc(*f);
+	comp.CompileAndUse(*f);
 	
 	if (f->Return.Tt.Class != ass.CVoid)
 		comp.DoDeps(*f->Return.Tt.Class);
@@ -953,11 +948,11 @@ Node* ZExprParser::ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector
 		node = temp;
 	}
 	
-	if (Function)
-		Function->Dependencies.FindAdd(f);
+	//if (Function)
+	//	Function->Dependencies.FindAdd(f);
 	
-	if (Function && Function->ShouldEvaluate())
-		comp.CompileFunc(*Function);
+	//if (Function && Function->ShouldEvaluate())
+	//	comp.CompileFunc(*Function);
 	
 	if (f->IsProperty) {
 		ASSERT(f->Bundle);
@@ -1449,26 +1444,9 @@ ZFunction* ZExprParser::FindConstructor(ZClass& cls, Vector<Node*>& params, cons
 			return nullptr;
 		}
 		
-		if (comp.TargetFunc)
-			comp.TargetFunc->Dependencies2.FindAdd(f);
-		
-		comp.DoDeps(cls);
-		//if (cls.FromTemplate)
-		//	comp.Push(pos, cls);
-		
-		f->SetInUse();
-		f->Owner();
-		//ZClass* cls2 = &f->Class();
-		
 		TestAccess(*f, pos.P);
 		
-		//if (cls.FromTemplate)
-		//	comp.Pop();
-		
-		if (f->InClass && f->ShouldEvaluate())
-			comp.CompileFunc(*f);
-		
-		
+		comp.CompileAndUse(*f);
 		
 		return f;
 	}

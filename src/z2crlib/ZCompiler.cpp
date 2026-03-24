@@ -254,9 +254,6 @@ bool ZCompiler::DoDeps(ZClass& c, ZSourcePos* pos, ObjectType* tt) {
 		return false;
 	}
 	
-	//if (TargetFunc)
-	//	TargetFunc->Dependencies2 << &c;
-	
 	// TODO: optimize
 	String s = LI;
 	if (c.IsEvaluated)
@@ -275,9 +272,7 @@ bool ZCompiler::DoDeps(ZClass& c, ZSourcePos* pos, ObjectType* tt) {
 		c.IsEvaluated2 = true;
 		return true;
 	}
-	
-	
-	
+		
 	LOG(s + " [" + c.Owner().ProperName + "]" + ": instantiation skip static vars {");
 	LINDENT(1);
 	
@@ -380,8 +375,6 @@ bool ZCompiler::PreCompileVars2(ZVariable* v) {
 	
 	/*if (v->IsEvaluated)
 		continue;*/
-	//if (v->IsStatic && TargetFunc)
-	//	TargetFunc->Dependencies2.FindAdd(v);
 		
 	v->IsDefined = true;
 	v->IsEvaluated = true;
@@ -525,6 +518,25 @@ bool ZCompiler::FindMain() {
 	return true;
 }
 
+ZFunction *ZCompiler::FindFunction(ZClass& cls, const String& name) {
+	int index = cls.Methods.Find("Print");
+
+	if (index == -1 && cls.Super)
+		return FindFunction(*cls.Super, name);
+	
+	for (int i = 0; i < cls.Methods[index].Functions.GetCount(); i++) {
+		ZFunction& func = *cls.Methods[index].Functions[i];
+		
+		if (func.Params.GetCount() == 0) {
+			CompileAndUse(func);
+			
+			return &func;
+		}
+	}
+	
+	return nullptr;
+}
+
 bool ZCompiler::Transpile() {
 	// TODO: enhance
 	for (int i = 0; i < ass.Namespaces.GetCount(); i++) {
@@ -660,7 +672,7 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 			cpp.WriteFunctionDef(f);
 			cpp.ES();
 			
-			for (int k = 0; k < f.Dependencies.GetCount(); k++) {
+			/*for (int k = 0; k < f.Dependencies.GetCount(); k++) {
 				ZEntity* entity = f.Dependencies[k];
 				
 				if (entity->Type == EntityType::Function) {
@@ -677,7 +689,7 @@ void ZCompiler::DoMCU(ZNamespace& ns) {
 					cpp.WriteTypePost(&v.I.Tt);
 					cpp.ES();
 				}
-			}
+			}*/
 			
 			cpp.EndNamespace();
 			
@@ -800,8 +812,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	LINDENT(1);
 	
 	ZFunction* back = TargetFunc;
-	//if (f.Name == "InitChunks")
-		TargetFunc = &f;
+	TargetFunc = &f;
 	
 	ZCompilerContext& zcon = push();
 	if (f.Owner().IsClass)
@@ -813,19 +824,12 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	f.IsEvaluated = true;
 	f.InUse = true;
 	
-	if (f.Trait.Traits.GetCount()) {
-		//DUMP(f.Name);
-		//DUMP(f.Trait.Traits);
-	}
-	//if (f.Name == "AddTrees")
-	//	f.Name == "AddTrees";
-	
 	ZClass* clsBack = Class;
 	ZFunction* funBack = Function;
 	Function = &f;
 	if (f.InClass) {
 		Class = &f.Class();
-		f.Dependencies.FindAdd(Class);
+		//f.Dependencies.FindAdd(Class);
 		
 		/*if (Class->IsEvaluated == false) {
 			PreCompileVars(*Class);
@@ -878,66 +882,6 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	
 	Class = clsBack;
 	Function = funBack;
-	
-	/*String deps;
-	
-	if (f.Owner().IsClass)
-		deps << f.Namespace().Name << f.Owner().Name;
-	else
-		deps << f.Owner().ProperName;
-	
-	deps <<  ": " << f.FuncSig() << ": dependencies:" << "\n";
-	
-	
-	for (int i = 0; i < f.Dependencies.GetCount(); i++) {
-		ZEntity* ent = f.Dependencies[i];
-		
-		if (ent->Type == EntityType::Function) {
-			ZFunction* ff = (ZFunction*)ent;
-			deps << "\t";
-			
-			if (ff->Owner().IsClass)
-				deps << "class " << ff->Namespace().ProperName << "::" << ff->Owner().Name;
-			else
-				deps << ff->Owner().ProperName;
-			
-			deps <<  ": " << ff->FuncSig() << "\n";
-		}
-		else if (ent->Type == EntityType::Variable) {
-			ZVariable* v = (ZVariable*)ent;
-			
-			if (v->InClass)
-				deps << "x -- ";
-			deps << "\t";
-			if (v->Owner().IsClass)
-				deps << "class " << v->Namespace().ProperName << "::" << v->Owner().Name;
-			else
-				deps << v->Owner().ProperName;
-			deps << ": ";
-			deps << v->Name;
-			deps << "\n";
-		}
-		else if (ent->Type == EntityType::Class) {
-			ZClass* c = (ZClass*)ent;
-			
-			deps << "\t";
-			deps << "class ";
-			
-			if (c->Owner().IsClass)
-				deps << c->Namespace().ProperName << "::" << c->Owner().Name;
-			else
-				deps << c->Owner().ProperName;
-			
-			deps << "::";
-			deps << c->Name;
-			deps << "\n";
-		}
-		else
-			ASSERT(0);
-	}
-	
-	DUMP(deps);
-	*/
 	
 	TargetFunc = back;
 	
@@ -1102,7 +1046,7 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext&
 						if (p->Function->ShouldEvaluate())
 							CompileFunc(*p->Function);
 						
-						f.Dependencies.FindAdd(p->Function);
+						//f.Dependencies.FindAdd(p->Function);
 					}
 				}
 				child = child->Next;

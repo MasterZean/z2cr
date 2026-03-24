@@ -123,6 +123,16 @@ public:
 	
 	void CheckUnused();
 	
+	ZFunction* FindFunction(ZClass& cls, const String& name);
+	
+	void CompileAndUse(ZFunction& f) {
+		if (TargetFunc)
+			TargetFunc->Dependencies2.FindAdd(&f);
+		
+		if (f.ShouldEvaluate())
+			CompileFunc(f, f.Nodes);
+	}
+	
 private:
 	Assembly& ass;
 	String mainClass;
