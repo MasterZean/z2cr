@@ -146,7 +146,7 @@ bool ZTest::Run(ZSourceCache* cache) {
 	catch (ZException& e) {
 		StringStream ss;
 		//ss << e.Prelude;
-		e.PrettyPrint(ss);
+		e.PrettyPrint(ss, false);
 		String aError = ss;
 		aError = TrimRight(aError);
 		Error = TrimRight(Error);
