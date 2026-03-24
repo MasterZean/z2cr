@@ -109,9 +109,6 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 
 	c.GenerateSignatures();
 	
-	if (c.Name == "Int")
-		c.Name == "Int";
-	
 	ZClass& cls = ass.AddClass(c);
 	
 	if (cls.IsResolved)
@@ -363,8 +360,6 @@ bool ZResolver::CheckForDuplicates() {
 	for (int i = 0; i < dupeFile.GetCount(); i++) {
 		if (i == 0 || dupeFile[i].GetCount() == 0) {
 			if (dupeFile[i].GetCount() == 0) {
-				//if (i != 0)
-				//	err << "\n";
 				i++;
 			}
 			
@@ -403,8 +398,8 @@ bool ZResolver::CheckForDuplicates(ZNamespace& ns) {
 		if (dupes[k] > 1) {
 			String allErrors;
 			
-			for (int i = 0; i < ns.Classes.GetCount(); i++) {
-				ZClass& c = *ns.Classes[i];
+			for (int i = 0; i < ns.PreClasses.GetCount(); i++) {
+				ZClass& c = ns.PreClasses[i];
 				
 				if (c.Name == dupes.GetKey(k))
 					allErrors << DupStr(allErrors, c.DefPos, c.ColorSig(), c.OwnerSig());
