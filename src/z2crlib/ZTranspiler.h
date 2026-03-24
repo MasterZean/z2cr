@@ -47,6 +47,7 @@ class ZTranspiler: public ZNodeWalker {
 public:
 	int CppVersion = 2017;
 	bool CheckUse = true;
+	bool CheckCU = true;
 	
 	ZTranspiler(ZCompiler& aComp, Stream& aStream): ZNodeWalker(aComp, aStream) {
 	}

@@ -47,7 +47,7 @@ void ZSource::AddReference(const String& ns, Point pt) {
 		//i = pak.Ass().Classes.Find(ns);
 		//if (i != -1) {
 			References.Add(ns);
-			ReferencePos.Add();
+			ReferencePos.Add(pt);
 			
 			//auto shortName = ns.Mid(dotPos + 1);
 			

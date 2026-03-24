@@ -198,6 +198,8 @@ void ZTranspiler::WriteFuncs(Vector<ZFunction*>& Use) {
 			BeginNamespace(*classes[i]);
 			TranspileNamespaceDecl(*classes[i], 0b11, false);
 			EndNamespace();
+			
+			TranspileDeclarations(*classes[i], 0b111, true);
 		}
 	}
 	
@@ -614,8 +616,8 @@ void ZTranspiler::WriteTypePost(ObjectType* tt, bool array) {
 }
 
 int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
-	//if (CheckUse && !ns.InUse)
-	//	return 0;
+	if (CheckUse && !ns.InUse)
+		return 0;
 	
 	bool first = true;
 	
@@ -624,7 +626,7 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 	for (int i = 0; i < ns.Variables.GetCount(); i++) {
 		auto v = *ns.Variables[i];
 		
-		if (v.IsStatic && v.CUIndex < cuIndex)
+		if (CheckCU && v.IsStatic && v.CUIndex < cuIndex)
 			continue;
 		
 		if (!CanAccess(v.Access, accessFlags))
@@ -714,7 +716,7 @@ int ZTranspiler::TranspileMemberDeclFunc(ZNamespace& ns, int accessFlags, bool d
 				DUMP(&f);
 			}*/
 			
-			if (f.CUIndex < cuIndex)
+			if (CheckCU && f.CUIndex < cuIndex)
 				continue;
 			
 			if (CheckUse && !f.InUse)
@@ -856,7 +858,7 @@ void ZTranspiler::TranspileValDefintons(ZNamespace& ns, bool trail) {
 		//DUMP(v.Name);
 		ASSERT(v.I.Tt.Class);
 		
-		if (v.CUIndex < cuIndex)
+		if (CheckCU && v.CUIndex < cuIndex)
 			continue;
 		
 		if (v.InClass && !v.IsStatic)

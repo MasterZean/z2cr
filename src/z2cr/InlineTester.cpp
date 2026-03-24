@@ -26,7 +26,11 @@ bool ZTest::Run(ZSourceCache* cache) {
 			Ass.AddStdlibPakcages(exeDir, cache);
 		}
 		
-		compiler.SetMain("", "test.z2");
+		//if (Line != 93)
+		//	return false;
+		
+		//	Name == "34";
+		//compiler.SetMain("", "test.z2");
 		compiler.FoldConstants = true;
 		
 		ER::ErrorColor = ErrorColorType::None;
@@ -34,6 +38,7 @@ bool ZTest::Run(ZSourceCache* cache) {
 		bool compResult = compiler.Compile();
 		if (compResult == false && compiler.MainFound == false)
 			compResult = true;
+		compiler.CheckUnused();
 		
 		if (compResult == false && Error.GetCount() == 0)
 			result = false;
@@ -201,6 +206,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
+		cpp.CheckCU = false;
 		
 		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
 		wroteDecl = true;
@@ -216,6 +222,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
+		cpp.CheckCU = false;
 		
 		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b100, false);
 		
@@ -230,11 +237,13 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
+		cpp.CheckCU = false;
 		
 		if (wroteDecl == false) {
 			StringStream temp;
 			ZTranspiler cpptemp(compiler, temp);
 			cpptemp.CheckUse = false;
+			cpptemp.CheckCU = false;
 			cpptemp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
 		}
 		cpp.TranspileDefinitions(Ass.Namespaces[index], true);
@@ -306,7 +315,7 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-	//if (!path.EndsWith("01-error-01-da.z2test"))
+	//if (!path.EndsWith("06-cpp-01-ns-07-sys-con.z2test"))
 	//	return;
 	
 	FileIn file(path);

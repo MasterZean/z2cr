@@ -121,6 +121,8 @@ public:
 	void SetInUse(ZNamespace& cls);
 	void SetInUse(ZClass& cls);
 	
+	void CheckUnused();
+	
 private:
 	Assembly& ass;
 	String mainClass;

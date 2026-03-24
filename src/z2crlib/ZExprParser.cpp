@@ -1480,7 +1480,7 @@ void ZExprParser::TestAccess(ZEntity& f, const Point& opp) {
 	if (f.InClass == false) {
 		if (f.Access == AccessType::Protected && &f.Namespace() != Namespace)
 			parser.Error(opp, "can't access protected member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
-		if (f.Access == AccessType::Private && &f.Namespace() != Namespace && &parser.Source() != f.DefPos.Source)
+		if (f.Access == AccessType::Private && ((&f.Namespace() != Namespace) || ((&f.Namespace() == Namespace) && &parser.Source() != f.DefPos.Source)))
 			parser.Error(opp, "can't access private member:\n\t\t" + f.ColorSig() + "        " + "[" + f.OwnerSig() + "]");
 	}
 	else {

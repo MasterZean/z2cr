@@ -109,6 +109,9 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 
 	c.GenerateSignatures();
 	
+	if (c.Name == "Int")
+		c.Name == "Int";
+	
 	ZClass& cls = ass.AddClass(c);
 	
 	if (cls.IsResolved)
@@ -124,6 +127,8 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 	for (int k = 0; k < ns.Sources.GetCount(); k++) {
 		ns.Sources[k]->AddReference(cls.Namespace().Name + cls.Name, Point(1, 1));
 	}
+	
+	cls.Owner().DefPos.Source->Classes.Add(&cls);
 }
 
 void ZResolver::ResolveFunctions() {
@@ -311,6 +316,7 @@ void ZResolver::ResolveVariables() {
 		for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
 			ZVariable& f = ns.PreVariables[j];
 			f.Owner().Variables.Add(f.Name, &f);
+			f.DefPos.Source->Variables.Add(&f);
 		}
 		
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {

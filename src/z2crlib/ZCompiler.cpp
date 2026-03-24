@@ -496,10 +496,12 @@ bool ZCompiler::FindMain() {
 	Index<ZFunction*> vf;
 	
 	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
-		if (mainFile.GetCount() && ass.SourceLookup[i]->Path != mainFile)
+		ZSource& src = *ass.SourceLookup[i];
+		
+		if (mainFile.GetCount() && src.Path != mainFile)
 			continue;
 		
-		auto list = FindMain(*ass.SourceLookup[i]);
+		auto list = FindMain(src);
 		for (int j = 0; j < list.GetCount(); j++)
 			vf.FindAdd(list[j]);
 	}
@@ -562,7 +564,43 @@ bool ZCompiler::Transpile() {
 	if (MCU)
 		DoMCU();
 	
+	CheckUnused();
+	
 	return true;
+}
+
+void ZCompiler::CheckUnused() {
+	for (int i = 0; i < ass.SourceLookup.GetCount(); i++) {
+		ZSource& src = *ass.SourceLookup[i];
+		
+		if (src.IsStdLib == false) {
+			DUMP(src.Path);
+			for (int j = 0; j < src.Functions.GetCount(); j++) {
+				DUMP(src.Functions[j]->FuncSig());
+				if (src.Functions[j]->IsEvaluated == false)
+					CompileFunc(*src.Functions[j]);
+			}
+			
+			for (int j = 0; j < src.Variables.GetCount(); j++) {
+				DUMP(src.Variables[j]->Name);
+				PreCompileVars2(src.Variables[j]);
+			}
+			
+			for (int j = 0; j < src.Classes.GetCount(); j++) {
+				ZClass& cls = *src.Classes[j];
+				DUMP(cls.Name);
+				DoDeps(cls);
+				
+				
+				for (int k = 0; k < cls.Variables.GetCount(); k++) {
+					ZVariable& v = *cls.Variables[k];
+					
+					if (v.IsStatic)
+						PreCompileVars2(&v);
+				}
+			}
+		}
+	}
 }
 
 bool ZCompiler::DoMCU() {
