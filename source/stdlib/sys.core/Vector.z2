@@ -1,0 +1,220 @@
+namespace sys.core.lang;
+
+class Vector<T: Class>: Slice<T> {
+	this() {
+		length = 0;
+	}
+	
+	this(aSize: PtrSize) {
+		length = aSize;
+		capacity = aSize;
+		
+		if (length > 0) {
+			ptr = Ptr<T>{System.Malloc(aSize * T.@size)};
+			if (ptr == null)
+				length = 0;
+		}
+		
+		Construct();
+	}
+	
+	this(aSize: PtrSize, value: T) {
+		length = aSize;
+		capacity = aSize;
+		
+		if (length > 0) {
+			ptr = Ptr<T>{System.Malloc(aSize * T.@size)};
+			if (ptr == null)
+				length = 0;
+		}
+		
+		Construct(value);
+	}
+	
+	this(copy: Vector<T>) {
+		length = copy.Length;
+		capacity = copy.capacity;
+		ptr = Ptr<T>{System.Malloc(copy.Length * T.@size)};
+		System.MemCopy(Ptr<Byte>{ptr}, Ptr<Byte>{copy.Data}, copy.Length * T.@size);
+	}
+	
+	this(move copy: Vector<T>) {
+		length = copy.Length;
+		capacity = copy.capacity;
+		ptr = copy.ptr;
+		
+		copy.ptr = null;
+		copy.length = 0;
+		copy.capacity = 0;
+	}
+	
+	def @attr(copy: Vector<T>) {
+		if (ptr == copy.ptr)
+			return;
+		
+		System.Mfree(Ptr<Byte>{ptr});
+		
+		length = copy.Length;
+		capacity = copy.capacity;
+		ptr = Ptr<T>{System.Malloc(copy.Length * T.@size)};
+		System.MemCopy(Ptr<Byte>{ptr}, Ptr<Byte>{copy.Data}, copy.Length * T.@size);
+	}
+	
+	def @attr(move copy: Vector<T>) {
+		if (ptr == copy.ptr)
+			return;
+		
+		length = copy.Length;
+		capacity = copy.capacity;
+		ptr = copy.ptr;
+		
+		copy.ptr = null;
+		copy.length = 0;
+		copy.capacity = 0;
+	}
+	
+	~this() {
+		for (val i = 0p; i < length; i++)
+			ptr[i].~{};
+			
+		if (ptr != null) {
+			System.Mfree(Ptr<Byte>{ptr});
+			ptr = null;
+		}
+		
+		length = 0;
+		capacity = 0;
+	}
+	
+	func Slice(): Slice<T> {
+		return ::Slice<T>{ptr, length};
+	}
+	
+	property Length: PtrSize {
+		return length;
+	}
+	
+	property Length(aSize: PtrSize) {
+		if (aSize == length)
+			return;
+
+		if (aSize == capacity) {
+			val i = length;
+			
+			while (i < aSize) {
+				ptr[i].!{};
+				i++;
+			}
+		}
+		else if (aSize > capacity) {
+			Capacity = aSize;
+			val i = length;
+			
+			while (i < aSize) {
+				ptr[i].!{};
+				i++;
+			}
+		}
+		else if (aSize < length) {
+			val i = aSize;
+			
+			while (i < length) {
+				ptr[i].~{};
+				i++;
+			}
+		}
+		
+		length = aSize;
+	}
+	
+	def SetLength(aSize: PtrSize, val aDefault: T) {
+		if (aSize == length)
+			return;
+
+		if (aSize < length) {
+			// vector shrinks, destroy trailing items
+			val i = aSize;
+			
+			while (i < length) {
+				ptr[i].~{};
+				i++;
+			}
+		}
+		else {
+			// vector grows
+			if (aSize == capacity) {
+				val i = length;
+				
+				while (i < aSize) {
+					ptr[i].!{aDefault};
+					i++;
+				}
+			}
+			else if (aSize > capacity) {
+				Capacity = aSize;
+				val i = length;
+				
+				while (i < aSize) {
+					ptr[i].!{aDefault};
+					i++;
+				}
+			}
+		}
+		
+		length = aSize;
+	}
+	
+	property Capacity: PtrSize {
+		return length;
+	}
+	
+	property Capacity(aCapacity: PtrSize) {
+		System.Assert(aCapacity >= length);
+		
+		val temp = Intrinsic.Max(aCapacity, 2p);
+		if (temp == length)
+			return;
+
+        capacity = aCapacity;
+        
+        val back = ptr;
+        
+        ptr = Ptr<T>{System.Malloc(capacity * T.@size)};
+		if (ptr == null) {
+			capacity = 0;
+			return;
+		}
+		
+		for (val i = 0p; i < length; i++)
+			ptr[i].!{back[i]};
+		//ptr = data.Clone(capacity, length);
+		
+		System.Mfree(Ptr<Byte>{back});
+	}
+	
+	def Add(item: T) {
+		if (length >= capacity)
+			Grow();
+		ptr[length++].!{item};
+	}
+	
+	def Apply(f: func(value: T): T) {
+		for (val i = 0p; i < length; i++)
+			ptr[i] = f(ptr[i]);
+	}
+	
+	def Applied(f: func(value: T): T): Vector<T> {
+		val v = Vector<T>{};
+		v.Length = Length;
+		for (val i = 0p; i < length; i++)
+			v.ptr[i] = f(ptr[i]);
+		return v;
+	}
+	
+	private val capacity = 0p;
+	
+	private def Grow() {
+		val newCap = Intrinsic.Max(capacity * 2, 2p);
+		Capacity = newCap;
+	}
+}
