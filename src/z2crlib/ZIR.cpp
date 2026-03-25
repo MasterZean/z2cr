@@ -933,36 +933,10 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 		
 		if (mem.Mem->Name == "Out" && mem.Mem->Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System") {
 			if (!right->Tt.Class->CoreSimple && right->Tt.Class != ass.CString) {// TBase == ass.CRaw || right->Tt.Class->TBase == ass.CSlice) {
-				ZClass* cls = right->Tt.Class;
+				ZFunction* func = comp.FindFunction(*right->Tt.Class, "Print");
 				
-				int index = cls->Methods.Find("Print");
-			
-				if (index != -1)
-					for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
-						ZFunction& copy = *cls->Methods[index].Functions[i];
-						
-						copy.SetInUse();
-						if (copy.ShouldEvaluate())
-							comp.CompileFunc(copy);
-						
-						return intrinsic(intrinsic(callfunc(copy, right), 2), 0);
-					}
-				
-				cls = right->Tt.Class->Super;
-				if (cls != nullptr) {
-					int printIndex = cls->Methods.Find("Print");
-			
-					if (printIndex != -1)
-						for (int i = 0; i < cls->Methods[printIndex].Functions.GetCount(); i++) {
-							ZFunction& copy = *cls->Methods[printIndex].Functions[i];
-							
-							copy.SetInUse();
-							if (copy.ShouldEvaluate())
-								comp.CompileFunc(copy);
-							
-							return intrinsic(intrinsic(callfunc(copy, right), 2), 0);
-						}
-				}
+				if (func)
+					return intrinsic(intrinsic(callfunc(*func, right), 2), 0);
 			}
 			
 			return intrinsic(right, 0);
@@ -970,36 +944,10 @@ Node* IR::op_shl(Node* left, Node* right, const Point& p) {
 		
 		if (mem.Mem->Name == "Fmt" && mem.Mem->Namespace().Name == "sys.core.lang." && mem.Mem->InClass && mem.Mem->Class().Name == "System") {
 			if (!right->Tt.Class->CoreSimple && right->Tt.Class != ass.CString) {// TBase == ass.CRaw || right->Tt.Class->TBase == ass.CSlice) {
-				ZClass* cls = right->Tt.Class;
+				ZFunction* func = comp.FindFunction(*right->Tt.Class, "PrintFmt");
 				
-				int index = cls->Methods.Find("PrintFmt");
-			
-				if (index != -1)
-					for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
-						ZFunction& copy = *cls->Methods[index].Functions[i];
-						
-						copy.SetInUse();
-						if (copy.ShouldEvaluate())
-							comp.CompileFunc(copy);
-						
-						return intrinsic(intrinsic(callfunc(copy, right), 2), 0);
-					}
-				
-				cls = right->Tt.Class->Super;
-				if (cls != nullptr) {
-					int printIndex = cls->Methods.Find("PrintFmt");
-			
-					if (printIndex != -1)
-						for (int i = 0; i < cls->Methods[printIndex].Functions.GetCount(); i++) {
-							ZFunction& copy = *cls->Methods[printIndex].Functions[i];
-							
-							copy.SetInUse();
-							if (copy.ShouldEvaluate())
-								comp.CompileFunc(copy);
-							
-							return intrinsic(intrinsic(callfunc(copy, right), 2), 0);
-						}
-				}
+				if (func)
+					return intrinsic(intrinsic(callfunc(*func, right), 2), 0);
 			}
 			
 			return intrinsic(right, 0);

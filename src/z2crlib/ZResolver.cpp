@@ -124,6 +124,8 @@ void ZResolver::ResolveClass(ZClass& c, ZNamespace& ns) {
 	for (int k = 0; k < ns.Sources.GetCount(); k++) {
 		ns.Sources[k]->AddReference(cls.Namespace().Name + cls.Name, Point(1, 1));
 	}
+	
+	cls.Owner().DefPos.Source->Classes.Add(&cls);
 }
 
 void ZResolver::ResolveFunctions() {
@@ -189,6 +191,8 @@ void ZResolver::ResolveNamespaceMembers(ZNamespace& ns) {
 			d.IsConstructor = true;
 			
 			cls.Meth.Default = &f;
+			
+			f.GenerateSignatures();
 		}
 	}
 }
@@ -298,6 +302,8 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 			else if (f.Params[0].PType == ParamType::Move)
 				cls.Meth.Move = &f;
 		}
+		else if (f.Name == "Add" && f.Params.GetCount() == 1)
+			cls.Meth.Add = &f;
 	}
 }
 
@@ -307,6 +313,7 @@ void ZResolver::ResolveVariables() {
 		for (int j = 0; j < ns.PreVariables.GetCount(); j++) {
 			ZVariable& f = ns.PreVariables[j];
 			f.Owner().Variables.Add(f.Name, &f);
+			f.DefPos.Source->Variables.Add(&f);
 		}
 		
 		for (int j = 0; j < ns.Classes.GetCount(); j++) {
@@ -353,8 +360,6 @@ bool ZResolver::CheckForDuplicates() {
 	for (int i = 0; i < dupeFile.GetCount(); i++) {
 		if (i == 0 || dupeFile[i].GetCount() == 0) {
 			if (dupeFile[i].GetCount() == 0) {
-				//if (i != 0)
-				//	err << "\n";
 				i++;
 			}
 			
@@ -393,8 +398,8 @@ bool ZResolver::CheckForDuplicates(ZNamespace& ns) {
 		if (dupes[k] > 1) {
 			String allErrors;
 			
-			for (int i = 0; i < ns.Classes.GetCount(); i++) {
-				ZClass& c = *ns.Classes[i];
+			for (int i = 0; i < ns.PreClasses.GetCount(); i++) {
+				ZClass& c = ns.PreClasses[i];
 				
 				if (c.Name == dupes.GetKey(k))
 					allErrors << DupStr(allErrors, c.DefPos, c.ColorSig(), c.OwnerSig());

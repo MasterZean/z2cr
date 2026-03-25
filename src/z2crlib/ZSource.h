@@ -13,6 +13,8 @@ public:
 	String Path;
 	Time Modified;
 	
+	Vector<ZClass*> Classes;
+	Vector<ZVariable*> Variables;
 	Vector<ZFunction*> Functions;
 	
 	Vector<String> References;
@@ -23,6 +25,7 @@ public:
 	bool IsScaned = false;
 	bool IsScanError = false;
 	bool IsLoaded = false;
+	bool IsStdLib = false;
 	
 	//ZSource() {
 	//}
@@ -77,6 +80,7 @@ public:
 	String Name;
 	String Path;
 	String CachePath;
+	bool IsStdLib = false;
 	
 	ArrayMap<String, ZSource> Sources;
 	

@@ -1,4 +1,19 @@
 namespace sys.core.lang;
 
 static class Intrinsic {
+	/*def Min<T: Class>(a: T, b: T): T {
+		return a >= b ? b : a;
+	}
+
+	def Max<T: Class>(a: T, b: T): T {
+		return a <= b ? b : a;
+	}*/
+	
+	def Min(a: PtrSize, b: PtrSize): PtrSize {
+		return a >= b ? b : a;
+	}
+
+	def Max(a: PtrSize, b: PtrSize): PtrSize {
+		return a <= b ? b : a;
+	}
 }

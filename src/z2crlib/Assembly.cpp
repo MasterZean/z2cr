@@ -43,7 +43,7 @@ ZPackage& Assembly::AddPackage(const String& aName, const String& aPath) {
 	return pak;
 }
 
-bool Assembly::LoadPackage(const String& aPath, ZSourceCache* cache) {
+bool Assembly::LoadPackage(const String& aPath, ZSourceCache* cache, bool stdLib) {
 	String pakPath = NativePath(NormalizePath(aPath));
 	String pakName = GetFileName(pakPath);
 	if (pakName.GetCount() == 0)
@@ -80,6 +80,7 @@ bool Assembly::LoadPackage(const String& aPath, ZSourceCache* cache) {
 	ZPackage& package = Packages[pakIndex];
 	package.Name = pakName;
 	package.Path = pakPath;
+	package.IsStdLib = stdLib;
 
 	ZPackage temp(*this, "temp", "");
 	
@@ -91,6 +92,9 @@ bool Assembly::LoadPackage(const String& aPath, ZSourceCache* cache) {
 	}
 	
 	AddModule(0, package.Path, package, temp, cache);
+	
+	for (int i = 0; i < package.Sources.GetCount(); i++)
+		package.Sources[i].IsStdLib = stdLib;
 	
 	return true;
 }
@@ -323,6 +327,7 @@ ZClass& Assembly::AddClass(ZClass& cls) {
 		ZClass& exCls = Classes[index];
 		
 		exCls.CopyPreSection(cls);
+		exCls.DefPos = cls.DefPos;
 		exCls.Scan = cls.Scan;
 		exCls.SuperPos = cls.SuperPos;
 		exCls.Trait = cls.Trait;
@@ -483,17 +488,17 @@ bool Assembly::AddStdlibPakcages(const String& path, ZSourceCache* cache) {
 
 	String stdLibPath = path + NativePath("source\\stdlib\\");
 	
-	if (!LoadPackage(stdLibPath + "bind.c", cache)) {
+	if (!LoadPackage(stdLibPath + "bind.c", cache, true)) {
 		SetExitCode(BuildMethod::ErrorCode(-1));
 		return false;
 	}
 	
-	if (!LoadPackage(stdLibPath + "sys.core", cache)) {
+	if (!LoadPackage(stdLibPath + "sys.core", cache, true)) {
 		SetExitCode(BuildMethod::ErrorCode(-1));
 		return false;
 	}
 	
-	if (!LoadPackage(stdLibPath + platformLib, cache)) {
+	if (!LoadPackage(stdLibPath + platformLib, cache, true)) {
 		SetExitCode(BuildMethod::ErrorCode(-1));
 		return false;
 	}

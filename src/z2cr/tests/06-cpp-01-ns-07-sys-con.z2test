@@ -122,6 +122,11 @@ namespace sys::core::lang {
 		static _(float x, const sys::core::lang::Foo& y);
 	};
 }
+
+namespace sys::core::lang {
+	class Foo {
+	};
+}
 */
 
 /* @dump namespace: sys.core.lang privint

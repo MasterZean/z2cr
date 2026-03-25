@@ -47,6 +47,7 @@ class ZTranspiler: public ZNodeWalker {
 public:
 	int CppVersion = 2017;
 	bool CheckUse = true;
+	bool CheckCU = true;
 	
 	ZTranspiler(ZCompiler& aComp, Stream& aStream): ZNodeWalker(aComp, aStream) {
 	}
@@ -151,6 +152,14 @@ public:
 	void WriteReturnType(ObjectType& tt, bool useCABI);
 	void WriteTypePost(ObjectType *tt, bool array = false);
 	
+	void WriteFuncs(Vector<ZFunction *>& Use);
+	void Proc(ZClass& cls, bool addVars = true);
+
+	void Proc(ZVariable& var);
+	void Proc(ZFunction& f);
+	
+	bool IsSlice(ZFunction& f);
+	
 private:
 	void Walk(Node* node);
 	int WalkChildren(Node* node);
@@ -165,6 +174,11 @@ private:
 	
 	int tmpCount = 0;
 	int refCount = 0;
+	
+	int cuIndex = 1;
+	Vector<ZNamespace*> classes;
+	Vector<ZFunction*> funcs;
+	Index<ZNamespace*> stats;
 	
 	void WriteClassAccess(AccessType access);
 	

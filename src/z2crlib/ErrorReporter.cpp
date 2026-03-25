@@ -222,7 +222,7 @@ void SetConsoleTextAttribute(int, int) {
 
 #endif
 
-void ZException::PrettyPrint(Stream& stream) {
+void ZException::PrettyPrint(Stream& stream, bool fullPath) {
 #ifdef PLATFORM_WIN32
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // Get handle to standard output
 	WORD                        m_currentConsoleAttr;
@@ -256,20 +256,26 @@ void ZException::PrettyPrint(Stream& stream) {
 	
 #endif
 
-	if (Path.GetCount()) {
+	for (int i = 0; i < Prelude.GetCount(); i++) {
+		Prelude[i].PrettyPrint(stream, fullPath);
+	}
+
+	String path = fullPath ? Path : (IsFullPath(Path) ? GetFileName(Path) : Path);
+	
+	if (path.GetCount()) {
 		if (ER::ErrorColor == ErrorColorType::Win32) {
 			SetConsoleTextAttribute(hConsole, cGray);
-			stream << Path << ": ";
+			stream << path << ": ";
 		}
 		else if (ER::ErrorColor == ErrorColorType::Ansi)
 			stream << CSI << "37m";
 		else if (ER::ErrorColor == ErrorColorType::Qtf) {
 			stream << "\1[@1 ";
-			stream << DeQtfLf(Path) << ": ";
+			stream << DeQtfLf(path) << ": ";
 			stream << "]";
 		}
 		else
-			stream << Path << ": ";
+			stream << path << ": ";
 	}
 	
 	ER::PrettyPrint(Error, stream, ER::ErrorColor);

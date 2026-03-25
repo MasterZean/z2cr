@@ -31,7 +31,7 @@ class CArray<T: Class>: Slice<T> {
 		for (val i = 0p; i < limit; i++)
 			this[i].!{array[i]};
 			
-		for (val i = length; i < length; i++)
+		for (val i = limit; i < length; i++)
 			this[i].!{};
 	}
 	
@@ -43,7 +43,7 @@ class CArray<T: Class>: Slice<T> {
 		for (val i = 0p; i < limit; i++)
 			this[i].!{array[i]};
 			
-		for (val i = length; i < length; i++)
+		for (val i = limit; i < length; i++)
 			this[i].!{value};
 	}
 				

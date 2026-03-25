@@ -68,7 +68,7 @@ public:
 	}
 	
 	ZPackage& AddPackage(const String& aName, const String& aPath);
-	bool LoadPackage(const String& aPath, ZSourceCache* cache = nullptr);
+	bool LoadPackage(const String& aPath, ZSourceCache* cache = nullptr, bool stdLib = false);
 	ZPackage* FindPackage(const String& aName);
 	
 	ZSource* FindSource(const String& aName);

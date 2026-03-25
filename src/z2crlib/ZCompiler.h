@@ -24,8 +24,21 @@ public:
 	ZVariable* TargetVar = nullptr;
 	
 	ZClass* InstCls = nullptr;
+	ZVariable* InstVar = nullptr;
+	ZFunction* CallFunc = nullptr;
+	
+	int Reason = 0;
 	
 	ZSourcePos Pos;
+	
+	void Clear() {
+		Class = nullptr;
+		Func = nullptr;
+		TargetVar = nullptr;
+		InstVar = nullptr;
+		CallFunc = nullptr;
+		Reason = 0;
+	}
 };
 
 class ZCompiler {
@@ -46,6 +59,8 @@ public:
 	Vector<String> MCUPaths;
 	Vector<ZFunction*> LLVMInput;
 	Vector<ZFunction*> ExtraFunctions;
+	
+	ZFunction* TargetFunc = nullptr;
 	
 	ZFunction* MainFunction = nullptr;
 	bool MainFound = false;
@@ -91,14 +106,32 @@ public:
 	bool CompileFunc(ZFunction& f) {
 		return CompileFunc(f, f.Nodes);
 	}
-			
+		
+	bool DoDeps(ZClass& c, ZSourcePos* pos = nullptr, ObjectType* tt = nullptr);
+	void LINDENT(int i);
+	ZCompilerContext& push();
+	
 	bool PreCompileVars(ZNamespace& ns);
+	bool PreCompileVars2(ZNamespace& ns);
+	bool PreCompileVars2(ZVariable* v);
 	
 	void Push(const ZSourcePos& pos, ZClass& cls);
 	void Pop();
 	
 	void SetInUse(ZNamespace& cls);
 	void SetInUse(ZClass& cls);
+	
+	void CheckUnused();
+	
+	ZFunction* FindFunction(ZClass& cls, const String& name);
+	
+	void CompileAndUse(ZFunction& f) {
+		if (TargetFunc)
+			TargetFunc->Dependencies2.FindAdd(&f);
+		
+		if (f.ShouldEvaluate())
+			CompileFunc(f, f.Nodes);
+	}
 	
 private:
 	Assembly& ass;
@@ -113,14 +146,19 @@ private:
 	ZClass* Class = nullptr;
 	ZFunction* Function = nullptr;
 	Vector<ZFunction*> CBinds;
+	Vector<ZFunction*> Use;
 	Vector<ZClass*> tempInstances;
 	
-	Vector<ZCompilerContext> stack;
+	Array<ZCompilerContext> stack;
 
 	Vector<ZFunction*> FindMain(ZSource& src);
 	
 	ZTrait lastTrait;
 	bool useLastTrait = false;
+	
+	int lindent = 0;
+	String LI;
+	Index<ZClass*> depCls;
 	
 	bool compile();
 	

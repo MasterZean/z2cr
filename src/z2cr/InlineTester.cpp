@@ -26,7 +26,11 @@ bool ZTest::Run(ZSourceCache* cache) {
 			Ass.AddStdlibPakcages(exeDir, cache);
 		}
 		
-		compiler.SetMain("", "test.z2");
+		//if (Line != 93)
+		//	return false;
+		
+		//	Name == "34";
+		//compiler.SetMain("", "test.z2");
 		compiler.FoldConstants = true;
 		
 		ER::ErrorColor = ErrorColorType::None;
@@ -34,6 +38,7 @@ bool ZTest::Run(ZSourceCache* cache) {
 		bool compResult = compiler.Compile();
 		if (compResult == false && compiler.MainFound == false)
 			compResult = true;
+		compiler.CheckUnused();
 		
 		if (compResult == false && Error.GetCount() == 0)
 			result = false;
@@ -58,6 +63,8 @@ bool ZTest::Run(ZSourceCache* cache) {
 			LOG("-----------------------------------------------------------------------------------------------------------------");
 			
 			result = false;
+			
+			Cout() << Name << "(" << Line << ")" << " test failed because error expected, but none found\n";
 		}
 		
 		for (int td = 0; td < Dumps.GetCount(); td++) {
@@ -138,12 +145,13 @@ bool ZTest::Run(ZSourceCache* cache) {
 	}
 	catch (ZException& e) {
 		StringStream ss;
-		e.PrettyPrint(ss);
+		//ss << e.Prelude;
+		e.PrettyPrint(ss, false);
 		String aError = ss;
 		aError = TrimRight(aError);
 		Error = TrimRight(Error);
 		if (Error != aError) {
-			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed because found exception\n");
+			LOG(String().Cat() << Name << "(" << Line << ")" << " test failed because found exception does not match\n");
 			
 			for (int i = 0; i < Ass.SourceLookup.GetCount(); i++) {
 				if (Ass.SourceLookup[i]->Path.Find('/') == 0) {
@@ -169,7 +177,7 @@ bool ZTest::Run(ZSourceCache* cache) {
 			LOG("");
 			
 			
-			Cout() << Name << "(" << Line << ")" << " test failed because found exception\n";
+			Cout() << Name << "(" << Line << ")" << " test failed because found exception does not match\n";
 			result = false;
 		}
 		else
@@ -198,6 +206,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
+		cpp.CheckCU = false;
 		
 		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
 		wroteDecl = true;
@@ -213,6 +222,7 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
+		cpp.CheckCU = false;
 		
 		cpp.TranspileDeclarations(Ass.Namespaces[index], 0b100, false);
 		
@@ -227,11 +237,13 @@ bool ZTest::RunDumpNsPub(ZCompiler& compiler) {
 		StringStream ss;
 		ZTranspiler cpp(compiler, ss);
 		cpp.CheckUse = false;
+		cpp.CheckCU = false;
 		
 		if (wroteDecl == false) {
 			StringStream temp;
 			ZTranspiler cpptemp(compiler, temp);
 			cpptemp.CheckUse = false;
+			cpptemp.CheckCU = false;
 			cpptemp.TranspileDeclarations(Ass.Namespaces[index], 0b11, true);
 		}
 		cpp.TranspileDefinitions(Ass.Namespaces[index], true);
@@ -303,8 +315,8 @@ void InlineTester::AddTestFolder(const String& path, int parent) {
 }
 
 void InlineTester::AddTestCollection(const String& path) {
-//	if (!path.EndsWith("06-cpp-01-ns-05-user-con.z2test"))
-//		return;
+	//if (!path.EndsWith("06-cpp-01-ns-07-sys-con.z2test"))
+	//	return;
 	
 	FileIn file(path);
 	

@@ -68,7 +68,7 @@ class Test {
 // @file
 
 /* @errors
-C:\dev\z2cr\source\stdlib\sys.core\Slice.z2(37, 21): can't access private member:
+Slice.z2(37, 21): can't access private member:
 		this{}        [class test.Foo]
 */
 
@@ -91,7 +91,7 @@ class Foo {
 // @file
 
 /* @errors
-C:\dev\z2cr\source\stdlib\sys.core\Slice.z2(37, 21): can't access private member:
+Slice.z2(37, 21): can't access private member:
 		this{}        [class test.Foo]
 */
 

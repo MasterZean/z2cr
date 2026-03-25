@@ -5,6 +5,10 @@ class ZException {
 public:
 	String Path;
 	String Error;
+	WithDeepCopy<Array<ZException>> Prelude;
+	
+	ZException() {
+	}
 	
 	ZException(const String& error): Error(error) {
 	}
@@ -23,7 +27,7 @@ public:
 		return msg;
 	}
 	
-	void PrettyPrint(Stream& stream);
+	void PrettyPrint(Stream& stream, bool fullPath = true);
 };
 
 #endif
