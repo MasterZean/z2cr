@@ -850,6 +850,12 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 		return true;
 	}
 	
+	if (f.Trait.Flags & ZTrait::BINDC || f.Trait.Flags & ZTrait::BINDCPP) {
+		LINDENT(-1);
+		LOG(LI + f.Name + f.FuncSig() + ": external function: compiling skipped");
+		return true;
+	}
+	
 	ZParser parser(f.BodyPos);
 	
 	parser.Expect('{');
