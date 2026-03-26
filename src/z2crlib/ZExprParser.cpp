@@ -354,7 +354,7 @@ Node* ZExprParser::ParseAtom() {
 		temp->Array = std::move(params);
 		
 		if (exp->Tt.Class->Meth.Add && exp->Tt.Class->Meth.Add->ShouldEvaluate())
-			comp.CompileFunc(*exp->Tt.Class->Meth.Add);
+			comp.CompileAndUse(*exp->Tt.Class->Meth.Add);
 		
 		exp = temp;
 	}
@@ -611,8 +611,8 @@ Node* ZExprParser::ParseId() {
 	else
 		s = parser.ExpectId();
 	
-	if (s == "test1")
-		s == "ptr";
+	if (s == "g")
+		s == "f";
 	
 	if (Function) {
 		for (int j = 0; j < Function->Params.GetCount(); j++) {
@@ -909,8 +909,9 @@ Node* ZExprParser::ResolveOverload(ZNamespace& ns, ZMethodBundle& method, Vector
 			ASSERT(lambda->Bundle);
 			
 			ZFunction* g = lambda->Bundle->Functions[0];
-			if (g->ShouldEvaluate())
-				comp.CompileFunc(*g);
+			//if (g->ShouldEvaluate())
+			//	comp.CompileFunc(*g);
+			comp.CompileAndUse(*g);
 		}
 	}
  

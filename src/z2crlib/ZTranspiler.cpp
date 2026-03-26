@@ -251,7 +251,7 @@ void ZTranspiler::WriteFuncs(Vector<ZFunction*>& Use) {
 	for (int i = 0; i < funcs.GetCount(); i++) {
 		ZFunction& f = *funcs[i];
 		
-	
+		
 		
 		//DUMP("AAAAAAAAAAA " + f.BackName);
 		if (f.BackName == "")
@@ -261,7 +261,7 @@ void ZTranspiler::WriteFuncs(Vector<ZFunction*>& Use) {
 			continue;
 		
 		//DUMP(f.FuncSig());
-		if (i == 11 || f.Name == "LoadTexture") {
+		if (i == 9 || f.Name == "LoadTexture") {
 			f.Name == "LoadTexture";
 			//return;
 		}
@@ -413,22 +413,18 @@ void ZTranspiler::Proc(ZClass& cls, bool addVars) {
 			Proc(var);
 	}
 	
-	if (cls.Meth.Default && cls.Meth.Default->CUIndex < cuIndex) {
-		Proc(*cls.Meth.Default);//cls.Meth.Default->CUIndex = cuIndex;
-		
-		if (!IsSlice(*cls.Meth.Default) && cls.Meth.Default->IsGenerated == false) {
-			//LOG("default add: " + cls.Meth.Default->Owner().Name + "::" + cls.Meth.Default->FuncSig());
-			//funcs << cls.Meth.Default;
-		}
-	}
+	if (cls.Meth.Default && cls.Meth.Default->IsGenerated == false)
+		Proc(*cls.Meth.Default);
 	if (cls.Meth.CopyCon)
-		cls.Meth.CopyCon->CUIndex = cuIndex;
+		Proc(*cls.Meth.CopyCon);
 	if (cls.Meth.MoveCon)
-		cls.Meth.MoveCon->CUIndex = cuIndex;
+		Proc(*cls.Meth.MoveCon);
 	if (cls.Meth.Copy)
-		cls.Meth.Copy->CUIndex = cuIndex;
+		Proc(*cls.Meth.Copy);
+	if (cls.Meth.Copy2)
+		Proc(*cls.Meth.Copy2);
 	if (cls.Meth.Move)
-		cls.Meth.Move->CUIndex = cuIndex;
+		Proc(*cls.Meth.Move);
 	
 	for (int j = 0; j < cls.Dependencies2.GetCount(); j++) {
 		ZEntity& e = *cls.Dependencies2[j];
@@ -661,6 +657,9 @@ int ZTranspiler::TranspileMemberDeclVar(ZNamespace& ns, int accessFlags) {
 			continue;
 		
 		if (CheckUse && v.IsStatic && !v.InUse)
+			continue;
+		
+		if (v.IsEvaluated == false)
 			continue;
 		
 		// TODO: fix
@@ -1536,8 +1535,8 @@ void ZTranspiler::Proc(OpNode& node) {
 				Walk(l);
 				cs << ", ";
 				cs << l->Tt.Param;
-				cs << ").";
-				cs << "Copy(";
+				cs << ")";
+				cs << ".Copy(";
 				WClsName(*r->Tt.Class);
 				cs << "(";
 				Walk(r);

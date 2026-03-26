@@ -19,6 +19,9 @@ bool ZTest::Run(ZSourceCache* cache) {
 	}
 		
 	try {
+		LOG("=================================================================================================================");
+		LOG(String().Cat() << "Running test " << Name << "(" << Line << ")" << " test failed\n");
+		LOG("=================================================================================================================");
 		String exeDir = GetFileDirectory(GetExeFilePath());
 		ZCompiler compiler(Ass);
 		

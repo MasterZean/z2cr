@@ -78,6 +78,8 @@ public:
 	ZFunction* Default = nullptr;
 	ZFunction* Allocate = nullptr;
 	ZFunction* Destructor = nullptr;
+	// TODO: fix
+	ZFunction* Copy2 = nullptr;
 	
 	ZFunction* Eq = nullptr;
 	ZFunction* Neq = nullptr;

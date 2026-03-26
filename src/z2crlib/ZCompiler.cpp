@@ -303,6 +303,8 @@ bool ZCompiler::DoDeps(ZClass& c, ZSourcePos* pos, ObjectType* tt) {
 		CompileFunc(*c.Meth.MoveCon);
 	if (c.Meth.Copy)
 		CompileFunc(*c.Meth.Copy);
+	if (c.Meth.Copy2)
+		CompileFunc(*c.Meth.Copy2);
 	if (c.Meth.Move)
 		CompileFunc(*c.Meth.Move);
 	if (c.Meth.Destructor)
@@ -815,7 +817,7 @@ bool ZCompiler::CompileFunc(ZFunction& f, Node& target) {
 	LOG(LI + f.FuncSig() + " in class " + f.Owner().Name + ": compiling {");
 	LINDENT(1);
 	
-	if (f.Return.Tt.Class != ass.CVoid)
+	if (f.Return.Tt.Class && f.Return.Tt.Class != ass.CVoid)
 		DoDeps(*f.Return.Tt.Class);
 	
 	ZFunction* back = TargetFunc;
@@ -1031,19 +1033,9 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext&
 		
 		ZClass* cls = node->Tt.Class;
 		
-		if (cls->TBase == ass.CRaw) {
-			int index = cls->Methods.Find("Copy");
-			
-			if (index != -1)
-				for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
-					ZFunction& copy = *cls->Methods[index].Functions[i];
-					
-					copy.SetInUse();
-					if (copy.ShouldEvaluate())
-						CompileFunc(copy);
-				}
-		}
-			
+		if (cls == ass.CDef)
+			FindLambda(rs);
+		
 		if (node && node->Chain && node->Chain->PropCount) {
 			Node* child = node->Chain->First;
 
@@ -1056,8 +1048,9 @@ Node* ZCompiler::CompileExpression(ZFunction& f, ZParser& parser, ZBlockContext&
 						p->Function = p->Function->Bundle->PropSetter;
 						p->Function->InUse = true;
 						
-						if (p->Function->ShouldEvaluate())
-							CompileFunc(*p->Function);
+						CompileAndUse(*p->Function);
+						//if (p->Function->ShouldEvaluate())
+						//	CompileFunc(*p->Function);
 						
 						//f.Dependencies.FindAdd(p->Function);
 					}
@@ -1258,7 +1251,7 @@ Node *ZCompiler::CompileLocalVar(ZFunction& f, ZParser& parser, bool aConst, boo
 	auto vp = parser.GetFullPos();
 	
 	String name = parser.ExpectZId();
-	if (name == "smoke")
+	if (name == "f1")
 		name == "smoke";
 	TestVarDup(Class, f, name, vp);
 	
@@ -1295,6 +1288,9 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 		
 		v.I = ti;
 		cls = ti.Tt.Class;
+		
+		if (cls->IsEvaluated == false)
+			DoDeps(*cls);
 		
 		//if (cls->IsEvaluated == false)
 		//	DoDeps(*cls, &vp);
@@ -1335,40 +1331,8 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 					" instance to " + ass.TypeToColor(v.I.Tt) + " instance without a cast");
 		}
 		
-		//if (cls->IsEvaluated == false)
-		//	DoDeps(*cls, &vp);
-		
-		if (cls->TBase == ass.CRaw) {
-			int index = cls->Methods.Find("Copy");
-			
-			if (index != -1)
-				for (int i = 0; i < cls->Methods[index].Functions.GetCount(); i++) {
-					ZFunction& copy = *cls->Methods[index].Functions[i];
-					
-					copy.SetInUse();
-					if (copy.ShouldEvaluate())
-						CompileFunc(copy);
-				}
-		}
-		
-		if (cls == ass.CDef) {
-			ZLambdaInfo& info = ass.Lambdas[v.I.Tt.Param];
-			ASSERT(info.Params);
-			ASSERT(node->NT == NodeType::Lambda);
-			LambdaNode& lambda = *(LambdaNode*)node;
-			ASSERT(lambda.Bundle);
-			
-			int index = Function->Owner().Methods.Find(lambda.Bundle->Name);
-	
-			if (index != -1) {
-				for (int i = 0; i < lambda.Bundle->Functions.GetCount(); i++) {
-					ZFunction& f = *lambda.Bundle->Functions[i];
-					
-					if (f.Params.GetCount() == info.Params->Params.GetCount())
-						lambda.Function = &f;
-				}
-			}
-		}
+		if (cls == ass.CDef)
+			FindLambda(node);
 	}
 	else {
 		if (v.I.Tt.Class == NULL)
@@ -1415,6 +1379,27 @@ Node *ZCompiler::compileVarDec(ZVariable& v, ZParser& parser, ZSourcePos& vp, co
 	}
 	
 	return irg.local(v);
+}
+
+void ZCompiler::FindLambda(Node* node) {
+	ZLambdaInfo& info = ass.Lambdas[node->Tt.Param];
+	ASSERT(info.Params);
+	ASSERT(node->NT == NodeType::Lambda);
+	LambdaNode& lambda = *(LambdaNode*)node;
+	ASSERT(lambda.Bundle);
+	
+	int index = Function->Owner().Methods.Find(lambda.Bundle->Name);
+
+	if (index != -1) {
+		for (int i = 0; i < lambda.Bundle->Functions.GetCount(); i++) {
+			ZFunction& f = *lambda.Bundle->Functions[i];
+			
+			if (f.Params.GetCount() == info.Params->Params.GetCount()) {
+				lambda.Function = &f;
+				CompileAndUse(f);
+			}
+		}
+	}
 }
 
 Node *ZCompiler::CompileReturn(ZFunction& f, ZParser& parser, ZBlockContext& con) {

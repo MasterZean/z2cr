@@ -304,6 +304,8 @@ void ZResolver::AssignClassRoles(ZClass& cls, ZFunction& f) {
 		}
 		else if (f.Name == "Add" && f.Params.GetCount() == 1)
 			cls.Meth.Add = &f;
+		else if (f.InClass && f.Class().TBase == ass.CRaw && f.Name == "Copy" && f.Params.GetCount() == 1)
+			cls.Meth.Copy2 = &f;
 	}
 }
 

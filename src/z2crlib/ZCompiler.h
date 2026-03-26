@@ -129,9 +129,14 @@ public:
 		if (TargetFunc)
 			TargetFunc->Dependencies2.FindAdd(&f);
 		
+		if (f.Return.Tt.Class && f.Return.Tt.Class != ass.CVoid)
+			DoDeps(*f.Return.Tt.Class);
+		
 		if (f.ShouldEvaluate())
 			CompileFunc(f, f.Nodes);
 	}
+	
+	void FindLambda(Node *node);
 	
 private:
 	Assembly& ass;
